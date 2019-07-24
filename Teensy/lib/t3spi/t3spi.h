@@ -87,12 +87,14 @@ public:
 	volatile int dataPointer;
 	volatile int packetCT;
 	volatile int data16;
+
 	unsigned long timeStamp1;
 	unsigned long timeStamp2;
 	uint8_t ctar;
 
 
 	T3SPI();
+
 	//Functions for MASTER MODE
 	static void begin_MASTER();
 	void begin_MASTER(uint8_t sck, uint8_t mosi, uint8_t miso, uint8_t cs, bool activeState);
@@ -111,6 +113,7 @@ public:
 	void rx16(volatile uint16_t *dataIN, int length);
 	void rxtx8(volatile uint8_t *dataIN, volatile uint8_t *dataOUT, int length);
 	void rxtx16(volatile uint16_t *dataIN, volatile uint16_t *dataOUT, int length);
+
 	//Global Functions
 	static void start();
 	static void stop();
