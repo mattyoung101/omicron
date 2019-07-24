@@ -1,32 +1,4 @@
 #include "LightSensorArray.h"
-#define MUX_EN 2
-#define MUX_A0 3
-#define MUX_A1 4
-#define MUX_A2 5
-#define MUX_A3 6
-#define MUX_A4 7
-#define MUX_WR 8
-
-#define LS0 A0
-#define LS1 A1
-
-static int32_t mod(int32_t x, int32_t m){
-    int32_t r = x % m;
-    return r < 0 ? r + m : r;
-}
-
-static double angleBetween(double angleCounterClockwise, double angleClockwise){
-    return mod(angleClockwise - angleCounterClockwise, 360);
-}
-
-static double smallestAngleBetween(double angle1, double angle2){
-    double ang = angleBetween(angle1, angle2);
-    return fminf(ang, 360 - ang);
-}
-
-static double midAngleBetween(double angleCounterClockwise, double angleClockwise){
-    return mod(angleCounterClockwise + angleBetween(angleCounterClockwise, angleClockwise) / 2.0, 360);
-}
 
 void LightSensorArray::init() {
     pinMode(MUX_EN, OUTPUT);
@@ -73,14 +45,9 @@ void LightSensorArray::calibrate() {
 }
 
 int LightSensorArray::readSensor(int sensor) {  
-    // If pin is >= 24, we're on mux 1, otherwise mux 0
-    int mux = (sensor >= 24) ? LS1 : LS0;
-
-    // This changes the pins on both multiplexers. I had some optimisations written up in the ESP32 version
-    // to read both mux channels at once, but the Arduino IDE sucks and I got other shit to do.
     changeMUXChannel(sensor % (LS_NUM/2));
         
-    return analogRead(mux);
+    return analogRead(MUX_OUT);
 }
 
 void LightSensorArray::read() {
@@ -253,34 +220,19 @@ double LightSensorArray::getLineSize() {
 }
 
 void LightSensorArray::updateLine(float angle, float size, float heading) {
-  if(angle != NO_LINE_ANGLE){
-    noLineTimer.update();
     isOnLine = true;
     lineAngle = mod(angle + heading, 360);
-  } // Will constantly update the timer as long as the line is visible
   
-  if(noLineTimer.timeHasPassedNoUpdate()){
-    isOnLine = false; // If there has been no update for a given amount of time, this timer will go off and the robot will think it has passed back over the line
-    lineAngle = angle;
-  }
-  
-  if(lineSize != NO_LINE_SIZE) lineSize = lineOver ? 2 - size : size;
-  else lineSize = size;
+    if(lineSize != NO_LINE_SIZE) lineSize = lineOver ? 2 - size : size;
+    else lineSize = size;
 }
 
 void LightSensorArray::lineCalc() {  
-  if(isOnLine && firstAngle != NO_LINE_ANGLE){ // Check if touching the line and not crossed over
-    if((abs(lineAngle - firstAngle) > LS_LINEOVER_BUFFER_LEFT) && (abs(lineAngle - firstAngle) < (360 - LS_LINEOVER_BUFFER_RIGHT))) lineOver = true; // Detecting if the line angle has changed by a lot
-//    if(smallestAngleBetween(lineAngle, firstAngle) < LS_LINEOVER_BUFFER)
-    else lineOver = false;
-  }
+    if(isOnLine && firstAngle != NO_LINE_ANGLE){ // Check if touching the line and not crossed over
+        if(abs(lineAngle - firstAngle) > LS_LINEOVER_BUFFER) lineOver = true; // Detecting if the line angle has changed by a lot
+        else lineOver = false;
+    }
 
-  if(!isOnLine && !lineOver) firstAngle = NO_LINE_ANGLE; // Check if returned back into the field
-  if(!lineOver && firstAngle == NO_LINE_ANGLE) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
-
-  if(!lineOver || isOnLine) lineOverTimeout.update(); // Update timer if on the field
-  if(lineOverTimeout.timeHasPassedNoUpdate()) lineOver = false; // Reset line over if out of field for more than 1.5 seconds
-
-  lastAngle = lineAngle; // Set the previous angle for use in fuck up detection
-  lastSize = lineSize;
+    if(!lineOver) firstAngle = NO_LINE_ANGLE; // Check if returned back into the field
+    if(!lineOver && firstAngle == NO_LINE_ANGLE) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
 }
