@@ -19,16 +19,19 @@ Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/ve
     - vl53l0x: ST's VL53L0X LRF driver and docs. We use Kyle Hendrick's [ESP32 port](https://github.com/kylehendricks/esp32-vl53l0x).
     - nanopb: A C library for encoding/decoding ProtoBuf data
 - docs: contains various bits of documentation, templates, etc
-- ls_slave: contains the code which runs on the Teensy light sensor slave device
 - main: contains the main code that runs on the master and slave ESP32
 - openmv: contains the code that runs on our camera, the OpenMV H7
 - scripts: contains various Python scripts for generating code and simple debugging
     - midis: contains MIDI files to be converted and played on the robot
+- Teensy: contains PlatformIO project for Teensy slave
+- b.bat, b.sh: shortcut for "idf.py build"
+- f.bat, f.sh: shortcut for "idf.py flash"
+- fm.bat, fm.sh: shortcut to run "idf.py flash" then "idf.py monitor" if compilation was successful
 
 ## License
-This code is currently proprietary and confidential to Brisbane Boys' College and Team Omicron. No redistribution or use outside BBC teams is permitted. 
+This code is currently proprietary and confidential to Brisbane Boys' College and Team Omicron. No redistribution or use outside of our team is permitted. 
 
-_At some point, the code may be re-licensed under the BSD 4-Clause or MPL._
+_At some point, the code may be re-licensed under the BSD 3-Clause/4-Clause or the MPL 2.0._
 
 ## Libraries and licenses
 - ESP-IDF: Apache 2
