@@ -311,14 +311,14 @@ void motor_test_task(void *pvParameter){
     };
     ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &conf, 1));
 
-    spi_device_handle_t *teensyHandle = NULL;
+    spi_device_handle_t teensyHandle = NULL;
     spi_device_interface_config_t teensyConf = {0};
-    ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &teensyConf, teensyHandle));
+    ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &teensyConf, &teensyHandle));
 
     while (true){
-        uint8_t data[] = {42, 33, 100, 22, 100};
+        uint8_t data[] = {'E', 'S', 'P', '2', 'T', 'E', 'E', 'N', 'S', 'Y'};
         spi_transaction_t trans = {0};
-        trans.length = 5 * 8;
+        trans.length = 10 * 8;
         trans.tx_buffer = data;
         ESP_ERROR_CHECK(spi_device_transmit(teensyHandle, &trans));
         ESP_LOGI(TAG, "Transmission completed");

@@ -247,7 +247,6 @@ void T3SPI::printStatistics(int length) {
 
 	for (unsigned int mask = 0x80000000; mask; mask >>= 1) {
 		Serial.print(mask&CTAR?'1':'0');}
-
 	Serial.println();
 	Serial.print("SPI0_SR:         ");
 	for (unsigned int mask = 0x80000000; mask; mask >>= 1) {
