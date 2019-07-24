@@ -303,6 +303,7 @@ static void slave_task(void *pvParameter){
 void motor_test_task(void *pvParameter){
     static const char *TAG = "TestTask";
 
+    // TODO THIS SHIT BROKE (check compile warnings, pointer problems)
     spi_bus_config_t conf = {
         .mosi_io_num = -1,
         .miso_io_num = -1,
@@ -328,8 +329,8 @@ void motor_test_task(void *pvParameter){
 
 void app_main(){
     puts("====================================================================================");
-    puts(" * This ESP32 belongs to a robot from Team Deus Vult at Brisbane Boys' College.");
-    puts(" * Software copyright (c) 2019 Team Deus Vult. All rights reserved.");
+    puts(" * This ESP32 belongs to a robot from Team Omicron at Brisbane Boys' College.");
+    puts(" * Software copyright (c) 2019 Team Omicron. All rights reserved.");
     puts("====================================================================================");
 
     // Initialize NVS
