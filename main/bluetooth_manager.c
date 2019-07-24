@@ -2,8 +2,8 @@
 
 // tasks which runs when a Bluetooth connection is established. manages sending and receiving data as well as logic.
 
-static dv_timer_t packetTimer = {NULL, false};
-static dv_timer_t cooldownTimer = {NULL, false};
+static om_timer_t packetTimer = {NULL, false};
+static om_timer_t cooldownTimer = {NULL, false};
 static bool cooldownOn = false; // true if the cooldown timer is currently activated
 
 static void packet_timer_callback(TimerHandle_t timer){
@@ -18,14 +18,14 @@ static void packet_timer_callback(TimerHandle_t timer){
     vTaskSuspend(sendTaskHandle);
     
     esp_spp_disconnect(handle);
-    dv_timer_stop(&packetTimer);
+    om_timer_stop(&packetTimer);
 }
 
 static void cooldown_timer_callback(TimerHandle_t timer){
     static const char *TAG = "CooldownTimer";
     ESP_LOGI(TAG, "Cooldown timer gone off, re-enabling switch");
     cooldownOn = false;
-    dv_timer_stop(&cooldownTimer);
+    om_timer_stop(&cooldownTimer);
 }
 
 void comms_bt_receive_task(void *pvParameter){
@@ -36,8 +36,8 @@ void comms_bt_receive_task(void *pvParameter){
     uint8_t switchBuffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 
     // create timers and semaphore if they've not already been created in a previous run of this task
-    dv_timer_check_create(&packetTimer, "BTTimeout", BT_PACKET_TIMEOUT, pvParameter, packet_timer_callback);
-    dv_timer_check_create(&cooldownTimer, "CooldownTimer", BT_SWITCH_COOLDOWN, pvParameter, cooldown_timer_callback);
+    om_timer_check_create(&packetTimer, "BTTimeout", BT_PACKET_TIMEOUT, pvParameter, packet_timer_callback);
+    om_timer_check_create(&cooldownTimer, "CooldownTimer", BT_SWITCH_COOLDOWN, pvParameter, cooldown_timer_callback);
 
     ESP_LOGI(TAG, "Bluetooth receive task init OK, handle: %d", handle);
     esp_task_wdt_add(NULL);

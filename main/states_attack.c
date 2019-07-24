@@ -12,7 +12,7 @@ fsm_state_t stateAttackOrbit = {&state_nothing_enter, &state_nothing_exit, &stat
 fsm_state_t stateAttackDribble = {&state_nothing_enter, &state_nothing_exit, &state_attack_dribble_update, "AttackDribble"};
 fsm_state_t stateAttackDoubleDefence = {&state_nothing_enter, &state_nothing_exit, &state_attack_doubledefence_update, "AttackDoubleDefence"};
 
-static dv_timer_t idleTimer = {NULL, false};
+static om_timer_t idleTimer = {NULL, false};
 static float accelProgress = 0.0f;
 static float accelBegin = 0.0f;
 
@@ -28,19 +28,19 @@ static void idle_timer_callback(TimerHandle_t timer){
     // as it turns out, the timer ID is passed as a void pointer (meaning it can be any type, though in this context
     // it should probably be an integer) - so we pass the state_machine_t as the timer's ID
     state_machine_t *fsm = (state_machine_t*) pvTimerGetTimerID(timer);
-    dv_timer_stop(&idleTimer);
+    om_timer_stop(&idleTimer);
     FSM_CHANGE_STATE(Idle);
 }
 
 static void create_timers_if_needed(state_machine_t *fsm){
-    dv_timer_check_create(&idleTimer, "IdleTimer", IDLE_TIMEOUT, (void*) fsm, idle_timer_callback);
+    om_timer_check_create(&idleTimer, "IdleTimer", IDLE_TIMEOUT, (void*) fsm, idle_timer_callback);
 }
 
 /** checks if any of the timers should be disabled based on current robot data */
 static void timer_check(){
     // if the ball is visible, stop the idle timer
     if (robotState.inBallStrength > 0.0f){
-        dv_timer_stop(&idleTimer);
+        om_timer_stop(&idleTimer);
     }
 }
 
@@ -98,7 +98,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
     // Ball not visible (brake) and ball too close (switch to orbit)
     if (!orangeBall.exists){
         LOG_ONCE(TAG, "Ball is not visible, braking");
-        dv_timer_start(&idleTimer);
+        om_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallStrength >= ORBIT_DIST){
         LOG_ONCE(TAG, "Ball close enough, switching to orbit, strength: %f, orbit dist thresh: %d", rs.inBallStrength,
@@ -138,7 +138,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
     // Ball too far away, Ball too close and angle good (go to dribble), Ball too far (revert)
     if (rs.inBallStrength <= 0.0f){
         LOG_ONCE(TAG, "Ball not visible, switching to idle, strength: %f", robotState.inBallStrength);
-        dv_timer_start(&idleTimer);
+        om_timer_start(&idleTimer);
         FSM_CHANGE_STATE(Idle);
     } else if (rs.inBallStrength < ORBIT_DIST){
         LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, orbit dist thresh: %d", robotState.inBallStrength,
@@ -169,7 +169,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
         FSM_CHANGE_STATE_GENERAL(Shoot);
     } else if (!orangeBall.exists){
         LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallStrength);
-        dv_timer_start(&idleTimer);
+        om_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallAngle > IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER && rs.inBallAngle < IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER){
         LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,

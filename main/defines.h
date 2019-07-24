@@ -13,9 +13,9 @@
 #define CONF_LOG_LEVEL ESP_LOG_DEBUG
 
 // Bluetooth
-#define ROBOT0_NAME "DeusVult_Robot0"
-#define ROBOT1_NAME "DeusVult_Robot1"
-#define SPP_NAME "DeusVult_SPP"
+#define ROBOT0_NAME "Omicron_Robot0"
+#define ROBOT1_NAME "Omicron_Robot1"
+#define SPP_NAME "Omicron_SPP"
 #define PACKET_QUEUE_LENGTH 1
 #define BT_CONF_RES_STATIC 0 // uses pre-defined roles to resolve conflicts
 #define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts

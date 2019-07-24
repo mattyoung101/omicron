@@ -328,8 +328,8 @@ void motor_test_task(void *pvParameter){
 
 void app_main(){
     puts("====================================================================================");
-    puts(" * This ESP32 belongs to a robot from Team Deus Vult at Brisbane Boys' College.");
-    puts(" * Software copyright (c) 2019 Team Deus Vult. All rights reserved.");
+    puts(" * This ESP32 belongs to a robot from Team Omicron at Brisbane Boys' College.");
+    puts(" * Software copyright (c) 2019 Team Omicron. All rights reserved.");
     puts("====================================================================================");
 
     // Initialize NVS
