@@ -64,7 +64,7 @@
 
 #define MOSI MOSI
 #define MISO MISO
-#define SCK ALT_SCK
+#define SCK SCK
 #define CS CS0
 
 // -- I2C --- //
