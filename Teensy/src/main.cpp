@@ -1,7 +1,8 @@
 #include <Arduino.h>
+#include <t3spi/t3spi.h>
 
 void setup() {
-  // put your setup code here, to run once:
+    Serial.begin(9600);
 }
 
 void loop() {
