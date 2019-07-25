@@ -2,12 +2,11 @@
 #include "t3spi.h"
 
 T3SPI spi = T3SPI();
+volatile uint8_t inData[10] = {0};
+volatile uint8_t outData[10] = {'T', 'E', 'E', 'N', 'S', 'Y', '2', 'E', 'S', 'P'};
 
 void setup() {
-	pinMode(13, OUTPUT);
-	digitalWrite(13, HIGH);
-
-	spi.begin_SLAVE(SCK, MOSI, MISO, CS0);
+	spi.begin_SLAVE(SCK, MOSI, MISO, CS0_ActiveLOW);
 	spi.setCTAR_SLAVE(8, SPI_MODE0);
 
 	// Enable the SPI0 Interrupt
@@ -15,11 +14,15 @@ void setup() {
 }
 
 void loop() {
-	// put your main code here, to run repeatedly:
+	// Serial.println("Fuck");
 }
 
-//Interrupt Service Routine to handle incoming data
 void spi0_isr(void){
-	//Function to handle data
-	SPI_SLAVE.rxtx8 (data, returnData, dataLength);
+	spi.rxtx8(inData, outData, 10);
+
+	Serial.print("Data received: ");
+	for (int i = 0; i < 10; i++){
+		Serial.print((char) inData[i]);
+	}
+	Serial.println();
 }

@@ -1,10 +1,6 @@
 #pragma once
 #include "esp_log.h"
 
-// Uncomment ONE of these to identify the device as either a master or a slave.
-// #define NVS_WRITE_MASTER
-// #define NVS_WRITE_SLAVE
-
 // If this is defined, the value of the robot number will be written to NVS
 // #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
