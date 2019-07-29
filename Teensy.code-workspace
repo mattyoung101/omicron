@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": "Teensy"
+		}
+	],
+    "settings": {
+        "files.associations": {
+            "str.h": "c",
+            "bno055_wrapper.h": "c",
+            "efuse_reg.h": "c",
+            "uart.h": "c",
+            "inv_mpu.h": "c",
+            "states.h": "c",
+            "simple_imu.h": "c",
+            "math.h": "c",
+            "pid.h": "c",
+            "esp_utils.h": "c",
+            "handmademath.h": "c",
+            "tsop.h": "c"
+        },
+        "terminal.integrated.env.osx": {
+            "PATH": "/Users/ethanlo/.platformio/penv/bin:/Users/ethanlo/.platformio/penv:/Users/ethanlo/esp/esp-idf/tools:/Users/ethanlo/esp/xtensa-esp32-elf/bin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/anaconda3/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+            "PLATFORMIO_CALLER": "vscode"
+        }
+    }
+}
