@@ -208,7 +208,7 @@ void motor_test_task(void *pvParameter){
         .mode = 0,
         .clock_speed_hz = SPI_MASTER_FREQ_8M,
         .queue_size = 3,
-        .spics_io_num = 15, // TODO make this a define
+        .spics_io_num = 15, // TODO make this a define (chip select pin)
         .duty_cycle_pos = 128, // 50% duty cycle
         .command_bits = 0,
         .address_bits = 0,
@@ -230,7 +230,7 @@ void motor_test_task(void *pvParameter){
         ESP_LOGI(TAG, "Transmission completed, received %d bytes", len);
         ESP_LOG_BUFFER_HEXDUMP(TAG, trans.rx_buffer, len, ESP_LOG_INFO);
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
