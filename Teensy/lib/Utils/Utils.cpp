@@ -55,3 +55,7 @@ double midAngleBetween(double angleCounterClockwise, double angleClockwise) {
 float lerp(float fromValue, float toValue, float progress) {
     return fromValue + (toValue - fromValue) * progress;
 }
+
+float get_battery_voltage() {
+    return (float)((V_REF * (double)analogRead(V_BAT)/1023 * (R1 + R2)) / R2);
+}

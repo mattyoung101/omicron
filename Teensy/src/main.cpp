@@ -1,40 +1,56 @@
 #include <Arduino.h>
-#include "t3spi.h"
+#include "Utils.h"
+#include "LightSensorArray.h"
+#include "IMU.h"
+#include "Timer.h"
 
-T3SPI spi = T3SPI();
-volatile uint8_t inData[10] = {0};
-volatile uint8_t outData[10] = {'T', 'E', 'E', 'N', 'S', 'Y', '2', 'E', 'S', 'P'};
+// I would instantiate a timer class so we can blink the led but im a fucking idiot and used pin 13 for SPI cos im a fucking idiot
 
-static void gpio_spi_isr(void){
-	Serial.println("Data received: ");
+IMU imu;
+LightSensorArray ls;
 
-	// read incoming data
-	uint8_t data = SPI0_POPR;
-	while (data){
-		Serial.printf("%c, ", data);
-	}
-	Serial.println("");
-
-	// FIXME hardcoded
-	for (int i = 0; i < 10; i++){
-		SPI0_PUSHR_SLAVE = outData[i];
-	}
-
-	// send it
-	SPI0_SR |= SPI_SR_RFDF;
-}
+// Variables which i couldn't be bothered to find a good place for
+float batteryVoltage;
 
 void setup() {
-	spi.begin_SLAVE(ALT_SCK, MOSI, MISO, CS0);
-	spi.setCTAR_SLAVE(8, SPI_MODE0);
+    // Put other setup stuff here
+    Serial.begin(9600);
 
-	attachInterrupt(15, gpio_spi_isr, LOW);
+    // join bus on address 0x12 (in slave mode)
+    Wire.begin(0x12);
+    Wire.onRequest(requestEvent);
+    Wire.onReceive(receiveEvent);
+
+    // Init IMU stuff
+    imu.init();
+    imu.calibrate();
+
+    // Init light sensors
+    ls.init();
+    ls.calibrate();
 }
 
 uint16_t i = 0;
 void loop() {
-	if (i++ > 10000){
-		Serial.println("Alive");
-		i = 0;
-	}
+    // Read imu
+    imu.update();
+
+    // Update line data
+    ls.read();
+    ls.calculateClusters();
+    ls.calculateLine();
+
+    ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), imu.heading);
+    ls.lineCalc();
+
+    // Measure battery voltage
+    batteryVoltage = get_battery_voltage();
+}
+
+void requestEvent() {
+    // TODO
+}
+
+void receiveEvent(int bytes) {
+    // TODO
 }
