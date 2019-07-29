@@ -71,14 +71,18 @@
 
 #define IMU_SDA 38
 #define IMU_SCL 37
+#define IMU_WIRE Wire1
 
+// Wire
 #define ESP_SDA 18
 #define ESP_SCL 19
+#define ESP_WIRE Wire
 
 // --- Debug --- //
 
 #define V_BAT A16
 #define V_BAT_LED 36 // A17
+// im a afucking idiot again and forgot to add a v_bat led in the first place...
 
 // --- Lightgate --- //
 

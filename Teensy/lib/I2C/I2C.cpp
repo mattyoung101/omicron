@@ -2,29 +2,29 @@
 #include <Pinlist.h>
 
 void I2Cinit(){
-    Wire1.begin(I2C_MASTER, 0x00, I2C_PINS_37_38, I2C_PULLUP_EXT, 400000);
-    Wire1.setDefaultTimeout(10000);
+    IMU_WIRE.begin(I2C_MASTER, 0x00, I2C_PINS_37_38, I2C_PULLUP_EXT, 400000);
+    IMU_WIRE.setDefaultTimeout(10000);
 }
 
 void I2Cread(uint8_t address, uint8_t registerAddress, uint8_t nBytes, uint8_t *data) {
-    Wire1.beginTransmission(address);
-    Wire1.write(registerAddress);
-    int statusCode = Wire1.endTransmission();
+    IMU_WIRE.beginTransmission(address);
+    IMU_WIRE.write(registerAddress);
+    int statusCode = IMU_WIRE.endTransmission();
     // Serial.printf("read status code: %d\n", statusCode);
 
-    Wire1.requestFrom(address, nBytes);
+    IMU_WIRE.requestFrom(address, nBytes);
     uint8_t index = 0;
-    while (Wire1.available()) {
-        data[index] = Wire1.read();
+    while (IMU_WIRE.available()) {
+        data[index] = IMU_WIRE.read();
         index++;
     }
 }
 
 void I2CwriteByte(uint8_t address, uint8_t registerAddress, uint8_t data) {
-    Wire1.beginTransmission(address);
-    Wire1.write(registerAddress);
-    Wire1.write(data);
-    int statusCode = Wire1.endTransmission();
+    IMU_WIRE.beginTransmission(address);
+    IMU_WIRE.write(registerAddress);
+    IMU_WIRE.write(data);
+    int statusCode = IMU_WIRE.endTransmission();
 
     // Serial.printf("write status code: %d\n", statusCode);
 }
@@ -44,7 +44,7 @@ for(address = 1; address < 127; address++ )
   // the Write.endTransmisstion to see if
  // a device did acknowledge to the address.
  Wire.beginTransmission(address);
- error = Wire1.endTransmission();
+ error = IMU_WIRE.endTransmission();
 
  if (error == 0)
  {

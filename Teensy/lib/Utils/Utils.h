@@ -2,6 +2,8 @@
 #define UTILS_H
 
 #include <math.h>
+#include <Config.h>
+#include <Pinlist.h>
 
 #define TO_RADIANS 0.01745329251994329576923690768489
 
@@ -36,6 +38,8 @@ double smallestAngleBetween(double angle1, double angle2);
 double midAngleBetween(double angleCounterClockwise, double angleClockwise);
 
 float lerp(float fromValue, float toValue, float progress);
+
+float get_battery_voltage();
 
 struct Vector3D {
     double x;
