@@ -13,7 +13,7 @@ LightSensorArray ls;
 float batteryVoltage;
 
 void setup() {
-	// Put other setup stuff here
+    // Put other setup stuff here
     Serial.begin(9600);
 
     // join bus on address 0x12 (in slave mode)
@@ -30,6 +30,7 @@ void setup() {
     ls.calibrate();
 }
 
+uint16_t i = 0;
 void loop() {
     // Read imu
     imu.update();
