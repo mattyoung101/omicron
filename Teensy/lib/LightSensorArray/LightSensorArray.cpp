@@ -216,9 +216,8 @@ double LightSensorArray::getLineSize() {
 }
 
 void LightSensorArray::updateLine(float angle, float size, float heading) {
-    isOnLine = true;
-    lineAngle = mod(angle + heading, 360);
-  
+    isOnLine = angle == NO_LINE_ANGLE ? false : true;
+    lineAngle = angle == NO_LINE_ANGLE ? angle : doubleMod(angle+heading, 360);
     if(lineSize != NO_LINE_SIZE) lineSize = lineOver ? 2 - size : size;
     else lineSize = size;
 }
@@ -229,6 +228,6 @@ void LightSensorArray::lineCalc() {
         else lineOver = false;
     }
 
-    if(!lineOver) firstAngle = NO_LINE_ANGLE; // Check if returned back into the field
-    if(!lineOver && firstAngle == NO_LINE_ANGLE) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
+    if(!lineOver && !isOnLine) firstAngle = NO_LINE_ANGLE; // Check if returned back into the field
+    if(!lineOver) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
 }

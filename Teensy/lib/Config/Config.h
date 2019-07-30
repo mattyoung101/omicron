@@ -14,7 +14,15 @@
 #define NO_LINE_ANGLE 400
 #define NO_LINE_SIZE 400
 #define LS_NUM_MULTIPLIER 11.25
-#define LS_LINEOVER_BUFFER 90
+#define LS_LINEOVER_BUFFER 80
+
+#define OVER_LINE_SPEED 100
+#define LINE_SPEED 100
+#define LINE_SPEED_MULTIPLIER 0.7
+#define LINE_TRACK_SPEED 50
+
+#define LINE_SMALL_SIZE 0
+#define LINE_BIG_SIZE 1.5
 
 // --- IMU --- //
 
@@ -35,7 +43,7 @@
 #define ACC_FULL_SCALE_8_G 0x10
 #define ACC_FULL_SCALE_16_G 0x18
 
-// --- Battery Monitor -- //
+// --- Battery Monitor --- //
 
 #define V_REF 3.3
 #define R1 1000000
