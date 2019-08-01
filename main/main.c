@@ -43,13 +43,6 @@
 state_machine_t *stateMachine = NULL;
 static const char *RST_TAG = "ResetReason";
 
-// supposed to break the robot on error, doesn't work tho
-static void shutdown_handler(){
-    ets_printf("Shutdown handler executing\n");
-    motor_calc(0, 0, 0.0f);
-    motor_move(true);
-}
-
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
     if (resetReason == ESP_RST_PANIC){
@@ -68,11 +61,9 @@ static void master_task(void *pvParameter){
     uint8_t robotId = 69;
 
     print_reset_reason();
-    ESP_ERROR_CHECK(esp_register_shutdown_handler(shutdown_handler));
 
     // Initialise comms and hardware
-    motor_init();
-    comms_i2c_init_slave();
+    comms_i2c_init(I2C_NUM_0);
     cam_init();
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
@@ -106,10 +97,12 @@ static void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
-        // update cam
+        // update sensors
         cam_calc();
+        comms_i2c_send_receive(MSG_PULL_I2C_SLAVE, NULL, 0); // TODO actually encode what we're sending properly
 
         // update values for FSM, mutexes are used to prevent race conditions
+        // TODO we need much less of these semaphores because it runs on the main thread
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
@@ -176,12 +169,13 @@ static void master_task(void *pvParameter){
         // vTaskDelay(pdMS_TO_TICKS(250));
         // print_motion_data(&robotState);
         // print_position_data(&robotState);
-
         // printf("%f\n", robotState.inLineAngle);
 
-        // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
-        motor_move(robotState.outShouldBrake);
+        
+        // transmit motion data back to the slave
+        // TODO actually do it with Protobuf
+        comms_i2c_send(MSG_PUSH_I2C_MASTER, NULL, 0);
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
@@ -268,6 +262,6 @@ void app_main(){
     fflush(stdout);
 
     // create the main (or test, uncomment it if you want that) task 
-    // xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-    xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
+    xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    // xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
 }

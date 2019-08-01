@@ -23,8 +23,7 @@
 #define DEFENCE false
 
 // I2C
-#define I2C_ESP_SLAVE_ADDR 0x23
-#define I2C_NANO_SLAVE_ADDR 0x12
+#define I2C_SLAVE_DEV_ADDR 0x23
 #define I2C_TIMEOUT 250 // ms
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
@@ -46,8 +45,11 @@
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
 #define I2C_BUF_SIZE 128 // size of I2C buffer
-#define MSG_SENSORUPDATE_ID 0 // should probably make these an enum
-#define MSG_BTPROVIDE_ID 1
+typedef enum {
+    MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
+    MSG_PUSH_I2C_MASTER, // as the I2C master, I'm providing data to the I2C slave
+    MSG_PULL_I2C_SLAVE, // requesting data from the I2C slave
+} msg_type_t;
 
 // Music
 #define MUSIC_BPM 100

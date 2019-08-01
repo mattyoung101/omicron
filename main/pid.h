@@ -4,9 +4,7 @@
 // Ported from PID.cpp 
 
 #ifndef constrain
-    // So don't get me wrong, C is a decent fucking language right
-    // But holy fucking shit, I fucking hate it's god awful fucking include system like seriously what the fuck
-    // This is the type of shit I have to do to get around it I mean look at this shit
+    // stupid hack to fix include shit
     #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #endif
 

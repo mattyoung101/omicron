@@ -44,7 +44,7 @@ extern pid_config_t forwardPID;
         ESP_LOGE(TAG, "I2C failure in %s:%d! Error: %s.", __FUNCTION__, __LINE__, esp_err_to_name(err)); \
         i2c_reset_tx_fifo(I2C_NUM_0); \
         i2c_reset_rx_fifo(I2C_NUM_0); \
-        return 1; \
+        return err; \
     } } while (0);
 /** Starts counting on the performance timer. The variable "pfBegin" must be undefined **/
 #define PERF_TIMER_START int64_t pfBegin = esp_timer_get_time();
@@ -89,8 +89,6 @@ float lerp(float fromValue, float toValue, float progress);
 uint32_t str_hash(char *str);
 
 void i2c_scanner();
-/** Reads a series of bytes from the Nano LS slave. Based on the code in esp_utils.c for the MPU **/
-uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data);
 /** 
  * Returns true if target is between angle1 and angle2. 
  * Source: https://stackoverflow.com/a/11412077/5007892 
