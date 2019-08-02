@@ -63,39 +63,67 @@ void setup() {
     // Put other setup stuff here
     Serial.begin(115200);
 
+    #if ESP_I2C_ON
+    // Init ESP_WIRE
     // join bus on address 0x12 (in slave mode)
     ESP_WIRE.begin(0x12);
     ESP_WIRE.onRequest(requestEvent);
     ESP_WIRE.onReceive(receiveEvent);
+    #endif
 
+    #if MPU_I2C_ON
     // Init IMU_WIRE
     I2Cinit();
 
     // Init IMU stuff
     imu.init();
     imu.calibrate();
+    #endif
 
+    #if LS_ON
     // Init light sensors
     ls.init();
     ls.calibrate();
+    #endif
 
     pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
+    #if MPU_I2C_ON
     // Read imu
     imu.update();
+    #endif
 
+    #if LS_ON
     // Update line data
-    ls.read();
-    ls.calculateClusters();
-    ls.calculateLine();
+    // ls.read();
+    // ls.calculateClusters();
+    // ls.calculateLine();
 
-    ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), imu.heading);
-    ls.lineCalc();
+    // ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), imu.heading);
+    // ls.lineCalc();
+
+    digitalWrite(MUX_EN, LOW);
+    digitalWrite(MUX_WR, LOW);
+    digitalWrite(MUX_A0, HIGH);
+    digitalWrite(MUX_A1, LOW);
+    digitalWrite(MUX_A2, HIGH);
+    digitalWrite(MUX_A3, HIGH);
+    digitalWrite(MUX_A4, HIGH);
+
+    Serial.print(analogRead(MUX_OUT));
+    #endif
+
+    if(idleLedTimer.timeHasPassed()){
+        digitalWrite(LED_BUILTIN, ledOn);
+        ledOn = !ledOn;
+    }
 
     // Measure battery voltage
     batteryVoltage = get_battery_voltage();
+
+    Serial.println();
 }
 
 void requestEvent() {
