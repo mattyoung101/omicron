@@ -25,8 +25,8 @@ LightSensorArray ls;
 
 Timer idleLedTimer(400000); // LED timer when idling
 Timer movingLedTimer(200000); // LED timer when moving
-Timer yeetLedTimer(100000); // LED timer when surging or dribbling
-Timer lineLedTimer(50000); // LED timer when line avoiding
+Timer lineLedTimer(100000); // LED timer when line avoiding
+Timer batteryLedTimer(50000); // LED timer when low battery
 bool ledOn;
 
 // Variables which i couldn't be bothered to find a good place for
@@ -95,13 +95,33 @@ void loop() {
     Serial.printf("  %f", ls.lineAngle);
     #endif
 
-    if(idleLedTimer.timeHasPassed()){
-        digitalWrite(LED_BUILTIN, ledOn);
-        ledOn = !ledOn;
-    }
-
     // Measure battery voltage
     batteryVoltage = get_battery_voltage();
+
+    #if LED_ON
+    // Blinky LED stuff :D
+    if(batteryVoltage < V_BAT_MIN){
+        if(batteryLedTimer.timeHasPassed()){
+            digitalWrite(LED_BUILTIN, ledOn);
+            ledOn = !ledOn;
+        }
+    } else if(ls.isOnLine || ls.lineOver){
+        if(lineLedTimer.timeHasPassed()){
+            digitalWrite(LED_BUILTIN, ledOn);
+            ledOn = !ledOn;
+        }
+    } else if(speed >= IDLE_MIN_SPEED){
+        if(movingLedTimer.timeHasPassed()){
+            digitalWrite(LED_BUILTIN, ledOn);
+            ledOn = !ledOn;
+        }
+    } else {
+        if(idleLedTimer.timeHasPassed()){
+            digitalWrite(LED_BUILTIN, ledOn);
+            ledOn = !ledOn;
+        }
+    }
+    #endif
 
     Serial.println();
 }

@@ -6,6 +6,7 @@
 #define MPU_I2C_ON true
 #define LS_ON true
 #define LRFS_ON false
+#define LED_ON true
 
 // --- Light Sensors --- //
 
@@ -54,6 +55,10 @@
 #define R1 1000000
 #define R2 300000
 #define V_BAT_MIN 11.1
+
+// --- Other --- //
+
+#define IDLE_MIN_SPEED 10
 
 // --- Math --- //
 
