@@ -18,7 +18,7 @@ void LightSensorArray::init() {
 void LightSensorArray::changeMUXChannel(uint8_t channel) {
     // Change the multiplexer channel
 
-   digitalWrite(MUX_WR, LOW);
+//    digitalWrite(MUX_WR, LOW);
 
     digitalWrite(MUX_A0, channel & 0x1);
     digitalWrite(MUX_A1, (channel >> 1) & 0x1);
@@ -26,7 +26,9 @@ void LightSensorArray::changeMUXChannel(uint8_t channel) {
     digitalWrite(MUX_A3, (channel >> 3) & 0x1);
     digitalWrite(MUX_A4, (channel >> 4) & 0x1);
 
-   digitalWrite(MUX_WR, HIGH);
+    // Serial.print(channel);
+
+//    digitalWrite(MUX_WR, HIGH);
 }
 
 void LightSensorArray::calibrate() {
@@ -44,7 +46,7 @@ void LightSensorArray::calibrate() {
 }
 
 int LightSensorArray::readSensor(int sensor) {  
-    changeMUXChannel(sensor % LS_NUM);
+    changeMUXChannel(sensor);
         
     return analogRead(MUX_OUT);
 }
@@ -52,15 +54,13 @@ int LightSensorArray::readSensor(int sensor) {
 void LightSensorArray::read() {
     // Read all 48 sensors
     for (int i = 0; i < LS_NUM; i++) {
+        if(i >= LS_NUM) continue;
         data[i] = readSensor(i) > thresholds[i];
         #if DEBUG_DATA
             Serial.print(data[i]);
-//            Serial.print(" ");
         #elif DEBUG_RAW
-            if(i >= 24){
-              Serial.print(readSensor(i));
-              Serial.print(", ");
-            }
+            Serial.print(readSensor(i));
+            Serial.print(" ");
         #endif
     }
 }

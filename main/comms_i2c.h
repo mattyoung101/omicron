@@ -33,8 +33,6 @@ typedef struct {
 extern SensorUpdate lastSensorUpdate;
 /** data received from Nano **/
 extern nano_data_t nanoData;
-/** Protobuf semaphore **/
-extern SemaphoreHandle_t pbSem;
 
 /** Initialises I2C. **/
 void comms_i2c_init(i2c_port_t port);

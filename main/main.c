@@ -13,7 +13,6 @@
 #include "nvs_flash.h"
 #include <math.h>
 #include "motor.h"
-#include "tsop.h"
 #include <str.h>
 #include "fsm.h"
 #include "cam.h"
@@ -104,7 +103,6 @@ static void master_task(void *pvParameter){
         // update values for FSM, mutexes are used to prevent race conditions
         // TODO we need much less of these semaphores because it runs on the main thread
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
-            xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // reset out values
                 robotState.outShouldBrake = false;
@@ -149,7 +147,6 @@ static void master_task(void *pvParameter){
 
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
-                xSemaphoreGive(pbSem);
                 xSemaphoreGive(goalDataSem);
         } else {
             ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
