@@ -46,7 +46,7 @@ void LightSensorArray::calibrate() {
 }
 
 int LightSensorArray::readSensor(int sensor) {  
-    changeMUXChannel(sensor);
+    changeMUXChannel(muxLUT[sensor]-1);
         
     return analogRead(MUX_OUT);
 }
@@ -54,7 +54,6 @@ int LightSensorArray::readSensor(int sensor) {
 void LightSensorArray::read() {
     // Read all 48 sensors
     for (int i = 0; i < LS_NUM; i++) {
-        if(i >= LS_NUM) continue;
         data[i] = readSensor(i) > thresholds[i];
         #if DEBUG_DATA
             Serial.print(data[i]);
