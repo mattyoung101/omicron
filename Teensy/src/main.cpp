@@ -106,8 +106,12 @@ void loop() {
     Serial.println();
 }
 
+#if ESP_I2C_ON
 void requestEvent() {
-    // don't think we need this event??
+    // Send heading to ESP
+    ESP_WIRE.write(0xB); // The :b:est start byte in existence
+    ESP_WIRE.write(highByte((uint16_t) (imu.heading * 100))); // Send most sigificant byte
+    ESP_WIRE.write(lowByte((uint16_t) (imu.heading * 100))); // Send least significant byte
 }
 
 void receiveEvent(size_t count) {
@@ -117,7 +121,7 @@ void receiveEvent(size_t count) {
 
     // read in bytes from I2C until we receive the termination character
     while (true) {
-        uint8_t byte = Wire.read();
+        uint8_t byte = ESP_WIRE.read();
         buf[i++] = byte;
 
         if (byte == 0xEE){
@@ -160,3 +164,4 @@ void receiveEvent(size_t count) {
         delay(15);
     }
 }
+#endif

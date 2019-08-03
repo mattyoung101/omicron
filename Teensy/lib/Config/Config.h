@@ -3,7 +3,7 @@
 #define CONFIG_H
 
 #define ESP_I2C_ON true
-#define MPU_I2C_ON false
+#define MPU_I2C_ON true
 #define LS_ON true
 #define LRFS_ON false
 
