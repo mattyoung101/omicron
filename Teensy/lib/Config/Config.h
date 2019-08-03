@@ -9,16 +9,16 @@
 
 // --- Light Sensors --- //
 
-#define LS_NUM 32
+#define LS_NUM 36
 #define DEBUG_DATA true
 #define DEBUG_RAW false
 
 #define LS_CALIBRATION_COUNT 10
-#define LS_CALIBRATION_BUFFER 50
+#define LS_CALIBRATION_BUFFER 200
 #define LS_ES_DEFAULT 69
 #define NO_LINE_ANGLE 400
 #define NO_LINE_SIZE 400
-#define LS_NUM_MULTIPLIER 11.25
+#define LS_NUM_MULTIPLIER 10
 #define LS_LINEOVER_BUFFER 80
 
 #define OVER_LINE_SPEED 100
