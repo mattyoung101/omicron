@@ -11,7 +11,7 @@
 # color tracking settings right. By manually recording
 # the gain values you like and then forcing them to
 # the sensor on startup you can control the colors
-# the camera sees.M
+# the camera sees.
 
 import sensor, image, time
 

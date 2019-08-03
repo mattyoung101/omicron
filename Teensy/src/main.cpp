@@ -36,29 +36,6 @@ char dataIn[1];
 void requestEvent(void);
 void receiveEvent(size_t count);
 
-void calcLineAvoid(){
-    if(ls.isOnLine || ls.lineOver){
-        if(ls.lineSize > LINE_BIG_SIZE || ls.lineSize == -1){
-            if(ls.lineOver){
-                direction = ls.isOnLine ? doubleMod(ls.lineAngle-heading, 360) : doubleMod(ls.firstAngle-heading+180, 360);
-            }else{
-                direction = doubleMod(ls.lineAngle-heading+180, 360);
-            }
-            speed = OVER_LINE_SPEED;
-        }else if(ls.lineSize >= LINE_SMALL_SIZE && !ballVisible){
-            if(abs(ls.firstAngle+ballAngle) < 90 && abs(ls.firstAngle+ballAngle) > 270){
-                direction = doubleMod(ls.firstAngle-heading+180, 360);
-                speed = 0;
-                // Serial.println("stopping");
-            }else{
-                speed = LINE_TRACK_SPEED;
-            }
-        }else{
-            if(ls.isOnLine) speed *= LINE_SPEED_MULTIPLIER;
-        }
-    }
-}
-
 void setup() {
     // Put other setup stuff here
     Serial.begin(115200);
