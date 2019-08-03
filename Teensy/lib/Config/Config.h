@@ -8,6 +8,11 @@
 #define LRFS_ON false
 #define LED_ON true
 
+// --- Acceleration Settings --- //
+
+#define ACCEL_TIME_STEP 1000
+#define ACCEL_PROGRESS 1
+
 // --- Light Sensors --- //
 
 #define LS_NUM 36

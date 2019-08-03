@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "Utils.h"
 #include "Config.h"
+#include "Move.h"
 #include "LightSensorArray.h"
 #include "IMU.h"
 #include "Timer.h"
@@ -20,14 +21,20 @@ static I2CMasterProvide lastMasterProvide = I2CMasterProvide_init_zero;
 
 IMU imu;
 LightSensorArray ls;
+Move move;
 
 // LED Stuff
-
 Timer idleLedTimer(400000); // LED timer when idling
 Timer movingLedTimer(200000); // LED timer when moving
 Timer lineLedTimer(100000); // LED timer when line avoiding
 Timer batteryLedTimer(50000); // LED timer when low battery
 bool ledOn;
+
+// Acceleration
+Timer accelTimer(ACCEL_TIME_STEP);
+
+float targetDirection;
+float targetSpeed;
 
 // Variables which i couldn't be bothered to find a good place for
 float batteryVoltage;
@@ -40,12 +47,57 @@ float direction;
 float speed;
 float orientation;
 
-// I2C Stuff
-uint8_t dataOut[1]; // TODO
-char dataIn[1];
-
 void requestEvent(void);
 void receiveEvent(size_t count);
+
+// Line avoidance calculation
+void calcLineAvoid(){
+    if(ls.isOnLine || ls.lineOver){
+        if(ls.lineSize > LINE_BIG_SIZE || ls.lineSize == -1){
+            if(ls.lineOver){
+                targetDirection = ls.isOnLine ? doubleMod(ls.lineAngle-heading, 360) : doubleMod(ls.firstAngle-heading+180, 360);
+            }else{
+                targetDirection = doubleMod(ls.lineAngle-heading+180, 360);
+            }
+            speed = OVER_LINE_SPEED;
+        }else if(ls.lineSize >= LINE_SMALL_SIZE && !ballVisible){
+            if(abs(ls.firstAngle+ballAngle) < 90 && abs(ls.firstAngle+ballAngle) > 270){
+                targetDirection = doubleMod(ls.firstAngle-heading+180, 360);
+                speed = 0;
+                // Serial.println("stopping");
+            }else{
+                speed = LINE_TRACK_SPEED;
+            }
+        }else{
+            if(ls.isOnLine) speed *= LINE_SPEED_MULTIPLIER;
+        }
+    }
+}
+
+// Acceleration calculation
+void calcAccel(){
+    if(accelTimer.timeHasPassed()){ // Time step has occured, updating motor values
+        // Turn target velocity vector into cartesian
+        double r = targetSpeed;
+        double theta = -1.0 * (targetDirection - 90);
+        double targetX = r * cos(theta);
+        double targetY = r * sin(theta);
+
+        // Turn current velocity vector into cartesian
+        r = speed;
+        theta = -1.0 * (direction - 90);
+        double currentX = r * cos(theta);
+        double currentY = r * sin(theta);
+
+        // Do accleration thingo
+        double newX = currentX + sign(targetX - currentX) * ACCEL_PROGRESS;
+        double newY = currentY + sign(targetY - currentY) * ACCEL_PROGRESS;
+
+        // Convert new velocity vector to polar
+        speed = sqrt(sq(newX) + sq(newY));
+        direction = doubleMod(450 - (atan2(newY, newX) * RAD_DEG), 360);
+    }
+}
 
 void setup() {
     // Put other setup stuff here
@@ -59,6 +111,7 @@ void setup() {
     ESP_WIRE.onReceive(receiveEvent);
     #endif
 
+
     #if MPU_I2C_ON
     // Init IMU_WIRE
     I2Cinit();
@@ -68,11 +121,14 @@ void setup() {
     imu.calibrate();
     #endif
 
+
     #if LS_ON
     // Init light sensors
     ls.init();
     ls.calibrate();
     #endif
+
+    move.set();
 
     pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -82,6 +138,7 @@ void loop() {
     // Read imu
     imu.update();
     #endif
+
 
     #if LS_ON
     // Update line data
@@ -95,8 +152,27 @@ void loop() {
     Serial.printf("  %f", ls.lineAngle);
     #endif
 
+
     // Measure battery voltage
     batteryVoltage = get_battery_voltage();
+
+
+    // Update variables
+    targetDirection = lastMasterProvide.direction;
+    targetSpeed = lastMasterProvide.speed;
+    orientation = lastMasterProvide.orientation;
+    heading = imu.heading;
+
+
+    // Do line avoidance calcs
+    calcLineAvoid();
+
+
+    // Update motors
+    calcAccel();
+    move.motorCalc(direction, orientation, speed);
+    move.go();
+
 
     #if LED_ON
     // Blinky LED stuff :D
@@ -122,6 +198,7 @@ void loop() {
         }
     }
     #endif
+
 
     Serial.println();
 }
