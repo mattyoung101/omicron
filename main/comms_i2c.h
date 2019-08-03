@@ -45,3 +45,5 @@ esp_err_t comms_i2c_send_receive(msg_type_t msgId, uint8_t *pbData, size_t msgSi
 esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize);
 /** Sends a message without any Protobuf content */
 esp_err_t comms_i2c_notify(msg_type_t msgId);
+/** Hack to work around sending data for States comp, sends Protobuf stuff then receives a 16 bit int for heading */
+esp_err_t comms_i2c_workaround(msg_type_t msgId, uint8_t *pbData, size_t msgSize);

@@ -150,7 +150,7 @@ esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
 
     ESP_ERROR_CHECK(i2c_master_write(cmd, header, 3, I2C_ACK_MODE)); // write header
     ESP_ERROR_CHECK(i2c_master_write(cmd, pbData, msgSize, I2C_ACK_MODE)); // write buffer
-    ESP_ERROR_CHECK(i2c_master_write(cmd, &finish, 1, I2C_ACK_MODE)); // write end byte
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0xEE, I2C_ACK_MODE)); // write end byte
 
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
     esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
@@ -163,6 +163,36 @@ esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
     }
 
     i2c_cmd_link_delete(cmd);
+    return ESP_OK;
+}
+
+esp_err_t comms_i2c_workaround(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
+    uint8_t header[] = {0xB, msgId, msgSize};
+    uint8_t finish = 0xEE;
+    uint8_t recvSize = 2; // 16 bit int
+    uint8_t rxBuffer[recvSize]; // bruh?
+    
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (I2C_SLAVE_DEV_ADDR << 1), I2C_ACK_MODE);
+
+    i2c_master_write(cmd, header, 3, I2C_ACK_MODE); // write header
+    i2c_master_write(cmd, pbData, msgSize, I2C_ACK_MODE); // write bytes
+    i2c_master_write_byte(cmd, 0xEE, I2C_ACK_MODE); // write end byte
+
+    // Send repeated start
+    i2c_master_start(cmd);
+    // now send device address (indicating read) & read data
+    i2c_master_write_byte(cmd, (I2C_SLAVE_DEV_ADDR << 1) | I2C_MASTER_READ, I2C_ACK_MODE);
+    if (recvSize > 1) {
+        i2c_master_read(cmd, rxBuffer, recvSize - 1, 0x0);
+    }
+    i2c_master_read_byte(cmd, rxBuffer + recvSize - 1, 0x1);
+    i2c_master_stop(cmd);
+    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, portMAX_DELAY);
+    i2c_cmd_link_delete(cmd);
+
+    I2C_ERR_CHECK(ret);
     return ESP_OK;
 }
 
