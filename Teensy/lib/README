@@ -1,3 +1,12 @@
+=====================================================
+IMPORTANT NOTICE ABOUT NANOPB FOLDER
+=====================================================
+The directory "nanopb" is supposed to be a directory junction (symbolic link) on Windows to /components/nanopb.
+This way we share the exact same code between Teensy and ESP.
+If the symlink doesn't show up for you, please DO NOT edit anything in the /Teensy/lib/nanopb folder, 
+instead edit /components/nanopb. This includes recompiling the .proto files.
+Thanks.
+=====================================================
 
 This directory is intended for project specific (private) libraries.
 PlatformIO will compile them to static libraries and link into executable file.

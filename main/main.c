@@ -49,7 +49,7 @@ static void print_reset_reason(){
     } else if (resetReason == ESP_RST_INT_WDT || resetReason == ESP_RST_TASK_WDT || resetReason == ESP_RST_WDT){
         ESP_LOGW(RST_TAG, "Reset due to watchdog timer!");
     } else {
-        ESP_LOGD(RST_TAG, "Other reset reason: %d", resetReason);
+        // ESP_LOGD(RST_TAG, "Other reset reason: %d", resetReason);
     }
 }
 
@@ -57,7 +57,9 @@ static void print_reset_reason(){
 // like moving, finite state machines, Bluetooth, etc
 static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
-    uint8_t robotId = 69;
+    uint8_t robotId = 69;    
+    uint8_t buf[PROTOBUF_SIZE] = {0}; // for protobuf
+    pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
 
     print_reset_reason();
 
@@ -83,12 +85,13 @@ static void master_task(void *pvParameter){
 
     // Initialise FSM, start out in defence until we get a BT connection
     #if DEFENCE
-    stateMachine = fsm_new(&stateDefenceDefend);
+        stateMachine = fsm_new(&stateDefenceDefend);
     #else
-    stateMachine = fsm_new(&stateAttackPursue);
+        stateMachine = fsm_new(&stateAttackPursue);
     #endif
 
     // Wait for the slave to calibrate IMU and send over the first packets
+    // TODO remove this and actually calibrate the BNO here
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
     vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
     ESP_LOGI(TAG, "Running!");
@@ -98,10 +101,8 @@ static void master_task(void *pvParameter){
     while (true){
         // update sensors
         cam_calc();
-        comms_i2c_send_receive(MSG_PULL_I2C_SLAVE, NULL, 0); // TODO actually encode what we're sending properly
 
         // update values for FSM, mutexes are used to prevent race conditions
-        // TODO we need much less of these semaphores because it runs on the main thread
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // reset out values
@@ -158,21 +159,16 @@ static void master_task(void *pvParameter){
         // robotState.outSpeed = 0;
         // imu_correction(&robotState);
 
-        // line over runs after the FSM to override it
-        update_line(&robotState);
-
-        // print_ball_data(&robotState);
-        // print_goal_data(&robotState);
-        // vTaskDelay(pdMS_TO_TICKS(250));
-        // print_motion_data(&robotState);
-        // print_position_data(&robotState);
-        // printf("%f\n", robotState.inLineAngle);
-
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         
-        // transmit motion data back to the slave
-        // TODO actually do it with Protobuf
-        comms_i2c_send(MSG_PUSH_I2C_MASTER, NULL, 0);
+        // encode and send Protobuf message to Teenys slave
+        I2CMasterProvide msg = I2CMasterProvide_init_default;
+        // TODO set message here, also, will it actually reset the buffer?
+
+        if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
+            ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
+        }
+        comms_i2c_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
