@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+// Provide the other robot with some data
+message BTProvide {
+    string fsmState = 1;
+    float robotX = 2;
+    float robotY = 3;
+    bool onLine = 4;
+    bool switchOk = 5;
+    float goalLength = 6;
+    float ballStrength = 7;
+    float ballAngle = 8;
+}
+
+// we won't have BTRequest because both robots can just spam each other with data

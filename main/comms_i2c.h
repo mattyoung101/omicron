@@ -36,11 +36,6 @@ extern nano_data_t nanoData;
 
 /** Initialises I2C. **/
 void comms_i2c_init(i2c_port_t port);
-/** 
- * Sends data to the slave and waits for the response. 
- * The response will be stored in the appropriate variable in this struct.
- */
-esp_err_t comms_i2c_send_receive(msg_type_t msgId, uint8_t *pbData, size_t msgSize);
 /** Sends data to the slave without waiting for the response */
 esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize);
 /** Sends a message without any Protobuf content */

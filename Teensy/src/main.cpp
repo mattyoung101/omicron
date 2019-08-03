@@ -6,6 +6,17 @@
 #include "Timer.h"
 #include "I2C.h"
 #include <i2c_t3.h>
+#include "pb_decode.h"
+#include "pb_encode.h"
+#include "i2c.pb.h"
+
+typedef enum {
+    MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
+    MSG_PUSH_I2C_MASTER, // as the I2C master, I'm providing data to the I2C slave
+    MSG_PULL_I2C_SLAVE, // requesting data from the I2C slave
+} msg_type_t;
+
+static I2CMasterProvide lastMasterProvide = I2CMasterProvide_init_zero;
 
 IMU imu;
 LightSensorArray ls;
@@ -96,11 +107,56 @@ void loop() {
 }
 
 void requestEvent() {
-    // TODO - Not the actual code lol
-    // ESP_WIRE.write(dataOut,DATA_SIZE);
+    // don't think we need this event??
 }
 
 void receiveEvent(size_t count) {
-    // TODO - Not the actual code lol
-    // ESP_WIRE.read(dataIn,count);  // copy Rx data to databuf
+    uint8_t buf[64] = {0}; // 64 byte buffer, same as defined on the ESP
+    uint8_t msg[64] = {0}; // message working space
+    uint8_t i = 0;
+
+    // read in bytes from I2C until we receive the termination character
+    while (true) {
+        uint8_t byte = Wire.read();
+        buf[i++] = byte;
+
+        if (byte == 0xEE){
+            break;
+        }
+    }
+
+    Serial.printf("Received %d bytes\n", i);
+
+    // now we can parse the header and decode the protobuf byte stream
+    if (buf[0] == 0xB){
+        msg_type_t msgId = (msg_type_t) buf[1];
+        uint8_t msgSize = buf[2];
+
+        // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
+        memcpy(msg, buf + 3, msgSize);
+
+        pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
+        void *dest = NULL;
+        void *msgFields = NULL;
+
+        // assign destination struct based on message ID
+        switch (msgId){
+            case MSG_PUSH_I2C_MASTER:
+                dest = (void*) &lastMasterProvide;
+                msgFields = (void*) &I2CMasterProvide_fields;
+                break;
+            default:
+                Serial.printf("[I2C error] Unknown message ID: %d\n", msgId);
+                return;
+        }
+
+        // decode the byte stream
+        if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
+            Serial.printf("[I2C error] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
+        }
+        // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
+    } else {
+        Serial.printf("[I2C error] Invalid begin character: %d\n", buf[0]);
+        delay(15);
+    }
 }
