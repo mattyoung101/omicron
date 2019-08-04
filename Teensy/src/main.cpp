@@ -148,8 +148,6 @@ void loop() {
 
     ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), imu.heading);
     ls.lineCalc();
-
-    Serial.printf("  %f", ls.lineAngle);
     #endif
 
 
@@ -199,7 +197,9 @@ void loop() {
     }
     #endif
 
-
+    
+    // Print stuffs
+    Serial.print(heading);
     Serial.println();
 }
 

@@ -2,7 +2,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define ESP_I2C_ON true
+#define ESP_I2C_ON false
 #define MPU_I2C_ON true
 #define LS_ON true
 #define LRFS_ON false
@@ -16,7 +16,7 @@
 // --- Light Sensors --- //
 
 #define LS_NUM 36
-#define DEBUG_DATA true
+#define DEBUG_DATA false
 #define DEBUG_RAW false
 
 #define LS_CALIBRATION_COUNT 10
