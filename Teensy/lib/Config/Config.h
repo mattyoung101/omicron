@@ -13,6 +13,7 @@
 // --- Game Settings --- //
 #define DEFENCE false
 #define ENEMY_GOAL 0 //0: Yellow, 1: Blue, 2: OFF
+#define STARTUP_DELAY 200
 
 // --- Acceleration Settings --- //
 #define ACCEL_TIME_STEP 1000
@@ -87,8 +88,8 @@
 
 // --- IMU --- //
 
-#define IMU_CALIBRATION_COUNT 15
-#define IMU_CALIBRATION_TIME 150
+#define IMU_CALIBRATION_COUNT 100
+#define IMU_CALIBRATION_TIME 10
 #define IMU_THRESHOLD 1000
 
 #define MPU9250_ADDRESS 0x68

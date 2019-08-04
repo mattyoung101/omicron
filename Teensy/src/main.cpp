@@ -89,6 +89,8 @@ void calcAccel(){
 
 void setup() {
     // Put other setup stuff here
+    delay(200); // Delay so that turning robot on doesn't yeet imu calibrations
+
     Serial.begin(115200);
 
     #if ESP_I2C_ON
@@ -211,7 +213,8 @@ void loop() {
 
     
     // Print stuffs
-    Serial.printf("BallData - angle: %d, strength: %d, exists: %d", playmode.getBallAngle(), playmode.getBallDistance(), playmode.getBallExist());
+    // Serial.printf("BallData - angle: %d, strength: %d, exists: %d", playmode.getBallAngle(), playmode.getBallDistance(), playmode.getBallExist());
+    Serial.print(imu.heading);
     Serial.println();
 }
 
