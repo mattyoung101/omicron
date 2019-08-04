@@ -159,7 +159,11 @@ void loop() {
 
     // Update variables
     playmode.updateBall(cam.orange.angle, cam.orange.length, cam.orange.exists);
-    playmode.updateLine(ls.lineAngle, ls.lineSize, imu.heading);
+
+    #if LS_ON 
+    playmode.updateLine(ls.lineAngle, ls.lineSize, imu.heading); 
+    #endif
+    
     if(DEFENCE){
         ENEMY_GOAL ? playmode.updateGoal(cam.yellow.angle, cam.yellow.length, cam.yellow.exists) : playmode.updateGoal(cam.blue.angle, cam.blue.length, cam.blue.exists);
     } else {
