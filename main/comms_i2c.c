@@ -21,10 +21,10 @@ static const char *TAG = "CommsI2C";
 void comms_i2c_init(i2c_port_t port){
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
-        .sda_io_num = 21,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_io_num = 22,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .sda_io_num = port == I2C_NUM_0 ? 21 : 25,
+        .sda_pullup_en = GPIO_PULLUP_DISABLE,
+        .scl_io_num = port == I2C_NUM_1 ? 22 : 26,
+        .scl_pullup_en = GPIO_PULLUP_DISABLE,
         // 0.8 MHz, max is 1 MHz, unit is Hz
         // NOTE: 1MHz tends to break the i2c packets - use with caution!!
         .master.clk_speed = 800000,
@@ -33,14 +33,13 @@ void comms_i2c_init(i2c_port_t port){
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
     // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
     // TODO do we still need this hack given that we don't have a Nano?
-    ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFF));
+    ESP_ERROR_CHECK(i2c_set_timeout(port, 0xFFFF));
     
     ESP_LOGI("CommsI2C_M", "I2C init OK on bus %d", port);
 }
 
 esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
     uint8_t header[] = {0xB, msgId, msgSize};
-    uint8_t finish = 0xEE;
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));
@@ -51,12 +50,12 @@ esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0xEE, I2C_ACK_MODE)); // write end byte
 
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
-    esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    esp_err_t err = i2c_master_cmd_begin(I2C_NUM_1, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     if (err != ESP_OK){
-        ESP_LOGE(TAG, "Error in comms_i2c_send, message id = %d, size =  %d: %s", msgId, msgSize,
+        ESP_LOGE(TAG, "Error in comms_i2c_send, message id = %d, size = %d: %s", msgId, msgSize,
                     esp_err_to_name(err));
-        i2c_reset_tx_fifo(I2C_NUM_0);
-        i2c_reset_rx_fifo(I2C_NUM_0);
+        i2c_reset_tx_fifo(I2C_NUM_1);
+        i2c_reset_rx_fifo(I2C_NUM_1);
         return err;
     }
 
@@ -66,7 +65,6 @@ esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
 
 esp_err_t comms_i2c_workaround(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
     uint8_t header[] = {0xB, msgId, msgSize};
-    uint8_t finish = 0xEE;
     uint8_t recvSize = 2; // 16 bit int
     uint8_t rxBuffer[recvSize]; // bruh?
     

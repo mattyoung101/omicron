@@ -63,8 +63,8 @@ static void master_task(void *pvParameter){
 
     // Initialise comms and hardware
     comms_i2c_init(I2C_NUM_0);
-    i2c_scanner();
-    cam_init();
+    comms_i2c_init(I2C_NUM_1);
+    // cam_init();
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
 
@@ -92,73 +92,73 @@ static void master_task(void *pvParameter){
     // Wait for the slave to calibrate IMU and send over the first packets
     // TODO remove this and actually calibrate the BNO here
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
-    vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
+    // vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
     ESP_LOGI(TAG, "Running!");
 
     esp_task_wdt_add(NULL);
 
+    i2c_scanner(I2C_NUM_0);
+    i2c_scanner(I2C_NUM_1);
+
     while (true){
         // update sensors
-        cam_calc();
+        // cam_calc();
 
-        // update values for FSM, mutexes are used to prevent race conditions
-        if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
-            xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-                // reset out values
-                robotState.outShouldBrake = false;
-                robotState.outOrientation = 0;
-                robotState.outDirection = 0;
-                robotState.outSwitchOk = false;
+        // // update values for FSM, mutexes are used to prevent race conditions
+        // if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
+        //     xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        //         // reset out values
+        //         robotState.outShouldBrake = false;
+        //         robotState.outOrientation = 0;
+        //         robotState.outDirection = 0;
+        //         robotState.outSwitchOk = false;
 
-                // update FSM values
-                robotState.inBallAngle = orangeBall.angle;
-                robotState.inBallStrength = orangeBall.length;
-                // TODO make goal stuff floats as well
-                if (robotState.outIsAttack){
-                    robotState.inGoalVisible = AWAY_GOAL.exists;
-                    robotState.inGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
-                    robotState.inGoalLength = (int16_t) AWAY_GOAL.length;
-                    robotState.inGoalDistance = AWAY_GOAL.distance;
+        //         // update FSM values
+        //         robotState.inBallAngle = orangeBall.angle;
+        //         robotState.inBallStrength = orangeBall.length;
+        //         // TODO make goal stuff floats as well
+        //         if (robotState.outIsAttack){
+        //             robotState.inGoalVisible = AWAY_GOAL.exists;
+        //             robotState.inGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+        //             robotState.inGoalLength = (int16_t) AWAY_GOAL.length;
+        //             robotState.inGoalDistance = AWAY_GOAL.distance;
 
-                    robotState.inOtherGoalVisible = HOME_GOAL.exists;
-                    robotState.inOtherGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
-                    robotState.inOtherGoalLength = (int16_t) HOME_GOAL.length;
-                    robotState.inOtherGoalDistance = HOME_GOAL.distance;
-                } else {
-                    robotState.inOtherGoalVisible = AWAY_GOAL.exists;
-                    robotState.inOtherGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
-                    robotState.inOtherGoalLength = (int16_t) AWAY_GOAL.length;
-                    robotState.inOtherGoalDistance = AWAY_GOAL.distance;
+        //             robotState.inOtherGoalVisible = HOME_GOAL.exists;
+        //             robotState.inOtherGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+        //             robotState.inOtherGoalLength = (int16_t) HOME_GOAL.length;
+        //             robotState.inOtherGoalDistance = HOME_GOAL.distance;
+        //         } else {
+        //             robotState.inOtherGoalVisible = AWAY_GOAL.exists;
+        //             robotState.inOtherGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+        //             robotState.inOtherGoalLength = (int16_t) AWAY_GOAL.length;
+        //             robotState.inOtherGoalDistance = AWAY_GOAL.distance;
 
-                    robotState.inGoalVisible = HOME_GOAL.exists;
-                    robotState.inGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
-                    robotState.inGoalLength = (int16_t) HOME_GOAL.length;
-                    robotState.inGoalDistance = HOME_GOAL.distance;
-                }
-                robotState.inHeading = lastSensorUpdate.heading;
-                // robotState.inX = robotX;
-                // robotState.inY = robotY;
-                robotState.inBatteryVoltage = lastSensorUpdate.voltage;
-                robotState.inLineAngle = lastSensorUpdate.lineAngle;
-                robotState.inLineSize = lastSensorUpdate.lineSize;
-                robotState.inLastAngle = lastSensorUpdate.lastAngle;
-                robotState.inOnLine = lastSensorUpdate.onLine;
-                robotState.inLineOver = lastSensorUpdate.lineOver;
+        //             robotState.inGoalVisible = HOME_GOAL.exists;
+        //             robotState.inGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+        //             robotState.inGoalLength = (int16_t) HOME_GOAL.length;
+        //             robotState.inGoalDistance = HOME_GOAL.distance;
+        //         }
+        //         robotState.inHeading = lastSensorUpdate.heading;
+        //         // robotState.inX = robotX;
+        //         // robotState.inY = robotY;
+        //         robotState.inBatteryVoltage = lastSensorUpdate.voltage;
+        //         robotState.inLineAngle = lastSensorUpdate.lineAngle;
+        //         robotState.inLineSize = lastSensorUpdate.lineSize;
+        //         robotState.inLastAngle = lastSensorUpdate.lastAngle;
+        //         robotState.inOnLine = lastSensorUpdate.onLine;
+        //         robotState.inLineOver = lastSensorUpdate.lineOver;
 
-                // unlock semaphores
-                xSemaphoreGive(robotStateSem);
-                xSemaphoreGive(goalDataSem);
-        } else {
-            ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
-        }
+        //         // unlock semaphores
+        //         xSemaphoreGive(robotStateSem);
+        //         xSemaphoreGive(goalDataSem);
+        // } else {
+        //     ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
+        // }
 
         // update the actual FSM
-        fsm_update(stateMachine);
+        // fsm_update(stateMachine);
 
-        // robotState.outSpeed = 0;
-        // imu_correction(&robotState);
-
-        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
+        // motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         
         // encode and send Protobuf message to Teenys slave
         I2CMasterProvide msg = I2CMasterProvide_init_default;
