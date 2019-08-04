@@ -32,7 +32,7 @@ int esp_i2c_write(unsigned char slave_addr, unsigned char reg_addr, unsigned cha
     ESP_ERROR_CHECK(i2c_master_write(cmd, data, length, true));
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
 
-    esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    esp_err_t err = i2c_master_cmd_begin(I2C_NUM_1, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     i2c_cmd_link_delete(cmd);
 
     I2C_ERR_CHECK(err);

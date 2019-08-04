@@ -16,6 +16,10 @@
 #define MUX_WR 44
 #define MUX_OUT 49
 
+// --- Camera --- //
+
+#define CAM_SERIAL Serial2
+
 // --- Motors --- //
 
 // Motor 1

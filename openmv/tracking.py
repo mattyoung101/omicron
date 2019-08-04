@@ -43,7 +43,7 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-sensor.set_windowing((80, 0, 220, 220)) # Robot A
+#sensor.set_windowing((80, 0, 220, 220)) # Robot A
 #sensor.set_windowing((45, 0, 220, 220)) # Robot B
 
 # === GAIN ===
@@ -155,7 +155,7 @@ while True:
     else:
         out += [True, int(biggestOrange.cx()), int(biggestOrange.cy())]
 
-    out += [0xE]
+    #out += [0xE]
 
     #pyb.LED(2).on()
     for byte in out:

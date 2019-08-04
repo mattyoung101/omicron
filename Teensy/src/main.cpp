@@ -10,7 +10,11 @@
 #include "pb_decode.h"
 #include "pb_encode.h"
 #include "i2c.pb.h"
+#include "Cam.h"
+#include "Playmode.h"
+#include "PID.h"
 
+#if ESP_I2C_ON
 typedef enum {
     MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
     MSG_PUSH_I2C_MASTER, // as the I2C master, I'm providing data to the I2C slave
@@ -18,14 +22,22 @@ typedef enum {
 } msg_type_t;
 
 static I2CMasterProvide lastMasterProvide = I2CMasterProvide_init_zero;
+#endif
 
 IMU imu;
 LightSensorArray ls;
 Move move;
+Camera cam;
+Playmode playmode;
+
+// PIDs
+PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
+PID goalPID(GOAL_KP, GOAL_KI, GOAL_KD, HEADING_MAX_CORRECTION);
+PID goaliePID(GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX);
 
 // LED Stuff
-Timer idleLedTimer(400000); // LED timer when idling
-Timer movingLedTimer(200000); // LED timer when moving
+Timer attackLedTimer(400000); // LED timer when idling
+Timer defendLedTimer(200000); // LED timer when moving
 Timer lineLedTimer(100000); // LED timer when line avoiding
 Timer batteryLedTimer(50000); // LED timer when low battery
 bool ledOn;
@@ -49,30 +61,6 @@ float orientation;
 
 void requestEvent(void);
 void receiveEvent(size_t count);
-
-// Line avoidance calculation
-void calcLineAvoid(){
-    if(ls.isOnLine || ls.lineOver){
-        if(ls.lineSize > LINE_BIG_SIZE || ls.lineSize == -1){
-            if(ls.lineOver){
-                targetDirection = ls.isOnLine ? doubleMod(ls.lineAngle-heading, 360) : doubleMod(ls.firstAngle-heading+180, 360);
-            }else{
-                targetDirection = doubleMod(ls.lineAngle-heading+180, 360);
-            }
-            speed = OVER_LINE_SPEED;
-        }else if(ls.lineSize >= LINE_SMALL_SIZE && !ballVisible){
-            if(abs(ls.firstAngle+ballAngle) < 90 && abs(ls.firstAngle+ballAngle) > 270){
-                targetDirection = doubleMod(ls.firstAngle-heading+180, 360);
-                speed = 0;
-                // Serial.println("stopping");
-            }else{
-                speed = LINE_TRACK_SPEED;
-            }
-        }else{
-            if(ls.isOnLine) speed *= LINE_SPEED_MULTIPLIER;
-        }
-    }
-}
 
 // Acceleration calculation
 void calcAccel(){
@@ -121,6 +109,11 @@ void setup() {
     imu.calibrate();
     #endif
 
+    
+    #if CAM_ON
+    cam.setup();
+    #endif
+
 
     #if LS_ON
     // Init light sensors
@@ -131,6 +124,7 @@ void setup() {
     move.set();
 
     pinMode(LED_BUILTIN, OUTPUT);
+    // digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
@@ -151,23 +145,39 @@ void loop() {
     #endif
 
 
+    #if CAM_ON
+    cam.read();
+    cam.calc();
+    #endif
+
+
     // Measure battery voltage
     batteryVoltage = get_battery_voltage();
 
 
     // Update variables
-    targetDirection = lastMasterProvide.direction;
-    targetSpeed = lastMasterProvide.speed;
-    orientation = lastMasterProvide.orientation;
-    heading = imu.heading;
+    playmode.updateBall(cam.orange.angle, cam.orange.length, cam.orange.exists);
+    playmode.updateLine(ls.lineAngle, ls.lineSize, imu.heading);
+    if(DEFENCE){
+        ENEMY_GOAL ? playmode.updateGoal(cam.yellow.angle, cam.yellow.length, cam.yellow.exists) : playmode.updateGoal(cam.blue.angle, cam.blue.length, cam.blue.exists);
+    } else {
+        ENEMY_GOAL ? playmode.updateGoal(cam.blue.angle, cam.blue.length, cam.blue.exists) : playmode.updateGoal(cam.yellow.angle, cam.yellow.length, cam.yellow.exists);
+    }
 
-
-    // Do line avoidance calcs
-    calcLineAvoid();
+    if(playmode.getGoalVisibility() && playmode.getBallExist() && (playmode.getBallAngle() < 90 || playmode.getBallAngle() > 270) && !playmode.lineAvoiding()){
+        if(DEFENCE){
+            orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+            orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
+        }
+        else orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+    }
+    else{
+        orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
+    }
 
 
     // Update motors
-    calcAccel();
+    // calcAccel();
     move.motorCalc(direction, orientation, speed);
     move.go(false);
 
@@ -184,27 +194,30 @@ void loop() {
             digitalWrite(LED_BUILTIN, ledOn);
             ledOn = !ledOn;
         }
-    } else if(speed >= IDLE_MIN_SPEED){
-        if(movingLedTimer.timeHasPassed()){
-            digitalWrite(LED_BUILTIN, ledOn);
-            ledOn = !ledOn;
-        }
     } else {
-        if(idleLedTimer.timeHasPassed()){
+        #if !DEFENCE
+        if(attackLedTimer.timeHasPassed()){
             digitalWrite(LED_BUILTIN, ledOn);
             ledOn = !ledOn;
         }
+        #else
+        if(defendLedTimer.timeHasPassed()){
+            digitalWrite(LED_BUILTIN, ledOn);
+            ledOn = !ledOn;
+        }
+        #endif
     }
     #endif
 
     
     // Print stuffs
-    Serial.print(heading);
+    Serial.printf("BallData - angle: %d, strength: %d, exists: %d", playmode.getBallAngle(), playmode.getBallDistance(), playmode.getBallExist());
     Serial.println();
 }
 
 #if ESP_I2C_ON
 void requestEvent() {
+    Serial.println("Sending heading bytes");
     // Send heading to ESP
     ESP_WIRE.write(0xB); // The :b:est start byte in existence
     ESP_WIRE.write(highByte((uint16_t) (imu.heading * 100))); // Send most sigificant byte
@@ -212,55 +225,55 @@ void requestEvent() {
 }
 
 void receiveEvent(size_t count) {
-    uint8_t buf[64] = {0}; // 64 byte buffer, same as defined on the ESP
-    uint8_t msg[64] = {0}; // message working space
-    uint8_t i = 0;
+    // uint8_t buf[64] = {0}; // 64 byte buffer, same as defined on the ESP
+    // uint8_t msg[64] = {0}; // message working space
+    // uint8_t i = 0;
 
-    Serial.printf("receiveEvent(%d)\n", count);
+    // Serial.printf("receiveEvent(%d)\n", count);
 
-    // read in bytes from I2C until we receive the termination character
-    while (true) {
-        uint8_t byte = ESP_WIRE.read();
-        buf[i++] = byte;
+    // // read in bytes from I2C until we receive the termination character
+    // while (ESP_WIRE.available()) {
+    //     uint8_t byte = ESP_WIRE.read();
+    //     buf[i++] = byte;
 
-        if (byte == 0xEE){
-            break;
-        }
-    }
+    //     if (byte == 0xEE){
+    //         break;
+    //     }
+    // }
 
-    Serial.printf("Received %d bytes\n", i);
+    // Serial.printf("Received %d bytes\n", i);
 
-    // now we can parse the header and decode the protobuf byte stream
-    if (buf[0] == 0xB){
-        msg_type_t msgId = (msg_type_t) buf[1];
-        uint8_t msgSize = buf[2];
+    // // now we can parse the header and decode the protobuf byte stream
+    // if (buf[0] == 0xB){
+    //     msg_type_t msgId = (msg_type_t) buf[1];
+    //     uint8_t msgSize = buf[2];
 
-        // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
-        memcpy(msg, buf + 3, msgSize);
+    //     // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
+    //     memcpy(msg, buf + 3, msgSize);
 
-        pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
-        void *dest = NULL;
-        void *msgFields = NULL;
+    //     pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
+    //     void *dest = NULL;
+    //     void *msgFields = NULL;
 
-        // assign destination struct based on message ID
-        switch (msgId){
-            case MSG_PUSH_I2C_MASTER:
-                dest = (void*) &lastMasterProvide;
-                msgFields = (void*) &I2CMasterProvide_fields;
-                break;
-            default:
-                Serial.printf("[I2C error] Unknown message ID: %d\n", msgId);
-                return;
-        }
+    //     // assign destination struct based on message ID
+    //     switch (msgId){
+    //         case MSG_PUSH_I2C_MASTER:
+    //             dest = (void*) &lastMasterProvide;
+    //             msgFields = (void*) &I2CMasterProvide_fields;
+    //             break;
+    //         default:
+    //             Serial.printf("[I2C error] Unknown message ID: %d\n", msgId);
+    //             return;
+    //     }
 
-        // decode the byte stream
-        if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
-            Serial.printf("[I2C error] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
-        }
-        // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
-    } else {
-        Serial.printf("[I2C error] Invalid begin character: %d\n", buf[0]);
-        delay(15);
-    }
+    //     // decode the byte stream
+    //     if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
+    //         Serial.printf("[I2C error] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
+    //     }
+    //     // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
+    // } else {
+    //     Serial.printf("[I2C error] Invalid begin character: %d\n", buf[0]);
+    //     delay(15);
+    // }
 }
 #endif

@@ -2,16 +2,66 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+// --- Code Activation Defines --- //
 #define ESP_I2C_ON false
 #define MPU_I2C_ON true
-#define LS_ON true
+#define CAM_ON true
+#define LS_ON false
 #define LRFS_ON false
 #define LED_ON true
 
-// --- Acceleration Settings --- //
+// --- Game Settings --- //
+#define DEFENCE false
+#define ENEMY_GOAL 0 //0: Yellow, 1: Blue, 2: OFF
 
+// --- Acceleration Settings --- //
 #define ACCEL_TIME_STEP 1000
 #define ACCEL_PROGRESS 1
+
+// --- Orbit --- //
+#define BALL_FAR_STRENGTH 80
+#define BALL_CLOSE_STRENGTH 40
+#define ORBIT_SPEED_SLOW 40
+#define ORBIT_SPEED_FAST 30
+
+#define GOAL_KP 1.5
+#define GOAL_KI 0
+#define GOAL_KD 0.12
+#define GOAL_MAX_CORRECTION 255
+
+#define HEADING_KP 3
+#define HEADING_KI 0
+#define HEADING_KD 0.25
+#define HEADING_MAX_CORRECTION 180
+
+// --- Defence --- //
+#define SIDE_KP 5
+#define SIDE_KI 0
+#define SIDE_KD 0.3
+#define SIDE_MAX 100
+#define CENTRE_SIDE_MAX 60
+
+#define FORWARD_KP 10
+#define FORWARD_KI 0
+#define FORWARD_KD 0.2
+#define FORWARD_MAX 80
+#define CENTRE_FORWARD_MAX 60
+
+#define GOALIE_KP 4
+#define GOALIE_KI 0
+#define GOALIE_KD 0.1
+#define GOALIE_MAX 100
+
+#define DEFEND_DISTANCE 60
+#define SURGE_DISTANCE 90
+#define SURGE_STRENGTH 50
+
+// --- Camera Settings --- //
+
+#define CAM_DATA_LENGTH 10
+#define CAM_CENTRE_X 110
+#define CAM_CENTRE_Y 110
+#define CAM_BEGIN_BYTE 0xB
 
 // --- Light Sensors --- //
 

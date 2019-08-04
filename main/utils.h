@@ -88,7 +88,7 @@ float lerp(float fromValue, float toValue, float progress);
 /** Implements Jenkins' One at a Time Hash to calculate the hash code of strings **/
 uint32_t str_hash(char *str);
 
-void i2c_scanner();
+void i2c_scanner(i2c_port_t port);
 /** 
  * Returns true if target is between angle1 and angle2. 
  * Source: https://stackoverflow.com/a/11412077/5007892 

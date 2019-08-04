@@ -63,8 +63,12 @@ static void master_task(void *pvParameter){
 
     // Initialise comms and hardware
     comms_i2c_init(I2C_NUM_0);
-    i2c_scanner();
+    comms_i2c_init(I2C_NUM_1);
+    i2c_scanner(I2C_NUM_0);
+    i2c_scanner(I2C_NUM_1);
     cam_init();
+    simu_init();
+    simu_calibrate();
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
 
@@ -88,12 +92,6 @@ static void master_task(void *pvParameter){
     #else
         stateMachine = fsm_new(&stateAttackPursue);
     #endif
-
-    // Wait for the slave to calibrate IMU and send over the first packets
-    // TODO remove this and actually calibrate the BNO here
-    ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
-    vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
-    ESP_LOGI(TAG, "Running!");
 
     esp_task_wdt_add(NULL);
 
@@ -155,9 +153,6 @@ static void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(stateMachine);
 
-        // robotState.outSpeed = 0;
-        // imu_correction(&robotState);
-
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         
         // encode and send Protobuf message to Teenys slave
@@ -170,12 +165,16 @@ static void master_task(void *pvParameter){
         msg.orientation = 69.69f;
         msg.speed = 100.0f;
 
-        if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
-            ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
-        }
-        printfln("Bytes written: %d", stream.bytes_written);
+        // if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
+        //     ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
+        // }
+        // printfln("Bytes written: %d", stream.bytes_written);
+        // ESP_LOG_BUFFER_HEXDUMP(TAG, buf, stream.bytes_written, ESP_LOG_INFO);
 
-        comms_i2c_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
+        // comms_i2c_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
+
+        simu_calc();
+        printf("Heading: %f", heading);
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin

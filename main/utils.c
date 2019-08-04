@@ -291,8 +291,8 @@ hmm_vec2 vec2_cartesian_to_polar(hmm_vec2 vec){
     return HMM_Vec2(sqrtf(sq(x) + sq(y)), fmodf((atan2f(y, x) * RAD_DEG) + 360.0f, 360.0f));
 }
 
-void i2c_scanner(){
-    ESP_LOGI("I2CScanner", "Scanning...");
+void i2c_scanner(i2c_port_t port){
+    ESP_LOGI("I2CScanner", "Scanning port %d...", port);
 
     int i;
 	esp_err_t espRc;
@@ -304,7 +304,7 @@ void i2c_scanner(){
 		i2c_master_write_byte(cmd, (i << 1) | I2C_MASTER_WRITE, 1 /* expect ack */);
 		i2c_master_stop(cmd);
 
-		espRc = i2c_master_cmd_begin(I2C_NUM_0, cmd, 75 / portTICK_PERIOD_MS);
+		espRc = i2c_master_cmd_begin(port, cmd, 75 / portTICK_PERIOD_MS);
 		if (i%16 == 0) {
 			printf("\n%.2x:", i);
 		}
