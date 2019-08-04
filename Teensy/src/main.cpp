@@ -148,8 +148,6 @@ void loop() {
 
     ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), imu.heading);
     ls.lineCalc();
-
-    Serial.printf("  %f", ls.lineAngle);
     #endif
 
 
@@ -171,7 +169,7 @@ void loop() {
     // Update motors
     calcAccel();
     move.motorCalc(direction, orientation, speed);
-    move.go();
+    move.go(false);
 
 
     #if LED_ON
@@ -199,7 +197,9 @@ void loop() {
     }
     #endif
 
-
+    
+    // Print stuffs
+    Serial.print(heading);
     Serial.println();
 }
 
