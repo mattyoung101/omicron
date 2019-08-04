@@ -104,7 +104,8 @@ void Playmode::calculateDefence(double heading){
     }
 }
 
-void Playmode::calculateLineAvoidance(double heading){ // Black magic stuff i have forgotten how work
+// Some black magic bullshit I totoally haven't forgotten how it worked
+void Playmode::calculateLineAvoidance(double heading){
     if(isOnLine && firstAngle != NO_LINE_ANGLE){
         if(abs(lineAngle-firstAngle)>80 && abs(lineAngle-firstAngle)<260) lineOver = true; // Detecting if we have crossed the line
         else lineOver = false;
