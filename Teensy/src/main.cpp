@@ -171,7 +171,7 @@ void loop() {
     // Update motors
     calcAccel();
     move.motorCalc(direction, orientation, speed);
-    move.go();
+    move.go(false);
 
 
     #if LED_ON
@@ -215,6 +215,8 @@ void receiveEvent(size_t count) {
     uint8_t buf[64] = {0}; // 64 byte buffer, same as defined on the ESP
     uint8_t msg[64] = {0}; // message working space
     uint8_t i = 0;
+
+    Serial.printf("receiveEvent(%d)\n", count);
 
     // read in bytes from I2C until we receive the termination character
     while (true) {

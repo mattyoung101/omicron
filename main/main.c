@@ -57,14 +57,13 @@ static void print_reset_reason(){
 // like moving, finite state machines, Bluetooth, etc
 static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
-    uint8_t robotId = 69;    
-    uint8_t buf[PROTOBUF_SIZE] = {0}; // for protobuf
-    pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
+    uint8_t robotId = 69;
 
     print_reset_reason();
 
     // Initialise comms and hardware
     comms_i2c_init(I2C_NUM_0);
+    i2c_scanner();
     cam_init();
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
@@ -163,11 +162,19 @@ static void master_task(void *pvParameter){
         
         // encode and send Protobuf message to Teenys slave
         I2CMasterProvide msg = I2CMasterProvide_init_default;
-        // TODO set message here, also, will it actually reset the buffer?
+        uint8_t buf[PROTOBUF_SIZE] = {0};
+        pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
+        
+        msg.direction = 69.420f;
+        msg.heading = 123.456f;
+        msg.orientation = 69.69f;
+        msg.speed = 100.0f;
 
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
             ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
         }
+        printfln("Bytes written: %d", stream.bytes_written);
+
         comms_i2c_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
         esp_task_wdt_reset();

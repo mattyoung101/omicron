@@ -53,7 +53,7 @@ esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
     esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     if (err != ESP_OK){
-        ESP_LOGE(TAG, "Error in comms_i2c_send writing message id %d of size %d: %s", msgId, msgSize,
+        ESP_LOGE(TAG, "Error in comms_i2c_send, message id = %d, size =  %d: %s", msgId, msgSize,
                     esp_err_to_name(err));
         i2c_reset_tx_fifo(I2C_NUM_0);
         i2c_reset_rx_fifo(I2C_NUM_0);
