@@ -40,6 +40,9 @@ void Playmode::calculateOrbit() {
         return;
     }
     // Serial.println("Orbiting");
+
+    // Change angle to -180 to 180
+    int _ballAngle = ballAngle > 180 ? ballAngle - 360 : ballAngle;
     
     // Add on an angle to the ball angle depending on the ball's angle. Exponential function
     double ballAngleDifference = -sign(ballAngle - 180) * fmin(90, 0.4 * pow(MATH_E, 0.5 * (double)smallestAngleBetween(ballAngle, 0)));
@@ -50,8 +53,14 @@ void Playmode::calculateOrbit() {
     double distanceMultiplier = constrain(0.1 * strengthFactor * pow(MATH_E, 2.5 * strengthFactor), 0, 1);
     double angleAddition = ballAngleDifference * distanceMultiplier;
 
-    direction = mod(ballAngle + angleAddition, 360);
+    if(abs(_ballAngle) <= BALL_INFRONT_ANGLE){
+        Serial.println("YEET");
+        direction = 0;
+    } else {
+        direction = mod(ballAngle + angleAddition, 360);
+    }
     speed = ORBIT_SPEED_SLOW + (double)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (double)abs(angleAddition) / 90.0);
+    // Serial.println(speed);
 }
 
 void Playmode::centre(double heading){

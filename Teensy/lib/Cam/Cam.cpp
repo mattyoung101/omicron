@@ -15,11 +15,12 @@ void Camera::read(){
 
     // TODO remove 20ms wait? or shorten it? ask FG&B
     if (/*millis() - lastCall >= 20 && */CAM_SERIAL.available() >= CAM_DATA_LENGTH){
-        if (CAM_SERIAL.read() == CAM_BEGIN_BYTE){
+        // Serial.println(CAM_SERIAL.peek());
+        if (CAM_SERIAL.read() == CAM_BEGIN_BYTE && CAM_SERIAL.peek() == CAM_BEGIN_BYTE){
             // Serial.println("Found start byte");
             // force wait for the rest of the data to come in, then read it into the buffer
             for (int i = 0; i < CAM_DATA_LENGTH; i++){
-                while (!CAM_SERIAL.available());
+                while(!CAM_SERIAL.available());
                 buf[i] = CAM_SERIAL.read();
             }
 
@@ -36,6 +37,12 @@ void Camera::read(){
             orange.y = buf[9] - CAM_CENTRE_Y;
 
             lastCall = millis();
+
+            // for(int i = 0; i < 10; i++){
+            //     Serial.print(buf[i]);
+            //     Serial.print(" ");
+            // }
+            // Serial.println();
         }
     }
 }

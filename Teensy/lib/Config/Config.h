@@ -6,13 +6,13 @@
 #define ESP_I2C_ON false
 #define MPU_I2C_ON true
 #define CAM_ON true
-#define LS_ON true
+#define LS_ON false
 #define LRFS_ON false
 #define LED_ON true
 
 // --- Game Settings --- //
 #define DEFENCE false
-#define ENEMY_GOAL 0 //0: Yellow, 1: Blue, 2: OFF
+#define ENEMY_GOAL 2 //0: Yellow, 1: Blue, 2: OFF
 #define STARTUP_DELAY 200
 
 // --- Acceleration Settings --- //
@@ -20,19 +20,20 @@
 #define ACCEL_PROGRESS 1
 
 // --- Orbit --- //
-#define BALL_FAR_STRENGTH 80
-#define BALL_CLOSE_STRENGTH 40
-#define ORBIT_SPEED_SLOW 40
-#define ORBIT_SPEED_FAST 30
+#define BALL_FAR_STRENGTH 100
+#define BALL_CLOSE_STRENGTH 45
+#define ORBIT_SPEED_SLOW 80
+#define ORBIT_SPEED_FAST 40
+#define BALL_INFRONT_ANGLE 20
 
 #define GOAL_KP 1.5
 #define GOAL_KI 0
 #define GOAL_KD 0.12
 #define GOAL_MAX_CORRECTION 255
 
-#define HEADING_KP 3
+#define HEADING_KP 2.5
 #define HEADING_KI 0
-#define HEADING_KD 0.25
+#define HEADING_KD 0.2
 #define HEADING_MAX_CORRECTION 180
 
 // --- Defence --- //
@@ -59,9 +60,9 @@
 
 // --- Camera Settings --- //
 
-#define CAM_DATA_LENGTH 10
-#define CAM_CENTRE_X 110
-#define CAM_CENTRE_Y 110
+#define CAM_DATA_LENGTH 12
+#define CAM_CENTRE_X 120
+#define CAM_CENTRE_Y 120
 #define CAM_BEGIN_BYTE 0xB
 
 // --- Light Sensors --- //
