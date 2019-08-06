@@ -38,9 +38,11 @@ PID goaliePID(GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX);
 // LED Stuff
 Timer attackLedTimer(400000); // LED timer when idling
 Timer defendLedTimer(200000); // LED timer when moving
-Timer yeetLedTimer(100000); // LED timer when line avoiding or surging or whatnot
 Timer batteryLedTimer(50000); // LED timer when low battery
 bool ledOn;
+
+// Timeout for when ball is not visible
+Timer noBallTimer(500000); // LED timer when line avoiding or surging or whatnot
 
 // Acceleration
 Timer accelTimer(ACCEL_TIME_STEP);
@@ -113,6 +115,7 @@ void setup() {
 
     
     #if CAM_ON
+    // Init camera comms
     cam.setup();
     #endif
 
@@ -123,6 +126,7 @@ void setup() {
     ls.calibrate();
     #endif
 
+    // Init motor pins
     move.set();
 
     pinMode(LED_BUILTIN, OUTPUT);
@@ -143,11 +147,12 @@ void loop() {
     ls.calculateLine();
 
     ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), imu.heading);
-    ls.lineCalc();
+    // ls.lineCalc(); // IDK if this is necessary anymore
     #endif
 
 
     #if CAM_ON
+    // Read from camera
     cam.read();
     cam.calc();
     #endif
@@ -164,27 +169,41 @@ void loop() {
     playmode.updateLine(ls.lineAngle, ls.lineSize, imu.heading); 
     #endif
     
-    if(DEFENCE){
-        ENEMY_GOAL ? playmode.updateGoal(cam.yellow.angle, cam.yellow.length, cam.yellow.exists) : playmode.updateGoal(cam.blue.angle, cam.blue.length, cam.blue.exists);
-    } else {
-        ENEMY_GOAL ? playmode.updateGoal(cam.blue.angle, cam.blue.length, cam.blue.exists) : playmode.updateGoal(cam.yellow.angle, cam.yellow.length, cam.yellow.exists);
-    }
+    #if DEFENCE
+    ENEMY_GOAL ? playmode.updateGoal(cam.yellow.angle, cam.yellow.length, cam.yellow.exists) : playmode.updateGoal(cam.blue.angle, cam.blue.length, cam.blue.exists);
+    #else
+    ENEMY_GOAL ? playmode.updateGoal(cam.blue.angle, cam.blue.length, cam.blue.exists) : playmode.updateGoal(cam.yellow.angle, cam.yellow.length, cam.yellow.exists);
+    #endif
 
+
+    // Update no ball timer
+    if(playmode.getBallExist()) noBallTimer.update();
+
+
+    // Calculate movement
+    #if DEFENCE
+    playmode.calculateDefence(imu.heading);
+    #else
     playmode.calculateOrbit();
+    #endif
+
     playmode.calculateLineAvoidance(imu.heading);
 
-    if(playmode.getGoalVisibility() && ENEMY_GOAL != 2){
-        if(DEFENCE){
-            orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
-            orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
-        }
-        else orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+
+    // Calculate orientation stuff
+    if(playmode.getGoalVisibility() && ENEMY_GOAL != 2 && !noBallTimer.timeHasPassedNoUpdate()){
+        #if DEFENCE
+        orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+        #else
+        orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+        #endif
     }
     else{
         orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
     }
 
-    // orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+    if(noBallTimer.timeHasPassedNoUpdate()) playmode.centre(imu.heading); // If ball is not visible for a period of time, centre
+
 
     // Update motors
     direction = playmode.getDirection();

@@ -61,6 +61,7 @@ public:
     }
     bool brake;
     bool isYeeting;
+    int idleDist;
 private:
     int direction;
     int speed;

@@ -159,7 +159,7 @@ void LightSensorArray::calculateLine() {
     if (numClusters == 0) {
         // No clusters, no line
         angle = NO_LINE_ANGLE;
-        size = -100;
+        size = NO_LINE_SIZE;
     } else {
         // Angle of each cluster
         double cluster1Angle = midAngleBetween(starts[0] * LS_NUM_MULTIPLIER, ends[0] * LS_NUM_MULTIPLIER);

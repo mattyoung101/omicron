@@ -34,7 +34,9 @@
 #define HEADING_KP 2.5
 #define HEADING_KI 0
 #define HEADING_KD 0.2
-#define HEADING_MAX_CORRECTION 180
+#define HEADING_MAX_CORRECTION 100
+
+#define IDLE_DISTANCE 120
 
 // --- Defence --- //
 #define SIDE_KP 5
@@ -54,8 +56,8 @@
 #define GOALIE_KD 0.1
 #define GOALIE_MAX 100
 
-#define DEFEND_DISTANCE 60
-#define SURGE_DISTANCE 90
+#define DEFEND_DISTANCE 100
+#define SURGE_DISTANCE 150
 #define SURGE_STRENGTH 50
 
 // --- Camera Settings --- //
@@ -75,7 +77,7 @@
 #define LS_CALIBRATION_BUFFER 200
 #define LS_ES_DEFAULT 69
 #define NO_LINE_ANGLE 400
-#define NO_LINE_SIZE 400
+#define NO_LINE_SIZE -100
 #define LS_NUM_MULTIPLIER 10
 #define LS_LINEOVER_BUFFER 90
 

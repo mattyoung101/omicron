@@ -9,6 +9,12 @@ void Playmode::init(){
     // Reset line avoid variables
     lineOver = false;
     isOnLine = false;
+
+    #if DEFENCE
+    idleDist = DEFEND_DISTANCE;
+    #else
+    idleDist = IDLE_DISTANCE;
+    #endif
 }
 
 // void Playmode::calculateOrbitTangent(){
@@ -74,9 +80,12 @@ void Playmode::centre(double heading){
         double verticalDistance = goalLength * cos(degreesToRadians(goalAngle_));
         double horizontalDistance = goalLength * sin(degreesToRadians(goalAngle_));
 
-        double distanceMovement = -forwardPID.update(verticalDistance, 35);
-
+        double distanceMovement = forwardPID.update(verticalDistance, idleDist);
         double sidewaysMovement = -sidePID.update(horizontalDistance, 0);
+
+        #if DEFENCE
+        distanceMovement *= -1
+        #endif
 
         direction = mod(radiansToDegrees(atan2(sidewaysMovement, distanceMovement)) - (heading), 360);
         speed = sqrt(distanceMovement * distanceMovement + sidewaysMovement * sidewaysMovement);
@@ -103,25 +112,20 @@ void Playmode::calculateDefence(double heading){
                     double sidewaysMovement = sidePID.update(mod(ballAngle + 180, 360) - 180, 0);
 
                     direction = mod(radiansToDegrees(atan2(sidewaysMovement, distanceMovement)), 360);
-                    speed = sqrt(distanceMovement * distanceMovement + sidewaysMovement * sidewaysMovement);
+                    speed = sqrt(sq(distanceMovement) + sq(sidewaysMovement));
                 }
             } else { // Orbit to get behind ball
                 calculateOrbit();
             }
-        } else {
-            centre(heading); // Centre in front of the goal
+        } else { // Can't see the ball
+            speed = 0; // Centre in front of the goal
         }
     } else {
         calculateOrbit(); // Can't see goal, just attacking :P
     }
 }
 
-// Some black magic bullshit I totoally haven't forgotten how it worked
 void Playmode::calculateLineAvoidance(double heading){
-    // if(isOnLine && firstAngle != NO_LINE_ANGLE){
-    //     if(abs(lineAngle-firstAngle)>LS_LINEOVER_BUFFER && abs(lineAngle-firstAngle)<360-LS_LINEOVER_BUFFER) lineOver = true; // Detecting if we have crossed the line
-    //     else lineOver = false;
-    // }
 
     isOnLine = lineAngle != NO_LINE_ANGLE;
 
@@ -171,35 +175,8 @@ void Playmode::calculateLineAvoidance(double heading){
         }
     }
 
-    //   if(!onField){
-    //     if(lineSize > LINE_BIG_SIZE || lineSize == -1){
-    //         if(lineOver){
-    //             direction = isOnLine ? doubleMod(lineAngle-heading, 360) : doubleMod(firstAngle-heading+180, 360);
-    //         }else{
-    //             direction = doubleMod(lineAngle-heading+180, 360);
-    //         }
-    //         speed = OVER_LINE_SPEED;
-    //     }else if(lineSize >= LINE_SMALL_SIZE && ballExists){
-    //         if(abs(firstAngle+ballAngle) < 90 && abs(firstAngle+ballAngle) > 270){
-    //             direction = doubleMod(firstAngle-heading+180, 360);
-    //             speed = 0;
-    //             brake = true;
-    //             // Serial.println("stopping");
-    //         }else{
-    //             speed = LINE_TRACK_SPEED;
-    //         }
-    //     }else{
-    //         if(isOnLine) speed *= LINE_SPEED_MULTIPLIER;
-    //     }
-    // }
-
-    // Check if returned back into the field
-    if(!isOnLine && !lineOver) firstAngle = NO_LINE_ANGLE;
-
-    if(!lineOver) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
-
     // Serial.printf("lineAngle: %f, ballRight: %d, ballLeft: %d\n",lineAngle,ballAngle+90,ballAngle-90);
-    Serial.printf("lineAngle: %f, lineSize: %f, trueLineAngle: %f, trueLineSize: %f\n",lineAngle,lineSize,trueLineAngle,trueLineSize);
+    // Serial.printf("lineAngle: %f, lineSize: %f, trueLineAngle: %f, trueLineSize: %f\n",lineAngle,lineSize,trueLineAngle,trueLineSize);
 }
 
 void Playmode::updateGoal(int angle, int distance, bool visible){
@@ -212,8 +189,6 @@ void Playmode::updateLine(double angle, double size, double heading){
     size /= 100;
     isOnLine = angle == NO_LINE_ANGLE ? false : true;
     lineAngle = angle == NO_LINE_ANGLE ? angle : doubleMod(angle+heading, 360);
-    // if(lineSize != NO_LINE_SIZE) lineSize = lineOver ? 2 - size : size;
-    // else lineSize = size;
     lineSize = size;
 
     // Serial.printf("isOnLine: %d, lineAngle: %d\n", isOnLine, lineAngle);
