@@ -38,7 +38,7 @@ PID goaliePID(GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX);
 // LED Stuff
 Timer attackLedTimer(400000); // LED timer when idling
 Timer defendLedTimer(200000); // LED timer when moving
-Timer lineLedTimer(100000); // LED timer when line avoiding
+Timer yeetLedTimer(100000); // LED timer when line avoiding or surging or whatnot
 Timer batteryLedTimer(50000); // LED timer when low battery
 bool ledOn;
 
@@ -171,8 +171,9 @@ void loop() {
     }
 
     playmode.calculateOrbit();
+    playmode.calculateLineAvoidance(imu.heading);
 
-    // if(playmode.getGoalVisibility() && playmode.getBallExist() && (playmode.getBallAngle() < 90 || playmode.getBallAngle() > 270) && !playmode.lineAvoiding()){
+    // if(playmode.getGoalVisibility() && playmode.getBallExist() && (playmode.getBallAngle() < 90 || playmode.getBallAngle() > 270) && !playmode.lineAvoiding() && ENEMY_GOAL != 2){
     //     if(DEFENCE){
     //         orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
     //         orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
@@ -186,6 +187,8 @@ void loop() {
     // Update motors
     direction = playmode.getDirection();
     speed = playmode.getSpeed();
+    // targetDirection = playmode.getDirection();
+    // targetSpeed = playmode.getSpeed();
 
     // calcAccel();
     move.motorCalc(direction, orientation, speed);
@@ -200,7 +203,7 @@ void loop() {
             ledOn = !ledOn;
         }
     } else if(ls.isOnLine || ls.lineOver){
-        if(lineLedTimer.timeHasPassed()){
+        if(yeetLedTimer.timeHasPassed()){
             digitalWrite(LED_BUILTIN, ledOn);
             ledOn = !ledOn;
         }
@@ -221,7 +224,7 @@ void loop() {
 
     
     // Print stuffs
-    Serial.printf("BallData - angle: %d, strength: %d, exists: %d", playmode.getBallAngle(), playmode.getBallDistance(), playmode.getBallExist());
+    // Serial.printf("BallData - angle: %d, strength: %d, exists: %d", playmode.getBallAngle(), playmode.getBallDistance(), playmode.getBallExist());
     // Serial.printf("MoveData - direction: %d, orientation: %d, speed: %d", cam.orange.x, cam.orange.y, cam.orange.exists);
     // Serial.print(imu.heading);
     Serial.println();

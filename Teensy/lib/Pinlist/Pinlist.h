@@ -34,7 +34,7 @@
 #define MOTOR_BR_IN1 2
 #define MOTOR_BR_IN2 4
 #define MOTOR_BR_ANGLE 135
-#define MOTOR_BR_REVERSED true
+#define MOTOR_BR_REVERSED false
 
 // Motor 3
 #define MOTOR_BL_PWM 6

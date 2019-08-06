@@ -45,21 +45,24 @@ void Playmode::calculateOrbit() {
     int _ballAngle = ballAngle > 180 ? ballAngle - 360 : ballAngle;
     
     // Add on an angle to the ball angle depending on the ball's angle. Exponential function
-    double ballAngleDifference = -sign(ballAngle - 180) * fmin(90, 0.4 * pow(MATH_E, 0.5 * (double)smallestAngleBetween(ballAngle, 0)));
+    double ballAngleDifference = -sign(ballAngle - 180) * fmin(90, 0.1 * pow(MATH_E, 0.1 * (double)smallestAngleBetween(ballAngle, 0)));
 
     double strengthFactor = constrain(((double)ballStrength - (double)BALL_FAR_STRENGTH) / ((double)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
 
     // Multiply the addition by distance. The further the ball, the more the robot moves towards the ball. Also an exponential function
-    double distanceMultiplier = constrain(0.1 * strengthFactor * pow(MATH_E, 2.5 * strengthFactor), 0, 1);
+    double distanceMultiplier = constrain(0.05 * strengthFactor * pow(MATH_E, 4.5 * strengthFactor), 0, 1);
     double angleAddition = ballAngleDifference * distanceMultiplier;
 
     if(abs(_ballAngle) <= BALL_INFRONT_ANGLE){
-        Serial.println("YEET");
-        direction = 0;
+        // Serial.println("YEET");
+        // direction = ballAngle;
+        speed = 100;
+        isYeeting = true;
     } else {
         direction = mod(ballAngle + angleAddition, 360);
+        speed = ORBIT_SPEED_SLOW + (double)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (double)abs(angleAddition) / 90.0);
+        isYeeting = false;
     }
-    speed = ORBIT_SPEED_SLOW + (double)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (double)abs(angleAddition) / 90.0);
     // Serial.println(speed);
 }
 
@@ -115,43 +118,80 @@ void Playmode::calculateDefence(double heading){
 
 // Some black magic bullshit I totoally haven't forgotten how it worked
 void Playmode::calculateLineAvoidance(double heading){
-    if(isOnLine && firstAngle != NO_LINE_ANGLE){
-        if(abs(lineAngle-firstAngle)>80 && abs(lineAngle-firstAngle)<260) lineOver = true; // Detecting if we have crossed the line
-        else lineOver = false;
+    // if(isOnLine && firstAngle != NO_LINE_ANGLE){
+    //     if(abs(lineAngle-firstAngle)>LS_LINEOVER_BUFFER && abs(lineAngle-firstAngle)<360-LS_LINEOVER_BUFFER) lineOver = true; // Detecting if we have crossed the line
+    //     else lineOver = false;
+    // }
+
+    isOnLine = lineAngle != NO_LINE_ANGLE;
+
+    if(onField) {
+        if(isOnLine) {
+            onField = false;
+            trueLineAngle = lineAngle;
+            trueLineSize = lineSize;
+        }
+    } else {
+        if(trueLineSize == 3) {
+            if(isOnLine) {
+                trueLineAngle = doubleMod(lineAngle + 180, 360);
+                trueLineSize = 2 - lineSize;
+            }
+        } else {
+            if(!isOnLine) {
+                if(trueLineSize <= 1) {
+                    onField = true;
+                    trueLineSize = -1;
+                    trueLineAngle = NO_LINE_ANGLE;
+                } else {
+                    trueLineSize = 3;
+                }
+            } else {
+                if(smallestAngleBetween(lineAngle, trueLineAngle) <= LS_LINEOVER_BUFFER) {
+                    trueLineAngle = lineAngle;
+                    trueLineSize = lineSize;
+                } else {
+                    trueLineAngle = doubleMod(lineAngle + 180, 360);
+                    trueLineSize = 2 - lineSize;
+                }
+            }
+        }
     }
 
-    // if(lineOver){
-    //     direction = isOnLine ? doubleMod(lineAngle-heading, 360) : doubleMod(firstAngle-heading+180, 360);
-    //     // Serial.println("Im changing the speed 132");
-    //     speed = LINE_SPEED;
-    // } else {
-    //     if(isOnLine){
-    //         direction = doubleMod(lineAngle-heading+180, 360);
-    //         // Serial.println("Changing the speed 137");
-    //         speed = LINE_SPEED/3;
-    //     }
-    // }
-    if(isOnLine || lineOver){
-        if(lineSize > LINE_BIG_SIZE || lineSize == -1){
-            if(lineOver){
-                direction = isOnLine ? doubleMod(lineAngle-heading, 360) : doubleMod(firstAngle-heading+180, 360);
-            }else{
-                direction = doubleMod(lineAngle-heading+180, 360);
-            }
+    if(!onField){
+        if(trueLineSize > LINE_BIG_SIZE){
+            direction = doubleMod(trueLineAngle + 180 - heading, 360);
             speed = OVER_LINE_SPEED;
-        }else if(lineSize >= LINE_SMALL_SIZE && ballExists){
-            if(abs(firstAngle+ballAngle) < 90 && abs(firstAngle+ballAngle) > 270){
-                direction = doubleMod(firstAngle-heading+180, 360);
+        }else if(trueLineSize >= LINE_SMALL_SIZE && ballExists){
+            if(smallestAngleBetween(lineAngle, direction) <= 60){
                 speed = 0;
                 brake = true;
                 // Serial.println("stopping");
-            }else{
-                speed = LINE_TRACK_SPEED;
             }
-        }else{
-            if(isOnLine) speed *= LINE_SPEED_MULTIPLIER;
         }
     }
+
+    //   if(!onField){
+    //     if(lineSize > LINE_BIG_SIZE || lineSize == -1){
+    //         if(lineOver){
+    //             direction = isOnLine ? doubleMod(lineAngle-heading, 360) : doubleMod(firstAngle-heading+180, 360);
+    //         }else{
+    //             direction = doubleMod(lineAngle-heading+180, 360);
+    //         }
+    //         speed = OVER_LINE_SPEED;
+    //     }else if(lineSize >= LINE_SMALL_SIZE && ballExists){
+    //         if(abs(firstAngle+ballAngle) < 90 && abs(firstAngle+ballAngle) > 270){
+    //             direction = doubleMod(firstAngle-heading+180, 360);
+    //             speed = 0;
+    //             brake = true;
+    //             // Serial.println("stopping");
+    //         }else{
+    //             speed = LINE_TRACK_SPEED;
+    //         }
+    //     }else{
+    //         if(isOnLine) speed *= LINE_SPEED_MULTIPLIER;
+    //     }
+    // }
 
     // Check if returned back into the field
     if(!isOnLine && !lineOver) firstAngle = NO_LINE_ANGLE;
@@ -159,7 +199,7 @@ void Playmode::calculateLineAvoidance(double heading){
     if(!lineOver) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
 
     // Serial.printf("lineAngle: %f, ballRight: %d, ballLeft: %d\n",lineAngle,ballAngle+90,ballAngle-90);
-    // Serial.printf("lineAngle: %f, lineSize: %f, firstAngle: %f, isOnLine: %d, lineOver: %d\n",lineAngle,lineSize,firstAngle,isOnLine,lineOver);
+    Serial.printf("lineAngle: %f, lineSize: %f, trueLineAngle: %f, trueLineSize: %f\n",lineAngle,lineSize,trueLineAngle,trueLineSize);
 }
 
 void Playmode::updateGoal(int angle, int distance, bool visible){
@@ -172,8 +212,9 @@ void Playmode::updateLine(double angle, double size, double heading){
     size /= 100;
     isOnLine = angle == NO_LINE_ANGLE ? false : true;
     lineAngle = angle == NO_LINE_ANGLE ? angle : doubleMod(angle+heading, 360);
-    if(lineSize != NO_LINE_SIZE) lineSize = lineOver ? 2 - size : size;
-    else lineSize = size;
+    // if(lineSize != NO_LINE_SIZE) lineSize = lineOver ? 2 - size : size;
+    // else lineSize = size;
+    lineSize = size;
 
     // Serial.printf("isOnLine: %d, lineAngle: %d\n", isOnLine, lineAngle);
 }

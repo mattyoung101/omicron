@@ -6,7 +6,7 @@
 #define ESP_I2C_ON false
 #define MPU_I2C_ON true
 #define CAM_ON true
-#define LS_ON false
+#define LS_ON true
 #define LRFS_ON false
 #define LED_ON true
 
@@ -21,9 +21,9 @@
 
 // --- Orbit --- //
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 45
+#define BALL_CLOSE_STRENGTH 50
 #define ORBIT_SPEED_SLOW 80
-#define ORBIT_SPEED_FAST 40
+#define ORBIT_SPEED_FAST 80
 #define BALL_INFRONT_ANGLE 20
 
 #define GOAL_KP 1.5
@@ -68,7 +68,7 @@
 // --- Light Sensors --- //
 
 #define LS_NUM 36
-#define DEBUG_DATA false
+#define DEBUG_DATA true
 #define DEBUG_RAW false
 
 #define LS_CALIBRATION_COUNT 10
@@ -77,7 +77,7 @@
 #define NO_LINE_ANGLE 400
 #define NO_LINE_SIZE 400
 #define LS_NUM_MULTIPLIER 10
-#define LS_LINEOVER_BUFFER 80
+#define LS_LINEOVER_BUFFER 90
 
 #define OVER_LINE_SPEED 100
 #define LINE_SPEED 100
@@ -85,8 +85,7 @@
 #define LINE_TRACK_SPEED 50
 
 #define LINE_SMALL_SIZE 0
-#define LINE_BIG_SIZE 1.5
-
+#define LINE_BIG_SIZE 0
 // --- IMU --- //
 
 #define IMU_CALIBRATION_COUNT 100

@@ -9,9 +9,9 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(53, 66, 1, 25, 3, 42), # yellow
+thresholds = [(36, 66, 8, 44, -20, 10), # yellow
              (31, 39, -8, 21, -59, -22), # blue
-             (55, 75, 44, 77, -28, 11)] # orange
+             (37, 61, 54, 79, -24, 18)] # orange
 
 # Robot A
 # Yellow (53, 66, 1, 25, 3, 42)
@@ -40,14 +40,14 @@ sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA) #Resolution, QVGA = 42FPS,QQVGA = 85FPS
 
-sensor.skip_frames(time=200)
+sensor.skip_frames(time=100)
 
 sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
-# Need to let the above 2ettings get in...
-sensor.skip_frames(time=200)
-#sensor.set_windowing((80, 0, 220, 220)) # Robot A
-sensor.set_windowing((40, 0, 240, 240)) # Robot B
+# Need to let the above 2 settings get in...
+sensor.skip_frames(time=100)
+#sensor.set_windowing((80, 0, 240, 240)) # Robot A
+sensor.set_windowing((45, 0, 240, 240)) # Robot B
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -66,7 +66,7 @@ sensor.set_brightness(0)
 sensor.set_contrast(0)
 sensor.set_saturation(0)
 
-sensor.skip_frames(time=200)
+sensor.skip_frames(time=100)
 
 # Blink LEDs
 pyb.LED(1).off()
@@ -107,7 +107,7 @@ while True:
     begin = utime.time()
     clock.tick()
     img = sensor.snapshot()
-    blobs = img.find_blobs(thresholds, x_stride=10, y_stride=10, pixels_threshold=15,
+    blobs = img.find_blobs(thresholds, x_stride=5, y_stride=5, pixels_threshold=15,
             area_threshold=15, merge=True, margin=2)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)
