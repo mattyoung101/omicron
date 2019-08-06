@@ -16,9 +16,9 @@ Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/ve
 ## Directory structure
 - .vscode: VSCode settings, mainly spellchecking. In order to create `c_cpp_properties.json` for the C/C++ extension (which is not synced on Git), please see `docs/c_properties_template.txt`.
 - components/
-    - bno055: BNO-055 driver from Bosch Sensortech
+    - bno080: BNO-080 driver from Hillcrest Labs and Bosch Sensortech: [repo](https://github.com/hcrest/bno080-driver).
     - vl53l0x: ST's VL53L0X LRF driver and docs. We use Kyle Hendrick's [ESP32 port](https://github.com/kylehendricks/esp32-vl53l0x).
-    - nanopb: A C library for encoding/decoding ProtoBuf data
+    - nanopb: A C library for encoding/decoding Protocol Buffer data: [repo](https://github.com/nanopb/nanopb).
 - docs: contains various bits of documentation, templates, etc
 - main: contains the main code that runs on the master and slave ESP32
 - openmv: contains the code that runs on our camera, the OpenMV H7
@@ -39,4 +39,4 @@ _At some point, the code may be re-licensed under the BSD 3-Clause/4-Clause or t
 - DG_dynarr: Public Domain
 - HandmadeMath: Public Domain
 - nanopb: zlib license
-- BNO055 driver: BSD 3-Clause license
+- BNO080 driver: Apache 2

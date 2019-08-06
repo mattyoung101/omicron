@@ -23,12 +23,12 @@
 #define DEFENCE false
 
 // I2C
-#define I2C_SLAVE_DEV_ADDR 0x23
+#define I2C_SLAVE_DEV_ADDR 0x23 // the I2C address of the Teensy slave
 #define I2C_TIMEOUT 250 // ms
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
-#define NANO_PACKET_SIZE 11 // size of packet coming from Nano LS slave, including start byte
+#define I2C_SLAVE_DEV_BUS I2C_NUM_0 // which bus the Teensy slave is on (I2C_NUM_0 or I2C_NUM_1)
 
 // Goals
 #define GOAL_YELLOW 0
@@ -168,6 +168,7 @@ extern bool MOTOR_BR_REVERSED;
 #define MOTOR_SPEED_CAP 100.0f // max speed motors are allowed to go to in %
 
 // Light sensor
+// FIXME remove this as its deprecated
 #define LS_CALIBRATION_COUNT 10
 #define LS_MUX0_BUFFER 100
 #define LS_MUX1_BUFFER 5
@@ -180,6 +181,7 @@ extern bool MOTOR_BR_REVERSED;
 #define LS_TIMER_PERIOD 1000 // microseconds
 
 // Line avoid settings
+// FIXME remove this as its deprecated
 #define LS_LINE_OVER_BUFFER 80
 #define LINE_BIG_SIZE 0
 #define LINE_SMALL_SIZE 0
@@ -197,28 +199,6 @@ extern bool MOTOR_BR_REVERSED;
 #define LS_MUX_S4 13
 #define LS_MUX_EN 15
 #define LS_MUX_WR 14
-
-// TSOPs
-#define TSOP_NUM 24 // total number of TSOPs
-#define TSOP_BEST 5 // pick the TSOP_BEST number of TSOPs to calculate with
-#define TSOP_TARGET_READS 100 // number of reads to do per slave task loop
-#define TSOP_NO_BALL_ANGLE 0xBAD
-#define TSOP_MOVAVG_SIZE 4
-// #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-extern int16_t TSOP_CORRECTION; // at 0 degrees TSOPs actually print a different value, so use this to correct it
-#define TSOP_SCALING true
-
-#define TSOP_MUX_S0 19
-#define TSOP_MUX_S1 18
-#define TSOP_MUX_S2 17
-#define TSOP_MUX_S3 16
-#define TSOP_MUX_S4 32
-#define TSOP_MUX_OUT 35
-#define TSOP_MUX_EN 27
-#define TSOP_MUX_WR 26
-
-// individual TSOP calibration for each sensor
-extern float TSOP_TUNING[TSOP_NUM];
 
 // IMU
 #define IMU_CALIBRATION_COUNT 80

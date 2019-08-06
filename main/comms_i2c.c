@@ -50,12 +50,12 @@ esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0xEE, I2C_ACK_MODE)); // write end byte
 
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
-    esp_err_t err = i2c_master_cmd_begin(I2C_NUM_1, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    esp_err_t err = i2c_master_cmd_begin(I2C_SLAVE_DEV_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     if (err != ESP_OK){
         ESP_LOGE(TAG, "Error in comms_i2c_send, message id = %d, size = %d: %s", msgId, msgSize,
                     esp_err_to_name(err));
-        i2c_reset_tx_fifo(I2C_NUM_1);
-        i2c_reset_rx_fifo(I2C_NUM_1);
+        i2c_reset_tx_fifo(I2C_SLAVE_DEV_BUS);
+        i2c_reset_rx_fifo(I2C_SLAVE_DEV_BUS);
         return err;
     }
 
@@ -85,7 +85,7 @@ esp_err_t comms_i2c_workaround(msg_type_t msgId, uint8_t *pbData, size_t msgSize
     }
     i2c_master_read_byte(cmd, rxBuffer + recvSize - 1, 0x1);
     i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, portMAX_DELAY);
+    esp_err_t ret = i2c_master_cmd_begin(I2C_SLAVE_DEV_BUS, cmd, portMAX_DELAY);
     i2c_cmd_link_delete(cmd);
 
     I2C_ERR_CHECK(ret);
@@ -101,11 +101,11 @@ esp_err_t comms_i2c_notify(msg_type_t msgId){
     ESP_ERROR_CHECK(i2c_master_write(cmd, message, 4, I2C_ACK_MODE));
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
 
-    esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    esp_err_t err = i2c_master_cmd_begin(I2C_SLAVE_DEV_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     if (err != ESP_OK){
         ESP_LOGE(TAG, "Error in comms_i2c_notify: %s", esp_err_to_name(err));
-        i2c_reset_tx_fifo(I2C_NUM_0);
-        i2c_reset_rx_fifo(I2C_NUM_0);
+        i2c_reset_tx_fifo(I2C_SLAVE_DEV_BUS);
+        i2c_reset_rx_fifo(I2C_SLAVE_DEV_BUS);
         return err;
     }
 

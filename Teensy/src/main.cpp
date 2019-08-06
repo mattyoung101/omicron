@@ -106,7 +106,7 @@ void setup() {
     #if ESP_I2C_ON
         // Init ESP_WIRE
         // join bus on address 0x12 (in slave mode)
-        ESP_WIRE.begin(0x23);
+        ESP_WIRE.begin(I2C_SLAVE, 0x23, I2C_PINS_18_19, I2C_PULLUP_EXT, 400000);
         ESP_WIRE.setTimeout(1000000000);
         ESP_WIRE.setDefaultTimeout(1000000000);
         ESP_WIRE.onRequest(requestEvent);
@@ -198,9 +198,6 @@ void loop() {
             }
         }
     #endif
-
-    Serial.printf("Bytes in the buffer: %d\n", ESP_WIRE.available());
-
     
     // Print stuffs
     // Serial.print(heading);
@@ -222,49 +219,50 @@ void receiveEvent(size_t count) {
 
     Serial.printf("receiveEvent(%d)\n", count);
 
-    // read in bytes from I2C until we receive the termination character
-    while (true) {
-        uint8_t byte = ESP_WIRE.read();
-        buf[i++] = byte;
+    // read in bytes from I2C
+    ESP_WIRE.readBytes(buf, count);
+    Serial.printf("buf[0] = %d, buf[1] = %d\n", buf[0], buf[1]);
 
-        if (byte == 0xEE){
-            break;
-        }
-    }
+    // while (true) {
+    //     uint8_t byte = ESP_WIRE.read();
+    //     buf[i++] = byte;
 
-    Serial.printf("Received %d bytes\n", i);
+    //     if (byte == 0xEE){
+    //         break;
+    //     }
+    // }
 
     // now we can parse the header and decode the protobuf byte stream
-    if (buf[0] == 0xB){
-        msg_type_t msgId = (msg_type_t) buf[1];
-        uint8_t msgSize = buf[2];
+    // if (buf[0] == 0xB){
+    //     msg_type_t msgId = (msg_type_t) buf[1];
+    //     uint8_t msgSize = buf[2];
 
-        // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
-        memcpy(msg, buf + 3, msgSize);
+    //     // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
+    //     memcpy(msg, buf + 3, msgSize);
 
-        pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
-        void *dest = NULL;
-        void *msgFields = NULL;
+    //     pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
+    //     void *dest = NULL;
+    //     void *msgFields = NULL;
 
-        // assign destination struct based on message ID
-        switch (msgId){
-            case MSG_PUSH_I2C_MASTER:
-                dest = (void*) &lastMasterProvide;
-                msgFields = (void*) &I2CMasterProvide_fields;
-                break;
-            default:
-                Serial.printf("[I2C error] Unknown message ID: %d\n", msgId);
-                return;
-        }
+    //     // assign destination struct based on message ID
+    //     switch (msgId){
+    //         case MSG_PUSH_I2C_MASTER:
+    //             dest = (void*) &lastMasterProvide;
+    //             msgFields = (void*) &I2CMasterProvide_fields;
+    //             break;
+    //         default:
+    //             Serial.printf("[I2C error] Unknown message ID: %d\n", msgId);
+    //             return;
+    //     }
 
-        // decode the byte stream
-        if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
-            Serial.printf("[I2C error] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
-        }
-        // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
-    } else {
-        Serial.printf("[I2C error] Invalid begin character: %d\n", buf[0]);
-        delay(15);
-    }
+    //     // decode the byte stream
+    //     if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
+    //         Serial.printf("[I2C error] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
+    //     }
+    //     // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
+    // } else {
+    //     Serial.printf("[I2C error] Invalid begin character: %d\n", buf[0]);
+    //     delay(15);
+    // }
 }
 #endif
