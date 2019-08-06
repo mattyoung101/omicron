@@ -173,7 +173,7 @@ void loop() {
     playmode.calculateOrbit();
     playmode.calculateLineAvoidance(imu.heading);
 
-    if(playmode.getGoalVisibility() && !playmode.lineAvoiding() && ENEMY_GOAL != 2){
+    if(playmode.getGoalVisibility() && ENEMY_GOAL != 2){
         if(DEFENCE){
             orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
             orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
@@ -201,11 +201,6 @@ void loop() {
     // Blinky LED stuff :D
     if(batteryVoltage < V_BAT_MIN){
         if(batteryLedTimer.timeHasPassed()){
-            digitalWrite(LED_BUILTIN, ledOn);
-            ledOn = !ledOn;
-        }
-    } else if(ls.isOnLine || ls.lineOver){
-        if(yeetLedTimer.timeHasPassed()){
             digitalWrite(LED_BUILTIN, ledOn);
             ledOn = !ledOn;
         }
