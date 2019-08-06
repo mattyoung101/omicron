@@ -12,7 +12,7 @@
 
 // --- Game Settings --- //
 #define DEFENCE false
-#define ENEMY_GOAL 2 //0: Yellow, 1: Blue, 2: OFF
+#define ENEMY_GOAL 0 //0: Yellow, 1: Blue, 2: OFF
 #define STARTUP_DELAY 200
 
 // --- Acceleration Settings --- //
@@ -24,12 +24,12 @@
 #define BALL_CLOSE_STRENGTH 50
 #define ORBIT_SPEED_SLOW 80
 #define ORBIT_SPEED_FAST 80
-#define BALL_INFRONT_ANGLE 20
+#define BALL_INFRONT_ANGLE 10
 
-#define GOAL_KP 1.5
+#define GOAL_KP 0.5
 #define GOAL_KI 0
-#define GOAL_KD 0.12
-#define GOAL_MAX_CORRECTION 255
+#define GOAL_KD 0.03
+#define GOAL_MAX_CORRECTION 100
 
 #define HEADING_KP 2.5
 #define HEADING_KI 0

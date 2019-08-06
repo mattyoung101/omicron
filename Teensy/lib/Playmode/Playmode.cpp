@@ -45,7 +45,7 @@ void Playmode::calculateOrbit() {
     int _ballAngle = ballAngle > 180 ? ballAngle - 360 : ballAngle;
     
     // Add on an angle to the ball angle depending on the ball's angle. Exponential function
-    double ballAngleDifference = -sign(ballAngle - 180) * fmin(90, 0.1 * pow(MATH_E, 0.1 * (double)smallestAngleBetween(ballAngle, 0)));
+    double ballAngleDifference = -sign(ballAngle - 180) * fmin(90, 0.15 * pow(MATH_E, 0.1 * (double)smallestAngleBetween(ballAngle, 0)));
 
     double strengthFactor = constrain(((double)ballStrength - (double)BALL_FAR_STRENGTH) / ((double)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
 
@@ -55,7 +55,7 @@ void Playmode::calculateOrbit() {
 
     if(abs(_ballAngle) <= BALL_INFRONT_ANGLE){
         // Serial.println("YEET");
-        // direction = ballAngle;
+        direction = ballAngle;
         speed = 100;
         isYeeting = true;
     } else {

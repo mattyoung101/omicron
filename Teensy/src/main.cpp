@@ -173,16 +173,18 @@ void loop() {
     playmode.calculateOrbit();
     playmode.calculateLineAvoidance(imu.heading);
 
-    // if(playmode.getGoalVisibility() && playmode.getBallExist() && (playmode.getBallAngle() < 90 || playmode.getBallAngle() > 270) && !playmode.lineAvoiding() && ENEMY_GOAL != 2){
-    //     if(DEFENCE){
-    //         orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
-    //         orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
-    //     }
-    //     else orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
-    // }
-    // else{
+    if(playmode.getGoalVisibility() && !playmode.lineAvoiding() && ENEMY_GOAL != 2){
+        if(DEFENCE){
+            orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+            orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
+        }
+        else orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+    }
+    else{
         orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
-    // }
+    }
+
+    // orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
 
     // Update motors
     direction = playmode.getDirection();
