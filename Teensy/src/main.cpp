@@ -106,12 +106,12 @@ void setup() {
 
 
     #if MPU_I2C_ON
-    // Init IMU_WIRE
+    // Init MPU
     I2Cinit();
-
-    // Init IMU stuff
     imu.init();
-    imu.calibrate();
+        #if CALBRATE_MPU
+        imu.calibrate();
+        #endif
     #endif
 
     
