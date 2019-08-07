@@ -36,9 +36,10 @@ PID goalPID(GOAL_KP, GOAL_KI, GOAL_KD, HEADING_MAX_CORRECTION);
 PID goaliePID(GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX);
 
 // LED Stuff
-Timer attackLedTimer(400000); // LED timer when idling
-Timer defendLedTimer(200000); // LED timer when moving
-Timer batteryLedTimer(50000); // LED timer when low battery
+Timer attackLedTimer(200000); // LED timer when attacking
+Timer defendLedTimer(500000); // LED timer when defending
+Timer idleLedTimer(1000000); // LED timer when idling
+Timer batteryLedTimer(10000); // LED timer when low battery
 bool ledOn;
 
 // Timeout for when ball is not visible
@@ -220,6 +221,11 @@ void loop() {
     // Blinky LED stuff :D
     if(batteryVoltage < V_BAT_MIN){
         if(batteryLedTimer.timeHasPassed()){
+            digitalWrite(LED_BUILTIN, ledOn);
+            ledOn = !ledOn;
+        }
+    } else if(noBallTimer.timeHasPassedNoUpdate()) {
+        if(idleLedTimer.timeHasPassed()){
             digitalWrite(LED_BUILTIN, ledOn);
             ledOn = !ledOn;
         }

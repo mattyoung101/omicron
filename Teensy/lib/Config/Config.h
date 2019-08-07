@@ -26,9 +26,9 @@
 #define ORBIT_SPEED_FAST 80
 #define BALL_INFRONT_ANGLE 10
 
-#define GOAL_KP 0.5
+#define GOAL_KP 0.8
 #define GOAL_KI 0
-#define GOAL_KD 0.03
+#define GOAL_KD 0.1
 #define GOAL_MAX_CORRECTION 100
 
 #define HEADING_KP 2.5
