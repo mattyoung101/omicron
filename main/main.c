@@ -83,12 +83,16 @@ static void master_task(void *pvParameter){
     comms_i2c_init(I2C_NUM_1);
     // cam_init();
     gpio_install_isr_service(0); // install GPIO ISR service, needed for BNO080
+    gpio_set_direction(BNO_RSTN_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_direction(BNO_INTN_PIN, GPIO_MODE_INPUT);
 
     // Initialise BNO
     sh2_hal_init();
     sh2_initialize(bno_event_handler, NULL);
     sh2_setSensorCallback(bno_sensor_handler, NULL);
     vTaskDelay(pdMS_TO_TICKS(250)); // wait for init
+
+    puts("setting cal config");
 
     // enable dynamic planar calibration (apparently used on robotic vacuum cleaners which is similar to us)
     sh2_setCalConfig(SH2_CAL_PLANAR);
@@ -110,6 +114,9 @@ static void master_task(void *pvParameter){
                prodIds.entry[n].swVersionMajor, prodIds.entry[n].swVersionMinor, 
                prodIds.entry[n].swVersionPatch, prodIds.entry[n].swBuildNumber);
     }
+
+    i2c_scanner(I2C_NUM_0);
+    i2c_scanner(I2C_NUM_1);
 
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
@@ -136,9 +143,6 @@ static void master_task(void *pvParameter){
     #endif
 
     esp_task_wdt_add(NULL);
-
-    i2c_scanner(I2C_NUM_0);
-    i2c_scanner(I2C_NUM_1);
 
     while (true){
         // update sensors

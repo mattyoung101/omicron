@@ -605,6 +605,8 @@ int sh2_initialize(sh2_EventCallback_t *eventCallback, void *resetCookie)
     // Start SHTP operations (resets sensor hub in non-dfu mode)
     shtp_start(false);
 
+    puts("finished sh2_initialize");
+
     return SH2_OK;
 }
 

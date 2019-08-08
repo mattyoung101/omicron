@@ -8,4 +8,5 @@ set(COMPONENT_SRCS "sh2_hal_esp.c"
                    "shtp.c"
                    "worldTare.c")
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")
 register_component()

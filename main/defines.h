@@ -220,10 +220,9 @@ extern bool MOTOR_BR_REVERSED;
 #define ACC_FULL_SCALE_16_G 0x18
 
 // FIXME actual values go here
-#define BNO_RSTN_PIN 69
-#define BNO_BOOTN_PIN 69
-#define BNO_BUS I2C_NUM_1
-#define BNO_INTN_PIN 69
+#define BNO_RSTN_PIN 17
+#define BNO_BUS I2C_NUM_0
+#define BNO_INTN_PIN 16
 
 // Orbit
 extern uint8_t BALL_FAR_STRENGTH;

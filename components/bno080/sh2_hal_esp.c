@@ -71,7 +71,10 @@ static void sensor_task(void *pvParams){
     unsigned readLen = 0;
     unsigned cargoLen = 0;
 
+    ESP_LOGI(TAG, "Sensor task init OK!");
+
     while (true) {
+        puts("reading queueue");
         xQueueReceive(eventQueue, &event, portMAX_DELAY);
 
         switch (event.id) {
@@ -120,9 +123,10 @@ static void IRAM_ATTR gpio_isr(void *arg){
 
     event.t_ms = xTaskGetTickCountFromISR();
     event.id = EVT_INTN;
+    ets_printf("ISR START\n");
     xQueueSendFromISR(eventQueue, &event, &woken);
     
-    ets_printf("ISR OK\n");
+    ets_printf("ISR DONE\n");
 
     if (woken) portYIELD_FROM_ISR();
 }
@@ -136,12 +140,11 @@ void sh2_hal_init(void){
 
     // Put SH-2 device into reset
     gpio_set_level(BNO_RSTN_PIN, 0); // hold in reset
-    gpio_set_level(BNO_BOOTN_PIN, 1); // sh-2, not dfu
-    gpio_isr_handler_add(BNO_INTN_PIN, gpio_isr, 0); // 
+    gpio_isr_handler_add(BNO_INTN_PIN, gpio_isr, 0); // install ISR
 
     // Create receive task etc
     xTaskCreate(sensor_task, "SensorTask", 4096, NULL, configMAX_PRIORITIES - 2, NULL);
-    ESP_LOGD(TAG, "BNO080 HAL init OK!");
+    ESP_LOGI(TAG, "BNO080 HAL init OK!");
 }
 
 int sh2_hal_reset(bool dfuMode, sh2_rxCallback_t *onRx, void *cookie){
@@ -152,7 +155,6 @@ int sh2_hal_reset(bool dfuMode, sh2_rxCallback_t *onRx, void *cookie){
 
     // enable reset line, we don't use DFU so we always set it high
     gpio_set_level(BNO_RSTN_PIN, 0);
-    gpio_set_level(BNO_BOOTN_PIN, 1);
 
     // wait for reset to take effect
     vTaskDelay(pdMS_TO_TICKS(250));
@@ -162,10 +164,13 @@ int sh2_hal_reset(bool dfuMode, sh2_rxCallback_t *onRx, void *cookie){
 
     // reset I2C needed???
 
+    ESP_LOGD(TAG, "Reset OK!");
+
     return SH2_OK;
 }
 
 int sh2_hal_tx(uint8_t *pData, uint32_t len){
+    ESP_LOGI(TAG, "sh2_hal_tx");
     if (len == 0) return SH2_OK;
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -186,16 +191,19 @@ int sh2_hal_tx(uint8_t *pData, uint32_t len){
 }
 
 int sh2_hal_rx(uint8_t *pData, uint32_t len){
+    ESP_LOGI(TAG, "sh2_hal_rx");
     if (len == 0) return SH2_OK;
     return i2c_rx(addr, pData, len);
 }
 
 int sh2_hal_block(void){
-    xSemaphoreTake(blockSem, portMAX_DELAY);
+    ESP_LOGI(TAG, "sh2_hal_block");
+    // xSemaphoreTake(blockSem, portMAX_DELAY);
     return SH2_OK;
 }
 
 int sh2_hal_unblock(void){
-    xSemaphoreGive(blockSem);
+    ESP_LOGI(TAG, "sh2_hal_unblock");
+    // xSemaphoreGive(blockSem);
     return SH2_OK;
 }

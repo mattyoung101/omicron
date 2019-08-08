@@ -227,6 +227,7 @@ void shtp_start(bool dfu)
 {
     // Reset device, registering rx callback
     sh2_hal_reset(dfu, shtp_onRx, NULL);
+    puts("shtp_start()");
 }
 
 // Register a listener for advertisements related to one app
