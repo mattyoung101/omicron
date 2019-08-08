@@ -64,7 +64,7 @@
 
 // --- Camera Settings --- //
 
-#define CAM_DATA_LENGTH 12
+#define CAM_DATA_LENGTH 10
 #define CAM_CENTRE_X 120
 #define CAM_CENTRE_Y 120
 #define CAM_BEGIN_BYTE 0xB
