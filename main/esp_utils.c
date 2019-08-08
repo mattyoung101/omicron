@@ -5,6 +5,9 @@
 // TODO rename to esp_mpu_i2c_impl.c
 // Based on https://github.com/sparkfun/SparkFun_MPU-9250-DMP_Arduino_Library/tree/master/src/util
 
+// This has since become a generic I2C driver used everywhere
+// TODO refactor this and put it in utils
+
 static const char *TAG = "MPU9250";
 
 // #define I2C_SUPER_DEBUG

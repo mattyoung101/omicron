@@ -32,6 +32,7 @@
 #include "sh2.h"
 #include "sh2_err.h"
 #include "sh2_SensorValue.h"
+#include "sh2_hal.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -81,19 +82,25 @@ static void master_task(void *pvParameter){
     comms_i2c_init(I2C_NUM_0);
     comms_i2c_init(I2C_NUM_1);
     // cam_init();
+    gpio_install_isr_service(0); // install GPIO ISR service, needed for BNO080
 
     // Initialise BNO
+    sh2_hal_init();
     sh2_initialize(bno_event_handler, NULL);
     sh2_setSensorCallback(bno_sensor_handler, NULL);
-    vTaskDelay(pdMS_TO_TICKS(150)); // wait for init
+    vTaskDelay(pdMS_TO_TICKS(250)); // wait for init
 
-    // Initialise the rotation vector sensor
+    // enable dynamic planar calibration (apparently used on robotic vacuum cleaners which is similar to us)
+    sh2_setCalConfig(SH2_CAL_PLANAR);
+
+    // Initialise the rotation vector sensor on BNO
     sh2_SensorConfig_t conf = {0};
     conf.alwaysOnEnabled = true;
     conf.reportInterval_us = 10000;
     int err = sh2_setSensorConfig(SH2_ROTATION_VECTOR, &conf);
     printf("Set config of rotation vec, error id %d\n", err);
 
+    // print the product IDs of the sensor (for testing)
     sh2_ProductIds_t prodIds = {0};
     printf("Prod id return code: %d\n", sh2_getProdIds(&prodIds));
     puts("===== BNO080 Product IDs =====");

@@ -219,7 +219,11 @@ extern bool MOTOR_BR_REVERSED;
 #define ACC_FULL_SCALE_8_G 0x10
 #define ACC_FULL_SCALE_16_G 0x18
 
-#define DMP_RATE 200 // DMP update rate in Hz, max is 200
+// FIXME actual values go here
+#define BNO_RSTN_PIN 69
+#define BNO_BOOTN_PIN 69
+#define BNO_BUS I2C_NUM_1
+#define BNO_INTN_PIN 69
 
 // Orbit
 extern uint8_t BALL_FAR_STRENGTH;

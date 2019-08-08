@@ -24,6 +24,7 @@
 
 #ifndef SH2_HAL_IMPL_H
 #define SH2_HAL_IMPL_H
+#include "defines.h"
 
 #define SH2_HAL_MAX_TRANSFER (256)
 
