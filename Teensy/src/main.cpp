@@ -32,7 +32,7 @@ Playmode playmode;
 
 // PIDs
 PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
-PID goalPID(GOAL_KP, GOAL_KI, GOAL_KD, HEADING_MAX_CORRECTION);
+PID goalPID(GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION);
 PID goaliePID(GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX);
 
 // LED Stuff
@@ -130,6 +130,8 @@ void setup() {
     // Init motor pins
     move.set();
 
+    playmode.init();
+
     pinMode(LED_BUILTIN, OUTPUT);
     // digitalWrite(LED_BUILTIN, HIGH);
 }
@@ -192,19 +194,19 @@ void loop() {
 
 
     // Calculate orientation stuff
-    if(playmode.getGoalVisibility() && ENEMY_GOAL != 2 && !noBallTimer.timeHasPassedNoUpdate()){
-        #if DEFENCE
-        orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
-        #else
-        orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
-        #endif
-    }
-    else{
+    // if(playmode.getGoalVisibility() && ENEMY_GOAL != 2 && !noBallTimer.timeHasPassedNoUpdate()){
+    //     #if DEFENCE
+    //     orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+    //     #else
+    //     orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+    //     #endif
+    // }
+    // else{
         orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
-    }
-
+    // }
+ 
     if(noBallTimer.timeHasPassedNoUpdate()) playmode.centre(imu.heading); // If ball is not visible for a period of time, centre
-
+    // playmode.centre(imu.heading);
 
     // Update motors
     direction = playmode.getDirection();
