@@ -67,14 +67,13 @@ static int i2c_rx(uint8_t addr, uint8_t *pData, size_t len){
 }
 
 static void sensor_task(void *pvParams){
-    Event_t event;
+    Event_t event = {0};
     unsigned readLen = 0;
     unsigned cargoLen = 0;
 
     ESP_LOGI(TAG, "Sensor task init OK!");
 
     while (true) {
-        puts("reading queueue");
         xQueueReceive(eventQueue, &event, portMAX_DELAY);
 
         switch (event.id) {
@@ -90,6 +89,8 @@ static void sensor_task(void *pvParams){
                         // limit reads to transfer size
                         readLen = SH2_HAL_MAX_TRANSFER;
                     }
+
+                    ESP_LOGI(TAG, "invoking read on addr 0x%X with %d bytes", addr, readLen);
 
                     i2c_rx(addr, rxBuf, readLen);
 
@@ -123,7 +124,6 @@ static void IRAM_ATTR gpio_isr(void *arg){
 
     event.t_ms = xTaskGetTickCountFromISR();
     event.id = EVT_INTN;
-    ets_printf("ISR START\n");
     xQueueSendFromISR(eventQueue, &event, &woken);
     
     ets_printf("ISR DONE\n");
@@ -137,10 +137,14 @@ void sh2_hal_init(void){
     // initialise stuff like semaphores etc
     blockSem = xSemaphoreCreateBinary();
     eventQueue = xQueueCreate(8, sizeof(Event_t));
+    gpio_install_isr_service(0);
+    gpio_isr_handler_add(BNO_INTN_PIN, gpio_isr, 0);
+    // the docs say that the INTN pin is active low meaning the interrupt goes off when the pin goes low
+    // (it's usually high) so that means we're looking for the falling edge
+    gpio_set_intr_type(BNO_INTN_PIN, GPIO_INTR_NEGEDGE);
 
     // Put SH-2 device into reset
     gpio_set_level(BNO_RSTN_PIN, 0); // hold in reset
-    gpio_isr_handler_add(BNO_INTN_PIN, gpio_isr, 0); // install ISR
 
     // Create receive task etc
     xTaskCreate(sensor_task, "SensorTask", 4096, NULL, configMAX_PRIORITIES - 2, NULL);
@@ -151,7 +155,7 @@ int sh2_hal_reset(bool dfuMode, sh2_rxCallback_t *onRx, void *cookie){
     ESP_LOGD(TAG, "Resetting BNO080...");
     onRxCookie = cookie;
     onRxCallback = onRx;
-    addr = ADDR_SH2_0; // ignore DFU
+    addr = ADDR_SH2_1; // it appears to be address 1 instead of address 0
 
     // enable reset line, we don't use DFU so we always set it high
     gpio_set_level(BNO_RSTN_PIN, 0);

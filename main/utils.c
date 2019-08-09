@@ -304,7 +304,7 @@ void i2c_scanner(i2c_port_t port){
 		i2c_master_write_byte(cmd, (i << 1) | I2C_MASTER_WRITE, 1 /* expect ack */);
 		i2c_master_stop(cmd);
 
-		espRc = i2c_master_cmd_begin(port, cmd, 1000 / portTICK_PERIOD_MS);
+		espRc = i2c_master_cmd_begin(port, cmd, 75 / portTICK_PERIOD_MS);
 		if (i%16 == 0) {
 			printf("\n%.2x:", i);
 		}

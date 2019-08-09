@@ -24,11 +24,12 @@
 
 #ifndef SH2_HAL_IMPL_H
 #define SH2_HAL_IMPL_H
-#include "defines.h"
 
 #define SH2_HAL_MAX_TRANSFER (256)
 
 // begin custom code
+#include "utils.h"
+#include "defines.h"
 
 /** Initialises the ESP SH2 HAL */
 void sh2_hal_init(void);

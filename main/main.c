@@ -81,8 +81,7 @@ static void master_task(void *pvParameter){
     // Initialise comms and hardware
     comms_i2c_init(I2C_NUM_0);
     comms_i2c_init(I2C_NUM_1);
-    // cam_init();
-    gpio_install_isr_service(0); // install GPIO ISR service, needed for BNO080
+    cam_init();
     gpio_set_direction(BNO_RSTN_PIN, GPIO_MODE_OUTPUT);
     gpio_set_direction(BNO_INTN_PIN, GPIO_MODE_INPUT);
 
@@ -91,8 +90,6 @@ static void master_task(void *pvParameter){
     sh2_initialize(bno_event_handler, NULL);
     sh2_setSensorCallback(bno_sensor_handler, NULL);
     vTaskDelay(pdMS_TO_TICKS(250)); // wait for init
-
-    puts("setting cal config");
 
     // enable dynamic planar calibration (apparently used on robotic vacuum cleaners which is similar to us)
     sh2_setCalConfig(SH2_CAL_PLANAR);
@@ -147,6 +144,9 @@ static void master_task(void *pvParameter){
     while (true){
         // update sensors
         // cam_calc();
+        // TODO check BNO event queue
+
+        TASK_HALT; // FIXME remove this after BNO init testing
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -223,52 +223,6 @@ static void master_task(void *pvParameter){
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
-    }
-}
-
-void motor_test_task(void *pvParameter){
-    static const char *TAG = "TestTask";
-    uint8_t dataIn[10] = {0};
-    uint8_t dataOut[] = {'E', 'S', 'P', '2', 'T', 'E', 'E', 'N', 'S', 'Y'};
-
-    spi_bus_config_t conf = {
-        .mosi_io_num = 13,
-        .miso_io_num = 12,
-        .sclk_io_num = 14,
-        .max_transfer_sz = 256,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-    };
-    ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &conf, 1));
-
-    spi_device_handle_t teensyHandle = NULL;
-    spi_device_interface_config_t teensyConf = {
-        .mode = 0,
-        .clock_speed_hz = SPI_MASTER_FREQ_8M,
-        .queue_size = 3,
-        .spics_io_num = 15, // TODO make this a define (chip select pin)
-        .duty_cycle_pos = 128, // 50% duty cycle
-        .command_bits = 0,
-        .address_bits = 0,
-        .dummy_bits = 0,
-        .cs_ena_posttrans = 3
-    };
-    ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &teensyConf, &teensyHandle));
-
-    while (true){
-        memset(dataIn, 0, 10);
-
-        spi_transaction_t trans = {0};
-        trans.length = 10 * 8;
-        trans.tx_buffer = dataOut;
-        trans.rx_buffer = dataIn;
-        ESP_ERROR_CHECK(spi_device_transmit(teensyHandle, &trans));
-
-        size_t len = trans.rxlength / 8;
-        ESP_LOGI(TAG, "Transmission completed, received %d bytes", len);
-        ESP_LOG_BUFFER_HEXDUMP(TAG, trans.rx_buffer, len, ESP_LOG_INFO);
-
-        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 

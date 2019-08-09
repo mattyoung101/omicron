@@ -21,20 +21,20 @@ static const char *TAG = "CommsI2C";
 void comms_i2c_init(i2c_port_t port){
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
-        .sda_io_num = port == I2C_NUM_0 ? 21 : 25,
-        .sda_pullup_en = GPIO_PULLUP_DISABLE,
-        .scl_io_num = port == I2C_NUM_1 ? 22 : 26,
-        .scl_pullup_en = GPIO_PULLUP_DISABLE,
+        .sda_io_num = (port == I2C_NUM_0 ? 21 : 25),
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_io_num = (port == I2C_NUM_0 ? 22 : 26),
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
         // 0.8 MHz, max is 1 MHz, unit is Hz
         // NOTE: 1MHz tends to break the i2c packets - use with caution!!
-        .master.clk_speed = 400000,
+        .master.clk_speed = 800000,
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
     // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
-    // TODO do we still need this hack given that we don't have a Nano?
+    // TODO we still need this hack?
     ESP_ERROR_CHECK(i2c_set_timeout(port, 0xFFFF));
-    
+
     ESP_LOGI("CommsI2C_M", "I2C init OK on bus %d", port);
 }
 
