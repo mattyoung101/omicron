@@ -194,16 +194,16 @@ void loop() {
 
 
     // Calculate orientation stuff
-    // if(playmode.getGoalVisibility() && ENEMY_GOAL != 2 && !noBallTimer.timeHasPassedNoUpdate()){
-    //     #if DEFENCE
-    //     orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
-    //     #else
-    //     orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
-    //     #endif
-    // }
-    // else{
+    if(playmode.getGoalVisibility() && ENEMY_GOAL != 2 && !noBallTimer.timeHasPassedNoUpdate()){
+        #if DEFENCE
+        orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+        #else
+        orientation = ((int)round(-goalPID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
+        #endif
+    }
+    else{
         orientation = (int)round(headingPID.update(doubleMod(doubleMod(imu.heading, 360) + 180, 360) - 180, 0)) % 360;
-    // }
+    }
  
     if(noBallTimer.timeHasPassedNoUpdate()) playmode.centre(imu.heading); // If ball is not visible for a period of time, centre
     // playmode.centre(imu.heading);
@@ -249,7 +249,7 @@ void loop() {
     
     // Print stuffs
     // Serial.printf("BallData - angle: %d, strength: %d, exists: %d", playmode.getBallAngle(), playmode.getBallDistance(), playmode.getBallExist());
-    // Serial.printf("MoveData - direction: %d, orientation: %d, speed: %d", cam.orange.x, cam.orange.y, cam.orange.exists);
+    Serial.printf("YellowGoal - angle: %d, length: %d, exists: %d", cam.yellow.angle, cam.yellow.length, cam.yellow.exists);
     // Serial.print(imu.heading);
     Serial.println();
 }

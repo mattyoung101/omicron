@@ -22,23 +22,23 @@
 
 // --- Orbit --- //
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 45
-#define ORBIT_SPEED_SLOW 80
-#define ORBIT_SPEED_FAST 40
+#define BALL_CLOSE_STRENGTH 40
+#define ORBIT_SPEED_SLOW 60
+#define ORBIT_SPEED_FAST 50
 #define BALL_INFRONT_ANGLE 20
-#define YEET_SPEED 80
+#define YEET_SPEED 70
 
-#define GOAL_KP 0.6
+#define GOAL_KP 1
 #define GOAL_KI 0
-#define GOAL_KD 1
-#define GOAL_MAX_CORRECTION 100
+#define GOAL_KD 0.5
+#define GOAL_MAX_CORRECTION 80
 
 #define HEADING_KP 2.5
 #define HEADING_KI 0
 #define HEADING_KD 0.2
 #define HEADING_MAX_CORRECTION 100
 
-#define IDLE_DISTANCE 100
+#define IDLE_DISTANCE 78
 
 // --- Defence --- //
 #define SIDE_KP 5
@@ -65,14 +65,15 @@
 // --- Camera Settings --- //
 
 #define CAM_DATA_LENGTH 10
-#define CAM_CENTRE_X 120
-#define CAM_CENTRE_Y 120
+#define CAM_CENTRE_X 115
+#define CAM_CENTRE_Y 115
 #define CAM_BEGIN_BYTE 0xB
+#define CAM_END_BYTE 0xE
 
 // --- Light Sensors --- //
 
 #define LS_NUM 36
-#define DEBUG_DATA true
+#define DEBUG_DATA false
 #define DEBUG_RAW false
 
 #define LS_CALIBRATION_COUNT 10

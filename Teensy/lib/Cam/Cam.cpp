@@ -24,21 +24,22 @@ void Camera::read(){
                 buf[i] = CAM_SERIAL.read();
             }
 
-            blue.exists = buf[1];
-            blue.x = buf[2] - CAM_CENTRE_X;
-            blue.y = buf[3] - CAM_CENTRE_Y;
+            // if(buf[CAM_DATA_LENGTH] == CAM_END_BYTE){
+                blue.exists = buf[1];
+                blue.x = buf[2] - CAM_CENTRE_X;
+                blue.y = buf[3] - CAM_CENTRE_Y;
 
-            yellow.exists = buf[4];
-            yellow.x = buf[5] - CAM_CENTRE_X;
-            yellow.y = buf[6] - CAM_CENTRE_Y;
+                yellow.exists = buf[4];
+                yellow.x = buf[5] - CAM_CENTRE_X;
+                yellow.y = buf[6] - CAM_CENTRE_Y;
 
-            orange.exists = buf[7];
-            orange.x = buf[8] - CAM_CENTRE_X;
-            orange.y = buf[9] - CAM_CENTRE_Y;
+                orange.exists = buf[7];
+                orange.x = buf[8] - CAM_CENTRE_X;
+                orange.y = buf[9] - CAM_CENTRE_Y;
 
-            lastCall = millis();
-
-            // for(int i = 0; i < 10; i++){
+                lastCall = millis();
+            // }
+            // for(int i = 0; i < CAM_DATA_LENGTH; i++){
             //     Serial.print(buf[i]);
             //     Serial.print(" ");
             // }
