@@ -5,7 +5,7 @@
 // --- Code Activation Defines --- //
 #define ESP_I2C_ON false
 #define MPU_I2C_ON true
-#define CALIBRATE_MPU false
+#define CALIBRATE_MPU true
 #define CAM_ON true
 #define LS_ON true
 #define LRFS_ON false
@@ -23,14 +23,14 @@
 // --- Orbit --- //
 #define BALL_FAR_STRENGTH 100
 #define BALL_CLOSE_STRENGTH 40
-#define ORBIT_SPEED_SLOW 80
-#define ORBIT_SPEED_FAST 70
+#define ORBIT_SPEED_SLOW 40
+#define ORBIT_SPEED_FAST 55
 #define BALL_INFRONT_ANGLE 20
-#define YEET_SPEED 100
+#define YEET_SPEED 70
 
 #define GOAL_KP 1.2
 #define GOAL_KI 0
-#define GOAL_KD 1.5
+#define GOAL_KD 2
 #define GOAL_MAX_CORRECTION 80
 
 #define HEADING_KP 2.5
@@ -38,7 +38,7 @@
 #define HEADING_KD 0.2
 #define HEADING_MAX_CORRECTION 100
 
-#define IDLE_DISTANCE 78
+#define IDLE_DISTANCE 88
 
 // --- Defence --- //
 #define SIDE_KP 5
