@@ -174,7 +174,7 @@ void Playmode::calculateLineAvoidance(double heading){
             }
         }
     }
-
+    // Serial.println(heading);
     // Serial.printf("lineAngle: %f, ballRight: %d, ballLeft: %d\n",lineAngle,ballAngle+90,ballAngle-90);
     // Serial.printf("lineAngle: %f, lineSize: %f, trueLineAngle: %f, trueLineSize: %f\n",lineAngle,lineSize,trueLineAngle,trueLineSize);
 }
@@ -188,10 +188,10 @@ void Playmode::updateGoal(int angle, int distance, bool visible){
 void Playmode::updateLine(double angle, double size, double heading){
     size /= 100;
     isOnLine = angle == NO_LINE_ANGLE ? false : true;
-    lineAngle = angle == NO_LINE_ANGLE ? angle : doubleMod(angle+heading, 360);
+    lineAngle = angle;
     lineSize = size;
 
-    // Serial.printf("isOnLine: %d, lineAngle: %d\n", isOnLine, lineAngle);
+    // Serial.printf("lineAngle: %f, lineSize: %f\n", lineAngle, lineSize);
 }
 
 // y = -27.69ln(x) + 164.05

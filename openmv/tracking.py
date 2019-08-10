@@ -9,9 +9,9 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(49, 70, -10, 15, 15, 53), # yellow
-             (31, 39, -8, 21, -59, -22), # blue
-             (44, 63, 28, 69, 2, 52)] # orange
+thresholds = [(65, 87, -8, 52, 34, 69), # yellow
+             (43, 74, -27, 49, -79, -25), # blue
+             (58, 70, 50, 75, 6, 43)] # orange
 
 # Robot A
 # Yellow (53, 66, 1, 25, 3, 42)
@@ -55,14 +55,14 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
+sensor.set_auto_exposure(False, exposure_us = 15000)
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-6.02073, -6.02073, 0.5258464)))
+rgb_gain_db=((-5.243186, -6.02073, -0.7813516)))
 
 # Standard
-sensor.set_brightness(0)
+sensor.set_brightness(1)
 sensor.set_contrast(0)
 sensor.set_saturation(0)
 
@@ -107,8 +107,8 @@ while True:
     begin = utime.time()
     clock.tick()
     img = sensor.snapshot()
-    blobs = img.find_blobs(thresholds, x_stride=5, y_stride=5, pixels_threshold=15,
-            area_threshold=15, merge=True, margin=2)
+    blobs = img.find_blobs(thresholds, x_stride=3, y_stride=3, pixels_threshold=15,
+            area_threshold=15, merge=False, margin=2)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)
 

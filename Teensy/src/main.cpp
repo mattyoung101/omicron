@@ -190,8 +190,6 @@ void loop() {
     playmode.calculateOrbit();
     #endif
 
-    playmode.calculateLineAvoidance(imu.heading);
-
 
     // Calculate orientation stuff
     if(playmode.getGoalVisibility() && ENEMY_GOAL != 2 && !noBallTimer.timeHasPassedNoUpdate()){
@@ -207,6 +205,7 @@ void loop() {
  
     if(noBallTimer.timeHasPassedNoUpdate()) playmode.centre(imu.heading); // If ball is not visible for a period of time, centre
     // playmode.centre(imu.heading);
+    playmode.calculateLineAvoidance(imu.heading);
 
     // Update motors
     direction = playmode.getDirection();
@@ -249,9 +248,9 @@ void loop() {
     
     // Print stuffs
     // Serial.printf("BallData - angle: %d, strength: %d, exists: %d", playmode.getBallAngle(), playmode.getBallDistance(), playmode.getBallExist());
-    Serial.printf("YellowGoal - angle: %d, length: %d, exists: %d", cam.yellow.angle, cam.yellow.length, cam.yellow.exists);
+    // Serial.printf("YellowGoal - angle: %d, length: %d, exists: %d", cam.yellow.angle, cam.yellow.length, cam.yellow.exists);
     // Serial.print(imu.heading);
-    Serial.println();
+    // Serial.println();
 }
 
 #if ESP_I2C_ON

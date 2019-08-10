@@ -28,9 +28,9 @@
 #define BALL_INFRONT_ANGLE 20
 #define YEET_SPEED 70
 
-#define GOAL_KP 1
+#define GOAL_KP 1.2
 #define GOAL_KI 0
-#define GOAL_KD 0.5
+#define GOAL_KD 0.8
 #define GOAL_MAX_CORRECTION 80
 
 #define HEADING_KP 2.5
