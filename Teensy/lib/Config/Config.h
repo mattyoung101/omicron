@@ -23,14 +23,14 @@
 // --- Orbit --- //
 #define BALL_FAR_STRENGTH 100
 #define BALL_CLOSE_STRENGTH 40
-#define ORBIT_SPEED_SLOW 60
-#define ORBIT_SPEED_FAST 50
+#define ORBIT_SPEED_SLOW 80
+#define ORBIT_SPEED_FAST 70
 #define BALL_INFRONT_ANGLE 20
-#define YEET_SPEED 70
+#define YEET_SPEED 100
 
 #define GOAL_KP 1.2
 #define GOAL_KI 0
-#define GOAL_KD 0.8
+#define GOAL_KD 1.5
 #define GOAL_MAX_CORRECTION 80
 
 #define HEADING_KP 2.5

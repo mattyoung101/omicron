@@ -9,7 +9,7 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(65, 87, -8, 52, 34, 69), # yellow
+thresholds = [(56, 70, 2, 22, 24, 63), # yellow
              (43, 74, -27, 49, -79, -25), # blue
              (58, 70, 50, 75, 6, 43)] # orange
 
