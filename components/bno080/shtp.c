@@ -277,6 +277,8 @@ uint8_t shtp_chanNo(const char * appName, const char * chanName)
 int shtp_send(uint8_t chan, uint8_t *payload, uint16_t len)
 {
     int ret = SH2_OK;
+
+    printfln("shtp_send(chan = %d, payload = %d, len = %d)", chan, *payload, len);
     
     if (len > shtp.outMaxPayload) {
         return SH2_ERR_BAD_PARAM;
@@ -740,6 +742,8 @@ static int txProcess(uint8_t chan, uint8_t* pData, uint32_t len)
     bool continuation = false;
     uint16_t cursor = 0;
     uint16_t remaining = len;
+
+    printfln("txProcess(%d, %d, %d)", chan, *pData, len);
 
     while (remaining > 0) {
         // determine length of this transfer

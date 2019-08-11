@@ -63,23 +63,27 @@ static int i2c_rx(uint8_t addr, uint8_t *pData, size_t len){
         ESP_LOGE(TAG, "I2C error in i2c_rx (sh2_hal_esp): %s", esp_err_to_name(err));
         return SH2_ERR_IO;
     }
+    ESP_LOGI(TAG, "read successful!");
     return SH2_OK;
 }
 
 static void sensor_task(void *pvParams){
     Event_t event = {0};
-    unsigned readLen = 0;
-    unsigned cargoLen = 0;
+    size_t readLen = 0;
+    size_t cargoLen = 0;
 
     ESP_LOGI(TAG, "Sensor task init OK!");
 
     while (true) {
         xQueueReceive(eventQueue, &event, portMAX_DELAY);
+        ESP_LOGD(TAG, "new event from queue");
 
         switch (event.id) {
             case EVT_INTN:
                 if (onRxCallback != 0) {
                     readLen = rxRemaining;
+
+                    ESP_LOGD(TAG, "readLen before fixing: %d", readLen);
                     
                     if (readLen < SHTP_HEADER_LEN) {
                         // always read at least the SHTP header
@@ -90,22 +94,27 @@ static void sensor_task(void *pvParams){
                         readLen = SH2_HAL_MAX_TRANSFER;
                     }
 
-                    ESP_LOGI(TAG, "invoking read on addr 0x%X with %d bytes", addr, readLen);
+                    ESP_LOGD(TAG, "invoking read on addr 0x%X with %d bytes", addr, readLen);
 
                     i2c_rx(addr, rxBuf, readLen);
+                    ESP_LOG_BUFFER_HEXDUMP(TAG, rxBuf, readLen, ESP_LOG_INFO);
 
                     // Get total cargo length from SHTP header
                     cargoLen = ((rxBuf[1] << 8) + (rxBuf[0])) & (~0x8000);
                 
                     // Re-evaluate rxRemaining
                     if (cargoLen > readLen) {
+                        ESP_LOGD(TAG, "more to read");
                         // More to read.
                         rxRemaining = (cargoLen - readLen) + SHTP_HEADER_LEN;
                     }
                     else {
+                        ESP_LOGD(TAG, "read completed");
                         // All done, next read should be header only.
                         rxRemaining = 0;
                     }
+
+                    ESP_LOGD(TAG, "delivering callback");
 
                     // Deliver via onRxCallback callback
                     onRxCallback(onRxCookie, rxBuf, readLen, event.t_ms * 1000);
@@ -126,7 +135,7 @@ static void IRAM_ATTR gpio_isr(void *arg){
     event.id = EVT_INTN;
     xQueueSendFromISR(eventQueue, &event, &woken);
     
-    ets_printf("ISR DONE\n");
+    ets_printf("---> ISR invoked, t_ms=%d\n", event.t_ms);
 
     if (woken) portYIELD_FROM_ISR();
 }
@@ -200,14 +209,17 @@ int sh2_hal_rx(uint8_t *pData, uint32_t len){
     return i2c_rx(addr, pData, len);
 }
 
+
+// TODO i2c rx and tx is blocking so in theory we shouldn't have to block here?
+
 int sh2_hal_block(void){
-    ESP_LOGI(TAG, "sh2_hal_block");
+    // ESP_LOGI(TAG, "sh2_hal_block");
     // xSemaphoreTake(blockSem, portMAX_DELAY);
     return SH2_OK;
 }
 
 int sh2_hal_unblock(void){
-    ESP_LOGI(TAG, "sh2_hal_unblock");
+    // ESP_LOGI(TAG, "sh2_hal_unblock");
     // xSemaphoreGive(blockSem);
     return SH2_OK;
 }

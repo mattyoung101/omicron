@@ -1123,6 +1123,7 @@ static int opStart(const sh2_Op_t *pOp)
 
     // Establish this operation as the new operation in progress
     sh2.pOp = pOp;
+    puts("Starting operation");
     int rc = pOp->start();  // Call start method
     if (rc != SH2_OK) {
         // Operation failed to start
@@ -1215,6 +1216,8 @@ static int getProdIdStart(void)
 {
     int rc = SH2_OK;
     ProdIdReq_t req;
+
+    puts("getProdIdStart()");
     
     // Set up request to issue
     memset(&req, 0, sizeof(req));
@@ -1265,6 +1268,8 @@ static void getProdIdRx(const uint8_t *payload, uint16_t len)
         sh2.opData.getProdIds.pProdIds->numEntries = sh2.opData.getProdIds.nextEntry;
 		opCompleted(SH2_OK);
 	}
+
+    puts("getProdIdRx");
 
 	return;
 }

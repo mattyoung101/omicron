@@ -85,6 +85,10 @@ static void master_task(void *pvParameter){
     gpio_set_direction(BNO_RSTN_PIN, GPIO_MODE_OUTPUT);
     gpio_set_direction(BNO_INTN_PIN, GPIO_MODE_INPUT);
 
+    ESP_LOGI(TAG, "Waiting..."); // (for debug so the sensor doesn't init)
+    vTaskDelay(pdMS_TO_TICKS(5000));
+    ESP_LOGI(TAG, "Running!");
+
     // Initialise BNO
     sh2_hal_init();
     sh2_initialize(bno_event_handler, NULL);
