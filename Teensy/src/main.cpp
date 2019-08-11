@@ -213,6 +213,11 @@ void loop() {
     // targetDirection = playmode.getDirection();
     // targetSpeed = playmode.getSpeed();
 
+    if(millis() < YEET_TIMER) {
+        direction = 0;
+        speed = 100;
+    }
+
     // calcAccel();
     move.motorCalc(direction, orientation, speed);
     move.go(false);

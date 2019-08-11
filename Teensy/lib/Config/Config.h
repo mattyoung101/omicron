@@ -10,7 +10,7 @@
 #define LS_ON true
 #define LRFS_ON false
 #define LED_ON true
-
+#define YEET_TIMER 4000
 // --- Game Settings --- //
 #define DEFENCE false
 #define ENEMY_GOAL 0 //0: Yellow, 1: Blue, 2: OFF
@@ -22,11 +22,12 @@
 
 // --- Orbit --- //
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 40
-#define ORBIT_SPEED_SLOW 40
-#define ORBIT_SPEED_FAST 55
-#define BALL_INFRONT_ANGLE 20
-#define YEET_SPEED 70
+#define BALL_CLOSE_STRENGTH 38
+#define ORBIT_SPEED_SLOW 50
+#define ORBIT_SPEED_FAST 60
+#define BALL_INFRONT_ANGLE 10
+#define YEET_SPEED 100
+#define GOAL_INFRONT_ANGLE 5
 
 #define GOAL_KP 1.2
 #define GOAL_KI 0
