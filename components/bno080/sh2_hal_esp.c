@@ -170,7 +170,7 @@ int sh2_hal_reset(bool dfuMode, sh2_rxCallback_t *onRx, void *cookie){
     gpio_set_level(BNO_RSTN_PIN, 0);
 
     // wait for reset to take effect
-    vTaskDelay(pdMS_TO_TICKS(250));
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
     // disable reset line
     gpio_set_level(BNO_RSTN_PIN, 1);
