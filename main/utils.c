@@ -1,6 +1,7 @@
 #include "utils.h"
-#include "simple_imu.h"
 // #include "esp_err.h"
+
+float heading = 0.0;
 
 // Hecking PIDs
 // Orientation Correction PIDs
@@ -390,6 +391,53 @@ bool log_once_check(char *msg){
 void log_once_reset(){
     msgIndex = 0;
     memset(loggedMessages, 0, LOGGED_MSG_SIZE);
+}
+
+s8 bno055_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
+    static const char *TAG = "BNO055_HAL";
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    ESP_ERROR_CHECK(i2c_master_start(cmd));
+    // first, send device address (indicating write) & register to be read
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (dev_addr << 1), I2C_ACK_MODE));
+    // send register we want
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, reg_addr, I2C_ACK_MODE));
+    // Send repeated start
+    ESP_ERROR_CHECK(i2c_master_start(cmd));
+    // now send device address (indicating read) & read data
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_READ, I2C_ACK_MODE));
+    if (cnt > 1) {
+        ESP_ERROR_CHECK(i2c_master_read(cmd, reg_data, cnt - 1, 0x0));
+    }
+    ESP_ERROR_CHECK(i2c_master_read_byte(cmd, reg_data + cnt - 1, 0x1));
+    ESP_ERROR_CHECK(i2c_master_stop(cmd));
+    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    i2c_cmd_link_delete(cmd);
+
+    I2C_ERR_CHECK(ret);
+    return 0;
+}
+
+s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
+    static const char *TAG = "BNO055_HAL";
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    ESP_ERROR_CHECK(i2c_master_start(cmd));
+
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, I2C_ACK_MODE));
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, reg_addr, true));
+    ESP_ERROR_CHECK(i2c_master_write(cmd, reg_data, cnt, true));
+    ESP_ERROR_CHECK(i2c_master_stop(cmd));
+
+    esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    i2c_cmd_link_delete(cmd);
+
+    I2C_ERR_CHECK(err);
+    return 0;
+}
+
+void bno055_delay_ms(u32 msec){
+    ets_delay_us(msec / 1000);
 }
 
 #undef LOGGED_MSG_SIZE

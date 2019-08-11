@@ -29,10 +29,7 @@
 #include "i2c.pb.h"
 #include "lrf.h"
 #include "driver/spi_master.h"
-#include "sh2.h"
-#include "sh2_err.h"
-#include "sh2_SensorValue.h"
-#include "sh2_hal.h"
+#include "bno055.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -44,6 +41,7 @@
 
 state_machine_t *stateMachine = NULL;
 static const char *RST_TAG = "ResetReason";
+static struct bno055_t bno055 = {0};
 
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
@@ -56,19 +54,6 @@ static void print_reset_reason(){
     }
 }
 
-// BNO-080 event handlers
-static QueueHandle_t bnoEvtQueue = NULL;
-static void bno_event_handler(void *cookie, sh2_AsyncEvent_t *pEvent){
-    printf("bno_event_handler id: %d\n", pEvent->eventId);
-    if (pEvent->eventId == SH2_RESET){
-        ESP_LOGI("BNO080", "BNO080 reset performed");
-    }
-}
-static void bno_sensor_handler(void *cookie, sh2_SensorEvent_t *pEvent){
-    printf("bno_sensor_handler report id: %d\n", pEvent->reportId);
-    xQueueSend(bnoEvtQueue, pEvent, pdMS_TO_TICKS(250));
-}
-
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
 static void master_task(void *pvParameter){
@@ -76,45 +61,17 @@ static void master_task(void *pvParameter){
     uint8_t robotId = 69;
 
     print_reset_reason();
-    bnoEvtQueue = xQueueCreate(8, sizeof(sh2_SensorEvent_t));
 
     // Initialise comms and hardware
     comms_i2c_init(I2C_NUM_0);
     comms_i2c_init(I2C_NUM_1);
     cam_init();
-    gpio_set_direction(BNO_RSTN_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_direction(BNO_INTN_PIN, GPIO_MODE_INPUT);
-
-    ESP_LOGI(TAG, "Waiting..."); // (for debug so the sensor doesn't init)
-    vTaskDelay(pdMS_TO_TICKS(5000));
-    ESP_LOGI(TAG, "Running!");
-
-    // Initialise BNO
-    sh2_hal_init();
-    sh2_initialize(bno_event_handler, NULL);
-    sh2_setSensorCallback(bno_sensor_handler, NULL);
-    vTaskDelay(pdMS_TO_TICKS(250)); // wait for init
-
-    // enable dynamic planar calibration (apparently used on robotic vacuum cleaners which is similar to us)
-    sh2_setCalConfig(SH2_CAL_PLANAR);
-
-    // Initialise the rotation vector sensor on BNO
-    sh2_SensorConfig_t conf = {0};
-    conf.alwaysOnEnabled = true;
-    conf.reportInterval_us = 10000;
-    int err = sh2_setSensorConfig(SH2_ROTATION_VECTOR, &conf);
-    printf("Set config of rotation vec, error id %d\n", err);
-
-    // print the product IDs of the sensor (for testing)
-    sh2_ProductIds_t prodIds = {0};
-    printf("Prod id return code: %d\n", sh2_getProdIds(&prodIds));
-    puts("===== BNO080 Product IDs =====");
-    for (int n = 0; n < prodIds.numEntries; n++) {
-        printf("Part %d : Version %d.%d.%d Build %d\n",
-               prodIds.entry[n].swPartNumber,
-               prodIds.entry[n].swVersionMajor, prodIds.entry[n].swVersionMinor, 
-               prodIds.entry[n].swVersionPatch, prodIds.entry[n].swBuildNumber);
-    }
+    bno055.bus_read = bno055_read;
+    bno055.bus_write = bno055_write;
+    bno055.delay_msec = bno055_delay_ms;
+    bno055.dev_addr = BNO055_I2C_ADDR2;
+    s8 result = bno055_init(&bno055);
+    ESP_LOGI(TAG, "BNO055 init code: %d", result);
 
     i2c_scanner(I2C_NUM_0);
     i2c_scanner(I2C_NUM_1);
@@ -147,10 +104,8 @@ static void master_task(void *pvParameter){
 
     while (true){
         // update sensors
-        // cam_calc();
-        // TODO check BNO event queue
-
-        TASK_HALT; // FIXME remove this after BNO init testing
+        cam_calc();
+        // TODO update BNO
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 

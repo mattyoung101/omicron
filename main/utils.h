@@ -10,6 +10,7 @@
 #include "pid.h"
 #include "states.h"
 #include "cam.h"
+#include "bno055.h"
 // literally the world's stupidest fucking hack to make it compile
 #ifdef HANDMADE_MATH_IMPLEMENTATION
     #undef HANDMADE_MATH_IMPLEMENTATION
@@ -147,3 +148,11 @@ void print_motion_data(robot_state_t *robotState);
 bool log_once_check(char *msg);
 /** Resets the list of already logged messages **/
 void log_once_reset();
+
+extern float heading; // hack to make it compile
+// FIXME once we get the BNO to actually work
+
+// BNO-055 HAL
+s8 bno055_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
+s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
+void bno055_delay_ms(u32 msec);

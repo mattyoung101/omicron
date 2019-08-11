@@ -1,5 +1,4 @@
 #include "states.h"
-#include "simple_imu.h"
 #include "utils.h"
 
 robot_state_t robotState = {0};
