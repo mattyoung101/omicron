@@ -49,6 +49,7 @@ inline int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, i
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+// Source: https://stackoverflow.com/a/11412077/5007892 
 bool is_angle_between(float target, float angle1, float angle2){
 	// make the angle from angle1 to angle2 to be <= 180 degrees
 	float rAngle = fmodf(fmodf(angle2 - angle1, 360.0f) + 360.0f, 360.0f);
@@ -437,7 +438,24 @@ s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
 }
 
 void bno055_delay_ms(u32 msec){
-    ets_delay_us(msec / 1000);
+    // ets_delay_us(msec / 1000); // (if precision is required)
+    vTaskDelay(pdMS_TO_TICKS(msec));
 }
 
-#undef LOGGED_MSG_SIZE
+// Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
+// Modified to only work use heading
+// TODO may need the normalised version
+float quat_to_heading(float w, float x, float y, float z){
+    float test = x*y + z*w;
+	if (test > 0.499) {
+        // singularity at north pole
+		return fmodf(2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
+	}
+	if (test < -0.499) {
+        // singularity at south pole
+		return fmodf(-2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
+	}
+    float sqy = y*y;
+    float sqz = z*z;
+    return fmodf(atan2f(2*y*w-2*x*z , 1 - 2*sqy - 2*sqz) * RAD_DEG + 360.0f, 360.0f);
+}

@@ -41,7 +41,6 @@
 
 state_machine_t *stateMachine = NULL;
 static const char *RST_TAG = "ResetReason";
-static struct bno055_t bno055 = {0};
 
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
@@ -59,22 +58,36 @@ static void print_reset_reason(){
 static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
+    struct bno055_t bno055 = {0};
+    struct bno055_quaternion_t quat = {0};
+    s16 eYawRaw = 0; // raw euler yaw data
+    float eYaw = 0.0f; // converted euler yaw data
+    u8 sysCalib = 0;
+    u8 magCalib = 0;
+    u8 gyroCalib = 0;
+    u8 accelCalib = 0;
 
     print_reset_reason();
 
     // Initialise comms and hardware
     comms_i2c_init(I2C_NUM_0);
     comms_i2c_init(I2C_NUM_1);
+    i2c_scanner(I2C_NUM_0);
+    i2c_scanner(I2C_NUM_1);
     cam_init();
     bno055.bus_read = bno055_read;
     bno055.bus_write = bno055_write;
     bno055.delay_msec = bno055_delay_ms;
     bno055.dev_addr = BNO055_I2C_ADDR2;
-    s8 result = bno055_init(&bno055);
-    ESP_LOGI(TAG, "BNO055 init code: %d", result);
 
-    i2c_scanner(I2C_NUM_0);
-    i2c_scanner(I2C_NUM_1);
+    s8 result = bno055_init(&bno055);
+    result += bno055_set_power_mode(BNO055_POWER_MODE_NORMAL);
+    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_NDOF);
+    if (result == 0){
+        ESP_LOGI(TAG, "BNO055 init OK!");
+    } else {
+        ESP_LOGE(TAG, "BNO055 init error, current status: %d", result);
+    }
 
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
@@ -103,9 +116,24 @@ static void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
+        PERF_TIMER_START;
         // update sensors
         cam_calc();
-        // TODO update BNO
+        bno055_read_quaternion_wxyz(&quat);
+        bno055_read_euler_h(&eYawRaw);
+        bno055_convert_float_euler_h_deg(&eYaw);
+        bno055_get_sys_calib_stat(&sysCalib);
+        bno055_get_mag_calib_stat(&magCalib);
+        bno055_get_accel_calib_stat(&accelCalib);
+        bno055_get_gyro_calib_stat(&gyroCalib);
+        // NOTE: we get quat and convert to euler because there's a bug where the euler angles if tilt exceeds 45 deg
+
+        float heading = quat_to_heading(quat.w * BNO_QUAT_FLOAT, -quat.y * BNO_QUAT_FLOAT, quat.x * BNO_QUAT_FLOAT,
+                        -quat.z * BNO_QUAT_FLOAT);
+        ESP_LOGI(TAG, "Heading: %f, Quat: %d %d %d %d, Euler heading: %f", heading, quat.w, quat.x, quat.y, quat.z, eYaw);
+        ESP_LOGI(TAG, "Overall: %d, Mag: %d, Accel: %d, Gyro: %d", sysCalib, magCalib, accelCalib, gyroCalib);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        goto end;
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -180,7 +208,9 @@ static void master_task(void *pvParameter){
 
         comms_i2c_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
+        end:
         esp_task_wdt_reset();
+        PERF_TIMER_STOP;
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
     }
 }

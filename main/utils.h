@@ -90,10 +90,7 @@ float lerp(float fromValue, float toValue, float progress);
 uint32_t str_hash(char *str);
 
 void i2c_scanner(i2c_port_t port);
-/** 
- * Returns true if target is between angle1 and angle2. 
- * Source: https://stackoverflow.com/a/11412077/5007892 
- **/
+/** Returns true if target is between angle1 and angle2. **/
 bool is_angle_between(float target, float angle1, float angle2);
 /** Runs IMU correction **/
 void imu_correction(robot_state_t *robotState);
@@ -156,3 +153,4 @@ extern float heading; // hack to make it compile
 s8 bno055_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
 s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
 void bno055_delay_ms(u32 msec);
+float quat_to_heading(float w, float x, float y, float z);

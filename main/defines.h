@@ -221,6 +221,9 @@ extern bool MOTOR_BR_REVERSED;
 #define BNO_BUS I2C_NUM_0
 #define BNO_INTN_PIN 16
 
+// converts quaternion units to floating point numbers on the BNO055
+#define BNO_QUAT_FLOAT (1.0f / (1 << 14))
+
 // Orbit
 extern uint8_t BALL_FAR_STRENGTH;
 extern uint8_t BALL_CLOSE_STRENGTH;
