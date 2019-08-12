@@ -59,13 +59,16 @@ static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
     struct bno055_t bno055 = {0};
-    struct bno055_quaternion_t quat = {0};
-    s16 eYawRaw = 0; // raw euler yaw data
-    float eYaw = 0.0f; // converted euler yaw data
+    s16 yawRaw = 0; // raw euler yaw data
+    float yaw = 0.0f; // converted euler yaw data
     u8 sysCalib = 0;
     u8 magCalib = 0;
     u8 gyroCalib = 0;
     u8 accelCalib = 0;
+    bno055.bus_read = bno055_read;
+    bno055.bus_write = bno055_write;
+    bno055.delay_msec = bno055_delay_ms;
+    bno055.dev_addr = BNO055_I2C_ADDR2;
 
     print_reset_reason();
 
@@ -75,14 +78,14 @@ static void master_task(void *pvParameter){
     i2c_scanner(I2C_NUM_0);
     i2c_scanner(I2C_NUM_1);
     cam_init();
-    bno055.bus_read = bno055_read;
-    bno055.bus_write = bno055_write;
-    bno055.delay_msec = bno055_delay_ms;
-    bno055.dev_addr = BNO055_I2C_ADDR2;
 
     s8 result = bno055_init(&bno055);
     result += bno055_set_power_mode(BNO055_POWER_MODE_NORMAL);
-    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_NDOF);
+    // see page 22 of the datasheet, Section 3.3.1
+    // we don't use NDOF or NDOF_FMC_OFF because it has a habit of snapping to magnetic north which is undesierable
+    // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
+    // edit this in defines.h
+    result += bno055_set_operation_mode(BNO_MODE);
     if (result == 0){
         ESP_LOGI(TAG, "BNO055 init OK!");
     } else {
@@ -116,21 +119,18 @@ static void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
-        PERF_TIMER_START;
         // update sensors
         cam_calc();
-        bno055_read_quaternion_wxyz(&quat);
-        bno055_read_euler_h(&eYawRaw);
-        bno055_convert_float_euler_h_deg(&eYaw);
+        bno055_read_euler_h(&yawRaw);
+        bno055_convert_float_euler_h_deg(&yaw);
+
         bno055_get_sys_calib_stat(&sysCalib);
         bno055_get_mag_calib_stat(&magCalib);
         bno055_get_accel_calib_stat(&accelCalib);
         bno055_get_gyro_calib_stat(&gyroCalib);
-        // NOTE: we get quat and convert to euler because there's a bug where the euler angles if tilt exceeds 45 deg
-
-        float heading = quat_to_heading(quat.w * BNO_QUAT_FLOAT, -quat.y * BNO_QUAT_FLOAT, quat.x * BNO_QUAT_FLOAT,
-                        -quat.z * BNO_QUAT_FLOAT);
-        ESP_LOGI(TAG, "Heading: %f, Quat: %d %d %d %d, Euler heading: %f", heading, quat.w, quat.x, quat.y, quat.z, eYaw);
+        // TODO we should use linear acceleration as well for robot velocity
+        
+        ESP_LOGI(TAG, "Euler heading: %f", yaw);
         ESP_LOGI(TAG, "Overall: %d, Mag: %d, Accel: %d, Gyro: %d", sysCalib, magCalib, accelCalib, gyroCalib);
         vTaskDelay(pdMS_TO_TICKS(100));
         goto end;
@@ -169,9 +169,10 @@ static void master_task(void *pvParameter){
                     robotState.inGoalLength = (int16_t) HOME_GOAL.length;
                     robotState.inGoalDistance = HOME_GOAL.distance;
                 }
-                robotState.inHeading = lastSensorUpdate.heading;
+                robotState.inHeading = yaw;
                 // robotState.inX = robotX;
                 // robotState.inY = robotY;
+                // TODO remove all these as all line stuff is done on the Teensy now
                 robotState.inBatteryVoltage = lastSensorUpdate.voltage;
                 robotState.inLineAngle = lastSensorUpdate.lineAngle;
                 robotState.inLineSize = lastSensorUpdate.lineSize;
@@ -196,10 +197,10 @@ static void master_task(void *pvParameter){
         uint8_t buf[PROTOBUF_SIZE] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
         
-        msg.direction = 69.420f;
-        msg.heading = 123.456f;
-        msg.orientation = 69.69f;
-        msg.speed = 100.0f;
+        msg.heading = yaw; // IMU heading
+        msg.direction = 69.420f; // motor direction (which way we're driving)
+        msg.orientation = 69.69f; // motor orientation (which way we're facing)
+        msg.speed = 100.0f; // motor speed as 0-100%
 
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
             ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
@@ -210,8 +211,19 @@ static void master_task(void *pvParameter){
 
         end:
         esp_task_wdt_reset();
-        PERF_TIMER_STOP;
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
+    }
+}
+
+static void gpio_test_task(void *pvParameter){
+    puts("Waiting...");
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    puts("Running test...");
+    gpio_set_direction(17, GPIO_MODE_OUTPUT);
+
+    while (true){
+        GPIO.out_w1ts = (1 << 17);
+        GPIO.out_w1tc = (1 << 17);
     }
 }
 
@@ -250,5 +262,5 @@ void app_main(){
 
     // create the main (or test, uncomment it if you want that) task 
     xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-    // xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
+    // xTaskCreatePinnedToCore(gpio_test_task, "GPIOTestTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
 }
