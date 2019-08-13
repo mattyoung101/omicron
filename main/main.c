@@ -65,7 +65,7 @@ static void master_task(void *pvParameter){
     u8 magCalib = 0;
     u8 gyroCalib = 0;
     u8 accelCalib = 0;
-    u8 swRevId = 0;
+    u16 swRevId = 0;
     u8 chipId = 0;
     bno055.bus_read = bno055_read;
     bno055.bus_write = bno055_write;
