@@ -29,10 +29,7 @@
 #include "i2c.pb.h"
 #include "lrf.h"
 #include "driver/spi_master.h"
-#include "sh2.h"
-#include "sh2_err.h"
-#include "sh2_SensorValue.h"
-#include "sh2_hal.h"
+#include "bno055.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -56,68 +53,48 @@ static void print_reset_reason(){
     }
 }
 
-// BNO-080 event handlers
-static QueueHandle_t bnoEvtQueue = NULL;
-static void bno_event_handler(void *cookie, sh2_AsyncEvent_t *pEvent){
-    printf("bno_event_handler id: %d\n", pEvent->eventId);
-    if (pEvent->eventId == SH2_RESET){
-        ESP_LOGI("BNO080", "BNO080 reset performed");
-    }
-}
-static void bno_sensor_handler(void *cookie, sh2_SensorEvent_t *pEvent){
-    printf("bno_sensor_handler report id: %d\n", pEvent->reportId);
-    xQueueSend(bnoEvtQueue, pEvent, pdMS_TO_TICKS(250));
-}
-
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
 static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
+    struct bno055_t bno055 = {0};
+    s16 yawRaw = 0; // raw euler yaw data
+    float yaw = 0.0f; // converted euler yaw data
+    u8 sysCalib = 0;
+    u8 magCalib = 0;
+    u8 gyroCalib = 0;
+    u8 accelCalib = 0;
+    u8 swRevId = 0;
+    u8 chipId = 0;
+    bno055.bus_read = bno055_read;
+    bno055.bus_write = bno055_write;
+    bno055.delay_msec = bno055_delay_ms;
+    bno055.dev_addr = BNO055_I2C_ADDR2;
 
     print_reset_reason();
-    bnoEvtQueue = xQueueCreate(8, sizeof(sh2_SensorEvent_t));
 
     // Initialise comms and hardware
     comms_i2c_init(I2C_NUM_0);
     comms_i2c_init(I2C_NUM_1);
-    cam_init();
-    gpio_set_direction(BNO_RSTN_PIN, GPIO_MODE_OUTPUT);
-    gpio_set_direction(BNO_INTN_PIN, GPIO_MODE_INPUT);
-
-    ESP_LOGI(TAG, "Waiting..."); // (for debug so the sensor doesn't init)
-    vTaskDelay(pdMS_TO_TICKS(5000));
-    ESP_LOGI(TAG, "Running!");
-
-    // Initialise BNO
-    sh2_hal_init();
-    sh2_initialize(bno_event_handler, NULL);
-    sh2_setSensorCallback(bno_sensor_handler, NULL);
-    vTaskDelay(pdMS_TO_TICKS(250)); // wait for init
-
-    // enable dynamic planar calibration (apparently used on robotic vacuum cleaners which is similar to us)
-    sh2_setCalConfig(SH2_CAL_PLANAR);
-
-    // Initialise the rotation vector sensor on BNO
-    sh2_SensorConfig_t conf = {0};
-    conf.alwaysOnEnabled = true;
-    conf.reportInterval_us = 10000;
-    int err = sh2_setSensorConfig(SH2_ROTATION_VECTOR, &conf);
-    printf("Set config of rotation vec, error id %d\n", err);
-
-    // print the product IDs of the sensor (for testing)
-    sh2_ProductIds_t prodIds = {0};
-    printf("Prod id return code: %d\n", sh2_getProdIds(&prodIds));
-    puts("===== BNO080 Product IDs =====");
-    for (int n = 0; n < prodIds.numEntries; n++) {
-        printf("Part %d : Version %d.%d.%d Build %d\n",
-               prodIds.entry[n].swPartNumber,
-               prodIds.entry[n].swVersionMajor, prodIds.entry[n].swVersionMinor, 
-               prodIds.entry[n].swVersionPatch, prodIds.entry[n].swBuildNumber);
-    }
-
     i2c_scanner(I2C_NUM_0);
     i2c_scanner(I2C_NUM_1);
+    cam_init();
+
+    s8 result = bno055_init(&bno055);
+    result += bno055_set_power_mode(BNO055_POWER_MODE_NORMAL);
+    // see page 22 of the datasheet, Section 3.3.1
+    // we don't use NDOF or NDOF_FMC_OFF because it has a habit of snapping to magnetic north which is undesierable
+    // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
+    // edit this in defines.h
+    result += bno055_set_operation_mode(BNO_MODE);
+    result += bno055_read_sw_rev_id(&swRevId);
+    result += bno055_read_chip_id(&chipId);
+    if (result == 0){
+        ESP_LOGI(TAG, "BNO055 init OK! SW Rev ID: 0x%X, Chip ID: 0x%X", swRevId, chipId);
+    } else {
+        ESP_LOGE(TAG, "BNO055 init error, current status: %d", result);
+    }
 
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
@@ -147,12 +124,24 @@ static void master_task(void *pvParameter){
 
     while (true){
         // update sensors
-        // cam_calc();
-        // TODO check BNO event queue
+        cam_calc();
+        bno055_read_euler_h(&yawRaw);
+        bno055_convert_float_euler_h_deg(&yaw);
 
-        TASK_HALT; // FIXME remove this after BNO init testing
+        bno055_get_sys_calib_stat(&sysCalib);
+        bno055_get_mag_calib_stat(&magCalib);
+        bno055_get_accel_calib_stat(&accelCalib);
+        bno055_get_gyro_calib_stat(&gyroCalib);
+        // TODO we should use linear acceleration as well for robot velocity
+        // TODO multi thread I2C reads (run on core 0) as currently its too slow (with sys calib stat)
+        
+        ESP_LOGI(TAG, "Euler heading: %f", yaw);
+        ESP_LOGI(TAG, "Overall: %d, Mag: %d, Accel: %d, Gyro: %d", sysCalib, magCalib, accelCalib, gyroCalib);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        goto end;
 
         // update values for FSM, mutexes are used to prevent race conditions
+        // TODO maybe we should use only one semaphore here? using multiple is pointless
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // reset out values
@@ -161,7 +150,7 @@ static void master_task(void *pvParameter){
                 robotState.outDirection = 0;
                 robotState.outSwitchOk = false;
 
-                // update FSM values
+                // update FSM in values
                 robotState.inBallAngle = orangeBall.angle;
                 robotState.inBallStrength = orangeBall.length;
                 // TODO make goal stuff floats as well
@@ -186,9 +175,10 @@ static void master_task(void *pvParameter){
                     robotState.inGoalLength = (int16_t) HOME_GOAL.length;
                     robotState.inGoalDistance = HOME_GOAL.distance;
                 }
-                robotState.inHeading = lastSensorUpdate.heading;
+                robotState.inHeading = yaw;
                 // robotState.inX = robotX;
                 // robotState.inY = robotY;
+                // TODO remove all these as all line stuff is done on the Teensy now
                 robotState.inBatteryVoltage = lastSensorUpdate.voltage;
                 robotState.inLineAngle = lastSensorUpdate.lineAngle;
                 robotState.inLineSize = lastSensorUpdate.lineSize;
@@ -213,10 +203,10 @@ static void master_task(void *pvParameter){
         uint8_t buf[PROTOBUF_SIZE] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
         
-        msg.direction = 69.420f;
-        msg.heading = 123.456f;
-        msg.orientation = 69.69f;
-        msg.speed = 100.0f;
+        msg.heading = yaw; // IMU heading
+        msg.direction = 69.420f; // motor direction (which way we're driving)
+        msg.orientation = 69.69f; // motor orientation (which way we're facing)
+        msg.speed = 100.0f; // motor speed as 0-100%
 
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
             ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
@@ -225,8 +215,21 @@ static void master_task(void *pvParameter){
 
         comms_i2c_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
+        end:
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
+    }
+}
+
+static void gpio_test_task(void *pvParameter){
+    puts("Waiting...");
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    puts("Running test...");
+    gpio_set_direction(17, GPIO_MODE_OUTPUT);
+
+    while (true){
+        GPIO.out_w1ts = (1 << 17);
+        GPIO.out_w1tc = (1 << 17);
     }
 }
 
@@ -265,5 +268,5 @@ void app_main(){
 
     // create the main (or test, uncomment it if you want that) task 
     xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-    // xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
+    // xTaskCreatePinnedToCore(gpio_test_task, "GPIOTestTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
 }

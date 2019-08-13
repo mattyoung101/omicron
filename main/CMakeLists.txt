@@ -1,7 +1,6 @@
 # Edit following two lines to set component requirements (see docs)
 set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES "nanopb")
-set(COMPONENT_PRIV_REQUIRES "bno080")
 
 set(COMPONENT_SRCS "defines.c"
                    "main.c"
@@ -19,8 +18,7 @@ set(COMPONENT_SRCS "defines.c"
                    "comms_bluetooth.c"
                    "bluetooth_manager.c"
                    "lrf.c"
-                   "esp_utils.c"
-                   "simple_imu.c"
+                   "bno055.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")

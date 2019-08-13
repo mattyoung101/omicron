@@ -1,0 +1,4 @@
+ESP32 gpio_set_level: 1.84 MHz (543 nanoseconds)
+ESP32 register access: 10.02 MHz (99 nanoseconds)
+Teensy: ??? MHz (?? nanoseconds)
+Nano digitalWrite: 109 kHZ

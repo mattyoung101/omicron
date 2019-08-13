@@ -197,29 +197,11 @@ extern bool MOTOR_BR_REVERSED;
 #define LS_MUX_WR 14
 
 // IMU
-// FIXME deprecated once/if BNO080 works
-#define IMU_CALIBRATION_COUNT 80
-#define IMU_CALIBRATION_TIME 10
-#define IMU_THRESHOLD 1000
-#define I2C_MULTIPLIER 100.0f
-
-#define MPU9250_ADDRESS 0x68
-#define MAG_ADDRESS 0x0C
-
-#define GYRO_FULL_SCALE_250_DPS 0x00
-#define GYRO_FULL_SCALE_500_DPS 0x08
-#define GYRO_FULL_SCALE_1000_DPS 0x10
-#define GYRO_FULL_SCALE_2000_DPS 0x18
-
-#define ACC_FULL_SCALE_2_G 0x00
-#define ACC_FULL_SCALE_4_G 0x08
-#define ACC_FULL_SCALE_8_G 0x10
-#define ACC_FULL_SCALE_16_G 0x18
-
-// FIXME actual values go here
-#define BNO_RSTN_PIN 17
-#define BNO_BUS I2C_NUM_0
-#define BNO_INTN_PIN 16
+#define BNO_QUAT_FLOAT (1.0f / (1 << 14)) // converts quaternion units to floating point numbers on the BNO055
+#define BNO_MODE BNO055_OPERATION_MODE_IMUPLUS // use IMUPLUS if magnetic interference exists, otherwise use M4G
+#define BNO_BUS I2C_NUM_1 // which I2C bus the BNO is on
+#define BNO_INTN_PIN -1 // for compatibility, DEPRECATED
+#define BNO_RSTN_PIN -1 // for compatibility, DEPRECATED
 
 // Orbit
 extern uint8_t BALL_FAR_STRENGTH;

@@ -1,6 +1,7 @@
 #include "utils.h"
-#include "simple_imu.h"
 // #include "esp_err.h"
+
+float heading = 0.0;
 
 // Hecking PIDs
 // Orientation Correction PIDs
@@ -48,6 +49,7 @@ inline int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, i
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
+// Source: https://stackoverflow.com/a/11412077/5007892 
 bool is_angle_between(float target, float angle1, float angle2){
 	// make the angle from angle1 to angle2 to be <= 180 degrees
 	float rAngle = fmodf(fmodf(angle2 - angle1, 360.0f) + 360.0f, 360.0f);
@@ -392,4 +394,68 @@ void log_once_reset(){
     memset(loggedMessages, 0, LOGGED_MSG_SIZE);
 }
 
-#undef LOGGED_MSG_SIZE
+s8 bno055_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
+    static const char *TAG = "BNO055_HAL";
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    ESP_ERROR_CHECK(i2c_master_start(cmd));
+    // first, send device address (indicating write) & register to be read
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (dev_addr << 1), I2C_ACK_MODE));
+    // send register we want
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, reg_addr, I2C_ACK_MODE));
+    // Send repeated start
+    ESP_ERROR_CHECK(i2c_master_start(cmd));
+    // now send device address (indicating read) & read data
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_READ, I2C_ACK_MODE));
+    if (cnt > 1) {
+        ESP_ERROR_CHECK(i2c_master_read(cmd, reg_data, cnt - 1, 0x0));
+    }
+    ESP_ERROR_CHECK(i2c_master_read_byte(cmd, reg_data + cnt - 1, 0x1));
+    ESP_ERROR_CHECK(i2c_master_stop(cmd));
+    esp_err_t ret = i2c_master_cmd_begin(BNO_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    i2c_cmd_link_delete(cmd);
+
+    I2C_ERR_CHECK(ret);
+    return 0;
+}
+
+s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
+    static const char *TAG = "BNO055_HAL";
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    ESP_ERROR_CHECK(i2c_master_start(cmd));
+
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (dev_addr << 1) | I2C_MASTER_WRITE, I2C_ACK_MODE));
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, reg_addr, true));
+    ESP_ERROR_CHECK(i2c_master_write(cmd, reg_data, cnt, true));
+    ESP_ERROR_CHECK(i2c_master_stop(cmd));
+
+    esp_err_t err = i2c_master_cmd_begin(BNO_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    i2c_cmd_link_delete(cmd);
+
+    I2C_ERR_CHECK(err);
+    return 0;
+}
+
+void bno055_delay_ms(u32 msec){
+    // ets_delay_us(msec / 1000); // (if precision is required)
+    vTaskDelay(pdMS_TO_TICKS(msec));
+}
+
+// Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
+// Modified to only work use heading
+// TODO may need the normalised version
+float quat_to_heading(float w, float x, float y, float z){
+    float test = x*y + z*w;
+	if (test > 0.499) {
+        // singularity at north pole
+		return fmodf(2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
+	}
+	if (test < -0.499) {
+        // singularity at south pole
+		return fmodf(-2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
+	}
+    float sqy = y*y;
+    float sqz = z*z;
+    return fmodf(atan2f(2*y*w-2*x*z , 1 - 2*sqy - 2*sqz) * RAD_DEG + 360.0f, 360.0f);
+}

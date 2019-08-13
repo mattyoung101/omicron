@@ -1,5 +1,4 @@
 #include "states.h"
-#include "simple_imu.h"
 #include "utils.h"
 
 // static pid_config_t lrfPID = {LRF_KP, LRF_KI, LRF_KD, LRF_MAX};
