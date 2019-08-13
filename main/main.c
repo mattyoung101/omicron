@@ -65,6 +65,8 @@ static void master_task(void *pvParameter){
     u8 magCalib = 0;
     u8 gyroCalib = 0;
     u8 accelCalib = 0;
+    u8 swRevId = 0;
+    u8 chipId = 0;
     bno055.bus_read = bno055_read;
     bno055.bus_write = bno055_write;
     bno055.delay_msec = bno055_delay_ms;
@@ -86,8 +88,10 @@ static void master_task(void *pvParameter){
     // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
     // edit this in defines.h
     result += bno055_set_operation_mode(BNO_MODE);
+    result += bno055_read_sw_rev_id(&swRevId);
+    result += bno055_read_chip_id(&chipId);
     if (result == 0){
-        ESP_LOGI(TAG, "BNO055 init OK!");
+        ESP_LOGI(TAG, "BNO055 init OK! SW Rev ID: 0x%X, Chip ID: 0x%X", swRevId, chipId);
     } else {
         ESP_LOGE(TAG, "BNO055 init error, current status: %d", result);
     }
@@ -129,6 +133,7 @@ static void master_task(void *pvParameter){
         bno055_get_accel_calib_stat(&accelCalib);
         bno055_get_gyro_calib_stat(&gyroCalib);
         // TODO we should use linear acceleration as well for robot velocity
+        // TODO multi thread I2C reads (run on core 0) as currently its too slow (with sys calib stat)
         
         ESP_LOGI(TAG, "Euler heading: %f", yaw);
         ESP_LOGI(TAG, "Overall: %d, Mag: %d, Accel: %d, Gyro: %d", sysCalib, magCalib, accelCalib, gyroCalib);
@@ -136,6 +141,7 @@ static void master_task(void *pvParameter){
         goto end;
 
         // update values for FSM, mutexes are used to prevent race conditions
+        // TODO maybe we should use only one semaphore here? using multiple is pointless
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // reset out values
@@ -144,7 +150,7 @@ static void master_task(void *pvParameter){
                 robotState.outDirection = 0;
                 robotState.outSwitchOk = false;
 
-                // update FSM values
+                // update FSM in values
                 robotState.inBallAngle = orangeBall.angle;
                 robotState.inBallStrength = orangeBall.length;
                 // TODO make goal stuff floats as well
