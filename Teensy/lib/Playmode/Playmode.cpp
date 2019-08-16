@@ -51,16 +51,16 @@ void Playmode::calculateOrbit() {
     int _ballAngle = ballAngle > 180 ? ballAngle - 360 : ballAngle;
     
     // Add on an angle to the ball angle depending on the ball's angle. Exponential function
-    double ballAngleDifference = -sign(ballAngle - 180) * fmin(90, 0.15 * pow(MATH_E, 0.22 * (double)smallestAngleBetween(ballAngle, 0)));
+    double ballAngleDifference = -sign(ballAngle - 180) * fmin(90, 0.15 * pow(MATH_E, 0.15 * (double)smallestAngleBetween(ballAngle, 0)));
 
     double strengthFactor = constrain(((double)ballStrength - (double)BALL_FAR_STRENGTH) / ((double)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
 
     // Multiply the addition by distance. The further the ball, the more the robot moves towards the ball. Also an exponential function
-    double distanceMultiplier = constrain(0.05 * strengthFactor * pow(MATH_E, 4.5 * strengthFactor), 0, 1);
+    double distanceMultiplier = constrain(0.05 * strengthFactor * pow(MATH_E, 4 * strengthFactor), 0, 1);
     double angleAddition = ballAngleDifference * distanceMultiplier;
 
-    if(abs(_ballAngle) <= BALL_INFRONT_ANGLE){
-        // Serial.println("YEET");
+    if(abs(_ballAngle) <= BALL_INFRONT_ANGLE && ballStrength <= BALL_INFRONT_STRENGTH){
+        Serial.println("YEET");
         direction = goalAngle;
         speed = smallestAngleBetween(goalAngle, 0) < GOAL_INFRONT_ANGLE ? YEET_SPEED : speed;
         isYeeting = true;

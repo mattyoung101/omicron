@@ -213,15 +213,15 @@ void loop() {
     // targetDirection = playmode.getDirection();
     // targetSpeed = playmode.getSpeed();
 
-    #if !DEFENCE
-    if(millis() < YEET_TIMER) {
-        direction = 0;
-        speed = 100;
-    }
-    #endif
+    // #if !DEFENCE
+    // if(millis() < YEET_TIMER) {
+    //     direction = 0;
+    //     speed = 100;
+    // }
+    // #endif
 
     // calcAccel();
-    move.motorCalc(direction, orientation, speed);
+    move.motorCalc(direction, orientation, 0);
     move.go(false);
 
 
@@ -256,7 +256,7 @@ void loop() {
     // Print stuffs
     // Serial.printf("BallData - angle: %d, strength: %d, exists: %d", playmode.getBallAngle(), playmode.getBallDistance(), playmode.getBallExist());
     // Serial.printf("YellowGoal - angle: %d, length: %d, exists: %d", cam.yellow.angle, cam.yellow.length, cam.yellow.exists);
-    // Serial.print(imu.heading);
+    // Serial.print(playmode.getDirection());
     // Serial.println();
 }
 

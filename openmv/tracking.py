@@ -46,7 +46,7 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above 2 settings get in...
 sensor.skip_frames(time=100)
-#sensor.set_windowing((80, 0, 240, 240)) # Robot A
+#sensor.set_windowing(18, 0, 240, 240)) # Robot A
 sensor.set_windowing((20, 10, 230, 230)) # Robot B
 
 # === GAIN ===
@@ -59,7 +59,7 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-4.64378, -6.02073, -0.2064142)))
+rgb_gain_db=((-5.886325, -6.02073, 0.1343897)))
 
 # Standard
 sensor.set_brightness(1)
