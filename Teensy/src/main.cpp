@@ -192,7 +192,7 @@ void loop() {
 
 
     // Calculate orientation stuff
-    if(playmode.getGoalVisibility() && ENEMY_GOAL != 2 && !noBallTimer.timeHasPassedNoUpdate()){
+    if(playmode.getGoalVisibility() && ENEMY_GOAL != 2 && !noBallTimer.timeHasPassedNoUpdate() && !angleIsInside(90, 270, playmode.getBallAngle())){
         #if DEFENCE
         orientation = ((int)round(-goaliePID.update(doubleMod(doubleMod(playmode.getGoalAngle(), 360) + 180, 360) - 180, 0)) % 360);
         #else
@@ -221,7 +221,7 @@ void loop() {
     // #endif
 
     // calcAccel();
-    move.motorCalc(direction, orientation, 0);
+    move.motorCalc(direction, orientation, speed);
     move.go(false);
 
 
@@ -256,8 +256,8 @@ void loop() {
     // Print stuffs
     // Serial.printf("BallData - angle: %d, strength: %d, exists: %d", playmode.getBallAngle(), playmode.getBallDistance(), playmode.getBallExist());
     // Serial.printf("YellowGoal - angle: %d, length: %d, exists: %d", cam.yellow.angle, cam.yellow.length, cam.yellow.exists);
-    // Serial.print(playmode.getDirection());
-    // Serial.println();
+    Serial.print(playmode.getSpeed());
+    Serial.println();
 }
 
 #if ESP_I2C_ON

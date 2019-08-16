@@ -9,8 +9,8 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(56, 83, -13, 29, 27, 56), # yellow
-             (33, 54, 4, 27, -62, -30), # blue
+thresholds = [(42, 62, -1, 23, 21, 51), # yellow
+             (29, 34, -21, -2, -23, -4), # blue
              (38, 78, 48, 95, 9, 72)] # orange
 
 # Robot A
