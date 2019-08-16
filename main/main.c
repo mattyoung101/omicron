@@ -12,7 +12,6 @@
 #include "driver/uart.h"
 #include "nvs_flash.h"
 #include <math.h>
-#include "motor.h"
 #include <str.h>
 #include "fsm.h"
 #include "cam.h"
@@ -61,10 +60,6 @@ static void master_task(void *pvParameter){
     struct bno055_t bno055 = {0};
     s16 yawRaw = 0; // raw euler yaw data
     float yaw = 0.0f; // converted euler yaw data
-    u8 sysCalib = 0;
-    u8 magCalib = 0;
-    u8 gyroCalib = 0;
-    u8 accelCalib = 0;
     u16 swRevId = 0;
     u8 chipId = 0;
     bno055.bus_read = bno055_read;
@@ -86,7 +81,6 @@ static void master_task(void *pvParameter){
     // see page 22 of the datasheet, Section 3.3.1
     // we don't use NDOF or NDOF_FMC_OFF because it has a habit of snapping to magnetic north which is undesierable
     // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
-    // edit this in defines.h
     result += bno055_set_operation_mode(BNO_MODE);
     result += bno055_read_sw_rev_id(&swRevId);
     result += bno055_read_chip_id(&chipId);
@@ -127,18 +121,9 @@ static void master_task(void *pvParameter){
         cam_calc();
         bno055_read_euler_h(&yawRaw);
         bno055_convert_float_euler_h_deg(&yaw);
-
-        bno055_get_sys_calib_stat(&sysCalib);
-        bno055_get_mag_calib_stat(&magCalib);
-        bno055_get_accel_calib_stat(&accelCalib);
-        bno055_get_gyro_calib_stat(&gyroCalib);
-        // TODO we should use linear acceleration as well for robot velocity
         // TODO multi thread I2C reads (run on core 0) as currently its too slow (with sys calib stat)
         
         ESP_LOGI(TAG, "Euler heading: %f", yaw);
-        ESP_LOGI(TAG, "Overall: %d, Mag: %d, Accel: %d, Gyro: %d", sysCalib, magCalib, accelCalib, gyroCalib);
-        vTaskDelay(pdMS_TO_TICKS(100));
-        goto end;
 
         // update values for FSM, mutexes are used to prevent race conditions
         // TODO maybe we should use only one semaphore here? using multiple is pointless
@@ -195,8 +180,6 @@ static void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
-
-        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         
         // encode and send Protobuf message to Teenys slave
         I2CMasterProvide msg = I2CMasterProvide_init_default;
@@ -215,21 +198,8 @@ static void master_task(void *pvParameter){
 
         comms_i2c_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
-        end:
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
-    }
-}
-
-static void gpio_test_task(void *pvParameter){
-    puts("Waiting...");
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    puts("Running test...");
-    gpio_set_direction(17, GPIO_MODE_OUTPUT);
-
-    while (true){
-        GPIO.out_w1ts = (1 << 17);
-        GPIO.out_w1tc = (1 << 17);
     }
 }
 
@@ -267,6 +237,6 @@ void app_main(){
     fflush(stdout);
 
     // create the main (or test, uncomment it if you want that) task 
-    xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     // xTaskCreatePinnedToCore(gpio_test_task, "GPIOTestTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
 }
