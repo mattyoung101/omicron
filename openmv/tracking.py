@@ -22,7 +22,7 @@ thresholds = [(33, 42, 0, 27, 33, 56), # yellow
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
-YE.LLOW = 1
+YELLOW = 1
 BLUE = 2
 ORANGE = 3
 
