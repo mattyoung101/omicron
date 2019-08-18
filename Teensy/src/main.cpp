@@ -205,7 +205,9 @@ void loop() {
  
     if(noBallTimer.timeHasPassedNoUpdate()) playmode.centre(imu.heading); // If ball is not visible for a period of time, centre
     // playmode.centre(imu.heading);
+    #if LS_ON
     playmode.calculateLineAvoidance(imu.heading);
+    #endif
 
     // Update motors
     direction = playmode.getDirection();

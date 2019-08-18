@@ -9,9 +9,9 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(42, 62, -1, 23, 21, 51), # yellow
-             (29, 34, -21, -2, -23, -4), # blue
-             (38, 78, 48, 95, 9, 72)] # orange
+thresholds = [(33, 42, 0, 27, 33, 56), # yellow
+             (37, 60, -35, 4, -42, -14), # blue
+             (48, 65, 51, 80, 36, 64)] # orange
 
 # Robot A
 # Yellow (53, 66, 1, 25, 3, 42)
@@ -22,7 +22,7 @@ thresholds = [(42, 62, -1, 23, 21, 51), # yellow
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
-YELLOW = 1
+YE.LLOW = 1
 BLUE = 2
 ORANGE = 3
 
@@ -55,14 +55,14 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
+sensor.set_auto_exposure(False, exposure_us = 1000)
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-5.886325, -6.02073, 0.1343897)))
+rgb_gain_db=((-4.878651, -6.02073, -6.02073)))
 
 # Standard
-sensor.set_brightness(1)
+sensor.set_brightness(0)
 sensor.set_contrast(0)
 sensor.set_saturation(0)
 
