@@ -11,7 +11,8 @@
         "pid.h": "c",
         "esp_utils.h": "c",
         "handmademath.h": "c",
-        "tsop.h": "c"
+        "tsop.h": "c",
+        "comms_uart.h": "c"
     },
     "cSpell.words": [
         "Bluedroid",

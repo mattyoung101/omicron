@@ -5,7 +5,7 @@
 #include "soc/i2c_reg.h"
 #include "soc/i2c_struct.h"
 
-i2c_data_t receivedData = {0};
+// i2c_data_t receivedData = {0};
 nano_data_t nanoData = {0};
 SensorUpdate lastSensorUpdate = SensorUpdate_init_zero;
 

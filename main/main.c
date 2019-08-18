@@ -18,6 +18,7 @@
 #include "states.h"
 #include "soc/efuse_reg.h"
 #include "comms_i2c.h"
+#include "comms_uart.h"
 #include "esp_timer.h"
 #include "esp_task_wdt.h"
 #include "pid.h"
@@ -70,9 +71,8 @@ static void master_task(void *pvParameter){
     print_reset_reason();
 
     // Initialise comms and hardware
-    comms_i2c_init(I2C_NUM_0);
+    comms_uart_init();
     comms_i2c_init(I2C_NUM_1);
-    i2c_scanner(I2C_NUM_0);
     i2c_scanner(I2C_NUM_1);
     cam_init();
 
@@ -161,15 +161,8 @@ static void master_task(void *pvParameter){
                     robotState.inGoalDistance = HOME_GOAL.distance;
                 }
                 robotState.inHeading = yaw;
-                // robotState.inX = robotX;
-                // robotState.inY = robotY;
-                // TODO remove all these as all line stuff is done on the Teensy now
-                robotState.inBatteryVoltage = lastSensorUpdate.voltage;
-                robotState.inLineAngle = lastSensorUpdate.lineAngle;
-                robotState.inLineSize = lastSensorUpdate.lineSize;
-                robotState.inLastAngle = lastSensorUpdate.lastAngle;
-                robotState.inOnLine = lastSensorUpdate.onLine;
-                robotState.inLineOver = lastSensorUpdate.lineOver;
+                robotState.inX = robotX;
+                robotState.inY = robotY;
 
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
@@ -196,7 +189,7 @@ static void master_task(void *pvParameter){
         }
         printfln("Bytes written: %d", stream.bytes_written);
 
-        comms_i2c_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
+        comms_uart_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin

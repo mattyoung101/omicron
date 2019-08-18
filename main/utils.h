@@ -38,8 +38,8 @@ extern pid_config_t forwardPID;
 #define LOW_BYTE_16(num)  ((uint8_t) ((num & 0xFF)))
 /** unpack two 8 bit integers into a 16 bit integer **/
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
-/** halt in case of irrecoverable error **/
-#define TASK_HALT do { ESP_LOGW(pcTaskGetTaskName(NULL), "Task halting!"); vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY)); } while(0);
+/** halt in case of irrecoverable error or for debug **/
+#define TASK_HALT do { ESP_LOGW(pcTaskGetTaskName(NULL), "Task halting!"); vTaskSuspend(NULL); } while(0);
 /** Automated I2C error checking code **/
 #define I2C_ERR_CHECK(err) do { if (err != ESP_OK){ \
         ESP_LOGE(TAG, "I2C failure in %s:%d! Error: %s.", __FUNCTION__, __LINE__, esp_err_to_name(err)); \
@@ -83,7 +83,7 @@ float midAngleBetween(float angleCounterClockwise, float angleClockwise);
 
 /** maps a value to a range **/
 int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
-/** lineraly interpolates between two values **/
+/** linearly interpolates between two values **/
 float lerp(float fromValue, float toValue, float progress);
 
 /** Implements Jenkins' One at a Time Hash to calculate the hash code of strings **/
@@ -146,10 +146,7 @@ bool log_once_check(char *msg);
 /** Resets the list of already logged messages **/
 void log_once_reset();
 
-extern float heading; // hack to make it compile
-// FIXME once we get the BNO to actually work
-
-// BNO-055 HAL
+// BNO055 HAL
 s8 bno055_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
 s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
 void bno055_delay_ms(u32 msec);

@@ -1,8 +1,6 @@
 #include "utils.h"
 // #include "esp_err.h"
 
-float heading = 0.0;
-
 // Hecking PIDs
 // Orientation Correction PIDs
 pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION, 0.0f};
