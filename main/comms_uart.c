@@ -25,9 +25,9 @@ void comms_uart_init(void){
     };
 
     // Configure UART parameters
-    ESP_ERROR_CHECK(uart_param_config(UART_NUM_2, &uart_config));
-    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, 21, 22, -1, -1)); // 21 == TX == SDA, 22 == RX == SCL
-    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, 256, 256, 8, NULL, 0));
+    ESP_ERROR_CHECK(uart_param_config(UART_NUM_1, &uart_config));
+    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_1, 21, 22, -1, -1)); // 21 == TX == SDA, 22 == RX == SCL
+    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_1, 256, 256, 8, NULL, 0));
 
     xTaskCreate(uart_receive_task, "UARTReceiveTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
     ESP_LOGI(TAG, "UART comms init OK!");
@@ -37,9 +37,9 @@ esp_err_t comms_uart_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
     char header[] = {0xB, msgId, msgSize};
     char end = 0xEE;
 
-    uart_write_bytes(UART_NUM_2, header, 3);
-    uart_write_bytes(UART_NUM_2, (char*) pbData, msgSize);
-    uart_write_bytes(UART_NUM_2, &end, 1);
+    uart_write_bytes(UART_NUM_1, header, 3);
+    uart_write_bytes(UART_NUM_1, (char*) pbData, msgSize);
+    uart_write_bytes(UART_NUM_1, &end, 1);
 
     return ESP_OK;
 }

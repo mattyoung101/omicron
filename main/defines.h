@@ -1,5 +1,7 @@
 #pragma once
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 // If this is defined, the value of the robot number will be written to NVS
 // #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
@@ -132,69 +134,6 @@ extern int16_t CAM_OFFSET_Y;
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
 #define CAM_UART_RX 16
-
-// Motors and Encoders
-#define MOTOR_FL_PWM 15
-#define MOTOR_FL_IN1 27
-#define MOTOR_FL_IN2 32
-#define MOTOR_FL_ANGLE 300
-extern bool MOTOR_FL_REVERSED;
-
-#define MOTOR_FR_PWM 23
-#define MOTOR_FR_IN1 4
-#define MOTOR_FR_IN2 5
-#define MOTOR_FR_ANGLE 60
-extern bool MOTOR_FR_REVERSED;
-
-#define MOTOR_BL_PWM 14
-#define MOTOR_BL_IN1 25
-#define MOTOR_BL_IN2 26
-#define MOTOR_BL_ANGLE 225
-extern bool MOTOR_BL_REVERSED;
-
-#define MOTOR_BR_PWM 13
-#define MOTOR_BR_IN1 18
-#define MOTOR_BR_IN2 19
-#define MOTOR_BR_ANGLE 135
-extern bool MOTOR_BR_REVERSED;
-
-#define TORQUE_SCALAR 1
-#define FRONT_MOTOR_ANGLE 60
-#define BACK_MOTOR_ANGLE 45
-#define MOTOR_SPEED_CAP 100.0f // max speed motors are allowed to go to in %
-
-// Light sensor
-// FIXME remove this as its deprecated
-#define LS_CALIBRATION_COUNT 10
-#define LS_MUX0_BUFFER 100
-#define LS_MUX1_BUFFER 5
-#define LS_NUM 48
-#define LS_NUM_PER_MUX 24 // number of light sensors on each multiplexer
-#define LS_NO_LINE_ANGLE 400
-#define LS_NO_LINE_SIZE 400
-#define ADC_SAMPLES 1
-#define LS_ES_DEFAULT 69
-#define LS_TIMER_PERIOD 1000 // microseconds
-
-// Line avoid settings
-// FIXME remove this as its deprecated
-#define LS_LINE_OVER_BUFFER 80
-#define LINE_BIG_SIZE 0
-#define LINE_SMALL_SIZE 0
-#define LINE_AVOID_SPEED 100
-#define LINE_TRACK_SPEED 30
-#define LINE_SPEED_MULTIPLIER 0.5
-#define LINE_AVOID_TIME 1500 // ms
-
-#define LS_MUX0_OUT ADC1_CHANNEL_5
-#define LS_MUX1_OUT ADC1_CHANNEL_6
-#define LS_MUX_S0 2
-#define LS_MUX_S1 4
-#define LS_MUX_S2 5
-#define LS_MUX_S3 23
-#define LS_MUX_S4 13
-#define LS_MUX_EN 15
-#define LS_MUX_WR 14
 
 // IMU
 #define BNO_QUAT_FLOAT (1.0f / (1 << 14)) // converts quaternion units to floating point numbers on the BNO055

@@ -41,6 +41,8 @@
 
 state_machine_t *stateMachine = NULL;
 static const char *RST_TAG = "ResetReason";
+static float yaw = 0.0f; // converted euler data
+static SemaphoreHandle_t imuSemaphore;
 
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
@@ -53,20 +55,37 @@ static void print_reset_reason(){
     }
 }
 
-// Task which runs on the master. Receives sensor data from slave and handles complex routines
-// like moving, finite state machines, Bluetooth, etc
+// TODO remove multi threading because it was the wrong clock speed on I2C (400x slower than it should have been)?
+
+// Task which receives and converts data from the BNO-055
+static void imu_task(void *pvParameter){
+    static const char *TAG = "IMUTask";
+    s16 yawRaw = 0;
+    ESP_LOGI(TAG, "IMU task init OK!");
+
+    while (true){
+        bno055_read_euler_h(&yawRaw);
+        if (xSemaphoreTake(imuSemaphore, portMAX_DELAY)){
+            bno055_convert_float_euler_h_deg(&yaw);
+            xSemaphoreGive(imuSemaphore);
+        } else {
+            ESP_LOGE(TAG, "Failed to unlock IMU semaphore!");
+        }
+    }
+}
+
+// Task which runs on the master. Receives sensor data from slave and handles complex routines like FSM & BT.
 static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
     struct bno055_t bno055 = {0};
-    s16 yawRaw = 0; // raw euler yaw data
-    float yaw = 0.0f; // converted euler yaw data
     u16 swRevId = 0;
     u8 chipId = 0;
     bno055.bus_read = bno055_read;
     bno055.bus_write = bno055_write;
     bno055.delay_msec = bno055_delay_ms;
     bno055.dev_addr = BNO055_I2C_ADDR2;
+    imuSemaphore = xSemaphoreCreateMutex();
 
     print_reset_reason();
 
@@ -89,6 +108,8 @@ static void master_task(void *pvParameter){
     } else {
         ESP_LOGE(TAG, "BNO055 init error, current status: %d", result);
     }
+
+    xTaskCreatePinnedToCore(imu_task, "IMUTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL, PRO_CPU_NUM);
 
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
@@ -119,16 +140,13 @@ static void master_task(void *pvParameter){
     while (true){
         // update sensors
         cam_calc();
-        bno055_read_euler_h(&yawRaw);
-        bno055_convert_float_euler_h_deg(&yaw);
-        // TODO multi thread I2C reads (run on core 0) as currently its too slow (with sys calib stat)
-        
         ESP_LOGI(TAG, "Euler heading: %f", yaw);
 
         // update values for FSM, mutexes are used to prevent race conditions
         // TODO maybe we should use only one semaphore here? using multiple is pointless
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
-            xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) &&
+            xSemaphoreTake(imuSemaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // reset out values
                 robotState.outShouldBrake = false;
                 robotState.outOrientation = 0;
@@ -167,6 +185,7 @@ static void master_task(void *pvParameter){
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
                 xSemaphoreGive(goalDataSem);
+                xSemaphoreGive(imuSemaphore);
         } else {
             ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
         }
@@ -187,7 +206,6 @@ static void master_task(void *pvParameter){
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
             ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
         }
-        printfln("Bytes written: %d", stream.bytes_written);
 
         comms_uart_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
@@ -205,25 +223,20 @@ void app_main(){
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_LOGI("AppMain", "Reflashing NVS");
         // NVS partition was truncated and needs to be erased
         ESP_ERROR_CHECK(nvs_flash_erase());
         err = nvs_flash_init();
     }
     ESP_ERROR_CHECK(err);
 
-    // AutoMode: automatically assign to slave/master depending on a value set in NVS
     nvs_handle storageHandle;
     ESP_ERROR_CHECK(nvs_open("RobotSettings", NVS_READWRITE, &storageHandle));
 
     // write master/slave/robot ID to NVS if configured
     #if defined NVS_WRITE_ROBOTNUM
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "RobotID", NVS_WRITE_ROBOTNUM));
-        ESP_LOGE("RobotID", "Successfully wrote robot number to NVS.");
-    #endif
-
-    #if defined NVS_WRITE_ROBOTNUM
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
+        ESP_LOGE("RobotID", "Successfully wrote robot number to NVS.");
     #endif
 
     nvs_close(storageHandle);

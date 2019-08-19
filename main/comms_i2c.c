@@ -27,12 +27,11 @@ void comms_i2c_init(i2c_port_t port){
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         // 0.8 MHz, max is 1 MHz, unit is Hz
         // NOTE: 1MHz tends to break the i2c packets - use with caution!!
-        .master.clk_speed = 40000,
+        .master.clk_speed = 900000,
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
-    // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
-    // TODO we still need this hack?
+    // workaround for clock stretching
     ESP_ERROR_CHECK(i2c_set_timeout(port, 0xFFFF));
 
     ESP_LOGI("CommsI2C_M", "I2C init OK on bus %d", port);
