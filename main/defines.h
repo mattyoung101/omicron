@@ -137,7 +137,6 @@ extern int16_t CAM_OFFSET_Y;
 
 // IMU
 #define BNO_QUAT_FLOAT (1.0f / (1 << 14)) // converts quaternion units to floating point numbers on the BNO055
-#define BNO_MODE BNO055_OPERATION_MODE_IMUPLUS // use IMUPLUS if magnetic interference exists, otherwise use M4G
 #define BNO_BUS I2C_NUM_1 // which I2C bus the BNO is on
 #define BNO_INTN_PIN -1 // for compatibility, DEPRECATED
 #define BNO_RSTN_PIN -1 // for compatibility, DEPRECATED

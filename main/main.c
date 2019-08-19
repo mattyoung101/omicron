@@ -30,6 +30,7 @@
 #include "lrf.h"
 #include "driver/spi_master.h"
 #include "bno055.h"
+#include "movavg.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -41,8 +42,7 @@
 
 state_machine_t *stateMachine = NULL;
 static const char *RST_TAG = "ResetReason";
-static float yaw = 0.0f; // converted euler data
-static SemaphoreHandle_t imuSemaphore;
+static const char *PT_TAG = "PerfTimer";
 
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
@@ -55,25 +55,6 @@ static void print_reset_reason(){
     }
 }
 
-// TODO remove multi threading because it was the wrong clock speed on I2C (400x slower than it should have been)?
-
-// Task which receives and converts data from the BNO-055
-static void imu_task(void *pvParameter){
-    static const char *TAG = "IMUTask";
-    s16 yawRaw = 0;
-    ESP_LOGI(TAG, "IMU task init OK!");
-
-    while (true){
-        bno055_read_euler_h(&yawRaw);
-        if (xSemaphoreTake(imuSemaphore, portMAX_DELAY)){
-            bno055_convert_float_euler_h_deg(&yaw);
-            xSemaphoreGive(imuSemaphore);
-        } else {
-            ESP_LOGE(TAG, "Failed to unlock IMU semaphore!");
-        }
-    }
-}
-
 // Task which runs on the master. Receives sensor data from slave and handles complex routines like FSM & BT.
 static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
@@ -81,11 +62,18 @@ static void master_task(void *pvParameter){
     struct bno055_t bno055 = {0};
     u16 swRevId = 0;
     u8 chipId = 0;
+    float yaw = 0.0f;
+    int64_t worstTime = 0;
+    int64_t bestTime = 0xFFFFF;
+    movavg_t *avgTime = movavg_create(64);
+    uint16_t ticks = 0;
+    uint16_t ticksSinceLastWorstTime = 0;
+    uint16_t ticksSinceLastBestTime = 0;
+
     bno055.bus_read = bno055_read;
     bno055.bus_write = bno055_write;
     bno055.delay_msec = bno055_delay_ms;
     bno055.dev_addr = BNO055_I2C_ADDR2;
-    imuSemaphore = xSemaphoreCreateMutex();
 
     print_reset_reason();
 
@@ -100,7 +88,7 @@ static void master_task(void *pvParameter){
     // see page 22 of the datasheet, Section 3.3.1
     // we don't use NDOF or NDOF_FMC_OFF because it has a habit of snapping to magnetic north which is undesierable
     // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
-    result += bno055_set_operation_mode(BNO_MODE);
+    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_IMUPLUS);
     result += bno055_read_sw_rev_id(&swRevId);
     result += bno055_read_chip_id(&chipId);
     if (result == 0){
@@ -108,8 +96,6 @@ static void master_task(void *pvParameter){
     } else {
         ESP_LOGE(TAG, "BNO055 init error, current status: %d", result);
     }
-
-    xTaskCreatePinnedToCore(imu_task, "IMUTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL, PRO_CPU_NUM);
 
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
@@ -138,15 +124,16 @@ static void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
+        int64_t begin = esp_timer_get_time();
+
         // update sensors
         cam_calc();
+        bno055_convert_float_euler_h_deg(&yaw);
         ESP_LOGI(TAG, "Euler heading: %f", yaw);
 
         // update values for FSM, mutexes are used to prevent race conditions
-        // TODO maybe we should use only one semaphore here? using multiple is pointless
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
-            xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) &&
-            xSemaphoreTake(imuSemaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // reset out values
                 robotState.outShouldBrake = false;
                 robotState.outOrientation = 0;
@@ -185,7 +172,6 @@ static void master_task(void *pvParameter){
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
                 xSemaphoreGive(goalDataSem);
-                xSemaphoreGive(imuSemaphore);
         } else {
             ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
         }
@@ -206,12 +192,37 @@ static void master_task(void *pvParameter){
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
             ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
         }
-
         comms_uart_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
+        
+        // main loop performance profiling code
+        int64_t end = esp_timer_get_time() - begin;
+        movavg_push(avgTime, (float) end);
+        ticks++;
+        ticksSinceLastBestTime++;
+        ticksSinceLastWorstTime++;
+
+        if (end >= worstTime){
+            // we took longer than recorded previously, means we have a new worst time
+            ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %f us", 
+                (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime));
+            ticksSinceLastWorstTime = 0;
+            worstTime = end;
+        } else if (end <= bestTime){
+            // we took less than recorded previously, meaning we have a new best time
+            ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %f us", 
+                (long) end, ticksSinceLastBestTime, movavg_calc(avgTime));
+            ticksSinceLastBestTime = 0;
+            bestTime = end;
+        } else if (ticks >= 128){
+            // print the average time every few loops
+            ESP_LOGW(PT_TAG, "Average time: %f us", movavg_calc(avgTime));
+            ticks = 0;
+        }
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
     }
+    movavg_free(avgTime);
 }
 
 void app_main(){
