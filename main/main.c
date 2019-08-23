@@ -129,7 +129,7 @@ static void master_task(void *pvParameter){
         // update sensors
         cam_calc();
         bno055_convert_float_euler_h_deg(&yaw);
-        ESP_LOGI(TAG, "Euler heading: %f", yaw);
+        // ESP_LOGI(TAG, "Euler heading: %f", yaw);
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 

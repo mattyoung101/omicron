@@ -78,6 +78,8 @@
 #define ESP_SCL 19
 #define ESP_WIRE Wire
 
+#define ESPSERIAL Serial3
+
 // --- Debug --- //
 
 #define V_BAT A16

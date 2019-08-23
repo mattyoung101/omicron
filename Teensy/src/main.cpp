@@ -47,9 +47,6 @@ float direction;
 float speed;
 float orientation;
 
-void requestEvent(void);
-void receiveEvent(size_t count);
-
 // Line avoidance calculation
 void calcLineAvoid(){
     if(ls.isOnLine || ls.lineOver){
@@ -99,30 +96,61 @@ void calcAccel(){
     }
 }
 
+/** decode protobuf over UART from ESP **/
+static void decodeProtobuf(void){
+    uint8_t buf[64] = {0}; // 64 byte buffer, same as defined on the ESP
+    uint8_t msg[64] = {0}; // message working space
+    uint8_t i = 0;
+
+    // read in bytes from UART
+    while (true){
+        uint8_t byte = ESPSERIAL.read();
+        buf[i++] = byte;
+
+        if (byte == 0xEE){
+            break;
+        }    
+    }
+
+    // now we can parse the header and decode the protobuf byte stream
+    if (buf[0] == 0xB){
+        msg_type_t msgId = (msg_type_t) buf[1];
+        uint8_t msgSize = buf[2];
+
+        // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
+        memcpy(msg, buf + 3, msgSize);
+
+        pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
+        void *dest = NULL;
+        void *msgFields = NULL;
+
+        // assign destination struct based on message ID
+        switch (msgId){
+            case MSG_PUSH_I2C_MASTER:
+                dest = (void*) &lastMasterProvide;
+                msgFields = (void*) &I2CMasterProvide_fields;
+                break;
+            default:
+                Serial.printf("[Comms] Unknown message ID: %d\n", msgId);
+                return;
+        }
+
+        // decode the byte stream
+        if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
+            Serial.printf("[Comms] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
+        }
+
+        // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
+    } else {
+        Serial.printf("[Comms] Invalid begin character: %d\n", buf[0]);
+        delay(15);
+    }
+}
+
 void setup() {
     // Put other setup stuff here
     Serial.begin(115200);
-
-    #if ESP_I2C_ON
-        // Init ESP_WIRE
-        // join bus on address 0x12 (in slave mode)
-        ESP_WIRE.begin(I2C_SLAVE, 0x23, I2C_PINS_18_19, I2C_PULLUP_EXT, 400000);
-        ESP_WIRE.setTimeout(1000000000);
-        ESP_WIRE.setDefaultTimeout(1000000000);
-        ESP_WIRE.onRequest(requestEvent);
-        ESP_WIRE.onReceive(receiveEvent);
-    #endif
-
-
-    #if MPU_I2C_ON
-        // Init IMU_WIRE
-        I2Cinit();
-
-        // Init IMU stuff
-        imu.init();
-        imu.calibrate();
-    #endif
-
+    ESPSERIAL.begin(115200);
 
     #if LS_ON
         // Init light sensors
@@ -131,17 +159,10 @@ void setup() {
     #endif
 
     move.set();
-
     pinMode(LED_BUILTIN, OUTPUT);
 }
 
 void loop() {
-    #if MPU_I2C_ON
-        // Read imu
-        imu.update();
-    #endif
-
-
     #if LS_ON
         // Update line data
         ls.read();
@@ -152,27 +173,24 @@ void loop() {
         ls.lineCalc();
     #endif
 
-
     // Measure battery voltage
     batteryVoltage = get_battery_voltage();
 
+    decodeProtobuf();
 
     // Update variables
     targetDirection = lastMasterProvide.direction;
     targetSpeed = lastMasterProvide.speed;
     orientation = lastMasterProvide.orientation;
-    heading = imu.heading;
-
+    heading = lastMasterProvide.heading;
 
     // Do line avoidance calcs
     calcLineAvoid();
-
 
     // Update motors
     calcAccel();
     move.motorCalc(direction, orientation, speed);
     move.go(false);
-
 
     #if LED_ON
         // Blinky LED stuff :D
@@ -203,66 +221,3 @@ void loop() {
     // Serial.print(heading);
     // Serial.println();
 }
-
-#if ESP_I2C_ON
-void requestEvent() {
-    // Send heading to ESP
-    ESP_WIRE.write(0xB); // The :b:est start byte in existence
-    ESP_WIRE.write(highByte((uint16_t) (imu.heading * 100))); // Send most sigificant byte
-    ESP_WIRE.write(lowByte((uint16_t) (imu.heading * 100))); // Send least significant byte
-}
-
-void receiveEvent(size_t count) {
-    uint8_t buf[64] = {0}; // 64 byte buffer, same as defined on the ESP
-    uint8_t msg[64] = {0}; // message working space
-    uint8_t i = 0;
-
-    Serial.printf("receiveEvent(%d)\n", count);
-
-    // read in bytes from I2C
-    ESP_WIRE.readBytes(buf, count);
-    Serial.printf("buf[0] = %d, buf[1] = %d\n", buf[0], buf[1]);
-
-    // while (true) {
-    //     uint8_t byte = ESP_WIRE.read();
-    //     buf[i++] = byte;
-
-    //     if (byte == 0xEE){
-    //         break;
-    //     }
-    // }
-
-    // now we can parse the header and decode the protobuf byte stream
-    // if (buf[0] == 0xB){
-    //     msg_type_t msgId = (msg_type_t) buf[1];
-    //     uint8_t msgSize = buf[2];
-
-    //     // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
-    //     memcpy(msg, buf + 3, msgSize);
-
-    //     pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
-    //     void *dest = NULL;
-    //     void *msgFields = NULL;
-
-    //     // assign destination struct based on message ID
-    //     switch (msgId){
-    //         case MSG_PUSH_I2C_MASTER:
-    //             dest = (void*) &lastMasterProvide;
-    //             msgFields = (void*) &I2CMasterProvide_fields;
-    //             break;
-    //         default:
-    //             Serial.printf("[I2C error] Unknown message ID: %d\n", msgId);
-    //             return;
-    //     }
-
-    //     // decode the byte stream
-    //     if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
-    //         Serial.printf("[I2C error] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
-    //     }
-    //     // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
-    // } else {
-    //     Serial.printf("[I2C error] Invalid begin character: %d\n", buf[0]);
-    //     delay(15);
-    // }
-}
-#endif
