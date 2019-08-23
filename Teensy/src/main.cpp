@@ -36,8 +36,8 @@ PID goalPID(GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION);
 PID goaliePID(GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX);
 
 // LED Stuff
-Timer attackLedTimer(200000); // LED timer when attacking
-Timer defendLedTimer(500000); // LED timer when defending
+Timer lineLedTimer(200000); // LED timer when attacking
+Timer movingLedTimer(500000); // LED timer when defending
 Timer idleLedTimer(1000000); // LED timer when idling
 Timer batteryLedTimer(10000); // LED timer when low battery
 bool ledOn;
