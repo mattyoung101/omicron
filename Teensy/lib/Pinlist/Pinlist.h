@@ -16,6 +16,10 @@
 #define MUX_WR 44
 #define MUX_OUT 49
 
+// --- Camera --- //
+
+#define CAM_SERIAL Serial2
+
 // --- Motors --- //
 
 // Motor 1
@@ -23,7 +27,7 @@
 #define MOTOR_FR_IN1 24
 #define MOTOR_FR_IN2 25
 #define MOTOR_FR_ANGLE 45
-#define MOTOR_FR_REVERSED false
+#define MOTOR_FR_REVERSED true
 
 // Motor 2
 #define MOTOR_BR_PWM 3
@@ -44,7 +48,7 @@
 #define MOTOR_FL_IN1 26
 #define MOTOR_FL_IN2 27
 #define MOTOR_FL_ANGLE 315
-#define MOTOR_FL_REVERSED false
+#define MOTOR_FL_REVERSED true
 
 // --- LRFs --- //
 

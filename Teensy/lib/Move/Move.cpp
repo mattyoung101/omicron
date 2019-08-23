@@ -22,6 +22,8 @@ void Move::set()
 }
 void Move::motorCalc(int angle, int dir, int speed)
 {
+    // speed = speed/100 * 255; // Convert percentage to 8-bit
+
     radAngle = radians(angle);
 
     values[0] = cos((radians(MOTOR_FL_ANGLE + 90)) - radAngle);
