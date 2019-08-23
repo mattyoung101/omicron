@@ -65,31 +65,6 @@ float orientation;
 void requestEvent(void);
 void receiveEvent(size_t count);
 
-// Acceleration calculation
-void calcAccel(){
-    if(accelTimer.timeHasPassed()){ // Time step has occured, updating motor values
-        // Turn target velocity vector into cartesian
-        double r = targetSpeed;
-        double theta = -1.0 * (targetDirection - 90);
-        double targetX = r * cos(theta);
-        double targetY = r * sin(theta);
-
-        // Turn current velocity vector into cartesian
-        r = speed;
-        theta = -1.0 * (direction - 90);
-        double currentX = r * cos(theta);
-        double currentY = r * sin(theta);
-
-        // Do accleration thingo
-        double newX = currentX + sign(targetX - currentX) * ACCEL_PROGRESS;
-        double newY = currentY + sign(targetY - currentY) * ACCEL_PROGRESS;
-
-        // Convert new velocity vector to polar
-        speed = sqrt(sq(newX) + sq(newY));
-        direction = doubleMod(450 - (atan2(newY, newX) * RAD_DEG), 360);
-    }
-}
-
 void setup() {
     // Put other setup stuff here
     delay(200); // Delay so that turning robot on doesn't yeet imu calibrations
