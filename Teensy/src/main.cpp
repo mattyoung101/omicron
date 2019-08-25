@@ -14,7 +14,6 @@
 #include "Playmode.h"
 #include "PID.h"
 
-#if ESP_I2C_ON
 typedef enum {
     MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
     MSG_PUSH_I2C_MASTER, // as the I2C master, I'm providing data to the I2C slave
@@ -22,7 +21,6 @@ typedef enum {
 } msg_type_t;
 
 static I2CMasterProvide lastMasterProvide = I2CMasterProvide_init_zero;
-#endif
 
 IMU imu;
 LightSensorArray ls;
