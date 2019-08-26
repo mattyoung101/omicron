@@ -183,11 +183,15 @@ static void master_task(void *pvParameter){
         I2CMasterProvide msg = I2CMasterProvide_init_default;
         uint8_t buf[PROTOBUF_SIZE] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
+
+        // ESP_LOGD(TAG,"%d",robotState.inGoalAngle);
+        // robotState.outSpeed = 0;
+        // robotState.outDirection = 0;
         
         msg.heading = yaw; // IMU heading
-        msg.direction = 69.420f; // motor direction (which way we're driving)
-        msg.orientation = 69.69f; // motor orientation (which way we're facing)
-        msg.speed = 100.0f; // motor speed as 0-100%
+        msg.direction = robotState.outDirection; // motor direction (which way we're driving)
+        msg.orientation = -robotState.outOrientation; // motor orientation (which way we're facing)
+        msg.speed = robotState.outSpeed; // motor speed as 0-100%
 
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
             ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));

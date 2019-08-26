@@ -9,9 +9,9 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(33, 42, 0, 27, 33, 56), # yellow
-             (37, 60, -35, 4, -42, -14), # blue
-             (48, 65, 51, 80, 36, 64)] # orange
+thresholds = [(60, 79, -13, 44, 32, 75), # yellow
+             (34, 47, -11, 37, -72, -30), # blue
+             (46, 60, 39, 85, 16, 52)] # orange
 
 # Robot A
 # Yellow (53, 66, 1, 25, 3, 42)
@@ -55,16 +55,16 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = 1000)
+sensor.set_auto_exposure(False, exposure_us = 12000)
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-4.878651, -6.02073, -6.02073)))
+rgb_gain_db=((-5.886325, -6.02073, 0.4617908)))
 
 # Standard
 sensor.set_brightness(0)
-sensor.set_contrast(0)
-sensor.set_saturation(0)
+sensor.set_contrast(3)
+sensor.set_saturation(3)
 
 sensor.skip_frames(time=100)
 
@@ -142,7 +142,7 @@ while True:
     # Serial out preparation
     out.clear()
     out += [0xB]
-    out += [0xB]
+    #out += [0xB]
 
     if biggestBlue == None:
         out += [False, 0, 0]
@@ -159,7 +159,7 @@ while True:
     else:
         out += [True, constrain(int(biggestOrange.cx()), 0, 255), constrain(int(biggestOrange.cy()), 0, 255)]
 
-    #out += [0xE]
+    out += [0xE]
 
     #pyb.LED(2).on()
     for byte in out:

@@ -38,7 +38,7 @@ static void create_timers_if_needed(state_machine_t *fsm){
 /** checks if any of the timers should be disabled based on current robot data */
 static void timer_check(){
     // if the ball is visible, stop the idle timer
-    if (robotState.inBallStrength > 0.0f){
+    if (orangeBall.exists){
         om_timer_stop(&idleTimer);
     }
 }
@@ -57,10 +57,8 @@ void state_attack_idle_update(state_machine_t *fsm){
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
 
-    // rs.outSpeed = 0.0f;
-
     // Check criteria: ball must not be visible, goal must be visible (this is the root state so don't revert)
-    if (!orangeBall.exists) {
+    if (orangeBall.exists) {
         LOG_ONCE(TAG, "Ball is visible, reverting");
         FSM_REVERT;
     } else if (!rs.inOtherGoalVisible) {
@@ -68,13 +66,13 @@ void state_attack_idle_update(state_machine_t *fsm){
         FSM_MOTOR_BRAKE;
     }
 
-    // position(&robotState, IDLE_DISTANCE, IDLE_OFFSET, rs.inOtherGoalAngle, rs.inOtherGoalLength, true);
+    position(&robotState, IDLE_DISTANCE, IDLE_OFFSET, rs.inOtherGoalAngle, rs.inOtherGoalLength, true);
 
     // float verticalDistance = fabsf(robotState.inGoalLength /** cosf(DEG_RAD * goalAngle_)*/);
     // float distanceMovement = -pid_update(&forwardPID, verticalDistance, HALFWAY_DISTANCE, 0.0f); // Stay a fixed distance from the goal
     
     // rs.outDirection = fmodf(RAD_DEG * (atan2f(0.0f, distanceMovement)), 360.0f);
-    rs.outSpeed = 0.0f;
+    // rs.outSpeed = 0.0f;
 }
 
 // Pursue
@@ -135,7 +133,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
     // Check criteria:
     // Ball too far away, Ball too close and angle good (go to dribble), Ball too far (revert)
-    if (rs.inBallStrength <= 0.0f){
+    if (!orangeBall.exists){
         LOG_ONCE(TAG, "Ball not visible, switching to idle, strength: %f", robotState.inBallStrength);
         om_timer_start(&idleTimer);
         FSM_CHANGE_STATE(Idle);

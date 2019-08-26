@@ -60,7 +60,7 @@ typedef enum {
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.5
+#define HEADING_KP 0.8
 #define HEADING_KI 0
 #define HEADING_KD 0.05
 #define HEADING_MAX_CORRECTION 100
@@ -71,21 +71,21 @@ typedef enum {
 #define LINEAVOID_MAX 60
 
 // --- Idle Correction --- //
-#define IDLE_KP 0.3
+#define IDLE_KP 0.8
 #define IDLE_KI 0
-#define IDLE_KD 0.042
+#define IDLE_KD 0.05
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
 #define FORWARD_KP 3.5
 #define FORWARD_KI 0
 #define FORWARD_KD 0
-#define FORWARD_MAX 100
+#define FORWARD_MAX 20
 
 #define SIDE_KP 1
 #define SIDE_KI 0
 #define SIDE_KD 0
-#define SIDE_MAX 100
+#define SIDE_MAX 20
 
 #define INTERCEPT_KP 2
 #define INTERCEPT_KI 0
@@ -111,9 +111,9 @@ typedef enum {
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 0.6
+#define GOAL_KP 0.8
 #define GOAL_KI 0
-#define GOAL_KD 0.03
+#define GOAL_KD 0.05
 #define GOAL_MAX_CORRECTION 100
 
 // Maths
@@ -160,8 +160,8 @@ extern uint16_t IN_FRONT_MIN_ANGLE; // angle range in which the ball is consider
 extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IN_FRONT_ANGLE_BUFFER 40
 #define IN_FRONT_STRENGTH_BUFFER 30
-#define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
-#define IDLE_DISTANCE 40
+#define IDLE_TIMEOUT 500 // if ball is not visible for this length of time in ms or more, switch to idle state
+#define IDLE_DISTANCE 80
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 80 // speed at which robot dribbles the ball, out of 100

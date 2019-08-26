@@ -62,6 +62,7 @@ public:
     bool brake;
     bool isYeeting;
     int idleDist;
+    bool onField = true;
 private:
     int direction;
     int speed;
@@ -79,7 +80,6 @@ private:
     bool isOnLine;
     bool lineOver;
     int urgency;
-    bool onField = true;
     double trueLineAngle = NO_LINE_ANGLE;
     double trueLineSize = -1;
 

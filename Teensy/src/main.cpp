@@ -132,6 +132,7 @@ void setup() {
         ls.calibrate();
     #endif
 
+    playmode.init();
     move.set();
     pinMode(LED_BUILTIN, OUTPUT);
 }
@@ -144,11 +145,11 @@ void loop() {
 
     // Update variables
     direction = lastMasterProvide.direction;
-    speed = lastMasterProvide.speed;
-    orientation = lastMasterProvide.orientation;
+    speed = int((lastMasterProvide.speed/100) * 255);
+    orientation = float((lastMasterProvide.orientation/100) * 255);
     heading = lastMasterProvide.heading;
 
-    Serial.printf("direction: %f, speed: %f, orientation: %f, heading: %f\n", direction, speed, orientation, heading);
+    // Serial.printf("direction: %f, speed: %f, orientation: %f, heading: %f\n", direction, speed, orientation, heading);
 
     // Do line avoidance calcs
     #if LS_ON
@@ -157,9 +158,14 @@ void loop() {
         ls.calculateClusters();
         ls.calculateLine();
 
-        ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
+        playmode.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
         playmode.calculateLineAvoidance(heading);
     #endif
+
+    if(!playmode.onField){
+        direction = playmode.getDirection();
+        speed = playmode.getSpeed();
+    }
 
     // Update motors
     move.motorCalc(direction, orientation, speed);
