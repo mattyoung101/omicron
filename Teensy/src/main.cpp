@@ -62,15 +62,23 @@ float orientation;
 
 /** decode protobuf over UART from ESP **/
 static void decodeProtobuf(void){
-    uint8_t buf[64] = {0}; // 64 byte buffer, same as defined on the ESP
-    uint8_t msg[64] = {0}; // message working space
+    uint8_t buf[64] = {0};
+    uint8_t msg[64] = {0}; // message working space, used by nanopb
     uint8_t i = 0;
 
     // read in bytes from UART
     while (true){
+        // force wait for more bytes to be available
+        // FIXME this is a large performance bottleneck
+        // we can't multi thread this (as we're on a Teensy...) but we could possibly hack up a rewrite in a way that 
+        // allows the main loop to keep polling the sensors while checking for available serial bytes to append to the 
+        // decode buffer. otherwise, we can just clock UART faster (perhaps even up to 1 MHz+?) which should help
+        // after all we only need about 250-500 Hz
+        while (!ESPSERIAL.available());
         uint8_t byte = ESPSERIAL.read();
         buf[i++] = byte;
 
+        // terminate decoding if stream is finished
         if (byte == 0xEE){
             break;
         }    
@@ -102,11 +110,13 @@ static void decodeProtobuf(void){
         // decode the byte stream
         if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
             Serial.printf("[Comms] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
+        } else {
+            // Serial.println("Protobuf decode OK!");
         }
 
         // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
     } else {
-        Serial.printf("[Comms] Invalid begin character: %d\n", buf[0]);
+        Serial.printf("[Comms] Invalid begin character: 0x%X\n", buf[0]);
         delay(15);
     }
 }
@@ -137,6 +147,8 @@ void loop() {
     speed = lastMasterProvide.speed;
     orientation = lastMasterProvide.orientation;
     heading = lastMasterProvide.heading;
+
+    Serial.printf("direction: %f, speed: %f, orientation: %f, heading: %f\n", direction, speed, orientation, heading);
 
     // Do line avoidance calcs
     #if LS_ON
@@ -177,8 +189,4 @@ void loop() {
             }
         }
     #endif
-    
-    // Print stuffs
-    // Serial.print(heading);
-    // Serial.println();
 }
