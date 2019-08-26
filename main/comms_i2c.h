@@ -29,11 +29,6 @@ typedef struct {
     float batteryVoltage;
 } nano_data_t;
 
-// /** last SensorUpdate protobuf message from slave **/
-// extern SensorUpdate lastSensorUpdate;
-// /** data received from Nano **/
-// extern nano_data_t nanoData;
-
 /** Initialises I2C. **/
 void comms_i2c_init(i2c_port_t port);
 /** Sends data to the slave without waiting for the response */

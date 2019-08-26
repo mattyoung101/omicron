@@ -7,7 +7,6 @@
 
 // i2c_data_t receivedData = {0};
 nano_data_t nanoData = {0};
-SensorUpdate lastSensorUpdate = SensorUpdate_init_zero;
 
 static const char *TAG = "CommsI2C";
 

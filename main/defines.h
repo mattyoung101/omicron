@@ -138,8 +138,6 @@ extern int16_t CAM_OFFSET_Y;
 // IMU
 #define BNO_QUAT_FLOAT (1.0f / (1 << 14)) // converts quaternion units to floating point numbers on the BNO055
 #define BNO_BUS I2C_NUM_1 // which I2C bus the BNO is on
-#define BNO_INTN_PIN -1 // for compatibility, DEPRECATED
-#define BNO_RSTN_PIN -1 // for compatibility, DEPRECATED
 
 // Orbit
 extern uint8_t BALL_FAR_STRENGTH;
