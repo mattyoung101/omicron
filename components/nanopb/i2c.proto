@@ -1,29 +1,5 @@
 syntax = "proto3";
 
-// ESP32 RL slave (I2C master) to RL master (I2C slave) sensor update
-// DEPRECATED: communication architecture has changed, use I2CMasterProvide or I2CSlaveProvide
-message SensorUpdate {
-    option deprecated = true;
-
-    // TSOPs
-    float tsopAngle = 1;
-    float tsopStrength = 2;
-    
-    // Light sensor
-    float lineAngle = 3;
-    float lineSize = 4;
-    bool onLine = 5;
-    bool lineOver = 6;
-    float lastAngle = 7;
-
-    // IMU
-    float heading = 8;
-
-    // Other sensors
-    int32 temperature = 9; // screw accuracy
-    float voltage = 10; // ok I guess we need it here
-}
-
 // Transmits values from the Teensy to the ESP32
 message I2CSlaveProvide {
     // Processed light sensor values
