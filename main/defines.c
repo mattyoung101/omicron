@@ -45,10 +45,10 @@ void defines_init(uint8_t robotId){
         DEFEND_DISTANCE = 30;
         SURGE_DISTANCE = 35;
         SURGE_STRENGTH = 100;
-        BALL_FAR_STRENGTH = 100;
+        BALL_FAR_STRENGTH = 90;
         BALL_CLOSE_STRENGTH = 40;
-        ORBIT_SPEED_SLOW = 50;
-        ORBIT_SPEED_FAST = 100;
+        ORBIT_SPEED_SLOW = 30;
+        ORBIT_SPEED_FAST = 60;
         ORBIT_CONST = 0.6;
         DRIBBLE_BALL_TOO_FAR = 50;
         ORBIT_DIST = 0;
