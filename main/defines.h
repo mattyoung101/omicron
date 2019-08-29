@@ -77,20 +77,20 @@ typedef enum {
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 3.5
+#define FORWARD_KP 2
 #define FORWARD_KI 0
 #define FORWARD_KD 0
-#define FORWARD_MAX 20
+#define FORWARD_MAX 80
 
-#define SIDE_KP 1
+#define SIDE_KP 2
 #define SIDE_KI 0
 #define SIDE_KD 0
-#define SIDE_MAX 20
+#define SIDE_MAX 80
 
-#define INTERCEPT_KP 2
+#define INTERCEPT_KP 1
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0
-#define INTERCEPT_MAX 60
+#define INTERCEPT_KD 0.00001
+#define INTERCEPT_MAX 80
 #define INTERCEPT_MIN 0
 
 #define GOALIE_KP 1.5
@@ -159,11 +159,11 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IN_FRONT_ANGLE_BUFFER 5
 #define IN_FRONT_STRENGTH_BUFFER 0
 #define IDLE_TIMEOUT 500 // if ball is not visible for this length of time in ms or more, switch to idle state
-#define IDLE_DISTANCE 80
+#define IDLE_DISTANCE 82
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot

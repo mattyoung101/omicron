@@ -123,7 +123,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
     // goal_correction(&robotState);
     timer_check();
 
-    if (rs.inBallStrength >= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
+    if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
         LOG_ONCE(TAG, "Ball and angle in correct spot, changing intro dribble, strength: %f, angle: %f, orbit dist thresh: %d"
                 " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
                 IN_FRONT_MAX_ANGLE);

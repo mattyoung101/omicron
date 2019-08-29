@@ -64,8 +64,8 @@ void state_defence_idle_update(state_machine_t *fsm){
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
-    rs.outSpeed = 0;
-    // position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
+    // rs.outSpeed = 0;
+    position(&robotState, IDLE_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 }
 
 static om_timer_t surgeKickTimer = {NULL, false};
