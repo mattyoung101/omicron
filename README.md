@@ -18,6 +18,7 @@ Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/ve
 - components/
     - vl53l0x: ST's VL53L0X LRF driver and docs. We use Kyle Hendrick's [ESP32 port](https://github.com/kylehendricks/esp32-vl53l0x).
     - nanopb: A C library for encoding/decoding Protocol Buffer data: [repo](https://github.com/nanopb/nanopb).
+    - wren: The Wren scripting language VM: [repo](https://github.com/wren-lang/wren/tree/master/src/vm)
 - docs: contains various bits of documentation, templates, etc
 - main: contains the main code that runs on the master and slave ESP32
 - openmv: contains the code that runs on our camera, the OpenMV H7
@@ -39,3 +40,4 @@ _At some point, the code may be re-licensed under the BSD 3-Clause/4-Clause or t
 - HandmadeMath: Public Domain
 - nanopb: zlib license
 - BNO050 driver from Bosch Sensortech: BSD 3-Clause
+- Wren VM: MIT license

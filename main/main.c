@@ -129,7 +129,6 @@ static void master_task(void *pvParameter){
         // update sensors
         cam_calc();
         bno055_convert_float_euler_h_deg(&yaw);
-        // ESP_LOGI(TAG, "Euler heading: %f", yaw);
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -259,5 +258,5 @@ void app_main(){
 
     // create the main (or test, uncomment it if you want that) task 
     xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-    // xTaskCreatePinnedToCore(gpio_test_task, "GPIOTestTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    // xTaskCreatePinnedToCore(test_task, "TestTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
 }

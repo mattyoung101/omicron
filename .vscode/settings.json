@@ -12,7 +12,8 @@
         "esp_utils.h": "c",
         "handmademath.h": "c",
         "tsop.h": "c",
-        "comms_uart.h": "c"
+        "comms_uart.h": "c",
+        "*.txt": "plaintext"
     },
     "cSpell.words": [
         "Bluedroid",

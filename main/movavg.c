@@ -1,5 +1,8 @@
 #include "movavg.h"
 
+// Moving average, by Matt Young
+// Licensed into the public domain with the Unlicense.
+
 movavg_t *movavg_create(size_t size){
     movavg_t *movavg = calloc(1, sizeof(movavg_t));
     movavg->size = size;

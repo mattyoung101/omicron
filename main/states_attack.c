@@ -204,19 +204,22 @@ void state_attack_dribble_update(state_machine_t *fsm){
 void state_attack_doubledefence_update(state_machine_t *fsm){
     static const char *TAG = "AvoidDoubleDefenceState";
 
-    RS_SEM_LOCK
-    rs.outIsAttack = true;
-    rs.outSwitchOk = false; // we switch now, and we might enter double defence, so don't
-    RS_SEM_UNLOCK
-    imu_correction(&robotState);
-    timer_check();
+    ESP_LOGE(TAG, "This state is not yet implemented!");
+    return;
 
-    if(rs.inOtherGoalLength < GOAL_TOO_CLOSE){
-        float goalAngle = robotState.inOtherGoalAngle < 0.0f ? robotState.inOtherGoalAngle + 360.0f : robotState.inOtherGoalAngle; // Convert to 0 - 360 range
-        float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
-        float verticalDistance = fabsf(robotState.inOtherGoalLength * cosf(DEG_RAD * goalAngle_));
-        float distanceMovement = pid_update(&forwardPID, verticalDistance, GOAL_TOO_CLOSE + 10, 0.0f); // Stay a fixed distance from the goal
-    }
+    // RS_SEM_LOCK
+    // rs.outIsAttack = true;
+    // rs.outSwitchOk = false; // we switch now, and we might enter double defence, so don't
+    // RS_SEM_UNLOCK
+    // imu_correction(&robotState);
+    // timer_check();
+
+    // if(rs.inOtherGoalLength < GOAL_TOO_CLOSE){
+    //     // float goalAngle = robotState.inOtherGoalAngle < 0.0f ? robotState.inOtherGoalAngle + 360.0f : robotState.inOtherGoalAngle; // Convert to 0 - 360 range
+    //     // float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
+    //     // float verticalDistance = fabsf(robotState.inOtherGoalLength * cosf(DEG_RAD * goalAngle_));
+    //     // float distanceMovement = pid_update(&forwardPID, verticalDistance, GOAL_TOO_CLOSE + 10, 0.0f); // Stay a fixed distance from the goal
+    // }
 }
 
 // done with this macro

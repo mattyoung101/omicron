@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-// Moving average
+// Moving average, by Matt Young
+// Licensed into the public domain with the Unlicense.
 
 typedef struct {
     size_t size;

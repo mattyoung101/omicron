@@ -3,7 +3,7 @@ import math
 from numba import njit
 
 palette = {
-    "yellow": [255, 255, 0],
+    "yellow": [195, 153, 41],
     "green": [0, 255, 0],
     "white": [255, 255, 255],
     "orange": [255, 153, 0],
