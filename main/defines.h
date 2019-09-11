@@ -5,6 +5,10 @@
 
 // If this is defined, the value of the robot number will be written to NVS
 // #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+#define ENABLE_DEBUG // if this is defined, debug features are enabled
+#ifdef ENABLE_DEBUG
+    #define ENABLE_DIAGNOSTICS // if this is defined then performance and RAM diagnostics will be printed
+#endif
 
 // FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
@@ -52,6 +56,10 @@ typedef enum {
     MSG_PUSH_I2C_MASTER, // as the I2C master, I'm providing data to the I2C slave
     MSG_PULL_I2C_SLAVE, // requesting data from the I2C slave
 } msg_type_t;
+
+// Scripting
+#define WREN_INIT_HEAP_SIZE 16 // initial Wren heap size in KB
+#define WREN_MIN_HEAP_SIZE 8 // min Wren heap size in KB
 
 // Music
 #define MUSIC_BPM 100

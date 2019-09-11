@@ -439,21 +439,3 @@ void bno055_delay_ms(u32 msec){
     // ets_delay_us(msec / 1000); // (if precision is required)
     vTaskDelay(pdMS_TO_TICKS(msec));
 }
-
-// Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
-// Modified to only work use heading
-// TODO may need the normalised version
-float quat_to_heading(float w, float x, float y, float z){
-    float test = x*y + z*w;
-	if (test > 0.499) {
-        // singularity at north pole
-		return fmodf(2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
-	}
-	if (test < -0.499) {
-        // singularity at south pole
-		return fmodf(-2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
-	}
-    float sqy = y*y;
-    float sqz = z*z;
-    return fmodf(atan2f(2*y*w-2*x*z , 1 - 2*sqy - 2*sqz) * RAD_DEG + 360.0f, 360.0f);
-}

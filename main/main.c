@@ -31,7 +31,7 @@
 #include "driver/spi_master.h"
 #include "bno055.h"
 #include "movavg.h"
-#include "wren.h"
+#include "scripting.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -43,7 +43,6 @@
 
 static const char *RST_TAG = "ResetReason";
 static const char *PT_TAG = "PerfTimer";
-static const char *WR_TAG = "WrenScript";
 
 // TODO move these functions to utils?
 static void print_reset_reason(){
@@ -54,25 +53,6 @@ static void print_reset_reason(){
         ESP_LOGW(RST_TAG, "Reset due to watchdog timer!");
     } else {
         // ESP_LOGD(RST_TAG, "Other reset reason: %d", resetReason);
-    }
-}
-
-static void wren_writefn(WrenVM *vm, const char *text){
-    ESP_LOGD(WR_TAG, "%s", text);
-}
-
-// based on: https://github.com/wren-lang/wren/blob/master/src/cli/vm.c#L246
-static void wren_errorfn(WrenVM* vm, WrenErrorType type, const char* module, int line, const char* message){
-    switch (type){
-        case WREN_ERROR_COMPILE:
-            ESP_LOGE(WR_TAG, "[%s line %d] %s", module, line, message);
-            break;
-        case WREN_ERROR_RUNTIME:
-            ESP_LOGE(WR_TAG, "%s", message);
-            break;
-        case WREN_ERROR_STACK_TRACE:
-            ESP_LOGE(WR_TAG, "[%s line %d] in %s", module, line, message);
-            break;
     }
 }
 
@@ -143,27 +123,25 @@ static void master_task(void *pvParameter){
         stateMachine = fsm_new(&stateAttackPursue);
     #endif
 
-    // Wren scripting VM initialisation
-    // TODO is it a good idea to run the Wren VM in its own task?
-    // TODO also, we should put scripting in a separate C file (scripting.c/scripting.h)
-    WrenConfiguration wrenConfig;
-    wrenInitConfiguration(&wrenConfig);
-    wrenConfig.writeFn = wren_writefn;
-    wrenConfig.errorFn = wren_errorfn;
-    wrenConfig.initialHeapSize = 24 * 1024; // 24 KB
-    wrenConfig.minHeapSize = 8 * 1024; // 8 KB
-    WrenVM *vm = wrenNewVM(&wrenConfig);
-    wrenInterpret(vm, "omicron_main", "System.print(\"Running from Wren!\")");
+    scripting_init();
 
     ESP_LOGI(TAG, "=============== Master software init OK ===============");
     esp_task_wdt_add(NULL);
 
     while (true){
-        int64_t begin = esp_timer_get_time();
+        #ifdef ENABLE_DIAGNOSTICS
+            int64_t begin = esp_timer_get_time();
+        #endif
 
         // update sensors
         cam_calc();
+
+        // silence, I'm debugging
+        #if 0
         bno055_convert_float_euler_h_deg(&yaw);
+        #endif
+
+        scripting_eval("System.print(\"Running from Wren!\")");
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -233,29 +211,34 @@ static void master_task(void *pvParameter){
         comms_uart_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
         
         // main loop performance profiling code
-        int64_t end = esp_timer_get_time() - begin;
-        movavg_push(avgTime, (float) end);
-        ticks++;
-        ticksSinceLastBestTime++;
-        ticksSinceLastWorstTime++;
+        #ifdef ENABLE_DIAGNOSTICS
+            int64_t end = esp_timer_get_time() - begin;
+            movavg_push(avgTime, (float) end);
+            ticks++;
+            ticksSinceLastBestTime++;
+            ticksSinceLastWorstTime++;
 
-        if (end >= worstTime){
-            // we took longer than recorded previously, means we have a new worst time
-            ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %f us", 
-                (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime));
-            ticksSinceLastWorstTime = 0;
-            worstTime = end;
-        } else if (end <= bestTime){
-            // we took less than recorded previously, meaning we have a new best time
-            ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %f us", 
-                (long) end, ticksSinceLastBestTime, movavg_calc(avgTime));
-            ticksSinceLastBestTime = 0;
-            bestTime = end;
-        } else if (ticks >= 128){
-            // print the average time every few loops
-            ESP_LOGW(PT_TAG, "Average time: %f us", movavg_calc(avgTime));
-            ticks = 0;
-        }
+            if (end >= worstTime){
+                // we took longer than recorded previously, means we have a new worst time
+                ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %f us", 
+                    (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime));
+                ticksSinceLastWorstTime = 0;
+                worstTime = end;
+            } else if (end <= bestTime){
+                // we took less than recorded previously, meaning we have a new best time
+                ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %f us", 
+                    (long) end, ticksSinceLastBestTime, movavg_calc(avgTime));
+                ticksSinceLastBestTime = 0;
+                bestTime = end;
+            } else if (ticks >= 64){
+                // print the average time and memory diagnostics every few loops
+                ESP_LOGW(PT_TAG, "Average time: %f us", movavg_calc(avgTime));
+                ESP_LOGW(PT_TAG, "Stack high usage: %d KB. Heap bytes free: %d KB (worst: %d KB)", 
+                    uxTaskGetStackHighWaterMark(NULL) / 1000, esp_get_free_heap_size() / 1000,
+                    esp_get_minimum_free_heap_size() / 1000);
+                ticks = 0;
+            }
+        #endif
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
@@ -291,6 +274,6 @@ void app_main(){
     fflush(stdout);
 
     // create the main (or test, uncomment it if you want that) task 
-    xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    xTaskCreatePinnedToCore(master_task, "MasterTask", 32 * 1024, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     // xTaskCreatePinnedToCore(test_task, "TestTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
 }
