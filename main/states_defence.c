@@ -102,13 +102,13 @@ static void can_kick_callback(TimerHandle_t timer){
         FSM_CHANGE_STATE_DEFENCE(Surge);
     }
 
-    float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle; // Convert to -180 -> 180 range
-    float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 -> 360 range
-    float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
-    float b = robotState.inGoalAngle > 180 ? robotState.inGoalAngle - 360 : robotState.inGoalAngle;
+    // float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle; // Convert to -180 -> 180 range
+    // float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 -> 360 range
+    // float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
+    // float b = robotState.inGoalAngle > 180 ? robotState.inGoalAngle - 360 : robotState.inGoalAngle;
 
-    float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_)); // TODO use LRFs for this
-    float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+    // float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_)); // TODO use LRFs for this
+    // float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
     
     // float sidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
     // if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){

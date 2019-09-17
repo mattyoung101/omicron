@@ -29,6 +29,9 @@ extern pid_config_t coordPID;
 extern pid_config_t sidePID;
 extern pid_config_t forwardPID;
 
+// Giant list of macros
+
+/** clip amt between low and high **/
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 /** x squared **/
 #define sq(x) (x * x)
@@ -73,6 +76,8 @@ extern pid_config_t forwardPID;
 #define FSM_REVERT do { fsm_revert_state(fsm); return; } while (0);
 /** printf with a newline automatically attached on the end **/
 #define printfln(f_, ...) printf((f_ "\n"), __VA_ARGS__)
+
+// Utils functions
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
