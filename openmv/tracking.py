@@ -9,9 +9,9 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(47, 69, -11, 7, 10, 52), # yellow
-             (29, 43, -3, 18, -60, -22), # blue
-             (34, 60, 32, 88, 2, 48)] # orange
+thresholds = [(59, 100, -13, 127, 47, 127), # yellow
+             (36, 46, -1, 29, -68, -25), # blue
+             (52, 64, 54, 80, 29, 59)] # orange
 
 # Robot A
 # Yellow (53, 66, 1, 25, 3, 42)
@@ -55,16 +55,16 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = 12000)
+sensor.set_auto_exposure(False, exposure_us = 15000)
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-5.886325, -6.02073, 0.4617908)))
+rgb_gain_db=((-5.623446, -6.02073, -0.7813516)))
 
 # Standard
 sensor.set_brightness(0)
-sensor.set_contrast(0)
-sensor.set_saturation(0)
+sensor.set_contrast(3)
+sensor.set_saturation(3)
 
 sensor.skip_frames(time=100)
 

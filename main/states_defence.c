@@ -65,7 +65,7 @@ void state_defence_idle_update(state_machine_t *fsm){
     }
 
     // rs.outSpeed = 0;
-    position(&robotState, IDLE_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
+    position(&robotState, IDLE_DISTANCE - 10, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 }
 
 static om_timer_t surgeKickTimer = {NULL, false};
