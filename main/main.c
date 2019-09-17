@@ -31,7 +31,6 @@
 #include "driver/spi_master.h"
 #include "bno055.h"
 #include "movavg.h"
-#include "wren.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -43,9 +42,7 @@
 
 static const char *RST_TAG = "ResetReason";
 static const char *PT_TAG = "PerfTimer";
-static const char *WR_TAG = "WrenScript";
 
-// TODO move these functions to utils?
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
     if (resetReason == ESP_RST_PANIC){
@@ -54,25 +51,6 @@ static void print_reset_reason(){
         ESP_LOGW(RST_TAG, "Reset due to watchdog timer!");
     } else {
         // ESP_LOGD(RST_TAG, "Other reset reason: %d", resetReason);
-    }
-}
-
-static void wren_writefn(WrenVM *vm, const char *text){
-    ESP_LOGD(WR_TAG, "%s", text);
-}
-
-// based on: https://github.com/wren-lang/wren/blob/master/src/cli/vm.c#L246
-static void wren_errorfn(WrenVM* vm, WrenErrorType type, const char* module, int line, const char* message){
-    switch (type){
-        case WREN_ERROR_COMPILE:
-            ESP_LOGE(WR_TAG, "[%s line %d] %s", module, line, message);
-            break;
-        case WREN_ERROR_RUNTIME:
-            ESP_LOGE(WR_TAG, "%s", message);
-            break;
-        case WREN_ERROR_STACK_TRACE:
-            ESP_LOGE(WR_TAG, "[%s line %d] in %s", module, line, message);
-            break;
     }
 }
 
@@ -142,18 +120,6 @@ static void master_task(void *pvParameter){
     #else
         stateMachine = fsm_new(&stateAttackPursue);
     #endif
-
-    // Wren scripting VM initialisation
-    // TODO is it a good idea to run the Wren VM in its own task?
-    // TODO also, we should put scripting in a separate C file (scripting.c/scripting.h)
-    WrenConfiguration wrenConfig;
-    wrenInitConfiguration(&wrenConfig);
-    wrenConfig.writeFn = wren_writefn;
-    wrenConfig.errorFn = wren_errorfn;
-    wrenConfig.initialHeapSize = 24 * 1024; // 24 KB
-    wrenConfig.minHeapSize = 8 * 1024; // 8 KB
-    WrenVM *vm = wrenNewVM(&wrenConfig);
-    wrenInterpret(vm, "omicron_main", "System.print(\"Running from Wren!\")");
 
     ESP_LOGI(TAG, "=============== Master software init OK ===============");
     esp_task_wdt_add(NULL);
