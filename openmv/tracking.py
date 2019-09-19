@@ -47,7 +47,7 @@ sensor.set_auto_whitebal(False)
 # Need to let the above 2 settings get in...
 sensor.skip_frames(time=100)
 #sensor.set_windowing(18, 0, 240, 240)) # Robot A
-sensor.set_windowing((28, 10, 230, 230)) # Robot B
+sensor.set_windowing((49, 5, 230, 230)) # Robot B
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
