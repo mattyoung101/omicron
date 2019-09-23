@@ -15,14 +15,17 @@
 #define ROBOT1_NAME "Omicron_Robot1"
 #define SPP_NAME "Omicron_SPP"
 #define PACKET_QUEUE_LENGTH 1
-#define BT_CONF_RES_STATIC 0 // uses pre-defined roles to resolve conflicts
-#define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
+#define WI_CONF_RES_STATIC 0 // uses pre-defined roles to resolve conflicts
+#define WI_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
-// #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
-#define BT_CONF_RES_MODE BT_CONF_RES_STATIC
-#define DEFENCE false
+// #define WI_SWITCHING_ENABLED // if wireless role switching is enabled or not (defender damage switch always runs)
+#define WI_CONF_RES_MODE WI_CONF_RES_STATIC
+#define DEFENCE false // if the robot should start out in defence
+#define WI_MODE_BT 0 // use Bluetooth Classic for wireless comms
+#define WI_MODE_ESPNOW 1 // use ESPNOW for wireless comms
+#define WI_MODE WI_MODE_BT
+// #define WI_COMMS_ENABLED // uncomment if wireless communications are enabled
 
 // I2C
 #define I2C_SLAVE_DEV_ADDR 0x23 // the I2C address of the Teensy slave

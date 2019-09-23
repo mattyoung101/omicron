@@ -1,10 +1,10 @@
-#include "comms_bluetooth.h"
+#include "comms_wireless.h"
 
 // Based on the ESP32 BT SPP initiator example (https://git.io/fj465) and the BT SPP acceptor example (https://git.io/fj46d)
 
-static const char *TAGM = "CommsBT_M";
-static const char *TAGS = "CommsBT_S";
-static const char *TAG = "CommsBT";
+static const char *TAGM = "CommsWi_M";
+static const char *TAGS = "CommsWi_S";
+static const char *TAG = "CommsWi";
 
 TaskHandle_t receiveTaskHandle = NULL;
 TaskHandle_t sendTaskHandle = NULL;
@@ -27,6 +27,26 @@ static void bt_init(void){
 
     ESP_LOGI(TAG, "Bluetooth stack init OK");
 }
+
+#if WI_MODE == WI_MODE_ESPNOW
+/** Initialises ESPNOW stack **/
+static void espnow_init(void){
+    tcpip_adapter_init();
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA)); // TODO I think this will work? do we need to be AP?
+    ESP_ERROR_CHECK(esp_wifi_start());
+
+    /* 
+     * In order to simplify example, channel is set after WiFi started.
+     * This is not necessary in real application if the two devices have
+     * been already on the same channel.
+     */
+    ESP_ERROR_CHECK(esp_wifi_set_channel(1, 0)); // use channel 1 (range is 1-13)
+}
+#endif
 
 /** restart GAP discovery **/
 static void bt_gap_restart_disc(void){
@@ -71,8 +91,8 @@ static void bt_pb_decode_and_push(uint16_t size, uint8_t *data, uint32_t handle)
     }
 }
 
-/** starts the logic task */
-static void bt_start_tasks(esp_spp_cb_param_t *param){
+/** starts the wireless logic task */
+static void wi_start_tasks(esp_spp_cb_param_t *param){
     // change into our default mode if it's the first connection
     if (firstConnection){
         ESP_LOGI(TAG, "First connection, changing into default mode");
@@ -86,17 +106,17 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
     // delay so that Bluetooth, which runs on core 0, will pick up on the fact that we changed states
     vTaskDelay(pdMS_TO_TICKS(500));
 
-    xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 4096, (void*) param->open.handle, 
+    xTaskCreate(comms_wi_receive_task, "BTReceiveTask", 4096, (void*) param->open.handle, 
             configMAX_PRIORITIES - 4, &receiveTaskHandle);
     
-    xTaskCreate(comms_bt_send_task, "BTSendTask", 4096, (void*) param->open.handle, 
+    xTaskCreate(comms_wi_send_task, "BTSendTask", 4096, (void*) param->open.handle, 
             configMAX_PRIORITIES - 5, &sendTaskHandle);
 
     // if we're here we can assume that the connection was successful
     btErrors = 0;
 }
 
-void comms_bt_stop_tasks(void){
+void comms_wi_stop_tasks(void){
     if (receiveTaskHandle != NULL){
         esp_task_wdt_delete(receiveTaskHandle);
         vTaskDelete(receiveTaskHandle);
@@ -163,7 +183,7 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGW(TAGM, "Slave has disconnected (SPP connection closed), deleting tasks");
             ESP_LOGI(TAGM, "Status: %d, Port status: %d, Async: %d", param->close.status, param->close.port_status,
                     param->close.async);
-            comms_bt_stop_tasks();
+            comms_wi_stop_tasks();
             break;
         case ESP_SPP_START_EVT:
             ESP_LOGI(TAGM, "SPP server started");
@@ -185,7 +205,7 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             break;
         case ESP_SPP_SRV_OPEN_EVT:
             ESP_LOGI(TAGM, "SPP server opened, starting tasks");
-            bt_start_tasks(param);
+            wi_start_tasks(param);
             break;
         default:
             break;
@@ -293,11 +313,11 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             break;
         case ESP_SPP_OPEN_EVT:
             ESP_LOGI(TAGS, "SPP connection opened, creating tasks");
-            bt_start_tasks(param);
+            wi_start_tasks(param);
             break;
         case ESP_SPP_CLOSE_EVT:
             ESP_LOGW(TAGS, "Master has disconnected (SPP connection closed), deleting tasks");
-            comms_bt_stop_tasks();
+            comms_wi_stop_tasks();
             bt_gap_restart_disc();
             break;
         case ESP_SPP_START_EVT:
@@ -326,7 +346,7 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
     }
 }
 
-static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
+static void bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
     bt_init();
     ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_cb));
     ESP_ERROR_CHECK(esp_spp_register_callback(spp_cb));
@@ -349,15 +369,22 @@ static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
 }
 
 // waits for connection, acceptor
-void comms_bt_init_master(){
+void comms_wi_init_master(){
     isMaster = true;
-    comms_bt_init_generic(esp_bt_gap_cb_master, esp_spp_cb_master);
-    ESP_LOGI(TAGM, "Bluetooth master init OK");
+    #if WI_MODE == WI_MOED_BT
+        // BT
+        bt_init_generic(esp_bt_gap_cb_master, esp_spp_cb_master);
+        ESP_LOGI(TAGM, "Wireless (BT) master init OK!");
+    #else
+        // ESPNOW
+        espnow_init();
+        ESP_LOGI(TAGM, "Wireless (ESPNOW) master init OK!");
+    #endif
 }
 
 // connects to master, initiator
-void comms_bt_init_slave(){
+void comms_wi_init_slave(){
     isMaster = false;
-    comms_bt_init_generic(esp_bt_gap_cb_slave, esp_spp_cb_slave);
+    bt_init_generic(esp_bt_gap_cb_slave, esp_spp_cb_slave);
     ESP_LOGI(TAGS, "Bluetooth slave init OK");
 }

@@ -23,7 +23,7 @@
 #include "esp_task_wdt.h"
 #include "pid.h"
 #include "vl53l0x_api.h"
-#include "comms_bluetooth.h"
+#include "comms_wireless.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "i2c.pb.h"
@@ -108,9 +108,9 @@ static void master_task(void *pvParameter){
 
     #ifdef BLUETOOTH_ENABLED
     if (robotId == 0){
-        comms_bt_init_master();
+        comms_wi_init_master();
     } else {
-        comms_bt_init_slave();
+        comms_wi_init_slave();
     }
     #endif
 

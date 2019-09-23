@@ -1,4 +1,4 @@
-#include "comms_bluetooth.h"
+#include "comms_wireless.h"
 
 // tasks which runs when a Bluetooth connection is established. manages sending and receiving data as well as logic.
 
@@ -7,7 +7,7 @@ static om_timer_t cooldownTimer = {NULL, false};
 static bool cooldownOn = false; // true if the cooldown timer is currently activated
 
 static void packet_timer_callback(TimerHandle_t timer){
-    static const char *TAG = "BTTimeout";
+    static const char *TAG = "WiTimeout";
 
     ESP_LOGW(TAG, "Packet timeout has gone off, other robot is off for damage");
     uint32_t handle = (uint32_t) pvTimerGetTimerID(timer);
@@ -28,18 +28,18 @@ static void cooldown_timer_callback(TimerHandle_t timer){
     om_timer_stop(&cooldownTimer);
 }
 
-void comms_bt_receive_task(void *pvParameter){
-    static const char *TAG = "BTReceive";
+void comms_wi_receive_task(void *pvParameter){
+    static const char *TAG = "WiReceive";
     uint32_t handle = (uint32_t) pvParameter;
     bool wasSwitchOk = false;
     bool alreadyPrinted = false;
     uint8_t switchBuffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 
     // create timers and semaphore if they've not already been created in a previous run of this task
-    om_timer_check_create(&packetTimer, "BTTimeout", BT_PACKET_TIMEOUT, pvParameter, packet_timer_callback);
+    om_timer_check_create(&packetTimer, "WiTimeout", BT_PACKET_TIMEOUT, pvParameter, packet_timer_callback);
     om_timer_check_create(&cooldownTimer, "CooldownTimer", BT_SWITCH_COOLDOWN, pvParameter, cooldown_timer_callback);
 
-    ESP_LOGI(TAG, "Bluetooth receive task init OK, handle: %d", handle);
+    ESP_LOGI(TAG, "Wireless receive task init OK, handle: %d", handle);
     esp_task_wdt_add(NULL);
 
     while (true){
@@ -68,7 +68,7 @@ void comms_bt_receive_task(void *pvParameter){
                     isAttack ? "ATTACK" : "DEFENCE");
             ESP_LOGD(TAG, "my ball distance: %f, other ball distance: %f", robotState.inBallStrength, recvMsg.ballStrength);
             
-            #if BT_CONF_RES_MODE == BT_CONF_RES_DYNAMIC
+            #if WI_CONF_RES_MODE == WI_CONF_RES_DYNAMIC
                 ESP_LOGI(TAG, "Dynamic conflict resolution algorithm running");
 
                 // conflict resolution: whichever robot is closest to the ball becomes the attacker + some extra edge cases
@@ -97,7 +97,7 @@ void comms_bt_receive_task(void *pvParameter){
                         fsm_change_state(stateMachine, &stateAttackPursue);
                     }
                 }
-            #elif BT_CONF_RES_MODE == BT_CONF_RES_STATIC
+            #elif WI_CONF_RES_MODE == WI_CONF_RES_STATIC
                 ESP_LOGI(TAG, "Static conflict resolution algorithm running...");
 
                 // change into which ever mode was set in NVS
@@ -151,12 +151,12 @@ void comms_bt_receive_task(void *pvParameter){
     }
 }
 
-void comms_bt_send_task(void *pvParameter){
-    static const char *TAG = "BTSend";
+void comms_wi_send_task(void *pvParameter){
+    static const char *TAG = "WiSend";
     uint32_t handle = (uint32_t) pvParameter;
     uint8_t buf[PROTOBUF_SIZE] = {0};
 
-    ESP_LOGI(TAG, "Bluetooth send task init OK, handle: %d", handle);
+    ESP_LOGI(TAG, "Wireless send task init OK, handle: %d", handle);
     esp_task_wdt_add(NULL);
     
     while (true){
@@ -173,7 +173,7 @@ void comms_bt_send_task(void *pvParameter){
 
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;
-        #ifdef BT_SWITCHING_ENABLED
+        #ifdef WI_SWITCHING_ENABLED
             sendMsg.switchOk = robotState.outSwitchOk;
         #else
             sendMsg.switchOk = false;
