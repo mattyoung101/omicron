@@ -205,7 +205,7 @@ static void master_task(void *pvParameter){
                 fsm_dump(stateMachine);
                 fsm_reset(stateMachine);
                 fsm_dump(stateMachine);
-                // TODO any other reset tasks here as well
+                // TODO any other reset tasks here as well, such as resetting bno?
             }
         }
         
