@@ -22,7 +22,7 @@
 // #define BLUETOOTH_ENABLED
 // #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_STATIC
-#define DEFENCE false
+#define DEFENCE true
 
 // I2C
 #define I2C_SLAVE_DEV_ADDR 0x23 // the I2C address of the Teensy slave
@@ -42,7 +42,7 @@
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 40
-#define ENEMY_GOAL GOAL_YELLOW
+#define ENEMY_GOAL GOAL_BLUE
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -77,19 +77,19 @@ typedef enum {
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 2
+#define FORWARD_KP 1.5
 #define FORWARD_KI 0
 #define FORWARD_KD 0
-#define FORWARD_MAX 80
+#define FORWARD_MAX 100
 
-#define SIDE_KP 2
+#define SIDE_KP 1
 #define SIDE_KI 0
 #define SIDE_KD 0
-#define SIDE_MAX 80
+#define SIDE_MAX 100
 
-#define INTERCEPT_KP 1
+#define INTERCEPT_KP 1.5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.001
+#define INTERCEPT_KD 0.0001
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 
@@ -159,7 +159,7 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IN_FRONT_ANGLE_BUFFER 10
 #define IN_FRONT_STRENGTH_BUFFER 5
 #define IDLE_TIMEOUT 500 // if ball is not visible for this length of time in ms or more, switch to idle state
-#define IDLE_DISTANCE 82
+#define IDLE_DISTANCE 90
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
