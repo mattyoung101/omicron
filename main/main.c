@@ -16,20 +16,17 @@
 #include "fsm.h"
 #include "cam.h"
 #include "states.h"
-#include "soc/efuse_reg.h"
 #include "comms_i2c.h"
 #include "comms_uart.h"
 #include "esp_timer.h"
 #include "esp_task_wdt.h"
 #include "pid.h"
-#include "vl53l0x_api.h"
 #include "comms_bluetooth.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "i2c.pb.h"
-#include "lrf.h"
-#include "driver/spi_master.h"
 #include "bno055.h"
+#include "button.h"
 #include "movavg.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
@@ -69,6 +66,7 @@ static void master_task(void *pvParameter){
     uint16_t ticks = 0;
     uint16_t ticksSinceLastWorstTime = 0;
     uint16_t ticksSinceLastBestTime = 0;
+    button_event_t buttonEvent = {0};
 
     bno055.bus_read = bno055_read;
     bno055.bus_write = bno055_write;
@@ -76,6 +74,7 @@ static void master_task(void *pvParameter){
     bno055.dev_addr = BNO055_I2C_ADDR2;
 
     print_reset_reason();
+    robotStateSem = xSemaphoreCreateMutex();
 
     // Initialise comms and hardware
     comms_uart_init();
@@ -98,6 +97,7 @@ static void master_task(void *pvParameter){
     }
 
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
+    QueueHandle_t buttonQueue = button_init(PIN_BIT(RST_BTN));
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
 
     // read robot ID from NVS and init Bluetooth
@@ -198,31 +198,46 @@ static void master_task(void *pvParameter){
             ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
         }
         comms_uart_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
+
+        if (xQueueReceive(buttonQueue, &buttonEvent, 0)){
+            if ((buttonEvent.pin == RST_BTN) && (buttonEvent.event == BUTTON_UP)){
+                ESP_LOGI(TAG, "Reset button pressed, resetting state machine");
+                fsm_dump(stateMachine);
+                fsm_reset(stateMachine);
+                fsm_dump(stateMachine);
+                // TODO any other reset tasks here as well
+            }
+        }
         
         // main loop performance profiling code
-        int64_t end = esp_timer_get_time() - begin;
-        movavg_push(avgTime, (float) end);
-        ticks++;
-        ticksSinceLastBestTime++;
-        ticksSinceLastWorstTime++;
+        #ifdef ENABLE_DIAGNOSTICS
+            int64_t end = esp_timer_get_time() - begin;
+            movavg_push(avgTime, (float) end);
+            ticks++;
+            ticksSinceLastBestTime++;
+            ticksSinceLastWorstTime++;
 
-        if (end >= worstTime){
-            // we took longer than recorded previously, means we have a new worst time
-            ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %f us", 
-                (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime));
-            ticksSinceLastWorstTime = 0;
-            worstTime = end;
-        } else if (end <= bestTime){
-            // we took less than recorded previously, meaning we have a new best time
-            ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %f us", 
-                (long) end, ticksSinceLastBestTime, movavg_calc(avgTime));
-            ticksSinceLastBestTime = 0;
-            bestTime = end;
-        } else if (ticks >= 128){
-            // print the average time every few loops
-            ESP_LOGW(PT_TAG, "Average time: %f us", movavg_calc(avgTime));
-            ticks = 0;
-        }
+            if (end > worstTime){
+                // we took longer than recorded previously, means we have a new worst time
+                ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %f us", 
+                    (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime));
+                ticksSinceLastWorstTime = 0;
+                worstTime = end;
+            } else if (end < bestTime){
+                // we took less than recorded previously, meaning we have a new best time
+                ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %f us", 
+                    (long) end, ticksSinceLastBestTime, movavg_calc(avgTime));
+                ticksSinceLastBestTime = 0;
+                bestTime = end;
+            } else if (ticks >= 256){
+                // print the average time and memory diagnostics every few loops
+                ESP_LOGW(PT_TAG, "Average time: %f us", movavg_calc(avgTime));
+                ESP_LOGW(PT_TAG, "Stack high usage: %d KB. Heap bytes free: %d KB (worst: %d KB)", 
+                    uxTaskGetStackHighWaterMark(NULL) / 1000, esp_get_free_heap_size() / 1000,
+                    esp_get_minimum_free_heap_size() / 1000);
+                ticks = 0;
+            }
+        #endif
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin

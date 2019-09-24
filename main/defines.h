@@ -24,6 +24,12 @@
 #define BT_CONF_RES_MODE BT_CONF_RES_STATIC
 #define DEFENCE false
 
+// Debug
+#define ENABLE_DEBUG // if this is defined, debug features are enabled
+#ifdef ENABLE_DEBUG
+    #define ENABLE_DIAGNOSTICS // if this is defined then performance and RAM diagnostics will be printed
+#endif
+
 // I2C
 #define I2C_SLAVE_DEV_ADDR 0x23 // the I2C address of the Teensy slave
 #define I2C_TIMEOUT 250 // ms
@@ -198,6 +204,9 @@ extern uint8_t ROBOT_MODE;
 #define RAINBOW_TRANSITION_TIME 0.1f // seconds
 #define DEBUG_LED_1 23 // supposed to be orange
 #define DEBUG_LED_2 25 // supposed to be white
+
+// Buttons
+#define RST_BTN 35
 
 /** initialises per robot values */
 void defines_init(uint8_t robotId);

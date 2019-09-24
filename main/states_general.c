@@ -66,11 +66,13 @@ void state_general_shoot_update(state_machine_t *fsm){
 
 // Nothing. Empty states for when no state function is declared.
 void state_nothing_enter(state_machine_t *fsm){
-    ESP_LOGV("StateNothing", "Entered");
+    // do nothing
 }
 void state_nothing_exit(state_machine_t *fsm){
-    ESP_LOGV("StateNothing", "Exited");
+    // do nothing
 }
 void state_nothing_update(state_machine_t *fsm){
-    ESP_LOGV("StateNothing", "Update");
+    // do nothing
+    ESP_LOGW("StateNothing", "Should not be in this state!");
+    FSM_MOTOR_BRAKE;
 }

@@ -15,10 +15,7 @@ Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/ve
 
 ## Directory structure
 - .vscode: VSCode settings, mainly spellchecking. In order to create `c_cpp_properties.json` for the C/C++ extension (which is not synced on Git), please see `docs/c_properties_template.txt`.
-- components/
-    - vl53l0x: ST's VL53L0X LRF driver and docs. We use Kyle Hendrick's [ESP32 port](https://github.com/kylehendricks/esp32-vl53l0x).
-    - nanopb: A C library for encoding/decoding Protocol Buffer data: [repo](https://github.com/nanopb/nanopb).
-    - wren: The Wren scripting language VM: [repo](https://github.com/wren-lang/wren/tree/master/src/vm)
+- components: contains libraries, see below for links and licenses
 - docs: contains various bits of documentation, templates, etc
 - main: contains the main code that runs on the master and slave ESP32
 - openmv: contains the code that runs on our camera, the OpenMV H7
@@ -35,9 +32,10 @@ This code is currently proprietary and confidential to Brisbane Boys' College an
 _At some point, the code may be re-licensed under the BSD 3-Clause/4-Clause or the MPL 2.0._
 
 ## Libraries and licenses
-- ESP-IDF: Apache 2
-- DG_dynarr: Public Domain
-- HandmadeMath: Public Domain
-- nanopb: zlib license
-- BNO050 driver from Bosch Sensortech: BSD 3-Clause
-- Wren VM: MIT license
+- [ESP-IDF](https://github.com/espressif/esp-idf/): Apache 2 license
+- [DG_dynarr](https://github.com/DanielGibson/Snippets/blob/master/DG_dynarr.h): Public domain
+- [HandmadeMath](https://github.com/HandmadeMath/Handmade-Math): Public domain
+- [Nanopb](https://github.com/nanopb/nanopb/): zlib license
+- [BNO055_driver](https://github.com/BoschSensortec/BNO055_driver): BSD 3-Clause license
+- [Wren VM](https://github.com/wren-lang/wren/): MIT license
+- [esp32-button](https://github.com/craftmetrics/esp32-button): MIT license

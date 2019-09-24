@@ -44,5 +44,12 @@ void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState);
 void fsm_revert_state(state_machine_t *fsm);
 /** Returns true if the given state machine is in the state provided by the string "name" **/
 bool fsm_in_state(state_machine_t *fsm, char *name);
-/** Thread safe function to get the current state name **/
+/** 
+ * Thread safe function to get the current state name. 
+ * IMPORTANT NOTE that the returned string must be freed as strdup is used. 
+ **/
 char *fsm_get_current_state_name(state_machine_t *fsm);
+/** Resets the FSM to its initial state **/
+void fsm_reset(state_machine_t *fsm);
+/** Dumps the FSM to the console **/
+void fsm_dump(state_machine_t *fsm);

@@ -8,16 +8,9 @@
 static const char *TAG = "FSM";
 
 state_machine_t* fsm_new(fsm_state_t *startState){
-    // TODO move this elsewhere - this code should just handle FSMs, not other crap as well
-    if (robotStateSem == NULL){
-        robotStateSem = xSemaphoreCreateMutex();
-        xSemaphoreGive(robotStateSem);
-    }
-
     state_machine_t* fsm = calloc(1, sizeof(state_machine_t));
     fsm->currentState = &stateGeneralNothing;
     fsm->semaphore = xSemaphoreCreateMutex();
-    xSemaphoreGive(fsm->semaphore);
     // change into the start state, to make sure startState->enter is called
     fsm_change_state(fsm, startState); 
     return fsm;
@@ -45,6 +38,7 @@ void fsm_update(state_machine_t *fsm){
     fsm->currentState->update(fsm);
 }
 
+// function which handles the actual logic of changing states
 static void fsm_internal_change_state(state_machine_t *fsm, fsm_state_t *newState, bool pushToStack){
     if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
         if (pushToStack) da_push(fsm->stateHistory, fsm->currentState);
@@ -68,7 +62,6 @@ void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
 }
 
 void fsm_revert_state(state_machine_t *fsm){
-    // first check if it's safe to pop
     if (da_count(fsm->stateHistory) < 1){
         ESP_LOGE(TAG, "Unable to revert: state history too small, size = %d", da_count(fsm->stateHistory));
         return;
@@ -80,7 +73,12 @@ void fsm_revert_state(state_machine_t *fsm){
 }
 
 bool fsm_in_state(state_machine_t *fsm, char *name){
-    return strcmp(fsm_get_current_state_name(fsm), name) == 0;
+    char *curName = fsm_get_current_state_name(fsm);
+    bool ret = strcmp(curName, name) == 0;
+    // free string allocated with strdup
+    free(curName);
+    curName = NULL;
+    return ret;
 }
 
 char *fsm_get_current_state_name(state_machine_t *fsm){
@@ -91,5 +89,54 @@ char *fsm_get_current_state_name(state_machine_t *fsm){
     } else {
         ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot return state name");
         return "ERROR";
+    }
+}
+
+void fsm_reset(state_machine_t *fsm){
+    ESP_LOGD(TAG, "Resetting FSM");
+    
+    if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        if (da_count(fsm->stateHistory) <= 1){
+            ESP_LOGD(TAG, "Nothing to revert (only one state in history)");
+            xSemaphoreGive(fsm->semaphore);
+            return;
+        }
+
+        // grab the first two elements, INCLUDING StateNothing, so we don't cause issues with reverting
+        fsm_state_t *stateNothing = da_get(fsm->stateHistory, 0);
+        fsm_state_t *initialState = da_get(fsm->stateHistory, 1);
+
+        // change states to the initial state, giving the semaphore as fsm_internal_change_state requires it
+        xSemaphoreGive(fsm->semaphore);
+        fsm_internal_change_state(fsm, initialState, false);
+        if (!xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            ESP_LOGE(TAG, "Cannot re-acquire semaphore after changing states!");
+            return;
+        }
+        
+        // now delete the array
+        da_free(fsm->stateHistory);
+
+        // and add back the nothing state, but not the initialState since we've already changed into it
+        da_add(fsm->stateHistory, stateNothing);
+        xSemaphoreGive(fsm->semaphore);
+    } else {
+        ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot reset");
+    }
+}
+
+void fsm_dump(state_machine_t *fsm){
+    if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        printf("BEGIN FSM DUMP\nState history (%d entries):\n", da_count(fsm->stateHistory));
+        
+        for (int i = 0; i < da_count(fsm->stateHistory); i++){
+            fsm_state_t *state = da_get(fsm->stateHistory, i);
+            printf("\t%d. %s\n", i, state->name);
+        }
+
+        printf("Current state: %s\nEND FSM DUMP\n", fsm->currentState->name);
+        xSemaphoreGive(fsm->semaphore);
+    } else {
+        ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot dump state history");
     }
 }
