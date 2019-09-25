@@ -201,11 +201,9 @@ static void master_task(void *pvParameter){
 
         if (xQueueReceive(buttonQueue, &buttonEvent, 0)){
             if ((buttonEvent.pin == RST_BTN) && (buttonEvent.event == BUTTON_UP)){
-                ESP_LOGI(TAG, "Reset button pressed, resetting state machine");
-                fsm_dump(stateMachine);
+                ESP_LOGI(TAG, "Reset button pressed, resetting robot");
                 fsm_reset(stateMachine);
-                fsm_dump(stateMachine);
-                // TODO any other reset tasks here as well, such as resetting bno?
+                continue; // begin a new loop
             }
         }
         
@@ -232,9 +230,10 @@ static void master_task(void *pvParameter){
             } else if (ticks >= 256){
                 // print the average time and memory diagnostics every few loops
                 ESP_LOGW(PT_TAG, "Average time: %f us", movavg_calc(avgTime));
-                ESP_LOGW(PT_TAG, "Stack high usage: %d KB. Heap bytes free: %d KB (worst: %d KB)", 
+                ESP_LOGW(PT_TAG, "Stack high usage: %d KB. Heap bytes free: %d KB (min free ever: %d KB)", 
                     uxTaskGetStackHighWaterMark(NULL) / 1000, esp_get_free_heap_size() / 1000,
                     esp_get_minimum_free_heap_size() / 1000);
+                // fsm_dump(stateMachine);
                 ticks = 0;
             }
         #endif
