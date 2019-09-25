@@ -36,9 +36,9 @@ void defines_init(uint8_t robotId){
 
     if (robotId == 0){
         ROBOT_MODE = MODE_ATTACK;
-        CAM_OFFSET_X = 115;
-        CAM_OFFSET_Y = 115;
-        DEFEND_DISTANCE = 70;
+        CAM_OFFSET_X = 120;
+        CAM_OFFSET_Y = 120;
+        DEFEND_DISTANCE = 65;
         SURGE_DISTANCE = 90;
         SURGE_STRENGTH = 40;
         BALL_FAR_STRENGTH = 90;
@@ -52,8 +52,8 @@ void defines_init(uint8_t robotId){
         IN_FRONT_MAX_ANGLE = 350;
     } else {
         ROBOT_MODE = MODE_DEFEND;
-        CAM_OFFSET_X = 110;
-        CAM_OFFSET_Y = 110;
+        CAM_OFFSET_X = 120;
+        CAM_OFFSET_Y = 120;
         DEFEND_DISTANCE = 70; // 24
         SURGE_DISTANCE = 80; // 35
         SURGE_STRENGTH = 60; 

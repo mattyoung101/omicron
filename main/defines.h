@@ -83,22 +83,27 @@ typedef enum {
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 1.5
+// PID which controls the robot moving to its correct distance from the goal
+// TODO increase P of forward PID so its faster to get back into goal for example after surging
+#define FORWARD_KP 2.0
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
 
-#define SIDE_KP 1
+// PID which controls the robot centering on the goal
+#define SIDE_KP 1.2
 #define SIDE_KI 0
 #define SIDE_KD 0
 #define SIDE_MAX 100
 
+// PID which controls the robot going to intercept the ball
 #define INTERCEPT_KP 1.5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.0001
+#define INTERCEPT_KD 0.00001
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 
+// PID which controls the robot turning its back towards the goal
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
 #define GOALIE_KD 0.1
@@ -132,8 +137,6 @@ typedef enum {
 #define CAM_DATA_LEN 8
 #define CAM_BEGIN_BYTE 0xB
 #define CAM_END_BYTE 0xE
-#define CAM_FRAME_WIDTH 0
-#define CAM_FRAME_HEIGHT 0
 extern int16_t CAM_OFFSET_X;
 extern int16_t CAM_OFFSET_Y;
 #define CAM_ANGLE_OFFSET 0
@@ -165,7 +168,7 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IN_FRONT_ANGLE_BUFFER 10
 #define IN_FRONT_STRENGTH_BUFFER 5
 #define IDLE_TIMEOUT 500 // if ball is not visible for this length of time in ms or more, switch to idle state
-#define IDLE_DISTANCE 90
+#define IDLE_DISTANCE 90 // distance to sit away from the goal if no ball is visible
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
