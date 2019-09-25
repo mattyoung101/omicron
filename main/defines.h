@@ -4,7 +4,7 @@
 #include "freertos/semphr.h"
 
 // If this is defined, the value of the robot number will be written to NVS
-// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+// #define NVS_WRITE_ROBOTNUM 1 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
@@ -22,7 +22,7 @@
 // #define BLUETOOTH_ENABLED
 // #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_STATIC
-#define DEFENCE true
+#define DEFENCE false
 
 // Debug
 #define ENABLE_DEBUG // if this is defined, debug features are enabled
@@ -48,7 +48,7 @@
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 40
-#define ENEMY_GOAL GOAL_BLUE
+#define ENEMY_GOAL GOAL_YELLOW
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows

@@ -27,7 +27,7 @@
 #define MOTOR_FR_IN1 24
 #define MOTOR_FR_IN2 25
 #define MOTOR_FR_ANGLE 45
-#define MOTOR_FR_REVERSED true
+#define MOTOR_FR_REVERSED false
 
 // Motor 2
 #define MOTOR_BR_PWM 3
@@ -48,7 +48,7 @@
 #define MOTOR_FL_IN1 26
 #define MOTOR_FL_IN2 27
 #define MOTOR_FL_ANGLE 315
-#define MOTOR_FL_REVERSED true
+#define MOTOR_FL_REVERSED false
 
 // --- LRFs --- //
 

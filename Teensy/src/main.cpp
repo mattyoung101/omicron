@@ -135,13 +135,14 @@ void setup() {
     playmode.init();
     move.set();
     pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
     // Measure battery voltage
     batteryVoltage = get_battery_voltage();
 
-    decodeProtobuf();
+    // decodeProtobuf();
 
     // Update variables
     direction = lastMasterProvide.direction;
@@ -155,7 +156,8 @@ void loop() {
     #if LS_ON
         // Update line data
         ls.read();
-        ls.calculateClusters();
+        ls.fillInSensors();
+        // ls.calculateClusters();
         ls.calculateLine();
 
         playmode.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
@@ -170,6 +172,8 @@ void loop() {
     // Update motors
     move.motorCalc(direction, orientation, speed);
     move.go(false);
+
+    Serial.println();
 
     #if LED_ON
         // Blinky LED stuff :D

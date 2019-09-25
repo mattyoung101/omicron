@@ -150,12 +150,16 @@ void LightSensorArray::fillInSensors() {
         if (!data[i] && data[mod(i - 1, LS_NUM)] && data[mod(i + 1, LS_NUM)]) {
             filledInData[i] = true;
         }
+        #if DEBUG_FILLED
+        Serial.print(filledInData[i]);
+        #endif
     }
 
     calculateClusters(true);
 }
 
 void LightSensorArray::calculateLine() {
+    if(checkPegs(filledInData, LS_NUM)) return;
     if (numClusters == 0) {
         // No clusters, no line
         angle = NO_LINE_ANGLE;

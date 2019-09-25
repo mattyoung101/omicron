@@ -35,10 +35,6 @@ void defines_init(uint8_t robotId){
     ESP_LOGI(TAG, "Initialising values as robot ID #%d", robotId);
 
     if (robotId == 0){
-        MOTOR_FL_REVERSED = false;
-        MOTOR_FR_REVERSED = true;
-        MOTOR_BL_REVERSED = false;
-        MOTOR_BR_REVERSED = false;
         ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 115;
         CAM_OFFSET_Y = 115;
@@ -55,22 +51,18 @@ void defines_init(uint8_t robotId){
         IN_FRONT_MIN_ANGLE = 10;
         IN_FRONT_MAX_ANGLE = 350;
     } else {
-        MOTOR_FL_REVERSED = false;
-        MOTOR_FR_REVERSED = false;
-        MOTOR_BL_REVERSED = false;
-        MOTOR_BR_REVERSED = true;
         ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 110;
         CAM_OFFSET_Y = 110;
         DEFEND_DISTANCE = 70; // 24
         SURGE_DISTANCE = 80; // 35
         SURGE_STRENGTH = 60; 
-        BALL_FAR_STRENGTH = 80;
-        BALL_CLOSE_STRENGTH = 50;
-        ORBIT_SPEED_SLOW = 20;
-        ORBIT_SPEED_FAST = 30;
+        BALL_FAR_STRENGTH = 90;
+        BALL_CLOSE_STRENGTH = 45;
+        ORBIT_SPEED_SLOW = 40;
+        ORBIT_SPEED_FAST = 60;
         ORBIT_CONST = 0.2;
-        DRIBBLE_BALL_TOO_FAR = 0; // TODO FIX THESE VALUES FOR PASSIVE BALL STUFF
+        DRIBBLE_BALL_TOO_FAR = 40; // TODO FIX THESE VALUES FOR PASSIVE BALL STUFF
         ORBIT_DIST = 0;
         IN_FRONT_MIN_ANGLE = 10;
         IN_FRONT_MAX_ANGLE = 350;

@@ -59,3 +59,13 @@ float lerp(float fromValue, float toValue, float progress) {
 float get_battery_voltage() {
     return (float)((V_REF * (double)analogRead(V_BAT)/1023 * (R1 + R2)) / R2);
 }
+
+bool checkPegs(bool array[], int size){
+    for (int i = 0; i < size; i++){
+        if(array[i] != 1){
+            // Serial.printf(" Element %d is %d not 1", i, array[i]);
+            return false;
+        }
+    }
+    return true;
+}
