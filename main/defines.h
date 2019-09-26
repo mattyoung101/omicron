@@ -22,7 +22,7 @@
 // #define BLUETOOTH_ENABLED
 // #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_STATIC
-#define DEFENCE true
+#define DEFENCE false
 
 // Debug
 #define ENABLE_DEBUG // if this is defined, debug features are enabled
@@ -31,7 +31,7 @@
 #endif
 
 // Acceleration
-#define MAX_ACCELERATION 0.5f // must be between 0.0 and 1.0
+#define MAX_ACCELERATION 0.001f // must be between 0.0 and 1.0
 
 // I2C
 #define I2C_SLAVE_DEV_ADDR 0x23 // the I2C address of the Teensy slave
@@ -51,7 +51,7 @@
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 40
-#define ENEMY_GOAL GOAL_BLUE
+#define ENEMY_GOAL GOAL_YELLOW
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -175,7 +175,7 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define ACCEL_PROG 0.1 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot

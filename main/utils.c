@@ -161,7 +161,7 @@ void orbit(robot_state_t *robotState){
     if(robotState->inRobotId == 0){
         // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallStrength * 1.45f : robotState->inBallStrength; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
         
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.3 * powf(E, 0.3 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.2 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
         float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
@@ -467,10 +467,12 @@ hmm_vec2 calc_acceleration(float speed, float direction){
     // (current * (1 - MAX_ACCELERATION)) + (target * MAX_ACCELERATION);
     hmm_vec2 output = HMM_AddVec2(HMM_MultiplyVec2f(current, 1.0f - MAX_ACCELERATION), 
                                     HMM_MultiplyVec2f(target, MAX_ACCELERATION));
+
+    current = output;
     
     // 3. Convert back to polar
     hmm_vec2 outPolar = vec2_cartesian_to_polar(output);
-    outPolar.X *= 100.0f; // scale back to 0-100 speed
+    outPolar.X = constrain(outPolar.X * 100.0f, 0.0f, 100.0f); // scale back to 0-100 speed
     outPolar.Y = fmodf(outPolar.Y * -1 + 450.0f, 360.0f);
     return outPolar;
 }

@@ -5,6 +5,7 @@
 #include <Config.h>
 #include <PID.h>
 #include <Timer.h>
+#include <Vector.h>
 
 class Playmode{
 public:
@@ -17,6 +18,8 @@ public:
     void centre(double heading);
 
     void calculateLineAvoidance(double heading);
+
+    void calculateAcceleration();
 
     void tick(){
         speed = 0;
@@ -88,6 +91,8 @@ private:
     int ballStrength;
     bool ballExists;
     
+    Vector current;
+
     int LRFx;
     int LRFy;
     int frontLRF;
