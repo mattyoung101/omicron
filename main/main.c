@@ -130,6 +130,9 @@ static void master_task(void *pvParameter){
     #endif
 
     ESP_LOGI(TAG, "=============== Master software init OK ===============");
+    ESP_LOGD(TAG, "Waiting on valid cam packet...");
+    xSemaphoreTake(validCamPacket, portMAX_DELAY);
+    ESP_LOGI(TAG, "Running!");
     esp_task_wdt_add(NULL);
 
     while (true){
@@ -190,7 +193,6 @@ static void master_task(void *pvParameter){
 
         // Run acceleration
         hmm_vec2 accel = calc_acceleration(robotState.outSpeed, robotState.outDirection);
-        ESP_LOGD(TAG, "Accel: (%f, %f)", accel.X, accel.Y);
         
         // encode and send Protobuf message to Teenys slave
         I2CMasterProvide msg = I2CMasterProvide_init_default;

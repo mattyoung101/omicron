@@ -28,6 +28,7 @@ typedef struct {
 } cam_goal; // TODO rename to cam_object_t
 
 extern SemaphoreHandle_t goalDataSem;
+extern SemaphoreHandle_t validCamPacket;
 
 extern cam_goal goalBlue;
 extern cam_goal goalYellow;
