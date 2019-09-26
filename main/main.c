@@ -51,14 +51,35 @@ static void print_reset_reason(){
     }
 }
 
+static void init_bno055(struct bno055_t *bno055){
+    u16 swRevId = 0;
+    u8 chipId = 0;
+
+    bno055->bus_read = bno055_read;
+    bno055->bus_write = bno055_write;
+    bno055->delay_msec = bno055_delay_ms;
+    bno055->dev_addr = BNO055_I2C_ADDR2;
+    s8 result = bno055_init(bno055);
+    result += bno055_set_power_mode(BNO055_POWER_MODE_NORMAL);
+    // see page 22 of the datasheet, Section 3.3.1
+    // we don't use NDOF or NDOF_FMC_OFF because it has a habit of snapping to magnetic north which is undesierable
+    // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
+    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_IMUPLUS);
+    result += bno055_read_sw_rev_id(&swRevId);
+    result += bno055_read_chip_id(&chipId);
+    if (result == 0){
+        ESP_LOGI("BNO055_HAL", "BNO055 init OK! SW Rev ID: 0x%X, Chip ID: 0x%X", swRevId, chipId);
+    } else {
+        ESP_LOGE("BNO055_HAL", "BNO055 init error, current status: %d", result);
+    }
+}
+
 // Task which runs on the master. Receives sensor data from slave and handles complex routines like FSM & BT.
 static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
     struct bno055_t bno055 = {0};
     state_machine_t *stateMachine = NULL;
-    u16 swRevId = 0;
-    u8 chipId = 0;
     float yaw = 0.0f;
     int64_t worstTime = 0;
     int64_t bestTime = 0xFFFFF;
@@ -67,11 +88,8 @@ static void master_task(void *pvParameter){
     uint16_t ticksSinceLastWorstTime = 0;
     uint16_t ticksSinceLastBestTime = 0;
     button_event_t buttonEvent = {0};
-
-    bno055.bus_read = bno055_read;
-    bno055.bus_write = bno055_write;
-    bno055.delay_msec = bno055_delay_ms;
-    bno055.dev_addr = BNO055_I2C_ADDR2;
+    float yawOffset = 0.0f;
+    float yawRaw = 0.0f; // yaw before offset
 
     print_reset_reason();
     robotStateSem = xSemaphoreCreateMutex();
@@ -81,20 +99,10 @@ static void master_task(void *pvParameter){
     comms_i2c_init(I2C_NUM_1);
     i2c_scanner(I2C_NUM_1);
     cam_init();
-
-    s8 result = bno055_init(&bno055);
-    result += bno055_set_power_mode(BNO055_POWER_MODE_NORMAL);
-    // see page 22 of the datasheet, Section 3.3.1
-    // we don't use NDOF or NDOF_FMC_OFF because it has a habit of snapping to magnetic north which is undesierable
-    // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
-    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_IMUPLUS);
-    result += bno055_read_sw_rev_id(&swRevId);
-    result += bno055_read_chip_id(&chipId);
-    if (result == 0){
-        ESP_LOGI(TAG, "BNO055 init OK! SW Rev ID: 0x%X, Chip ID: 0x%X", swRevId, chipId);
-    } else {
-        ESP_LOGE(TAG, "BNO055 init error, current status: %d", result);
-    }
+    init_bno055(&bno055);
+    bno055_convert_float_euler_h_deg(&yawRaw);
+    yawOffset = yawRaw;
+    ESP_LOGI(TAG, "Yaw offset: %f degrees", yawOffset);
 
     gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     QueueHandle_t buttonQueue = button_init(PIN_BIT(RST_BTN));
@@ -129,7 +137,8 @@ static void master_task(void *pvParameter){
 
         // update sensors
         cam_calc();
-        bno055_convert_float_euler_h_deg(&yaw);
+        bno055_convert_float_euler_h_deg(&yawRaw);
+        yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -178,6 +187,10 @@ static void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
+
+        // Run acceleration
+        hmm_vec2 accel = calc_acceleration(robotState.outSpeed, robotState.outDirection);
+        ESP_LOGD(TAG, "Accel: (%f, %f)", accel.X, accel.Y);
         
         // encode and send Protobuf message to Teenys slave
         I2CMasterProvide msg = I2CMasterProvide_init_default;
@@ -191,9 +204,9 @@ static void master_task(void *pvParameter){
         // print_ball_data(&robotState);
         
         msg.heading = yaw; // IMU heading
-        msg.direction = robotState.outDirection; // motor direction (which way we're driving)
+        msg.direction = accel.Y; // motor direction (which way we're driving)
         msg.orientation = -robotState.outOrientation; // motor orientation (which way we're facing)
-        msg.speed = robotState.outSpeed; // motor speed as 0-100%
+        msg.speed = accel.X; // motor speed as 0-100%
 
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
             ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
@@ -202,9 +215,14 @@ static void master_task(void *pvParameter){
 
         if (xQueueReceive(buttonQueue, &buttonEvent, 0)){
             if ((buttonEvent.pin == RST_BTN) && (buttonEvent.event == BUTTON_UP)){
-                ESP_LOGI(TAG, "Reset button pressed, resetting robot");
+                ESP_LOGI(TAG, "Reset button pressed, resetting FSM & IMU...");
+                fsm_dump(stateMachine);
                 fsm_reset(stateMachine);
-                continue; // begin a new loop
+
+                // calculate new yaw offset
+                bno055_convert_float_euler_h_deg(&yawRaw);
+                yawOffset = yawRaw;
+                ESP_LOGI(TAG, "New yaw offset: %f degrees", yawOffset);
             }
         }
         
@@ -235,6 +253,7 @@ static void master_task(void *pvParameter){
                     uxTaskGetStackHighWaterMark(NULL) / 1000, esp_get_free_heap_size() / 1000,
                     esp_get_minimum_free_heap_size() / 1000);
                 // fsm_dump(stateMachine);
+                // ESP_LOGI(TAG, "Heading: %f", yaw);
                 ticks = 0;
             }
         #endif

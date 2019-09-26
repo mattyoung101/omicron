@@ -119,3 +119,10 @@ void fsm_dump(state_machine_t *fsm){
         ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot dump state history");
     }
 }
+
+void fsm_free(state_machine_t *fsm){
+    da_free(fsm->stateHistory);
+    vSemaphoreDelete(fsm->semaphore);
+    free(fsm);
+    fsm = NULL;
+}

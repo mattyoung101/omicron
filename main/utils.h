@@ -155,4 +155,6 @@ void log_once_reset();
 s8 bno055_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
 s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
 void bno055_delay_ms(u32 msec);
-float quat_to_heading(float w, float x, float y, float z);
+
+/** Calculates acceleration **/
+hmm_vec2 calc_acceleration(float speed, float direction);

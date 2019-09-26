@@ -53,3 +53,5 @@ char *fsm_get_current_state_name(state_machine_t *fsm);
 void fsm_reset(state_machine_t *fsm);
 /** Dumps the FSM to the console **/
 void fsm_dump(state_machine_t *fsm);
+/** Frees memory allocated by the FSM **/
+void fsm_free(state_machine_t *fsm);

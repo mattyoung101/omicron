@@ -30,6 +30,9 @@
     #define ENABLE_DIAGNOSTICS // if this is defined then performance and RAM diagnostics will be printed
 #endif
 
+// Acceleration
+#define MAX_ACCELERATION 0.5f // must be between 0.0 and 1.0
+
 // I2C
 #define I2C_SLAVE_DEV_ADDR 0x23 // the I2C address of the Teensy slave
 #define I2C_TIMEOUT 250 // ms
