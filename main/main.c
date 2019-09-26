@@ -186,7 +186,7 @@ static void master_task(void *pvParameter){
 
         // ESP_LOGD(TAG,"%d",robotState.inGoalAngle);
         // robotState.outSpeed = 0;
-        // imu_correction(&robotState);
+        // goal_correction(&robotState);
         // robotState.outDirection = 0;
         // print_ball_data(&robotState);
         
