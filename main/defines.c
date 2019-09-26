@@ -54,8 +54,8 @@ void defines_init(uint8_t robotId){
         ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 120;
         CAM_OFFSET_Y = 120;
-        DEFEND_DISTANCE = 70; // 24
-        SURGE_DISTANCE = 80; // 35
+        DEFEND_DISTANCE = 60; // 24
+        SURGE_DISTANCE = 90; // 35
         SURGE_STRENGTH = 60; 
         BALL_FAR_STRENGTH = 90;
         BALL_CLOSE_STRENGTH = 45;

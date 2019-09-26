@@ -22,7 +22,7 @@
 // #define BLUETOOTH_ENABLED
 // #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_STATIC
-#define DEFENCE false
+#define DEFENCE true
 
 // Debug
 #define ENABLE_DEBUG // if this is defined, debug features are enabled
@@ -48,7 +48,7 @@
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 40
-#define ENEMY_GOAL GOAL_YELLOW
+#define ENEMY_GOAL GOAL_BLUE
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -85,7 +85,7 @@ typedef enum {
 // --- Goalie PIDs --- //
 // PID which controls the robot moving to its correct distance from the goal
 // TODO increase P of forward PID so its faster to get back into goal for example after surging
-#define FORWARD_KP 2.0
+#define FORWARD_KP 3.0
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
@@ -99,7 +99,7 @@ typedef enum {
 // PID which controls the robot going to intercept the ball
 #define INTERCEPT_KP 1.5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.00001
+#define INTERCEPT_KD 0.00005
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 
