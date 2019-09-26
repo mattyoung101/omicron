@@ -454,20 +454,23 @@ void bno055_delay_ms(u32 msec){
     vTaskDelay(pdMS_TO_TICKS(msec));
 }
 
-// Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
-// Modified to only work use heading
-// TODO may need the normalised version
-float quat_to_heading(float w, float x, float y, float z){
-    float test = x*y + z*w;
-	if (test > 0.499) {
-        // singularity at north pole
-		return fmodf(2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
-	}
-	if (test < -0.499) {
-        // singularity at south pole
-		return fmodf(-2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
-	}
-    float sqy = y*y;
-    float sqz = z*z;
-    return fmodf(atan2f(2*y*w-2*x*z , 1 - 2*sqy - 2*sqz) * RAD_DEG + 360.0f, 360.0f);
+static hmm_vec2 current = {0};
+hmm_vec2 calc_acceleration(float speed, float direction){
+    // 1. Calculate target vector
+    // Direction is currently an angle from north but needs to be an angle from the X axis
+    float newDir = fmodf(direction - 450.0f, 360.0f) * -1;
+    // Create polar vector with direction and speed
+    hmm_vec2 target = HMM_Vec2(speed / 100.0f, newDir);
+    target = vec2_polar_to_cartesian(target);
+
+    // 2. Calculate output vector
+    // (current * (1 - MAX_ACCELERATION)) + (target * MAX_ACCELERATION);
+    hmm_vec2 output = HMM_AddVec2(HMM_MultiplyVec2f(current, 1.0f - MAX_ACCELERATION), 
+                                    HMM_MultiplyVec2f(target, MAX_ACCELERATION));
+    
+    // 3. Convert back to polar
+    hmm_vec2 outPolar = vec2_cartesian_to_polar(output);
+    outPolar.X *= 100.0f; // scale back to 0-100 speed
+    outPolar.Y = fmodf(outPolar.Y * -1 + 450.0f, 360.0f);
+    return outPolar;
 }

@@ -187,6 +187,10 @@ static void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
+
+        // Run acceleration
+        hmm_vec2 accel = calc_acceleration(robotState.outSpeed, robotState.outDirection);
+        ESP_LOGD(TAG, "Accel: (%f, %f)", accel.X, accel.Y);
         
         // encode and send Protobuf message to Teenys slave
         I2CMasterProvide msg = I2CMasterProvide_init_default;
@@ -200,9 +204,9 @@ static void master_task(void *pvParameter){
         // print_ball_data(&robotState);
         
         msg.heading = yaw; // IMU heading
-        msg.direction = robotState.outDirection; // motor direction (which way we're driving)
+        msg.direction = accel.Y; // motor direction (which way we're driving)
         msg.orientation = -robotState.outOrientation; // motor orientation (which way we're facing)
-        msg.speed = robotState.outSpeed; // motor speed as 0-100%
+        msg.speed = accel.X; // motor speed as 0-100%
 
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
             ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
