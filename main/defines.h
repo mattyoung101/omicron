@@ -122,9 +122,9 @@ typedef enum {
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 1
+#define GOAL_KP 0.5
 #define GOAL_KI 0
-#define GOAL_KD 0.003
+#define GOAL_KD 0.05
 #define GOAL_MAX_CORRECTION 100
 
 // Maths
