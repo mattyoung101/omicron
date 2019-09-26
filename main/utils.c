@@ -413,7 +413,14 @@ s8 bno055_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
     esp_err_t ret = i2c_master_cmd_begin(BNO_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     i2c_cmd_link_delete(cmd);
 
-    I2C_ERR_CHECK(ret);
+    if (ret != ESP_OK){
+        ESP_LOGE(TAG, "I2C failure in bno55_read: %s. reg_addr: 0x%X, cnt: %d. reg_data follows:", 
+                esp_err_to_name(ret), reg_addr, cnt);
+        ESP_LOG_BUFFER_HEX_LEVEL(TAG, reg_data, cnt, ESP_LOG_ERROR);
+        i2c_reset_tx_fifo(I2C_NUM_1);
+        i2c_reset_rx_fifo(I2C_NUM_1);
+        return ret;
+    }
     return 0;
 }
 
@@ -428,10 +435,17 @@ s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
     ESP_ERROR_CHECK(i2c_master_write(cmd, reg_data, cnt, true));
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
 
-    esp_err_t err = i2c_master_cmd_begin(BNO_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    esp_err_t ret = i2c_master_cmd_begin(BNO_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     i2c_cmd_link_delete(cmd);
 
-    I2C_ERR_CHECK(err);
+    if (ret != ESP_OK){
+        ESP_LOGE(TAG, "I2C failure in bno055_write: %s. reg_addr: 0x%X, cnt: %d. reg_data follows:", 
+                esp_err_to_name(ret), reg_addr, cnt);
+        ESP_LOG_BUFFER_HEX_LEVEL(TAG, reg_data, cnt, ESP_LOG_ERROR);
+        i2c_reset_tx_fifo(I2C_NUM_1);
+        i2c_reset_rx_fifo(I2C_NUM_1);
+        return ret;
+    }
     return 0;
 }
 
