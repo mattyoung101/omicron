@@ -3,6 +3,7 @@
 // This file implements communication with the OpenMV M7 using a custom protocol over UART
 
 SemaphoreHandle_t goalDataSem = NULL;
+SemaphoreHandle_t validCamPacket = NULL;
 cam_goal goalBlue = {0};
 cam_goal goalYellow = {0};
 cam_goal orangeBall = {0};
@@ -14,7 +15,7 @@ static void cam_receive_task(void *pvParameter){
     static const char *TAG = "CamReceiveTask";;
     
     uint8_t *buffer = calloc(CAM_BUF_SIZE, sizeof(uint8_t));
-    ESP_LOGI(TAG, "Cam receive task init OK");
+    ESP_LOGI(TAG, "Cam receive task init OK!");
     esp_task_wdt_add(NULL);
 
     while (true){
@@ -25,7 +26,7 @@ static void cam_receive_task(void *pvParameter){
         uart_read_bytes(UART_NUM_2, buffer, CAM_BUF_SIZE, pdMS_TO_TICKS(4096)); 
 
         if (buffer[0] == CAM_BEGIN_BYTE){
-            // ESP_LOGW(TAG, "Found start byte %d", buffer[0]);
+            xSemaphoreGive(validCamPacket);
             if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // first byte is begin byte so skip that
                 goalBlue.exists = buffer[1];
@@ -43,7 +44,7 @@ static void cam_receive_task(void *pvParameter){
                 cam_calc();
                 xSemaphoreGive(goalDataSem);
             } else {
-                ESP_LOGW(TAG, "Unable to acquire semaphore in time!");
+                ESP_LOGW(TAG, "Unable to acquire goalDataSem!");
             }
         } else {
             ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X, expected: 0x%X", buffer[0], CAM_BEGIN_BYTE);
@@ -71,10 +72,13 @@ void cam_init(void){
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, 256, 256, 8, NULL, 0));
 
     goalDataSem = xSemaphoreCreateMutex();
+    validCamPacket = xSemaphoreCreateMutex();
     xSemaphoreGive(goalDataSem);
+    // the main task will have to wait until a valid cam packet is received
+    xSemaphoreTake(validCamPacket, portMAX_DELAY);
 
     xTaskCreate(cam_receive_task, "CamReceiveTask", 4096, NULL, configMAX_PRIORITIES - 2, NULL);
-    ESP_LOGI(TAG, "Camera init OK");
+    ESP_LOGI(TAG, "Camera init OK!");
 }
 
 /** 
