@@ -112,7 +112,7 @@ void orbit(robot_state_t *robotState);
 void position(robot_state_t *robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed);
 /** Quickly moves to a point really quickly **/
 void positionFast(robot_state_t *robotState, float distance, float offset, float goalAngle, int16_t goalLength, bool reversed);
-/** Does line avoid calculations**/
+/** Does line avoid calculations **/
 void update_line(robot_state_t *robotState);
 /** Converts a 2D polar vector to cartesian **/
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec);

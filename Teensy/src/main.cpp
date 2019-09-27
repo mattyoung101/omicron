@@ -13,6 +13,7 @@
 #include "Cam.h"
 #include "Playmode.h"
 #include "PID.h"
+#include "Vector.h"
 
 typedef enum {
     MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
@@ -56,9 +57,11 @@ double heading;
 float ballAngle;
 bool ballVisible;
 
-float direction;
-float speed;
+int direction;
+int speed;
 float orientation;
+
+Vector current;
 
 /** decode protobuf over UART from ESP **/
 static void decodeProtobuf(void){
@@ -121,6 +124,17 @@ static void decodeProtobuf(void){
     }
 }
 
+void calculateAcceleration(){
+    Vector target = Vector(speed/255, direction);
+    Vector output = current * (1 - MAX_ACCELERATION) + target * MAX_ACCELERATION;
+    current = output;
+
+    speed = output.mag * 255;
+    direction = output.arg;
+
+    Serial.printf("Speed %d, Direction %d", speed, direction);
+}
+
 void setup() {
     // Put other setup stuff here
     Serial.begin(115200);
@@ -142,7 +156,7 @@ void loop() {
     // Measure battery voltage
     batteryVoltage = get_battery_voltage();
 
-    // decodeProtobuf();
+    decodeProtobuf();
 
     // Update variables
     direction = lastMasterProvide.direction;
@@ -168,6 +182,8 @@ void loop() {
         direction = playmode.getDirection();
         speed = playmode.getSpeed();
     }
+
+    // calculateAcceleration();
 
     // Update motors
     move.motorCalc(direction, orientation, speed);

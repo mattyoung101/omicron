@@ -180,6 +180,17 @@ void Playmode::calculateLineAvoidance(double heading){
     // Serial.printf("lineAngle: %f, lineSize: %f, trueLineAngle: %f, trueLineSize: %f\n",lineAngle,lineSize,trueLineAngle,trueLineSize);
 }
 
+void Playmode::calculateAcceleration(){
+    Vector target = Vector(speed/255, direction);
+    Vector output = current * (1 - MAX_ACCELERATION) + target * MAX_ACCELERATION;
+    current = output;
+
+    speed = output.mag * 255;
+    direction = output.arg;
+
+    Serial.printf("Speed %d, Direction %d", speed, direction);
+}
+
 void Playmode::updateGoal(int angle, int distance, bool visible){
     DEFENCE ? goalAngle = angle - 180 : goalAngle = angle > 180 ? angle - 360 : angle;
     goalLength = distance;

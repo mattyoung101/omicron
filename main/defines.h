@@ -33,7 +33,7 @@
 #endif
 
 // Acceleration
-#define MAX_ACCELERATION 0.5f // must be between 0.0 and 1.0
+#define MAX_ACCELERATION 0.001f // must be between 0.0 and 1.0
 
 // I2C
 #define I2C_SLAVE_DEV_ADDR 0x23 // the I2C address of the Teensy slave
@@ -89,7 +89,7 @@ typedef enum {
 // --- Goalie PIDs --- //
 // PID which controls the robot moving to its correct distance from the goal
 // TODO increase P of forward PID so its faster to get back into goal for example after surging
-#define FORWARD_KP 2.0
+#define FORWARD_KP 3.0
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
@@ -103,7 +103,7 @@ typedef enum {
 // PID which controls the robot going to intercept the ball
 #define INTERCEPT_KP 1.5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.00001
+#define INTERCEPT_KD 0.00005
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 
@@ -176,7 +176,7 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define ACCEL_PROG 0.1 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot
