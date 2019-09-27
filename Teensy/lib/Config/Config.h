@@ -17,7 +17,7 @@
 // --- Acceleration Settings --- //
 #define ACCEL_TIME_STEP 1000
 #define ACCEL_PROGRESS 1
-#define MAX_ACCELERATION 0.2
+#define MAX_ACCELERATION 0.3
 
 // --- Orbit --- //
 #define BALL_FAR_STRENGTH 100

@@ -89,7 +89,7 @@ typedef enum {
 // --- Goalie PIDs --- //
 // PID which controls the robot moving to its correct distance from the goal
 // TODO increase P of forward PID so its faster to get back into goal for example after surging
-#define FORWARD_KP 3.0
+#define FORWARD_KP 4
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100

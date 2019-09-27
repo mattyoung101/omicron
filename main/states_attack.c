@@ -190,7 +190,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     // }
 
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
-    robotState.outSpeed = lerp(accelBegin, DRIBBLE_SPEED, accelProgress); 
+    robotState.outSpeed = lerp(accelBegin, DRIBBLE_SPEED, constrain(accelProgress, 0.0f, 1.0f)); 
     // Yeet towards te goal if visible
     robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle;
     // robotState.outDirection = rs.inBallAngle;

@@ -41,12 +41,12 @@ void defines_init(uint8_t robotId){
         DEFEND_DISTANCE = 65;
         SURGE_DISTANCE = 90;
         SURGE_STRENGTH = 40;
-        BALL_FAR_STRENGTH = 110;
-        BALL_CLOSE_STRENGTH = 45;
+        BALL_FAR_STRENGTH = 120;
+        BALL_CLOSE_STRENGTH = 50;
         ORBIT_SPEED_SLOW = 25;
         ORBIT_SPEED_FAST = 50;
         ORBIT_CONST = 0.6;
-        DRIBBLE_BALL_TOO_FAR = 50;
+        DRIBBLE_BALL_TOO_FAR = 60;
         ORBIT_DIST = 0;
         IN_FRONT_MIN_ANGLE = 10;
         IN_FRONT_MAX_ANGLE = 350;
@@ -55,8 +55,8 @@ void defines_init(uint8_t robotId){
         CAM_OFFSET_X = 120;
         CAM_OFFSET_Y = 120;
         DEFEND_DISTANCE = 60; // 24
-        SURGE_DISTANCE = 90; // 35
-        SURGE_STRENGTH = 60; 
+        SURGE_DISTANCE = 80; // 35
+        SURGE_STRENGTH = 45; 
         BALL_FAR_STRENGTH = 90;
         BALL_CLOSE_STRENGTH = 45;
         ORBIT_SPEED_SLOW = 40;
