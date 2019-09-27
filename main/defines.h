@@ -14,20 +14,22 @@
 #define ROBOT0_NAME "Omicron_Robot0"
 #define ROBOT1_NAME "Omicron_Robot1"
 #define SPP_NAME "Omicron_SPP"
-#define PACKET_QUEUE_LENGTH 1
+#define PACKET_QUEUE_LENGTH 1 // length of BT packet queue, currently 1 as we use xQueueOverwrite
 #define BT_CONF_RES_STATIC 0 // uses pre-defined roles to resolve conflicts
 #define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
-#define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
-// #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
-#define BT_CONF_RES_MODE BT_CONF_RES_STATIC
-#define DEFENCE false
+#define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before another switch is allowed
+#define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
+// #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
+#define BT_CONF_RES_MODE BT_CONF_RES_DYNAMIC // the conflict resolution mode
+#define DEFENCE false // whether to start out in defence (I think? unclear)
+#define BT_MAX_ERRORS 4 // max errors before dropping connection
 
 // Debug
 #define ENABLE_DEBUG // if this is defined, debug features are enabled
 #ifdef ENABLE_DEBUG
-    #define ENABLE_DIAGNOSTICS // if this is defined then performance and RAM diagnostics will be printed
+    // #define ENABLE_DIAGNOSTICS // if this is defined then performance and RAM diagnostics will be printed
+    // #define ENABLE_VERBOSE_BT // verbose BT logging
 #endif
 
 // Acceleration
@@ -66,7 +68,6 @@ typedef enum {
 #define MUSIC_BPM 100
 
 // PIDs
-
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
 #define HEADING_KP 0.8
@@ -197,19 +198,13 @@ extern uint8_t SURGE_STRENGTH;
 // General FSM defines
 #define MODE_ATTACK 0
 #define MODE_DEFEND 1
+#define FSM_MAX_STATES 1024 // if there's more than this number of states in the history, it will be cleared
 extern uint8_t ROBOT_MODE;
 
 // Kicker
 #define KICKER_PIN 33
 #define KICKER_DELAY 10 // ms to wait between solenoid activation and deactivation
 #define SHOOT_TIMEOUT 1000 // ms until we are allowed to kick again
-
-// RGB LEDs
-#define LED_PIN 13
-#define LED_NUM 12
-#define RAINBOW_TRANSITION_TIME 0.1f // seconds
-#define DEBUG_LED_1 23 // supposed to be orange
-#define DEBUG_LED_2 25 // supposed to be white
 
 // Buttons
 #define RST_BTN 35

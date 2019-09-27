@@ -38,7 +38,9 @@
 #endif
 
 static const char *RST_TAG = "ResetReason";
+#ifdef ENABLE_DIAGNOSTICS 
 static const char *PT_TAG = "PerfTimer";
+#endif
 
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
@@ -79,14 +81,15 @@ static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
     struct bno055_t bno055 = {0};
-    state_machine_t *stateMachine = NULL;
     float yaw = 0.0f;
+    #ifdef ENABLE_DIAGNOSTICS
     int64_t worstTime = 0;
     int64_t bestTime = 0xFFFFF;
     movavg_t *avgTime = movavg_create(64);
     uint16_t ticks = 0;
     uint16_t ticksSinceLastWorstTime = 0;
     uint16_t ticksSinceLastBestTime = 0;
+    #endif
     button_event_t buttonEvent = {0};
     float yawOffset = 0.0f;
     float yawRaw = 0.0f; // yaw before offset
@@ -136,7 +139,9 @@ static void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
+        #ifdef ENABLE_DIAGNOSTICS
         int64_t begin = esp_timer_get_time();
+        #endif
 
         // update sensors
         cam_calc();

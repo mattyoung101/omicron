@@ -52,8 +52,9 @@ void comms_bt_receive_task(void *pvParameter){
             isAttack = strstr(recvMsg.fsmState, "Attack");
             isInShootState = strcmp(recvMsg.fsmState, "GeneralShoot") == 0;
             xTimerReset(packetTimer.timer, portMAX_DELAY);
-
-            // ESP_LOGD(TAG, "Ball angle: %f, Ball strength: %f", recvMsg.ballAngle, recvMsg.ballStrength);
+            #ifdef ENABLE_VERBOSE_BT
+            ESP_LOGD(TAG, "Received packet: ball angle: %f, Ball strength: %f", recvMsg.ballAngle, recvMsg.ballStrength);
+            #endif
         }
 
         // required due to cross-core access (multi-threading crap)
@@ -66,15 +67,20 @@ void comms_bt_receive_task(void *pvParameter){
         if (((isAttack && amIAttack) || (!isAttack && !amIAttack)) && !isInShootState) {
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE", 
                     isAttack ? "ATTACK" : "DEFENCE");
+            #ifdef ENABLE_VERBOSE_BT
             ESP_LOGD(TAG, "my ball distance: %f, other ball distance: %f", robotState.inBallStrength, recvMsg.ballStrength);
-            
+            #endif
+
             #if BT_CONF_RES_MODE == BT_CONF_RES_DYNAMIC
-                ESP_LOGI(TAG, "Dynamic conflict resolution algorithm running");
+                #ifdef ENABLE_VERBOSE_BT
+                ESP_LOGD(TAG, "Dynamic conflict resolution algorithm running");
+                #endif
 
                 // conflict resolution: whichever robot is closest to the ball becomes the attacker + some extra edge cases
                 // if in shoot state, ignore conflict as both robots can be shooting without conflict
                 if (robotState.inBallStrength <= 0.1f && recvMsg.ballStrength <= 0.1f){
                     ESP_LOGI(TAG, "Conflict resolution: both robots can't see ball, using default state");
+                    // FIXME how does the other robot know what to do?
 
                     if (ROBOT_MODE == MODE_ATTACK){
                         fsm_change_state(stateMachine, &stateAttackPursue);
@@ -98,7 +104,9 @@ void comms_bt_receive_task(void *pvParameter){
                     }
                 }
             #elif BT_CONF_RES_MODE == BT_CONF_RES_STATIC
-                ESP_LOGI(TAG, "Static conflict resolution algorithm running...");
+                #ifdef ENABLE_VERBOSE_BT
+                ESP_LOGD(TAG, "Static conflict resolution algorithm running...");
+                #endif
 
                 // change into which ever mode was set in NVS
                 if (ROBOT_MODE == MODE_ATTACK){
@@ -137,8 +145,10 @@ void comms_bt_receive_task(void *pvParameter){
                 alreadyPrinted = false;
             } else {
                 // TODO remove this log spam
+                #ifdef ENABLE_VERBOSE_BT
                 ESP_LOGD(TAG, "Unable to switch: am I willing to switch? %s, cooldown timer on? %s, robotId: %d",
                 robotState.outSwitchOk ? "yes" : "no", cooldownOn ? "yes" : "no", robotState.inRobotId);
+                #endif
             }
         } else if (wasSwitchOk){
             // if the other robot is not willing to switch, but was previously willing to switch
@@ -166,10 +176,16 @@ void comms_bt_send_task(void *pvParameter){
         RS_SEM_LOCK;
         sendMsg.onLine = robotState.inOnLine;
         
-        char *stateName = fsm_get_current_state_name(stateMachine); // thread safe get name function, uses strdup
-        strcpy(sendMsg.fsmState, stateName); // put into struct
-        free(stateName); // since we use strdup, we gotta free it
-        stateName = NULL; // good practice
+        char *stateName = fsm_get_current_state_name(stateMachine);
+        strcpy(sendMsg.fsmState, stateName);
+        if (strcmp(stateName, "ERROR") != 0){
+            // only free the string if it was actually allocated with strcmp, which won't happen if there's an error
+            // (e.g. we can't unlock the FSM semaphore because Core 1 is using it for a long time)
+            free(stateName);
+            stateName = NULL;
+        } else {
+            ESP_LOGW(TAG, "It seems that fsm_get_current_state_name has failed (state name: %s)", stateName);
+        }
 
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;

@@ -4,6 +4,7 @@
 #include "utils.h"
 
 static const char *TAG = "FSM";
+state_machine_t *stateMachine = NULL;
 
 state_machine_t* fsm_new(fsm_state_t *startState){
     state_machine_t* fsm = calloc(1, sizeof(state_machine_t));
@@ -15,8 +16,13 @@ state_machine_t* fsm_new(fsm_state_t *startState){
 }
 
 void fsm_update(state_machine_t *fsm){
-    // we could add back the state history size check but if never seen it go off so I'm removing it for now
     fsm->currentState->update(fsm);
+
+    // too many states may use up too much RAM/make the FSM slower, so clear it if it gets too hectic
+    if (da_count(fsm->stateHistory) >= FSM_MAX_STATES){
+        ESP_LOGE(TAG, "Too many states in state history (have: %d)!", da_count(fsm->stateHistory));
+        fsm_reset(fsm);
+    }
 }
 
 // function which handles the actual logic of changing states
@@ -37,7 +43,7 @@ static void fsm_internal_change_state(state_machine_t *fsm, fsm_state_t *newStat
 
 void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
     if (fsm->currentState == newState) return;
-    ESP_LOGI(TAG, "Switching states from %s to %s", fsm->currentState->name, newState->name);    
+    ESP_LOGI(TAG, "SWITCHING states from %s to %s", fsm->currentState->name, newState->name);    
     fsm_internal_change_state(fsm, newState, true);
 }
 
@@ -47,14 +53,14 @@ void fsm_revert_state(state_machine_t *fsm){
         return;
     }
     fsm_state_t *previousState = da_pop(fsm->stateHistory);
-    ESP_LOGI(TAG, "Reverting from state %s to %s", fsm->currentState->name, previousState->name);
+    ESP_LOGI(TAG, "REVERTING from state %s to %s", fsm->currentState->name, previousState->name);
     fsm_internal_change_state(fsm, previousState, false);
 }
 
 bool fsm_in_state(state_machine_t *fsm, char *name){
     char *curName = fsm_get_current_state_name(fsm);
     bool ret = strcmp(curName, name) == 0;
-    // free string allocated with strdup
+    // BUG: if fsm_get_current_state_name fails this will crash, however, fsm_in_state is never used so it's fine
     free(curName);
     curName = NULL;
     return ret;

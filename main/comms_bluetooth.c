@@ -1,4 +1,5 @@
 #include "comms_bluetooth.h"
+#include "fsm.h"
 
 // Based on the ESP32 BT SPP initiator example (https://git.io/fj465) and the BT SPP acceptor example (https://git.io/fj46d)
 
@@ -46,6 +47,7 @@ static void bt_pb_decode_and_push(uint16_t size, uint8_t *data, uint32_t handle)
     // check if the buffer is exactly equivalent to the string "SWITCH" in which case switch
     if (memcmp(data, switch_buffer, size) == 0){
         ESP_LOGI(TAG, "========== Switch request received: switching NOW! ==========");
+
         // invert state
         if (robotState.outIsAttack){
             fsm_change_state(stateMachine, &stateDefenceDefend);
@@ -352,12 +354,12 @@ static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
 void comms_bt_init_master(){
     isMaster = true;
     comms_bt_init_generic(esp_bt_gap_cb_master, esp_spp_cb_master);
-    ESP_LOGI(TAGM, "Bluetooth master init OK");
+    ESP_LOGI(TAGM, "BT init OK, running as MASTER");
 }
 
 // connects to master, initiator
 void comms_bt_init_slave(){
     isMaster = false;
     comms_bt_init_generic(esp_bt_gap_cb_slave, esp_spp_cb_slave);
-    ESP_LOGI(TAGS, "Bluetooth slave init OK");
+    ESP_LOGI(TAGS, "BT init OK, running as SLAVE");
 }
