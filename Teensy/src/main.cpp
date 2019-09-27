@@ -125,11 +125,11 @@ static void decodeProtobuf(void){
 }
 
 void calculateAcceleration(){
-    Vector target = Vector(speed/255, direction);
+    Vector target = Vector(speed, direction);
     Vector output = current * (1 - MAX_ACCELERATION) + target * MAX_ACCELERATION;
     current = output;
 
-    speed = output.mag * 255;
+    speed = output.mag;
     direction = output.arg;
 
     Serial.printf("Speed %d, Direction %d", speed, direction);
