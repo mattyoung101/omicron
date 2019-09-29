@@ -189,15 +189,16 @@ void loop() {
         speed = playmode.getSpeed();
     }
 
-    Serial.printf("BEFORE || Speed %d, Direction %d\t", speed, direction);
+    // Serial.printf("BEFORE || Speed %d, Direction %d\t", speed, direction);
 
     calculateAcceleration();
 
     // Update motors
     move.motorCalc(direction, orientation, speed);
     move.go(false);
+    // move.motorTest(255);
 
-    Serial.printf("AFTER || Speed %d, Direction %d", speed, direction);
+    // Serial.printf("AFTER || Speed %d, Direction %d", speed, direction);
 
     Serial.println();
 
