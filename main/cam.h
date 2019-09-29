@@ -25,14 +25,14 @@ typedef struct {
     float length;
     /** real distance (cm) */
     float distance;
-} cam_goal; // TODO rename to cam_object_t
+} cam_object_t;
 
 extern SemaphoreHandle_t goalDataSem;
 extern SemaphoreHandle_t validCamPacket;
 
-extern cam_goal goalBlue;
-extern cam_goal goalYellow;
-extern cam_goal orangeBall;
+extern cam_object_t goalBlue;
+extern cam_object_t goalYellow;
+extern cam_object_t orangeBall;
 extern int16_t robotX;
 extern int16_t robotY;
 
