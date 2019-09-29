@@ -30,6 +30,7 @@ struct state_machine_t {
     fsm_state_t *currentState;
     fsm_state_history_t stateHistory;
     SemaphoreHandle_t semaphore;
+    SemaphoreHandle_t updateInProgress;
 };
 
 extern state_machine_t *stateMachine;

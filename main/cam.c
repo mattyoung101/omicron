@@ -4,9 +4,9 @@
 
 SemaphoreHandle_t goalDataSem = NULL;
 SemaphoreHandle_t validCamPacket = NULL;
-cam_goal goalBlue = {0};
-cam_goal goalYellow = {0};
-cam_goal orangeBall = {0};
+cam_object_t goalBlue = {0};
+cam_object_t goalYellow = {0};
+cam_object_t orangeBall = {0};
 int16_t robotX = 0;
 int16_t robotY = 0;
 static const float k = 92.5f; // distance of goal to centre in cm, measured on the field
@@ -73,7 +73,6 @@ void cam_init(void){
 
     goalDataSem = xSemaphoreCreateMutex();
     validCamPacket = xSemaphoreCreateMutex();
-    xSemaphoreGive(goalDataSem);
     // the main task will have to wait until a valid cam packet is received
     xSemaphoreTake(validCamPacket, portMAX_DELAY);
 

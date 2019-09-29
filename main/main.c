@@ -195,12 +195,8 @@ static void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
-
-        // Run acceleration
-        // hmm_vec2 accel = calc_acceleration(robotState.outSpeed, robotState.outDirection);
-        // ESP_LOGD(TAG, "Accel: (%f, %f)", accel.X, accel.Y);
         
-        // encode and send Protobuf message to Teenys slave
+        // encode and send Protobuf message to Teensy slave
         I2CMasterProvide msg = I2CMasterProvide_init_default;
         uint8_t buf[PROTOBUF_SIZE] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
@@ -221,9 +217,10 @@ static void master_task(void *pvParameter){
         }
         comms_uart_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
+        // handle reset button
         if (xQueueReceive(buttonQueue, &buttonEvent, 0)){
             if ((buttonEvent.pin == RST_BTN) && (buttonEvent.event == BUTTON_UP)){
-                ESP_LOGI(TAG, "Reset button pressed, resetting FSM & IMU...");
+                ESP_LOGI(TAG, "Reset button pressed");
                 fsm_dump(stateMachine);
                 fsm_reset(stateMachine);
 
@@ -293,7 +290,7 @@ void app_main(){
     #if defined NVS_WRITE_ROBOTNUM
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "RobotID", NVS_WRITE_ROBOTNUM));
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
-        ESP_LOGE("RobotID", "Successfully wrote robot number to NVS.");
+        ESP_LOGW("RobotID", "Successfully wrote robot number to NVS.");
     #endif
 
     nvs_close(storageHandle);

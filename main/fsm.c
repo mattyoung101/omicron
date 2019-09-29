@@ -10,18 +10,24 @@ state_machine_t* fsm_new(fsm_state_t *startState){
     state_machine_t* fsm = calloc(1, sizeof(state_machine_t));
     fsm->currentState = &stateGeneralNothing;
     fsm->semaphore = xSemaphoreCreateMutex();
+    fsm->updateInProgress = xSemaphoreCreateMutex();
     // change into the start state, to make sure startState->enter is called
     fsm_change_state(fsm, startState); 
     return fsm;
 }
 
 void fsm_update(state_machine_t *fsm){
-    fsm->currentState->update(fsm);
+    if (xSemaphoreTake(fsm->updateInProgress, pdMS_TO_TICKS(32))){
+        fsm->currentState->update(fsm);
 
-    // too many states may use up too much RAM/make the FSM slower, so clear it if it gets too hectic
-    if (da_count(fsm->stateHistory) >= FSM_MAX_STATES){
-        ESP_LOGE(TAG, "Too many states in state history (have: %d)!", da_count(fsm->stateHistory));
-        fsm_reset(fsm);
+        // too many states may use up too much RAM/make the FSM slower, so clear it if it gets too hectic
+        if (da_count(fsm->stateHistory) >= FSM_MAX_STATES){
+            ESP_LOGE(TAG, "Too many states in state history (have: %d)!", da_count(fsm->stateHistory));
+            fsm_reset(fsm);
+        }
+        xSemaphoreGive(fsm->updateInProgress);
+    } else {
+        ESP_LOGE(TAG, "Failed to unlock updateInProgress, cannot update FSM!");
     }
 }
 
@@ -43,8 +49,12 @@ static void fsm_internal_change_state(state_machine_t *fsm, fsm_state_t *newStat
 
 void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
     if (fsm->currentState == newState) return;
-    ESP_LOGI(TAG, "SWITCHING states from %s to %s", fsm->currentState->name, newState->name);    
+    char *currentName = fsm_get_current_state_name(fsm);
+    
+    ESP_LOGI(TAG, "SWITCHING states from %s to %s", currentName, newState->name);
     fsm_internal_change_state(fsm, newState, true);
+    free(currentName);
+    currentName = NULL;
 }
 
 void fsm_revert_state(state_machine_t *fsm){
@@ -53,16 +63,17 @@ void fsm_revert_state(state_machine_t *fsm){
         return;
     }
     fsm_state_t *previousState = da_pop(fsm->stateHistory);
-    ESP_LOGI(TAG, "REVERTING from state %s to %s", fsm->currentState->name, previousState->name);
+    char *currentName = fsm_get_current_state_name(fsm);
+
+    ESP_LOGI(TAG, "REVERTING from state %s to %s", currentName, previousState->name);
     fsm_internal_change_state(fsm, previousState, false);
+    free(currentName);
 }
 
 bool fsm_in_state(state_machine_t *fsm, char *name){
     char *curName = fsm_get_current_state_name(fsm);
     bool ret = strcmp(curName, name) == 0;
-    // BUG: if fsm_get_current_state_name fails this will crash, however, fsm_in_state is never used so it's fine
     free(curName);
-    curName = NULL;
     return ret;
 }
 
@@ -73,7 +84,8 @@ char *fsm_get_current_state_name(state_machine_t *fsm){
         return state;
     } else {
         ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot return state name");
-        return "ERROR";
+        // use strdup instead of allocating the variable on the stack so it won't cause errors when we use free()
+        return strdup("ERROR");
     }
 }
 

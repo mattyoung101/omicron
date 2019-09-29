@@ -49,9 +49,10 @@ void comms_bt_receive_task(void *pvParameter){
 
         // read in a new packet from the packet queue, otherwise block this thread till one's available
         if (xQueueReceive(packetQueue, &recvMsg, portMAX_DELAY)){
-            isAttack = strstr(recvMsg.fsmState, "Attack");
+            isAttack = strstr(recvMsg.fsmState, "Attack") != NULL;
             isInShootState = strcmp(recvMsg.fsmState, "GeneralShoot") == 0;
             xTimerReset(packetTimer.timer, portMAX_DELAY);
+            
             #ifdef ENABLE_VERBOSE_BT
             ESP_LOGD(TAG, "Received packet: ball angle: %f, Ball strength: %f", recvMsg.ballAngle, recvMsg.ballStrength);
             #endif
@@ -68,7 +69,7 @@ void comms_bt_receive_task(void *pvParameter){
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE", 
                     isAttack ? "ATTACK" : "DEFENCE");
             #ifdef ENABLE_VERBOSE_BT
-            ESP_LOGD(TAG, "my ball distance: %f, other ball distance: %f", robotState.inBallStrength, recvMsg.ballStrength);
+            ESP_LOGD(TAG, "My ball distance: %f, Other ball distance: %f", robotState.inBallStrength, recvMsg.ballStrength);
             #endif
 
             #if BT_CONF_RES_MODE == BT_CONF_RES_DYNAMIC
@@ -80,7 +81,7 @@ void comms_bt_receive_task(void *pvParameter){
                 // if in shoot state, ignore conflict as both robots can be shooting without conflict
                 if (robotState.inBallStrength <= 0.1f && recvMsg.ballStrength <= 0.1f){
                     ESP_LOGI(TAG, "Conflict resolution: both robots can't see ball, using default state");
-                    // FIXME how does the other robot know what to do?
+                    // FIXME how does the other robot know what to do - make sure its getting the switch solution?
 
                     if (ROBOT_MODE == MODE_ATTACK){
                         fsm_change_state(stateMachine, &stateAttackPursue);
@@ -133,6 +134,7 @@ void comms_bt_receive_task(void *pvParameter){
                 esp_spp_write(handle, 6, switchBuffer);
                 
                 // invert state
+                // TODO make this a macro FSM_INVERT_STATE
                 if (robotState.outIsAttack){
                     fsm_change_state(stateMachine, &stateDefenceDefend); 
                 } else {
@@ -144,10 +146,9 @@ void comms_bt_receive_task(void *pvParameter){
                 xTimerStart(cooldownTimer.timer, portMAX_DELAY);
                 alreadyPrinted = false;
             } else {
-                // TODO remove this log spam
                 #ifdef ENABLE_VERBOSE_BT
-                ESP_LOGD(TAG, "Unable to switch: am I willing to switch? %s, cooldown timer on? %s, robotId: %d",
-                robotState.outSwitchOk ? "yes" : "no", cooldownOn ? "yes" : "no", robotState.inRobotId);
+                    ESP_LOGD(TAG, "Unable to switch: am I willing to switch? %s, cooldown timer on? %s, robotId: %d",
+                    robotState.outSwitchOk ? "yes" : "no", cooldownOn ? "yes" : "no", robotState.inRobotId);
                 #endif
             }
         } else if (wasSwitchOk){
@@ -174,19 +175,21 @@ void comms_bt_send_task(void *pvParameter){
         BTProvide sendMsg = BTProvide_init_zero;
 
         RS_SEM_LOCK;
-        sendMsg.onLine = robotState.inOnLine;
-        
-        char *stateName = fsm_get_current_state_name(stateMachine);
-        strcpy(sendMsg.fsmState, stateName);
-        if (strcmp(stateName, "ERROR") != 0){
-            // only free the string if it was actually allocated with strcmp, which won't happen if there's an error
-            // (e.g. we can't unlock the FSM semaphore because Core 1 is using it for a long time)
+        // all of this semaphore stuff is to synchronise the state name between the two cores (as BT runs on core 0)
+        // essentially by taking updateInProgress we can be assured that core 1 won't update the FSM while we're
+        // copying its current state name, and fsm_get_current_state_name is also thread safe by taking fsm->semaphore
+        // to make double sure we're getting a stable value
+        // in addition, we also lock the robot state semaphore to synchronise all values in robot_state_t
+        if (xSemaphoreTake(stateMachine->updateInProgress, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            char *stateName = fsm_get_current_state_name(stateMachine);
+            strcpy(sendMsg.fsmState, stateName);
             free(stateName);
-            stateName = NULL;
+            xSemaphoreGive(stateMachine->updateInProgress);
         } else {
-            ESP_LOGW(TAG, "It seems that fsm_get_current_state_name has failed (state name: %s)", stateName);
+            ESP_LOGE(TAG, "Failed to unlock updateInProgress semaphore, cannot get current state name");
         }
 
+        sendMsg.onLine = robotState.inOnLine;
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;
         #ifdef BT_SWITCHING_ENABLED
