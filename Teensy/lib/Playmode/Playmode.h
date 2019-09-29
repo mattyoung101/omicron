@@ -18,6 +18,7 @@ public:
     void centre(double heading);
 
     void calculateLineAvoidance(double heading);
+    void crapLineAvoid(double heading);
 
     void calculateAcceleration();
 

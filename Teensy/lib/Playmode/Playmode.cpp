@@ -180,6 +180,42 @@ void Playmode::calculateLineAvoidance(double heading){
     // Serial.printf("lineAngle: %f, lineSize: %f, trueLineAngle: %f, trueLineSize: %f\n",lineAngle,lineSize,trueLineAngle,trueLineSize);
 }
 
+void Playmode::crapLineAvoid(double heading){
+    if(isOnLine && firstAngle != NO_LINE_ANGLE){
+        if(abs(lineAngle-firstAngle)>LS_LINEOVER_BUFFER && abs(lineAngle-firstAngle)<360-LS_LINEOVER_BUFFER) lineOver = true; // Detecting if we have crossed the line
+        else lineOver = false;
+    }
+
+      if(isOnLine || lineOver){
+        if(lineSize > LINE_BIG_SIZE || lineSize == -1){
+            if(lineOver){
+                direction = isOnLine ? doubleMod(lineAngle-heading, 360) : doubleMod(firstAngle-heading+180, 360);
+            }else{
+                direction = doubleMod(lineAngle-heading+180, 360);
+            }
+            speed = OVER_LINE_SPEED;
+        }else if(lineSize >= LINE_SMALL_SIZE && ballExists){
+            if(abs(firstAngle+ballAngle) < 90 && abs(firstAngle+ballAngle) > 270){
+                direction = doubleMod(firstAngle-heading+180, 360);
+                speed = 0;
+                brake = true;
+                // Serial.println("stopping");
+            }else{
+                speed = LINE_TRACK_SPEED;
+            }
+        }else{
+            if(isOnLine) speed *= LINE_SPEED_MULTIPLIER;
+        }
+    }
+
+    // Check if returned back into the field
+    if(!isOnLine && !lineOver) firstAngle = NO_LINE_ANGLE;
+
+    if(!lineOver) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
+
+    // Serial.printf("lineAngle: %f, lineSize: %f, isOnLine: %d, lineOver: %d, firstAngle: %f\n",lineAngle,lineSize, isOnLine, lineOver, firstAngle);
+}
+
 void Playmode::calculateAcceleration(){
     Vector target = Vector(speed/255, direction);
     Vector output = current * (1 - MAX_ACCELERATION) + target * MAX_ACCELERATION;

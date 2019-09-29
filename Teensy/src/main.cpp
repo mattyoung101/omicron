@@ -125,14 +125,14 @@ static void decodeProtobuf(void){
 }
 
 void calculateAcceleration(){
-    Vector target = Vector(speed/255, direction);
+    Vector target = Vector(speed, direction);
     Vector output = current * (1 - MAX_ACCELERATION) + target * MAX_ACCELERATION;
     current = output;
 
-    speed = output.mag * 255;
+    speed = output.mag;
     direction = output.arg;
 
-    Serial.printf("Speed %d, Direction %d", speed, direction);
+    // Serial.printf("Speed %d, Direction %d", speed, direction);
 }
 
 void setup() {
@@ -176,18 +176,28 @@ void loop() {
 
         playmode.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
         playmode.calculateLineAvoidance(heading);
+        // playmode.crapLineAvoid(heading);
     #endif
+
+    // if(playmode.lineAvoiding()){
+    //     direction = playmode.getDirection();
+    //     speed = playmode.getSpeed();
+    // }
 
     if(!playmode.onField){
         direction = playmode.getDirection();
         speed = playmode.getSpeed();
     }
 
-    // calculateAcceleration();
+    Serial.printf("BEFORE || Speed %d, Direction %d\t", speed, direction);
+
+    calculateAcceleration();
 
     // Update motors
     move.motorCalc(direction, orientation, speed);
     move.go(false);
+
+    Serial.printf("AFTER || Speed %d, Direction %d", speed, direction);
 
     Serial.println();
 

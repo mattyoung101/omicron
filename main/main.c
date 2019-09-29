@@ -205,7 +205,7 @@ static void master_task(void *pvParameter){
         // robotState.outSpeed = 0;
         // goal_correction(&robotState);
         // robotState.outDirection = 0;
-        // print_ball_data(&robotState);
+        print_ball_data(&robotState);
         
         msg.heading = yaw; // IMU heading
         msg.direction = robotState.outDirection; // motor direction (which way we're driving)
