@@ -22,7 +22,7 @@
 // #define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
 // #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_DYNAMIC // the conflict resolution mode
-#define DEFENCE true // whether to start out in defence (I think? unclear)
+#define DEFENCE false // whether to start out in defence (I think? unclear)
 #define BT_MAX_ERRORS 4 // max errors before dropping connection
 
 // Debug
@@ -52,7 +52,7 @@
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
-#define GOAL_WIDTH 40
+#define GOAL_WIDTH 60
 #define ENEMY_GOAL GOAL_BLUE
 
 // Protobuf
@@ -89,7 +89,7 @@ typedef enum {
 // --- Goalie PIDs --- //
 // PID which controls the robot moving to its correct distance from the goal
 // TODO increase P of forward PID so its faster to get back into goal for example after surging
-#define FORWARD_KP 2
+#define FORWARD_KP 3
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
@@ -103,7 +103,7 @@ typedef enum {
 // PID which controls the robot going to intercept the ball
 #define INTERCEPT_KP 1
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.00001
+#define INTERCEPT_KD 0.00005
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 
@@ -172,10 +172,10 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IN_FRONT_ANGLE_BUFFER 10
 #define IN_FRONT_STRENGTH_BUFFER 5
 #define IDLE_TIMEOUT 500 // if ball is not visible for this length of time in ms or more, switch to idle state
-#define IDLE_DISTANCE 90 // distance to sit away from the goal if no ball is visible
+#define IDLE_DISTANCE 100 // distance to sit away from the goal if no ball is visible
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
-#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
+#define DRIBBLE_SPEED 80 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.1 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
@@ -191,8 +191,8 @@ extern uint8_t SURGE_STRENGTH;
 #define DEFEND_MAX_ANGLE 120
 #define DEFEND_MIN_ANGLE 250
 #define KICKER_STRENGTH 100 // if ball strength greater than this, kick
-#define SURGEON_ANGLE_MIN 6 // angles to surge between
-#define SURGEON_ANGLE_MAX 360 - SURGEON_ANGLE_MIN
+#define SURGEON_ANGLE_MIN 20 // angles to surge between
+#define SURGEON_ANGLE_MAX 340
 #define SURGE_CAN_KICK_TIMEOUT 500 // ms to be in surge for before we can kick
 
 // General FSM defines

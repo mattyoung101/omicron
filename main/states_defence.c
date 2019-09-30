@@ -65,7 +65,7 @@ void state_defence_idle_update(state_machine_t *fsm){
     }
 
     // rs.outSpeed = 0;
-    position(&robotState, IDLE_DISTANCE - 10, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
+    position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 }
 
 static om_timer_t surgeKickTimer = {NULL, false};
@@ -118,7 +118,7 @@ static void can_kick_callback(TimerHandle_t timer){
         if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
             // Ball is behind, orbit so we don't score an own goal
             // ESP_LOGD(TAG, "orbiting");
-            imu_correction(&robotState);
+            goal_correction(&robotState);
             orbit(&robotState);
         } else {
             // ESP_LOGD(TAG, "defending");
@@ -129,14 +129,14 @@ static void can_kick_callback(TimerHandle_t timer){
             float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
             
             float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_));
-            float distanceMovement = pid_update(&forwardPID, robotState.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+            float distanceMovement = pid_update(&forwardPID, robotState.inGoalLength, DEFEND_DISTANCE + 20.0f, 0.0f); // Stay a fixed distance from the goal
 
             float goalSidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
             float ballSidewaysDistance = robotState.inBallStrength * sinf(DEG_RAD * tempAngle);
             float sidewaysMovement;
 
             if(fabs(goalSidewaysDistance) > GOAL_WIDTH){
-                sidewaysMovement = sign(goalSidewaysDistance) * -pid_update(&interceptPID, goalSidewaysDistance, 40.0f, 0.0f);
+                sidewaysMovement = sign(goalSidewaysDistance) * -pid_update(&interceptPID, sign(goalSidewaysDistance) * goalSidewaysDistance, GOAL_WIDTH, 0.0f);
             } else {
                 sidewaysMovement = -pid_update(&interceptPID, ballSidewaysDistance, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
             }
@@ -152,10 +152,9 @@ static void can_kick_callback(TimerHandle_t timer){
 // Surge
 void state_defence_surge_update(state_machine_t *fsm){
     static const char *TAG = "DefendSurgeState";
-    goal_correction(&robotState);
+    imu_correction(&robotState);
     om_timer_check_create(&surgeKickTimer, "SurgeCanKick", SURGE_CAN_KICK_TIMEOUT, (void*) fsm, can_kick_callback);
 
-    accelProgress = 0;
     RS_SEM_LOCK
     rs.outSwitchOk = true;
     rs.outIsAttack = false;
@@ -179,13 +178,10 @@ void state_defence_surge_update(state_machine_t *fsm){
 
     // EPIC YEET MODE
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
-    robotState.outSpeed = lerp(50.0f, DRIBBLE_SPEED, accelProgress); 
+    robotState.outSpeed = DRIBBLE_SPEED; 
     // Just yeet towards the ball (which is forwards)
     // robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle * 1.05;
     robotState.outDirection = robotState.inBallAngle;
-
-    // Update progress for linear interpolation
-    accelProgress += 0.0001;
 }
 
 void state_defence_surge_exit(state_machine_t *fsm){

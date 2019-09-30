@@ -17,7 +17,7 @@
 // --- Acceleration Settings --- //
 #define ACCEL_TIME_STEP 1000
 #define ACCEL_PROGRESS 1
-#define MAX_ACCELERATION 0.3
+#define MAX_ACCELERATION 0.4
 
 // --- Orbit --- //
 #define BALL_FAR_STRENGTH 100
@@ -79,7 +79,7 @@
 #define DEBUG_FILLED false
 
 #define LS_CALIBRATION_COUNT 10
-#define LS_CALIBRATION_BUFFER 200
+#define LS_CALIBRATION_BUFFER 100
 #define LS_ES_DEFAULT 69
 #define NO_LINE_ANGLE 400
 #define NO_LINE_SIZE -100
