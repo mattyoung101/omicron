@@ -52,10 +52,6 @@ void comms_bt_receive_task(void *pvParameter){
             isAttack = strstr(recvMsg.fsmState, "Attack") != NULL;
             isInShootState = strcmp(recvMsg.fsmState, "GeneralShoot") == 0;
             xTimerReset(packetTimer.timer, portMAX_DELAY);
-
-            #ifdef ENABLE_VERBOSE_BT
-            ESP_LOGD(TAG, "Received packet: ball angle: %f, Ball strength: %f", recvMsg.ballAngle, recvMsg.ballStrength);
-            #endif
         }
 
         // required due to cross-core access (multi-threading crap)
@@ -63,6 +59,11 @@ void comms_bt_receive_task(void *pvParameter){
         RS_SEM_LOCK
         amIAttack = robotState.outIsAttack;
         RS_SEM_UNLOCK
+
+        #ifdef ENABLE_VERBOSE_BT
+            ESP_LOGD(TAG, "Received packet! Ball angle: %f, Ball strength: %f, State: %s, amIAttack: %s", 
+                    recvMsg.ballAngle, recvMsg.ballStrength, recvMsg.fsmState, amIAttack ? "true" : "false");
+        #endif
 
         // detect conflicts and resolve with whichever algorithm was selected
         if (((isAttack && amIAttack) || (!isAttack && !amIAttack)) && !isInShootState) {
