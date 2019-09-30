@@ -86,7 +86,7 @@ static void can_kick_callback(TimerHandle_t timer){
 
     // if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)) goal_correction(&robotState);
     // else imu_correction(&robotState); // Face the back of the robot to the goal
-    goal_correction(&robotState);
+    // goal_correction(&robotState);
 
     // Check criteria: goal visible and ball visible, should surge?
     if (!rs.inGoalVisible){
@@ -118,17 +118,33 @@ static void can_kick_callback(TimerHandle_t timer){
         if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
             // Ball is behind, orbit so we don't score an own goal
             // ESP_LOGD(TAG, "orbiting");
+            imu_correction(&robotState);
             orbit(&robotState);
         } else {
             // ESP_LOGD(TAG, "defending");
+            goal_correction(&robotState);
+
             float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle; // Convert to -180 -> 180 range
-            float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+            float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 -> 360 range
+            float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
             
-            float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
-            if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
+            float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_));
+            float distanceMovement = pid_update(&forwardPID, robotState.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+
+            float goalSidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
+            float ballSidewaysDistance = robotState.inBallStrength * sinf(DEG_RAD * tempAngle);
+            float sidewaysMovement;
+
+            if(fabs(goalSidewaysDistance) > GOAL_WIDTH){
+                sidewaysMovement = sign(goalSidewaysDistance) * -pid_update(&interceptPID, goalSidewaysDistance, 40.0f, 0.0f);
+            } else {
+                sidewaysMovement = -pid_update(&interceptPID, ballSidewaysDistance, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
+            }
 
             rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
             rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
+
+            // ESP_LOGI(TAG, "SidewaysDistance: %f\n", goalSidewaysDistance);
         }
     // }
 }
