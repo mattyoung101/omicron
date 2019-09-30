@@ -118,18 +118,18 @@ static void master_task(void *pvParameter){
     robotState.inRobotId = robotId;
 
     #ifdef BLUETOOTH_ENABLED
-    if (robotId == 0){
-        comms_bt_init_master();
-    } else {
-        comms_bt_init_slave();
-    }
-    #endif
-
-    // Initialise FSM, start out in defence until we get a BT connection
-    #if DEFENCE
+        if (robotId == 0){
+            comms_bt_init_master();
+        } else {
+            comms_bt_init_slave();
+        }
         stateMachine = fsm_new(&stateDefenceDefend);
     #else
-        stateMachine = fsm_new(&stateAttackPursue);
+        #if DEFENCE
+            stateMachine = fsm_new(&stateDefenceDefend);
+        #else
+            stateMachine = fsm_new(&stateAttackPursue);
+        #endif
     #endif
 
     ESP_LOGI(TAG, "=============== Master software init OK ===============");

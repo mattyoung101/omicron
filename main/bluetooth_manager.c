@@ -143,14 +143,7 @@ void comms_bt_receive_task(void *pvParameter){
             if (robotState.outSwitchOk && !cooldownOn && robotState.inRobotId == 0){
                 ESP_LOGI(TAG, "========== I'm also willing to switch: switching NOW! ==========");
                 esp_spp_write(handle, 6, switchBuffer);
-                
-                // invert state
-                // TODO make this a macro FSM_INVERT_STATE
-                if (robotState.outIsAttack){
-                    fsm_change_state(stateMachine, &stateDefenceDefend); 
-                } else {
-                    fsm_change_state(stateMachine, &stateAttackPursue);
-                }
+                FSM_INVERT_STATE;
 
                 // start cooldown timer
                 cooldownOn = true;

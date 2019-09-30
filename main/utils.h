@@ -74,6 +74,15 @@ extern pid_config_t forwardPID;
 #define FSM_CHANGE_STATE_GENERAL(STATE) do { fsm_change_state(fsm, &stateGeneral ##STATE); return; } while (0);
 /** Revert state in FSM **/
 #define FSM_REVERT do { fsm_revert_state(fsm); return; } while (0);
+/** Inverts the state of the FSM and also clears history, for use in Bluetooth **/
+#define FSM_INVERT_STATE do { \
+    /*fsm_partial_reset(stateMachine);*/ \
+    if (robotState.outIsAttack){ \
+        fsm_change_state(stateMachine, &stateDefenceDefend); \
+    } else { \
+        fsm_change_state(stateMachine, &stateAttackPursue); \
+    } \
+} while (0);
 /** printf with a newline automatically attached on the end **/
 #define printfln(f_, ...) printf((f_ "\n"), __VA_ARGS__)
 
