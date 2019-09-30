@@ -122,6 +122,28 @@ void fsm_reset(state_machine_t *fsm){
     }
 }
 
+void fsm_partial_reset(state_machine_t *fsm){
+    ESP_LOGD(TAG, "Partially resetting FSM");
+
+    if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        // check if resetting would cause errors
+        if (da_count(fsm->stateHistory) <= 1){
+            ESP_LOGD(TAG, "Nothing to revert (only one state in history)");
+            xSemaphoreGive(fsm->semaphore);
+            return;
+        }
+
+        // clear state history and add back the stateNothing
+        fsm_state_t *stateNothing = da_get(fsm->stateHistory, 0);
+        da_free(fsm->stateHistory);
+        da_add(fsm->stateHistory, stateNothing);
+        
+        xSemaphoreGive(fsm->semaphore);
+    } else {
+        ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot partially reset");
+    }
+}
+
 void fsm_dump(state_machine_t *fsm){
     if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
         printf("BEGIN FSM DUMP\nState history (%d entries):\n", da_count(fsm->stateHistory));

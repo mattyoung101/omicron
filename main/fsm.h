@@ -52,6 +52,8 @@ bool fsm_in_state(state_machine_t *fsm, char *name);
 char *fsm_get_current_state_name(state_machine_t *fsm);
 /** Resets the FSM to its initial state **/
 void fsm_reset(state_machine_t *fsm);
+/** Just clears the state history, but does not change states **/
+void fsm_partial_reset(state_machine_t *fsm);
 /** Dumps the FSM to the console **/
 void fsm_dump(state_machine_t *fsm);
 /** Frees memory allocated by the FSM **/
