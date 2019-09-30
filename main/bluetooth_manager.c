@@ -52,7 +52,7 @@ void comms_bt_receive_task(void *pvParameter){
             isAttack = strstr(recvMsg.fsmState, "Attack") != NULL;
             isInShootState = strcmp(recvMsg.fsmState, "GeneralShoot") == 0;
             xTimerReset(packetTimer.timer, portMAX_DELAY);
-            
+
             #ifdef ENABLE_VERBOSE_BT
             ESP_LOGD(TAG, "Received packet: ball angle: %f, Ball strength: %f", recvMsg.ballAngle, recvMsg.ballStrength);
             #endif

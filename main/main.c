@@ -205,7 +205,7 @@ static void master_task(void *pvParameter){
         // robotState.outSpeed = 0;
         // goal_correction(&robotState);
         // robotState.outDirection = 0;
-        print_ball_data(&robotState);
+        // print_ball_data(&robotState);
         
         msg.heading = yaw; // IMU heading
         msg.direction = robotState.outDirection; // motor direction (which way we're driving)
@@ -238,25 +238,25 @@ static void master_task(void *pvParameter){
             ticks++;
             ticksSinceLastBestTime++;
             ticksSinceLastWorstTime++;
+            float avgFreq = (1.0f / movavg_calc(avgTime)) * 1000000.0f;
 
             if (end > worstTime){
                 // we took longer than recorded previously, means we have a new worst time
-                ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %f us", 
-                    (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime));
+                ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
+                    (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime), avgFreq);
                 ticksSinceLastWorstTime = 0;
                 worstTime = end;
             } else if (end < bestTime){
                 // we took less than recorded previously, meaning we have a new best time
-                ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %f us", 
-                    (long) end, ticksSinceLastBestTime, movavg_calc(avgTime));
+                ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
+                    (long) end, ticksSinceLastBestTime, movavg_calc(avgTime), avgFreq);
                 ticksSinceLastBestTime = 0;
                 bestTime = end;
-            } else if (ticks >= 256){
+            } else if (ticks >= 512){
                 // print the average time and memory diagnostics every few loops
-                ESP_LOGW(PT_TAG, "Average time: %f us", movavg_calc(avgTime));
-                ESP_LOGW(PT_TAG, "Stack high usage: %d KB. Heap bytes free: %d KB (min free ever: %d KB)", 
-                    uxTaskGetStackHighWaterMark(NULL) / 1000, esp_get_free_heap_size() / 1000,
-                    esp_get_minimum_free_heap_size() / 1000);
+                ESP_LOGW(PT_TAG, "Average time: %.2f us (%.2f Hz). Heap bytes free: %d KB (min free ever: %d KB)", 
+                        movavg_calc(avgTime), avgFreq, esp_get_free_heap_size() / 1024, 
+                        esp_get_minimum_free_heap_size() / 1024);
                 // fsm_dump(stateMachine);
                 // ESP_LOGI(TAG, "Heading: %f", yaw);
                 ticks = 0;
