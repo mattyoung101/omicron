@@ -45,16 +45,18 @@ void comms_bt_receive_task(void *pvParameter){
     while (true){
         BTProvide recvMsg = BTProvide_init_zero;
         bool isAttack = false;
-        bool isInShootState = false;
+        bool isDefence = false;
+        bool isShoot = false;
 
         // read in a new packet from the packet queue, otherwise block this thread till one's available
         if (xQueueReceive(packetQueue, &recvMsg, portMAX_DELAY)){
             isAttack = strstr(recvMsg.fsmState, "Attack") != NULL;
-            isInShootState = strcmp(recvMsg.fsmState, "GeneralShoot") == 0;
+            isDefence = strstr(recvMsg.fsmState, "Defence") != NULL;
+            isShoot = strcmp(recvMsg.fsmState, "GeneralShoot") == 0;
             xTimerReset(packetTimer.timer, portMAX_DELAY);
         }
 
-        // required due to cross-core access (multi-threading crap)
+        // determine if I'm attack or defence with semaphores (due to cross core access)
         bool amIAttack = false;
         RS_SEM_LOCK
         amIAttack = robotState.outIsAttack;
@@ -65,8 +67,17 @@ void comms_bt_receive_task(void *pvParameter){
                     recvMsg.ballAngle, recvMsg.ballStrength, recvMsg.fsmState, amIAttack ? "true" : "false");
         #endif
 
+        // handle a weird bug where the state string is just empty text
+        // it seems that this bug resolves itself the next time a BT packet is received, so just log it and skip this
+        // loop to make sure the conflict resolution algorithm doesn't get confused
+        if (!isAttack && !isDefence && !isShoot){
+            ESP_LOGE(TAG, "WHAT THE FUCK: Not in defence, attack or shoot?! State: %s", recvMsg.fsmState);
+            continue;
+        }
+
         // detect conflicts and resolve with whichever algorithm was selected
-        if (((isAttack && amIAttack) || (!isAttack && !amIAttack)) && !isInShootState) {
+        // ignore all conflicts if we're in the shoot state because both robots are allowed to shoot at the same time
+        if (((isAttack && amIAttack) || (isDefence && !amIAttack)) && !isShoot) {
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE", 
                     isAttack ? "ATTACK" : "DEFENCE");
             #ifdef ENABLE_VERBOSE_BT
@@ -82,7 +93,6 @@ void comms_bt_receive_task(void *pvParameter){
                 // if in shoot state, ignore conflict as both robots can be shooting without conflict
                 if (robotState.inBallStrength <= 0.1f && recvMsg.ballStrength <= 0.1f){
                     ESP_LOGI(TAG, "Conflict resolution: both robots can't see ball, using default state");
-                    // FIXME how does the other robot know what to do - make sure its getting the switch solution?
 
                     if (ROBOT_MODE == MODE_ATTACK){
                         fsm_change_state(stateMachine, &stateAttackPursue);
@@ -175,7 +185,7 @@ void comms_bt_send_task(void *pvParameter){
         memset(buf, 0, PROTOBUF_SIZE);
         BTProvide sendMsg = BTProvide_init_zero;
 
-        RS_SEM_LOCK;
+        RS_SEM_LOCK
         // all of this semaphore stuff is to synchronise the state name between the two cores (as BT runs on core 0)
         // essentially by taking updateInProgress we can be assured that core 1 won't update the FSM while we're
         // copying its current state name, and fsm_get_current_state_name is also thread safe by taking fsm->semaphore
@@ -201,7 +211,7 @@ void comms_bt_send_task(void *pvParameter){
         sendMsg.goalLength = robotState.inGoalLength;
         sendMsg.ballAngle = robotState.inBallAngle;
         sendMsg.ballStrength = robotState.inBallStrength;
-        RS_SEM_UNLOCK;
+        RS_SEM_UNLOCK
 
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
         if (pb_encode(&stream, BTProvide_fields, &sendMsg)){
