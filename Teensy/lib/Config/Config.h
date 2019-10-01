@@ -76,10 +76,10 @@
 #define LS_NUM 36
 #define DEBUG_DATA false
 #define DEBUG_RAW false
-#define DEBUG_FILLED false
+#define DEBUG_FILLED true
 
 #define LS_CALIBRATION_COUNT 10
-#define LS_CALIBRATION_BUFFER 100
+#define LS_CALIBRATION_BUFFER 500
 #define LS_ES_DEFAULT 69
 #define NO_LINE_ANGLE 400
 #define NO_LINE_SIZE -100

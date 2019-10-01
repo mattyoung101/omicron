@@ -201,7 +201,7 @@ static void master_task(void *pvParameter){
         uint8_t buf[PROTOBUF_SIZE] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
 
-        // ESP_LOGD(TAG,"%d",robotState.inGoalAngle);
+        // ESP_LOGD(TAG,"%f",yaw);
         // robotState.outSpeed = 0;
         // goal_correction(&robotState);
         // robotState.outDirection = 0;
