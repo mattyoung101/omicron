@@ -19,10 +19,10 @@
 #define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before another switch is allowed
-#define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
+// #define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
 #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_DYNAMIC // the conflict resolution mode
-#define DEFENCE true // whether to start out in defence (I think? unclear)
+#define DEFENCE false // whether to start out in defence (I think? unclear)
 #define BT_MAX_ERRORS 4 // max errors before dropping connection
 
 // Debug
@@ -52,7 +52,7 @@
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
-#define GOAL_WIDTH 50
+#define GOAL_WIDTH 60
 #define ENEMY_GOAL GOAL_BLUE
 
 // Protobuf
@@ -89,7 +89,7 @@ typedef enum {
 // --- Goalie PIDs --- //
 // PID which controls the robot moving to its correct distance from the goal
 // TODO increase P of forward PID so its faster to get back into goal for example after surging
-#define FORWARD_KP 3
+#define FORWARD_KP 1.5
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
@@ -103,7 +103,7 @@ typedef enum {
 // PID which controls the robot going to intercept the ball
 #define INTERCEPT_KP 1.5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.00001
+#define INTERCEPT_KD 0.00005
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 

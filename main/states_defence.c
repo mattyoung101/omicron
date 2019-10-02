@@ -129,17 +129,17 @@ static void can_kick_callback(TimerHandle_t timer){
             float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
             
             float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_));
-            float distanceMovement = pid_update(&forwardPID, robotState.inGoalLength, DEFEND_DISTANCE + 20.0f, 0.0f); // Stay a fixed distance from the goal
+            float distanceMovement = pid_update(&forwardPID, robotState.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
 
             float goalSidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
             float ballSidewaysDistance = robotState.inBallStrength * sinf(DEG_RAD * tempAngle);
             float sidewaysMovement;
 
-            if(fabs(goalSidewaysDistance) > GOAL_WIDTH){
-                sidewaysMovement = sign(goalSidewaysDistance) * -pid_update(&interceptPID, sign(goalSidewaysDistance) * goalSidewaysDistance, GOAL_WIDTH, 0.0f);
-            } else {
+            // if(fabs(goalSidewaysDistance) > GOAL_WIDTH){
+                // sidewaysMovement = sign(goalSidewaysDistance) * -pid_update(&interceptPID, sign(goalSidewaysDistance) * goalSidewaysDistance, GOAL_WIDTH, 0.0f);
+            // } else {
                 sidewaysMovement = -pid_update(&interceptPID, ballSidewaysDistance, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
-            }
+            // }
 
             rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
             rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
