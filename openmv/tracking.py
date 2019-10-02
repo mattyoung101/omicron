@@ -9,9 +9,9 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(59, 82, -16, 27, 25, 127), # yellow
-             (42, 52, -5, 24, -104, -27), # blue
-             (35, 100, 54, 127, 21, 127)] # orange
+thresholds = [(52, 85, 3, 37, 34, 88), # yellow
+             (0, 0, 0, 0, 0, 0), # blue
+             (45, 58, 58, 127, 24, 127)] # orange
 
 # Robot A
 # Yellow (53, 66, 1, 25, 3, 42)
@@ -46,8 +46,8 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above 2 settings get in...
 sensor.skip_frames(time=100)
-#sensor.set_windowing((24, 0, 240, 240)) # Robot A
-sensor.set_windowing((30, 4, 230, 230)) # Robot B
+sensor.set_windowing((24, 0, 240, 240)) # Robot A
+#sensor.set_windowing((30, 4, 230, 230)) # Robot B
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -55,11 +55,11 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = 10000)
+sensor.set_auto_exposure(False, exposure_us = 9500)
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-5.753914, -6.02073, -0.06828868)))
+rgb_gain_db=((-5.886325, -6.02073, 0.1343897)))
 
 # Standard
 sensor.set_brightness(0)
@@ -114,7 +114,7 @@ while True:
 
     print(thresholds[-1])
     orangeBlobs = img.find_blobs([thresholds[-1]], x_stride=2, y_stride=2, pixels_threshold=1,
-                    area_threshold=1, merge=True, margin=2)
+                    area_threshold=4, merge=True, margin=2)
     try:
         biggestOrange = sorted(orangeBlobs, key=lambda l: l.area(), reverse=True)[0]
     except Exception:

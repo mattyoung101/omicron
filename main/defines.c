@@ -64,7 +64,7 @@ void defines_init(uint8_t robotId){
         ORBIT_CONST = 0.2;
         DRIBBLE_BALL_TOO_FAR = 50; // TODO FIX THESE VALUES FOR PASSIVE BALL STUFF
         ORBIT_DIST = 0;
-        IN_FRONT_MIN_ANGLE = 15;
-        IN_FRONT_MAX_ANGLE = 345;
+        IN_FRONT_MIN_ANGLE = 10;
+        IN_FRONT_MAX_ANGLE = 350;
     }
 }

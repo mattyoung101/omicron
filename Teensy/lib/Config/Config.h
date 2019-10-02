@@ -76,7 +76,7 @@
 #define LS_NUM 36
 #define DEBUG_DATA false
 #define DEBUG_RAW false
-#define DEBUG_FILLED true
+#define DEBUG_FILLED false
 
 #define LS_CALIBRATION_COUNT 10
 #define LS_CALIBRATION_BUFFER 500

@@ -156,7 +156,7 @@ void loop() {
     // Measure battery voltage
     batteryVoltage = get_battery_voltage();
 
-    // decodeProtobuf();
+    decodeProtobuf();
 
     // Update variables
     direction = lastMasterProvide.direction;
