@@ -16,7 +16,7 @@ static void packet_timer_callback(TimerHandle_t timer){
     // suspend the two logic tasks to prevent Bluetooth errors (they get confused since no connection currently exists)
     vTaskSuspend(receiveTaskHandle);
     vTaskSuspend(sendTaskHandle);
-    
+
     esp_spp_disconnect(handle);
     om_timer_stop(&packetTimer);
 }
@@ -117,7 +117,7 @@ void comms_bt_receive_task(void *pvParameter){
                 }
             #elif BT_CONF_RES_MODE == BT_CONF_RES_STATIC
                 #ifdef ENABLE_VERBOSE_BT
-                ESP_LOGD(TAG, "Static conflict resolution algorithm running...");
+                ESP_LOGD(TAG, "Static conflict resolution algorithm running");
                 #endif
 
                 // change into which ever mode was set in NVS

@@ -111,6 +111,9 @@ void cam_calc(void){
 
     // ESP_LOGD(TAG, "[yellow] Pixel distance: %f\tActual distance: %f", goalYellow.length, goalYellow.distance);
     // ESP_LOGD(TAG, "[blue] Pixel distance: %f\tActual distance: %f", goalBlue.length, goalBlue.distance);
+    // vTaskDelay(pdMS_TO_TICKS(1000));
+    // ESP_LOGD(TAG, "[yellow] Pixel distance: %f", goalYellow.length);
+    // return;
 
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;
