@@ -43,8 +43,8 @@ void defines_init(uint8_t robotId){
         SURGE_STRENGTH = 50;
         BALL_FAR_STRENGTH = 110;
         BALL_CLOSE_STRENGTH = 40;
-        ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 45;
+        ORBIT_SPEED_SLOW = 25;
+        ORBIT_SPEED_FAST = 25;
         ORBIT_CONST = 0.6;
         DRIBBLE_BALL_TOO_FAR = 65;
         ORBIT_DIST = 0;
@@ -58,9 +58,9 @@ void defines_init(uint8_t robotId){
         SURGE_DISTANCE = 90; // 35
         SURGE_STRENGTH = 50; 
         BALL_FAR_STRENGTH = 110;
-        BALL_CLOSE_STRENGTH = 45;
-        ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 45;
+        BALL_CLOSE_STRENGTH = 50;
+        ORBIT_SPEED_SLOW = 20;
+        ORBIT_SPEED_FAST = 25;
         ORBIT_CONST = 0.2;
         DRIBBLE_BALL_TOO_FAR = 60; // TODO FIX THESE VALUES FOR PASSIVE BALL STUFF
         ORBIT_DIST = 0;
