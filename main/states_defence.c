@@ -65,7 +65,7 @@ void state_defence_idle_update(state_machine_t *fsm){
     }
 
     // rs.outSpeed = 0;
-    position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
+    position(&robotState, 65.0f, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 }
 
 static om_timer_t surgeKickTimer = {NULL, false};
@@ -129,13 +129,13 @@ static void can_kick_callback(TimerHandle_t timer){
             float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
             
             float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_));
-            float distanceMovement = pid_update(&forwardPID, robotState.inGoalLength, DEFEND_DISTANCE + 20.0f, 0.0f); // Stay a fixed distance from the goal
+            float distanceMovement = pid_update(&forwardPID, robotState.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
 
             float goalSidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
             float ballSidewaysDistance = robotState.inBallStrength * sinf(DEG_RAD * tempAngle);
             float sidewaysMovement;
 
-            if(fabs(goalSidewaysDistance) > GOAL_WIDTH){
+            if(fabs(goalSidewaysDistance) > GOAL_WIDTH && sign(goalSidewaysDistance) != sign(ballSidewaysDistance)){
                 sidewaysMovement = sign(goalSidewaysDistance) * -pid_update(&interceptPID, sign(goalSidewaysDistance) * goalSidewaysDistance, GOAL_WIDTH, 0.0f);
             } else {
                 sidewaysMovement = -pid_update(&interceptPID, ballSidewaysDistance, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)

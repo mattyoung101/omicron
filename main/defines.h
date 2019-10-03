@@ -52,7 +52,7 @@
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
-#define GOAL_WIDTH 60
+#define GOAL_WIDTH 50
 #define ENEMY_GOAL GOAL_BLUE
 
 // Protobuf
@@ -92,19 +92,19 @@ typedef enum {
 #define FORWARD_KP 3
 #define FORWARD_KI 0
 #define FORWARD_KD 0
-#define FORWARD_MAX 100
+#define FORWARD_MAX 80
 
 // PID which controls the robot centering on the goal
 #define SIDE_KP 1.2
 #define SIDE_KI 0
 #define SIDE_KD 0
-#define SIDE_MAX 100
+#define SIDE_MAX 80
 
 // PID which controls the robot going to intercept the ball
-#define INTERCEPT_KP 1
+#define INTERCEPT_KP 1.5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.00005
-#define INTERCEPT_MAX 100
+#define INTERCEPT_KD 0.0001
+#define INTERCEPT_MAX 80
 #define INTERCEPT_MIN 0
 
 // PID which controls the robot turning its back towards the goal
@@ -169,14 +169,14 @@ extern uint16_t DRIBBLE_BALL_TOO_FAR; // if less than this, switch out of dribbl
 extern uint16_t ORBIT_DIST;  // switch from orbit to pursue if value is more than this
 extern uint16_t IN_FRONT_MIN_ANGLE; // angle range in which the ball is considered to be in front of the robot
 extern uint16_t  IN_FRONT_MAX_ANGLE;
-#define IN_FRONT_ANGLE_BUFFER 10
+#define IN_FRONT_ANGLE_BUFFER 0
 #define IN_FRONT_STRENGTH_BUFFER 5
 #define IDLE_TIMEOUT 500 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 100 // distance to sit away from the goal if no ball is visible
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 80 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.1 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define ACCEL_PROG 1 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot

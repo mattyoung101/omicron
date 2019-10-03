@@ -9,9 +9,9 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(41, 100, 6, 44, 39, 127), # yellow
-             (37, 49, -12, 22, -77, -35), # blue
-             (32, 100, 63, 127, 21, 127)] # orange
+thresholds = [(72, 89, -9, 46, 18, 69), # yellow
+             (45, 59, -27, 18, -59, -31), # blue
+             (53, 88, 40, 86, 8, 74)] # orange
 
 # Robot A
 # Yellow (53, 66, 1, 25, 3, 42)
@@ -46,8 +46,8 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above 2 settings get in...
 sensor.skip_frames(time=100)
-sensor.set_windowing((18, 0, 240, 240)) # Robot A
-#sensor.set_windowing((30, 4, 230, 230)) # Robot B
+sensor.set_windowing((24, 0, 240, 240)) # Robot A
+#sensor.set_windowing((33, 10, 230, 230)) # Robot B
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -55,18 +55,18 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = 9000)
+sensor.set_auto_exposure(False, exposure_us = int(1.5 * curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-5.753914, -6.02073, -0.06828868)))
+rgb_gain_db=((-5.886325, -6.02073, 0.652583)))
 
 # Standard
 sensor.set_brightness(0)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 
-sensor.skip_frames(time=100)
+sensor.skip_frames(time=500)
 
 # Blink LEDs
 pyb.LED(1).off()
@@ -114,7 +114,7 @@ while True:
 
     print(thresholds[-1])
     orangeBlobs = img.find_blobs([thresholds[-1]], x_stride=2, y_stride=2, pixels_threshold=1,
-                    area_threshold=1, merge=True, margin=2)
+                    area_threshold=4, merge=False, margin=2)
     try:
         biggestOrange = sorted(orangeBlobs, key=lambda l: l.area(), reverse=True)[0]
     except Exception:
