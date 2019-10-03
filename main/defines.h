@@ -52,7 +52,7 @@
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
-#define GOAL_WIDTH 60
+#define GOAL_WIDTH 50
 #define ENEMY_GOAL GOAL_BLUE
 
 // Protobuf
@@ -89,22 +89,22 @@ typedef enum {
 // --- Goalie PIDs --- //
 // PID which controls the robot moving to its correct distance from the goal
 // TODO increase P of forward PID so its faster to get back into goal for example after surging
-#define FORWARD_KP 1.5
+#define FORWARD_KP 3
 #define FORWARD_KI 0
 #define FORWARD_KD 0
-#define FORWARD_MAX 100
+#define FORWARD_MAX 80
 
 // PID which controls the robot centering on the goal
 #define SIDE_KP 1.2
 #define SIDE_KI 0
 #define SIDE_KD 0
-#define SIDE_MAX 100
+#define SIDE_MAX 80
 
 // PID which controls the robot going to intercept the ball
 #define INTERCEPT_KP 1.5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.00005
-#define INTERCEPT_MAX 100
+#define INTERCEPT_KD 0.0001
+#define INTERCEPT_MAX 80
 #define INTERCEPT_MIN 0
 
 // PID which controls the robot turning its back towards the goal
