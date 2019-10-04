@@ -91,7 +91,8 @@ char *fsm_get_current_state_name(state_machine_t *fsm){
 
 void fsm_reset(state_machine_t *fsm){
     ESP_LOGD(TAG, "Resetting FSM");
-    if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+    if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))
+        && xSemaphoreTake(fsm->updateInProgress, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
         // check if resetting would cause errors
         if (da_count(fsm->stateHistory) <= 1){
             ESP_LOGD(TAG, "Nothing to revert (only one state in history)");
@@ -117,6 +118,7 @@ void fsm_reset(state_machine_t *fsm){
         // and add back the nothing state, but not the initialState since we've already changed into it
         da_add(fsm->stateHistory, stateNothing);
         xSemaphoreGive(fsm->semaphore);
+        xSemaphoreGive(fsm->updateInProgress);
     } else {
         ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot reset");
     }

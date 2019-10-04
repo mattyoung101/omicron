@@ -148,6 +148,10 @@ static void master_task(void *pvParameter){
         bno055_convert_float_euler_h_deg(&yawRaw);
         yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
 
+        // for camera debug
+        // esp_task_wdt_reset();
+        // continue;
+
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
@@ -159,7 +163,7 @@ static void master_task(void *pvParameter){
 
                 // update FSM in values
                 robotState.inBallAngle = orangeBall.angle;
-                robotState.inBallStrength = orangeBall.length;
+                robotState.inBallStrength = orangeBall.exists ? orangeBall.length : 0.0f;
                 // TODO make goal stuff floats as well
                 if (robotState.outIsAttack){
                     robotState.inGoalVisible = AWAY_GOAL.exists;
@@ -213,7 +217,7 @@ static void master_task(void *pvParameter){
         msg.speed = robotState.outSpeed; // motor speed as 0-100%
 
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
-            ESP_LOGE(TAG, "I2C encode error: %s", PB_GET_ERROR(&stream));
+            ESP_LOGE(TAG, "Intra-robot Protobuf encode error: %s", PB_GET_ERROR(&stream));
         }
         comms_uart_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
@@ -221,7 +225,7 @@ static void master_task(void *pvParameter){
         if (xQueueReceive(buttonQueue, &buttonEvent, 0)){
             if ((buttonEvent.pin == RST_BTN) && (buttonEvent.event == BUTTON_UP)){
                 ESP_LOGI(TAG, "Reset button pressed");
-                fsm_dump(stateMachine);
+                // fsm_dump(stateMachine);
                 fsm_reset(stateMachine);
 
                 // calculate new yaw offset

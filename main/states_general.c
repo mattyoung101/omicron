@@ -73,6 +73,6 @@ void state_nothing_exit(state_machine_t *fsm){
 }
 void state_nothing_update(state_machine_t *fsm){
     // do nothing
-    ESP_LOGW("StateNothing", "Should not be in this state!");
+    ESP_LOGW("StateNothing", "Illegal state change: should never be in StateNothing. Fix your code!");
     FSM_MOTOR_BRAKE;
 }
