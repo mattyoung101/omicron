@@ -80,19 +80,14 @@ void cam_init(void){
     ESP_LOGI(TAG, "Camera init OK!");
 }
 
-/** 
- * Converts from pixel distance to real distance in cm
- * Model: f(x) = 0.3302e^0.1035x
- */
-static inline float cam_pixel_to_cm(float measurement){
-    return 0.3302f * powf(E, 0.1035f * measurement);
+/** Model: f(x) = 0.1937 * e^(0.0709x) */
+static inline float cam_goal_pixel2cm(float measurement){
+    return 0.1937f * powf(E, 0.0709f * measurement);
 }
 
-/** calculates the position vector for a goal */
-static inline hmm_vec2 cam_goal_calc(float angle, float distance){
-    float theta = floatMod(90.0f - angle, 360.0f);
-    float r = distance;
-    return HMM_Vec2(-r * cosfd(theta), k + r * sinfd(theta));
+/** Model: 0.0003 * x^2.8206 */
+static inline float cam_ball_pixel2cm(float measurement){
+    return 0.0003f * powf(measurement, 2.8206f);
 }
 
 void cam_calc(void){
@@ -105,47 +100,21 @@ void cam_calc(void){
     orangeBall.angle = floatMod(450.0f - roundf(RAD_DEG * atan2f(orangeBall.y, orangeBall.x)), 360.0f);
     orangeBall.length = sqrtf(sq(orangeBall.x) + sq(orangeBall.y));
 
-    goalYellow.distance = cam_pixel_to_cm(goalYellow.length);
-    goalBlue.distance = cam_pixel_to_cm(goalBlue.length);
-    orangeBall.distance = cam_pixel_to_cm(orangeBall.length);
+    goalYellow.distance = cam_goal_pixel2cm(goalYellow.length);
+    goalBlue.distance = cam_goal_pixel2cm(goalBlue.length);
+    orangeBall.distance = cam_ball_pixel2cm(orangeBall.length);
 
     // ESP_LOGD(TAG, "[yellow] Pixel distance: %f\tActual distance: %f", goalYellow.length, goalYellow.distance);
-    // ESP_LOGD(TAG, "[blue] Pixel distance: %f\tActual distance: %f", goalBlue.length, goalBlue.distance);
+    // ESP_LOGD(TAG, "[ball] Pixel distance: %f\tActual distance: %f", orangeBall.length, orangeBall.distance);
+    // ESP_LOGD(TAG, "[ball] Pixel distance: %f", orangeBall.length);
     // vTaskDelay(pdMS_TO_TICKS(1000));
-    // ESP_LOGD(TAG, "[yellow] Pixel distance: %f", goalYellow.length);
     // return;
 
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;
         robotY = CAM_NO_VALUE;
     } else {
-        hmm_vec2 yellowPos = cam_goal_calc(goalYellow.angle, goalYellow.distance);
-        hmm_vec2 bluePos = cam_goal_calc(goalBlue.angle, goalBlue.distance);
-
-        if (goalYellow.exists && !goalBlue.exists){
-            // only yellow goal visible
-            robotX = yellowPos.X;
-            robotY = yellowPos.Y;
-            // ESP_LOGD(TAG, "Only yellow");
-        } else if (goalBlue.exists && !goalYellow.exists){
-            // only blue goal visible
-            robotX = bluePos.X;
-            robotY = bluePos.Y;
-            // ESP_LOGD(TAG, "Only blue");
-        } else {
-            // both goals visible
-            if (goalYellow.distance < goalBlue.distance){
-                // yellow goal is closer, use it
-                robotX = yellowPos.X;
-                robotY = yellowPos.Y;
-                // ESP_LOGD(TAG, "Both, selected yellow");
-            } else {
-                // blue goal is closer, use it
-                robotX = bluePos.X;
-                robotY = bluePos.Y;
-                // ESP_LOGD(TAG, "Both, selected blue");
-            }
-        }
+        // TODO new localisation here
     }
 
     // ESP_LOGD(TAG, "Robot position: x: %d, y: %d", robotX, robotY);
