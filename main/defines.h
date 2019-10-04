@@ -19,7 +19,7 @@
 #define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before another switch is allowed
-#define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
+// #define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
 #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_DYNAMIC // the conflict resolution mode
 #define DEFENCE false // whether to start out in defence (I think? unclear)
@@ -53,7 +53,7 @@
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 50
-#define ENEMY_GOAL GOAL_BLUE
+#define ENEMY_GOAL GOAL_YELLOW
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -172,8 +172,8 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IN_FRONT_ANGLE_BUFFER 0
 #define IN_FRONT_STRENGTH_BUFFER 5
 #define IDLE_TIMEOUT 500 // if ball is not visible for this length of time in ms or more, switch to idle state
-#define IDLE_DISTANCE 100 // distance to sit away from the goal if no ball is visible
-#define IDLE_OFFSET 0
+#define IDLE_DISTANCE 85 // distance to sit away from the goal if no ball is visible
+#define IDLE_OFFSET 20
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 80 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 1 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
