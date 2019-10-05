@@ -6,7 +6,7 @@ static om_timer_t packetTimer = {NULL, false};
 static om_timer_t cooldownTimer = {NULL, false};
 static om_timer_t switchDelayTimer = {NULL, false};
 static bool cooldownOn = false; // true if the cooldown timer is currently activated
-static bool waitingOnSwitch = false; // true if waiting for switch delay timer to go off
+static bool switchRequestQueued = false; // true if a switch request is pending and we are the switch controller
 
 static void packet_timer_callback(TimerHandle_t timer){
     static const char *TAG = "BTTimeout";
@@ -32,8 +32,7 @@ static void cooldown_timer_callback(TimerHandle_t timer){
 
 static void switch_delay_callback(TimerHandle_t timer){
     static const char *TAG = "switchDelayTimer";
-    ESP_LOGI(TAG, "Switch delay cleared, allowing switch");
-    waitingOnSwitch = false;
+    ESP_LOGI(TAG, "Switch delay finished, allowing switch");
     om_timer_stop(&switchDelayTimer);
 }
 
@@ -151,34 +150,37 @@ void comms_bt_receive_task(void *pvParameter){
             // only one robot (robot 0) will be able to broadcast switch statements to save them both from
             // switching at the same time
             if (robotState.outSwitchOk && !cooldownOn && robotState.inRobotId == 0){
-                // if (!waitingOnSwitch && !(switchDelayTimer.running)){
-                //     // TODO need a variable to determine if this is a new switch request
-                //     ESP_LOGI(TAG, "Switch request OK, starting delay timer");
-                //     om_timer_start(&switchDelayTimer);
-                //     waitingOnSwitch = true;
-                // } else if (waitingOnSwitch){
-                //     ESP_LOGD(TAG, "Still waiting on switch...");
-                // }
+                if (!switchRequestQueued){
+                    ESP_LOGI(TAG, "Queueing new switch request and starting switch delay timer");
+                    switchRequestQueued = true;
+                    om_timer_start(&switchDelayTimer);
+                } else if (switchRequestQueued && !(switchDelayTimer.running)){
+                    ESP_LOGI(TAG, "========== Switch delay finished: switching NOW! ==========");
+                    esp_spp_write(handle, 6, switchBuffer);
+                    FSM_INVERT_STATE;
 
-                ESP_LOGI(TAG, "========== I'm also willing to switch: switching NOW! ==========");
-                esp_spp_write(handle, 6, switchBuffer);
-                FSM_INVERT_STATE;
+                    // start cooldown timer
+                    cooldownOn = true;
+                    xTimerStart(cooldownTimer.timer, portMAX_DELAY);
+                    alreadyPrinted = false;
 
-                // start cooldown timer
-                cooldownOn = true;
-                xTimerStart(cooldownTimer.timer, portMAX_DELAY);
-                alreadyPrinted = false;
+                    om_timer_stop(&switchDelayTimer);
+                    switchRequestQueued = false;
+                }
             } else {
                 #ifdef ENABLE_VERBOSE_BT
                     ESP_LOGD(TAG, "Unable to switch: am I willing to switch? %s, cooldown timer on? %s, robotId: %d",
                     robotState.outSwitchOk ? "yes" : "no", cooldownOn ? "yes" : "no", robotState.inRobotId);
                 #endif
+                switchRequestQueued = false;
+                om_timer_stop(&switchDelayTimer);
             }
         } else if (wasSwitchOk){
             // if the other robot is not willing to switch, but was previously willing to switch
             ESP_LOGW(TAG, "Other robot is NO LONGER willing to switch");
             wasSwitchOk = false;
             alreadyPrinted = false;
+            switchRequestQueued = false;
             om_timer_stop(&switchDelayTimer);
         }
 

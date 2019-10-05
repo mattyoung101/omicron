@@ -5,4 +5,4 @@ As opposed to the ESP project in the root directory which uses CMake and ESP-IDF
 
 The main source code is in "src", while all the external libraries live in "lib".
 
-This is all mainly written by Ethan, except for the Protobuf decoder which was written by Matt.
+This is all written by Ethan (except for the Protobuf decoder which was written by Matt).
