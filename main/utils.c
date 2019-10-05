@@ -338,7 +338,7 @@ void print_goal_data(){
 
 void print_position_data(robot_state_t *robotState){
     static const char *TAG = "PositionDebug";
-    ESP_LOGD(TAG, "Xpos: %d, Ypos: %d, Heading: %f", robotState->inX, robotState->inY, robotState->inHeading);
+    ESP_LOGD(TAG, "Xpos: %f, Ypos: %f, Heading: %f", robotState->inX, robotState->inY, robotState->inHeading);
 }
 
 void print_motion_data(robot_state_t *robotState){
