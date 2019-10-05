@@ -1,15 +1,12 @@
 #include "cam.h"
 
-// This file implements communication with the OpenMV M7 using a custom protocol over UART
-
 SemaphoreHandle_t goalDataSem = NULL;
 SemaphoreHandle_t validCamPacket = NULL;
 cam_object_t goalBlue = {0};
 cam_object_t goalYellow = {0};
 cam_object_t orangeBall = {0};
-int16_t robotX = 0;
-int16_t robotY = 0;
-static const float k = 92.5f; // distance of goal to centre in cm, measured on the field
+float robotX = 0;
+float robotY = 0;
 
 static void cam_receive_task(void *pvParameter){
     static const char *TAG = "CamReceiveTask";;
@@ -85,7 +82,7 @@ static inline float cam_goal_pixel2cm(float measurement){
     return 0.1937f * powf(E, 0.0709f * measurement);
 }
 
-/** Model: 0.0003 * x^2.8206 */
+/** Model: f(x) = 0.0003 * x^2.8206 */
 static inline float cam_ball_pixel2cm(float measurement){
     return 0.0003f * powf(measurement, 2.8206f);
 }
@@ -110,14 +107,30 @@ void cam_calc(void){
     // vTaskDelay(pdMS_TO_TICKS(1000));
     // return;
 
+    // basic localisation
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;
         robotY = CAM_NO_VALUE;
     } else {
-        // TODO new localisation here
-    }
+        cam_object_t *targetGoal = NULL;
 
-    // ESP_LOGD(TAG, "Robot position: x: %d, y: %d", robotX, robotY);
-    // puts("=============================");
-    // vTaskDelay(pdMS_TO_TICKS(1000));
+        // select closest goal to localise on
+        if (goalBlue.exists && !goalYellow.exists){
+            puts("Blue");
+            targetGoal = &goalBlue;
+        } else if (!goalBlue.exists && goalYellow.exists){
+            puts("Yellow");
+            targetGoal = &goalYellow;
+        } else {
+            puts(goalBlue.length < goalYellow.length ? "BLue" : "Yellow");
+            targetGoal = goalBlue.length < goalYellow.length ? &goalBlue : &goalYellow;
+        }
+
+        // based on Aparaj's maths on the whiteboard
+        float targetGoalAngle = fmodf((RAD_DEG * atan2f(targetGoal->y, targetGoal->x)) + 360.0f, 360.0f);
+        robotX = targetGoal->x - targetGoal->distance * cosf(targetGoalAngle);
+        robotY = targetGoal->y - targetGoal->distance * sinf(targetGoalAngle);
+
+        // ESP_LOGD(TAG, "Robot position: (%f, %f)", robotX, robotY);
+    }
 }

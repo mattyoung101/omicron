@@ -22,8 +22,8 @@ typedef struct {
     int16_t inOtherGoalLength;
     int16_t inOtherGoalDistance;
     // Coordinate System
-    int16_t inX;
-    int16_t inY;
+    float inX;
+    float inY;
     // IMU Input
     float inHeading;
     // Ball Inputs
