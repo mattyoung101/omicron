@@ -4,7 +4,9 @@
 
 static om_timer_t packetTimer = {NULL, false};
 static om_timer_t cooldownTimer = {NULL, false};
+static om_timer_t switchDelayTimer = {NULL, false};
 static bool cooldownOn = false; // true if the cooldown timer is currently activated
+static bool waitingOnSwitch = false; // true if waiting for switch delay timer to go off
 
 static void packet_timer_callback(TimerHandle_t timer){
     static const char *TAG = "BTTimeout";
@@ -28,6 +30,13 @@ static void cooldown_timer_callback(TimerHandle_t timer){
     om_timer_stop(&cooldownTimer);
 }
 
+static void switch_delay_callback(TimerHandle_t timer){
+    static const char *TAG = "switchDelayTimer";
+    ESP_LOGI(TAG, "Switch delay cleared, allowing switch");
+    waitingOnSwitch = false;
+    om_timer_stop(&switchDelayTimer);
+}
+
 void comms_bt_receive_task(void *pvParameter){
     static const char *TAG = "BTReceive";
     uint32_t handle = (uint32_t) pvParameter;
@@ -38,6 +47,7 @@ void comms_bt_receive_task(void *pvParameter){
     // create timers and semaphore if they've not already been created in a previous run of this task
     om_timer_check_create(&packetTimer, "BTTimeout", BT_PACKET_TIMEOUT, pvParameter, packet_timer_callback);
     om_timer_check_create(&cooldownTimer, "CooldownTimer", BT_SWITCH_COOLDOWN, pvParameter, cooldown_timer_callback);
+    om_timer_check_create(&switchDelayTimer, "SwitchDelayTimer", BT_SWITCH_DELAY, pvParameter, switch_delay_callback);
 
     ESP_LOGI(TAG, "Bluetooth receive task init OK, handle: %d", handle);
     esp_task_wdt_add(NULL);
@@ -141,6 +151,15 @@ void comms_bt_receive_task(void *pvParameter){
             // only one robot (robot 0) will be able to broadcast switch statements to save them both from
             // switching at the same time
             if (robotState.outSwitchOk && !cooldownOn && robotState.inRobotId == 0){
+                // if (!waitingOnSwitch && !(switchDelayTimer.running)){
+                //     // TODO need a variable to determine if this is a new switch request
+                //     ESP_LOGI(TAG, "Switch request OK, starting delay timer");
+                //     om_timer_start(&switchDelayTimer);
+                //     waitingOnSwitch = true;
+                // } else if (waitingOnSwitch){
+                //     ESP_LOGD(TAG, "Still waiting on switch...");
+                // }
+
                 ESP_LOGI(TAG, "========== I'm also willing to switch: switching NOW! ==========");
                 esp_spp_write(handle, 6, switchBuffer);
                 FSM_INVERT_STATE;
@@ -160,6 +179,7 @@ void comms_bt_receive_task(void *pvParameter){
             ESP_LOGW(TAG, "Other robot is NO LONGER willing to switch");
             wasSwitchOk = false;
             alreadyPrinted = false;
+            om_timer_stop(&switchDelayTimer);
         }
 
         esp_task_wdt_reset();
