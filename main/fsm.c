@@ -19,15 +19,15 @@ state_machine_t* fsm_new(fsm_state_t *startState){
 void fsm_update(state_machine_t *fsm){
     if (xSemaphoreTake(fsm->updateInProgress, pdMS_TO_TICKS(32))){
         fsm->currentState->update(fsm);
-
-        // too many states may use up too much RAM/make the FSM slower, so clear it if it gets too hectic
-        if (da_count(fsm->stateHistory) >= FSM_MAX_STATES){
-            ESP_LOGE(TAG, "Too many states in state history (have: %d)!", da_count(fsm->stateHistory));
-            fsm_reset(fsm);
-        }
         xSemaphoreGive(fsm->updateInProgress);
     } else {
         ESP_LOGE(TAG, "Failed to unlock updateInProgress, cannot update FSM!");
+    }
+
+    // too many states may use up too much RAM/make the FSM slower, so clear it if it gets too hectic
+    if (da_count(fsm->stateHistory) >= FSM_MAX_STATES){
+        ESP_LOGE(TAG, "Too many states in state history (have: %d)!", da_count(fsm->stateHistory));
+        fsm_reset(fsm);
     }
 }
 
@@ -90,7 +90,8 @@ char *fsm_get_current_state_name(state_machine_t *fsm){
 }
 
 void fsm_reset(state_machine_t *fsm){
-    ESP_LOGD(TAG, "Resetting FSM");
+    ESP_LOGI(TAG, "Resetting FSM");
+    
     if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))
         && xSemaphoreTake(fsm->updateInProgress, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
         // check if resetting would cause errors
@@ -119,6 +120,8 @@ void fsm_reset(state_machine_t *fsm){
         da_add(fsm->stateHistory, stateNothing);
         xSemaphoreGive(fsm->semaphore);
         xSemaphoreGive(fsm->updateInProgress);
+
+        ESP_LOGI(TAG, "FSM reset completed");
     } else {
         ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot reset");
     }
