@@ -28,7 +28,7 @@
 // Debug
 #define ENABLE_DEBUG // if this is defined, debug features are enabled
 #ifdef ENABLE_DEBUG
-    // #define ENABLE_DIAGNOSTICS // if this is defined then performance and RAM diagnostics will be printed
+    #define ENABLE_DIAGNOSTICS // if this is defined then performance and RAM diagnostics will be printed
     // #define ENABLE_VERBOSE_BT // verbose BT logging
 #endif
 

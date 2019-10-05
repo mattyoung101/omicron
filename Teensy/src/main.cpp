@@ -179,6 +179,8 @@ void loop() {
         // playmode.crapLineAvoid(heading);
     #endif
 
+    calculateAcceleration();
+
     // if(playmode.lineAvoiding()){
     //     direction = playmode.getDirection();
     //     speed = playmode.getSpeed();
@@ -190,8 +192,6 @@ void loop() {
     }
 
     // Serial.printf("BEFORE || Speed %d, Direction %d\t", speed, direction);
-
-    calculateAcceleration();
 
     // Update motors
     move.motorCalc(direction, orientation, speed);

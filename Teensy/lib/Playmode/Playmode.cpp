@@ -177,7 +177,6 @@ void Playmode::calculateLineAvoidance(double heading){
     }
     // Serial.println(heading);
     // Serial.printf("lineAngle: %f, ballRight: %d, ballLeft: %d\n",lineAngle,ballAngle+90,ballAngle-90);
-    // Serial.printf("lineAngle: %f, lineSize: %f, trueLineAngle: %f, trueLineSize: %f\n",lineAngle,lineSize,trueLineAngle,trueLineSize);
 }
 
 void Playmode::crapLineAvoid(double heading){
