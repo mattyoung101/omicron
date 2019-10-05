@@ -52,7 +52,7 @@
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
-#define GOAL_WIDTH 50
+#define GOAL_WIDTH 60
 #define ENEMY_GOAL GOAL_YELLOW
 
 // Protobuf
@@ -103,7 +103,7 @@ typedef enum {
 // PID which controls the robot going to intercept the ball
 #define INTERCEPT_KP 1.5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.0001
+#define INTERCEPT_KD 0.0005
 #define INTERCEPT_MAX 80
 #define INTERCEPT_MIN 0
 

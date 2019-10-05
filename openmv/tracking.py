@@ -11,7 +11,7 @@ def constrain(val, min_val, max_val):
 
 thresholds = [(54, 92, -18, 25, 29, 90), # yellow
              (23, 60, -24, 8, -65, -23), # blue
-             (58, 75, 40, 84, 10, 39)] # orange
+             (60, 66, 40, 91, -4, 57)] # orange
 
 # Robot A
 # Yellow (53, 66, 1, 25, 3, 42)
@@ -59,7 +59,7 @@ sensor.set_auto_exposure(False, exposure_us = int(2 * curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-5.886325, -6.02073, 0.5258464)))
+rgb_gain_db=(-5.753914, -6.02073, 0.06744033))
 
 # Standard
 sensor.set_brightness(-1)
