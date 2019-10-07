@@ -19,7 +19,7 @@
 #define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before another switch is allowed
-#define BT_SWITCH_DELAY 1500 // ms, wait this amount of time before a switch is OK before actually switching
+#define BT_SWITCH_DELAY 250 // ms, wait this amount of time before a switch is OK before actually switching
 #define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
 #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_DYNAMIC // the conflict resolution mode
@@ -30,7 +30,7 @@
 #define ENABLE_DEBUG // if this is defined, debug features are enabled
 #ifdef ENABLE_DEBUG
     // #define ENABLE_DIAGNOSTICS // if this is defined then performance and RAM diagnostics will be printed
-    // #define ENABLE_VERBOSE_BT // verbose BT logging
+    #define ENABLE_VERBOSE_BT // verbose BT logging
 #endif
 
 // Acceleration

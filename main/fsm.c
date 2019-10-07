@@ -51,7 +51,7 @@ void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
     if (fsm->currentState == newState) return;
     char *currentName = fsm_get_current_state_name(fsm);
     
-    ESP_LOGI(TAG, "SWITCHING states from %s to %s", currentName, newState->name);
+    ESP_LOGD(TAG, "SWITCHING states from %s to %s", currentName, newState->name);
     fsm_internal_change_state(fsm, newState, true);
     free(currentName);
     currentName = NULL;
@@ -65,7 +65,7 @@ void fsm_revert_state(state_machine_t *fsm){
     fsm_state_t *previousState = da_pop(fsm->stateHistory);
     char *currentName = fsm_get_current_state_name(fsm);
 
-    ESP_LOGI(TAG, "REVERTING from state %s to %s", currentName, previousState->name);
+    ESP_LOGD(TAG, "REVERTING from state %s to %s", currentName, previousState->name);
     fsm_internal_change_state(fsm, previousState, false);
     free(currentName);
 }

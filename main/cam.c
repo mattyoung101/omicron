@@ -116,13 +116,13 @@ void cam_calc(void){
 
         // select closest goal to localise on
         if (goalBlue.exists && !goalYellow.exists){
-            puts("Blue");
+            // puts("Blue");
             targetGoal = &goalBlue;
         } else if (!goalBlue.exists && goalYellow.exists){
-            puts("Yellow");
+            // puts("Yellow");
             targetGoal = &goalYellow;
         } else {
-            puts(goalBlue.length < goalYellow.length ? "BLue" : "Yellow");
+            // puts(goalBlue.length < goalYellow.length ? "BLue" : "Yellow");
             targetGoal = goalBlue.length < goalYellow.length ? &goalBlue : &goalYellow;
         }
 
