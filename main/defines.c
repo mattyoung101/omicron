@@ -52,8 +52,8 @@ void defines_init(uint8_t robotId){
         IN_FRONT_MAX_ANGLE = 355;
     } else {
         ROBOT_MODE = MODE_DEFEND;
-        CAM_OFFSET_X = 120;
-        CAM_OFFSET_Y = 120;
+        CAM_OFFSET_X = 115;
+        CAM_OFFSET_Y = 115;
         DEFEND_DISTANCE = 85; // 24
         SURGE_DISTANCE = 110; // 35
         SURGE_STRENGTH = 60; 
