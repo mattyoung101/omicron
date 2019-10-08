@@ -161,9 +161,9 @@ void orbit(robot_state_t *robotState){
     if(robotState->inRobotId == 0){
         // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallStrength * 1.45f : robotState->inBallStrength; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
         
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.2 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.1 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 3.8 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -171,11 +171,11 @@ void orbit(robot_state_t *robotState){
         robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
         // printf("tempStrength: %f\n", tempStrength);
     } else {
-        // float tempStrength = lerp(fabsf((tempAngle) - 90.0f), 1.5, 1) * robotState->inBallStrength; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
+        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallStrength * 1.45f : robotState->inBallStrength; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
         
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.6 * powf(E, 4 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.1 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.3 * strengthFactor * powf(E, 5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 3.8 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -338,7 +338,7 @@ void print_goal_data(){
 
 void print_position_data(robot_state_t *robotState){
     static const char *TAG = "PositionDebug";
-    ESP_LOGD(TAG, "Xpos: %d, Ypos: %d, Heading: %f", robotState->inX, robotState->inY, robotState->inHeading);
+    ESP_LOGD(TAG, "Xpos: %f, Ypos: %f, Heading: %f", robotState->inX, robotState->inY, robotState->inHeading);
 }
 
 void print_motion_data(robot_state_t *robotState){
@@ -413,7 +413,14 @@ s8 bno055_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
     esp_err_t ret = i2c_master_cmd_begin(BNO_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     i2c_cmd_link_delete(cmd);
 
-    I2C_ERR_CHECK(ret);
+    if (ret != ESP_OK){
+        ESP_LOGE(TAG, "I2C failure in bno55_read: %s. reg_addr: 0x%X, cnt: %d. reg_data follows:", 
+                esp_err_to_name(ret), reg_addr, cnt);
+        ESP_LOG_BUFFER_HEX_LEVEL(TAG, reg_data, cnt, ESP_LOG_ERROR);
+        i2c_reset_tx_fifo(I2C_NUM_1);
+        i2c_reset_rx_fifo(I2C_NUM_1);
+        return ret;
+    }
     return 0;
 }
 
@@ -428,10 +435,17 @@ s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
     ESP_ERROR_CHECK(i2c_master_write(cmd, reg_data, cnt, true));
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
 
-    esp_err_t err = i2c_master_cmd_begin(BNO_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    esp_err_t ret = i2c_master_cmd_begin(BNO_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     i2c_cmd_link_delete(cmd);
 
-    I2C_ERR_CHECK(err);
+    if (ret != ESP_OK){
+        ESP_LOGE(TAG, "I2C failure in bno055_write: %s. reg_addr: 0x%X, cnt: %d. reg_data follows:", 
+                esp_err_to_name(ret), reg_addr, cnt);
+        ESP_LOG_BUFFER_HEX_LEVEL(TAG, reg_data, cnt, ESP_LOG_ERROR);
+        i2c_reset_tx_fifo(I2C_NUM_1);
+        i2c_reset_rx_fifo(I2C_NUM_1);
+        return ret;
+    }
     return 0;
 }
 
@@ -440,20 +454,25 @@ void bno055_delay_ms(u32 msec){
     vTaskDelay(pdMS_TO_TICKS(msec));
 }
 
-// Source: http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
-// Modified to only work use heading
-// TODO may need the normalised version
-float quat_to_heading(float w, float x, float y, float z){
-    float test = x*y + z*w;
-	if (test > 0.499) {
-        // singularity at north pole
-		return fmodf(2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
-	}
-	if (test < -0.499) {
-        // singularity at south pole
-		return fmodf(-2 * atan2f(x, w) * RAD_DEG + 360.0f, 360.0f);
-	}
-    float sqy = y*y;
-    float sqz = z*z;
-    return fmodf(atan2f(2*y*w-2*x*z , 1 - 2*sqy - 2*sqz) * RAD_DEG + 360.0f, 360.0f);
+static hmm_vec2 current = {0};
+hmm_vec2 calc_acceleration(float speed, float direction){
+    // 1. Calculate target vector
+    // Direction is currently an angle from north but needs to be an angle from the X axis
+    float newDir = fmodf(direction - 450.0f, 360.0f) * -1;
+    // Create polar vector with direction and speed
+    hmm_vec2 target = HMM_Vec2(speed / 100.0f, newDir);
+    target = vec2_polar_to_cartesian(target);
+
+    // 2. Calculate output vector
+    // (current * (1 - MAX_ACCELERATION)) + (target * MAX_ACCELERATION);
+    hmm_vec2 output = HMM_AddVec2(HMM_MultiplyVec2f(current, 1.0f - MAX_ACCELERATION), 
+                                    HMM_MultiplyVec2f(target, MAX_ACCELERATION));
+
+    current = output;
+    
+    // 3. Convert back to polar
+    hmm_vec2 outPolar = vec2_cartesian_to_polar(output);
+    outPolar.X = constrain(outPolar.X * 100.0f, 0.0f, 100.0f); // scale back to 0-100 speed
+    outPolar.Y = fmodf(outPolar.Y * -1 + 450.0f, 360.0f);
+    return outPolar;
 }

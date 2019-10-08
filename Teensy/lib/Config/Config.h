@@ -17,6 +17,7 @@
 // --- Acceleration Settings --- //
 #define ACCEL_TIME_STEP 1000
 #define ACCEL_PROGRESS 1
+#define MAX_ACCELERATION 0.4
 
 // --- Orbit --- //
 #define BALL_FAR_STRENGTH 100
@@ -75,6 +76,7 @@
 #define LS_NUM 36
 #define DEBUG_DATA false
 #define DEBUG_RAW false
+#define DEBUG_FILLED false
 
 #define LS_CALIBRATION_COUNT 10
 #define LS_CALIBRATION_BUFFER 200

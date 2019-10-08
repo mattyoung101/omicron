@@ -40,7 +40,7 @@ sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
 sensor.set_framesize(sensor.QVGA) #Resolution, QVGA = 42FPS,QQVGA = 85FPS
 
-sensor.skip_frames(time=100)
+sensor.skip_frames(time=500)
 
 sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
@@ -55,18 +55,18 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = 15000)
+sensor.set_auto_exposure(False, exposure_us = int(2 * curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-5.623446, -6.02073, -0.7813516)))
+rgb_gain_db=(-5.753914, -6.02073, 0.06744033))
 
 # Standard
-sensor.set_brightness(0)
+sensor.set_brightness(-1)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 
-sensor.skip_frames(time=100)
+sensor.skip_frames(time=500)
 
 # Blink LEDs
 pyb.LED(1).off()
@@ -107,14 +107,14 @@ while True:
     begin = utime.time()
     clock.tick()
     img = sensor.snapshot()
-    blobs = img.find_blobs(thresholds, x_stride=3, y_stride=3, pixels_threshold=15,
+    blobs = img.find_blobs(thresholds, x_stride=5, y_stride=5, pixels_threshold=15,
             area_threshold=15, merge=False, margin=2)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)
 
     print(thresholds[-1])
-    orangeBlobs = img.find_blobs([thresholds[-1]], x_stride=3, y_stride=3, pixels_threshold=15,
-                    area_threshold=15, merge=True, margin=2)
+    orangeBlobs = img.find_blobs([thresholds[-1]], x_stride=2, y_stride=2, pixels_threshold=1,
+                    area_threshold=4, merge=False, margin=2)
     try:
         biggestOrange = sorted(orangeBlobs, key=lambda l: l.area(), reverse=True)[0]
     except Exception:

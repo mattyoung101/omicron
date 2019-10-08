@@ -18,22 +18,25 @@
 typedef struct {
     /** if false: the values of x, y, angle and length are undefined **/
     bool exists;
+    /** X position in camera frame **/
     int16_t x;
+    /** Y position in camera frame **/
     int16_t y;
     float angle;
     /** pixel length, raw from camera */
     float length;
     /** real distance (cm) */
     float distance;
-} cam_goal; // TODO rename to cam_object_t
+} cam_object_t;
 
 extern SemaphoreHandle_t goalDataSem;
+extern SemaphoreHandle_t validCamPacket;
 
-extern cam_goal goalBlue;
-extern cam_goal goalYellow;
-extern cam_goal orangeBall;
-extern int16_t robotX;
-extern int16_t robotY;
+extern cam_object_t goalBlue;
+extern cam_object_t goalYellow;
+extern cam_object_t orangeBall;
+extern float robotX;
+extern float robotY;
 
 /** initialises the camera receive task */
 void cam_init(void);

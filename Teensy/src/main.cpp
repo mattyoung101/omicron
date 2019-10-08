@@ -13,6 +13,7 @@
 #include "Cam.h"
 #include "Playmode.h"
 #include "PID.h"
+#include "Vector.h"
 
 typedef enum {
     MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
@@ -56,9 +57,11 @@ double heading;
 float ballAngle;
 bool ballVisible;
 
-float direction;
-float speed;
+int direction;
+int speed;
 float orientation;
+
+Vector current;
 
 /** decode protobuf over UART from ESP **/
 static void decodeProtobuf(void){
@@ -121,6 +124,17 @@ static void decodeProtobuf(void){
     }
 }
 
+void calculateAcceleration(){
+    Vector target = Vector(speed, direction);
+    Vector output = current * (1 - MAX_ACCELERATION) + target * MAX_ACCELERATION;
+    current = output;
+
+    speed = output.mag;
+    direction = output.arg;
+
+    // Serial.printf("Speed %d, Direction %d", speed, direction);
+}
+
 void setup() {
     // Put other setup stuff here
     Serial.begin(115200);
@@ -135,6 +149,7 @@ void setup() {
     playmode.init();
     move.set();
     pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
@@ -155,21 +170,37 @@ void loop() {
     #if LS_ON
         // Update line data
         ls.read();
-        ls.calculateClusters();
+        ls.fillInSensors();
+        // ls.calculateClusters();
         ls.calculateLine();
 
         playmode.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
         playmode.calculateLineAvoidance(heading);
+        // playmode.crapLineAvoid(heading);
     #endif
+
+    calculateAcceleration();
+
+    // if(playmode.lineAvoiding()){
+    //     direction = playmode.getDirection();
+    //     speed = playmode.getSpeed();
+    // }
 
     if(!playmode.onField){
         direction = playmode.getDirection();
         speed = playmode.getSpeed();
     }
 
+    // Serial.printf("BEFORE || Speed %d, Direction %d\t", speed, direction);
+
     // Update motors
     move.motorCalc(direction, orientation, speed);
     move.go(false);
+    // move.motorTest(255);
+
+    // Serial.printf("AFTER || Speed %d, Direction %d", speed, direction);
+
+    Serial.println();
 
     #if LED_ON
         // Blinky LED stuff :D

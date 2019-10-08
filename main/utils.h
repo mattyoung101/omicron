@@ -74,6 +74,15 @@ extern pid_config_t forwardPID;
 #define FSM_CHANGE_STATE_GENERAL(STATE) do { fsm_change_state(fsm, &stateGeneral ##STATE); return; } while (0);
 /** Revert state in FSM **/
 #define FSM_REVERT do { fsm_revert_state(fsm); return; } while (0);
+/** Inverts the state of the FSM and also clears history, for use in Bluetooth **/
+#define FSM_INVERT_STATE do { \
+    /*fsm_partial_reset(stateMachine);*/ \
+    if (robotState.outIsAttack){ \
+        fsm_change_state(stateMachine, &stateDefenceDefend); \
+    } else { \
+        fsm_change_state(stateMachine, &stateAttackPursue); \
+    } \
+} while (0);
 /** printf with a newline automatically attached on the end **/
 #define printfln(f_, ...) printf((f_ "\n"), __VA_ARGS__)
 
@@ -112,7 +121,7 @@ void orbit(robot_state_t *robotState);
 void position(robot_state_t *robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed);
 /** Quickly moves to a point really quickly **/
 void positionFast(robot_state_t *robotState, float distance, float offset, float goalAngle, int16_t goalLength, bool reversed);
-/** Does line avoid calculations**/
+/** Does line avoid calculations **/
 void update_line(robot_state_t *robotState);
 /** Converts a 2D polar vector to cartesian **/
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec);
@@ -155,4 +164,6 @@ void log_once_reset();
 s8 bno055_read(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
 s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt);
 void bno055_delay_ms(u32 msec);
-float quat_to_heading(float w, float x, float y, float z);
+
+/** Calculates acceleration **/
+hmm_vec2 calc_acceleration(float speed, float direction);

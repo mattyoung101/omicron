@@ -41,6 +41,8 @@ float lerp(float fromValue, float toValue, float progress);
 
 float get_battery_voltage();
 
+bool checkPegs(bool array[], int size);
+
 struct Vector3D {
     double x;
     double y;

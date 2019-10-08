@@ -1,20 +1,18 @@
 #include "cam.h"
 
-// This file implements communication with the OpenMV M7 using a custom protocol over UART
-
 SemaphoreHandle_t goalDataSem = NULL;
-cam_goal goalBlue = {0};
-cam_goal goalYellow = {0};
-cam_goal orangeBall = {0};
-int16_t robotX = 0;
-int16_t robotY = 0;
-static const float k = 92.5f; // distance of goal to centre in cm, measured on the field
+SemaphoreHandle_t validCamPacket = NULL;
+cam_object_t goalBlue = {0};
+cam_object_t goalYellow = {0};
+cam_object_t orangeBall = {0};
+float robotX = 0;
+float robotY = 0;
 
 static void cam_receive_task(void *pvParameter){
     static const char *TAG = "CamReceiveTask";;
     
     uint8_t *buffer = calloc(CAM_BUF_SIZE, sizeof(uint8_t));
-    ESP_LOGI(TAG, "Cam receive task init OK");
+    ESP_LOGI(TAG, "Cam receive task init OK!");
     esp_task_wdt_add(NULL);
 
     while (true){
@@ -25,7 +23,7 @@ static void cam_receive_task(void *pvParameter){
         uart_read_bytes(UART_NUM_2, buffer, CAM_BUF_SIZE, pdMS_TO_TICKS(4096)); 
 
         if (buffer[0] == CAM_BEGIN_BYTE){
-            // ESP_LOGW(TAG, "Found start byte %d", buffer[0]);
+            xSemaphoreGive(validCamPacket);
             if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // first byte is begin byte so skip that
                 goalBlue.exists = buffer[1];
@@ -43,7 +41,7 @@ static void cam_receive_task(void *pvParameter){
                 cam_calc();
                 xSemaphoreGive(goalDataSem);
             } else {
-                ESP_LOGW(TAG, "Unable to acquire semaphore in time!");
+                ESP_LOGW(TAG, "Unable to acquire goalDataSem!");
             }
         } else {
             ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X, expected: 0x%X", buffer[0], CAM_BEGIN_BYTE);
@@ -71,25 +69,22 @@ void cam_init(void){
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, 256, 256, 8, NULL, 0));
 
     goalDataSem = xSemaphoreCreateMutex();
-    xSemaphoreGive(goalDataSem);
+    validCamPacket = xSemaphoreCreateMutex();
+    // the main task will have to wait until a valid cam packet is received
+    xSemaphoreTake(validCamPacket, portMAX_DELAY);
 
     xTaskCreate(cam_receive_task, "CamReceiveTask", 4096, NULL, configMAX_PRIORITIES - 2, NULL);
-    ESP_LOGI(TAG, "Camera init OK");
+    ESP_LOGI(TAG, "Camera init OK!");
 }
 
-/** 
- * Converts from pixel distance to real distance in cm
- * Model: f(x) = 0.3302e^0.1035x
- */
-static inline float cam_pixel_to_cm(float measurement){
-    return 0.3302f * powf(E, 0.1035f * measurement);
+/** Model: f(x) = 0.1937 * e^(0.0709x) */
+static inline float cam_goal_pixel2cm(float measurement){
+    return 0.1937f * powf(E, 0.0709f * measurement);
 }
 
-/** calculates the position vector for a goal */
-static inline hmm_vec2 cam_goal_calc(float angle, float distance){
-    float theta = floatMod(90.0f - angle, 360.0f);
-    float r = distance;
-    return HMM_Vec2(-r * cosfd(theta), k + r * sinfd(theta));
+/** Model: f(x) = 0.0003 * x^2.8206 */
+static inline float cam_ball_pixel2cm(float measurement){
+    return 0.0003f * powf(measurement, 2.8206f);
 }
 
 void cam_calc(void){
@@ -102,47 +97,40 @@ void cam_calc(void){
     orangeBall.angle = floatMod(450.0f - roundf(RAD_DEG * atan2f(orangeBall.y, orangeBall.x)), 360.0f);
     orangeBall.length = sqrtf(sq(orangeBall.x) + sq(orangeBall.y));
 
-    goalYellow.distance = cam_pixel_to_cm(goalYellow.length);
-    goalBlue.distance = cam_pixel_to_cm(goalBlue.length);
-    orangeBall.distance = cam_pixel_to_cm(orangeBall.length);
+    goalYellow.distance = cam_goal_pixel2cm(goalYellow.length);
+    goalBlue.distance = cam_goal_pixel2cm(goalBlue.length);
+    orangeBall.distance = cam_ball_pixel2cm(orangeBall.length);
 
     // ESP_LOGD(TAG, "[yellow] Pixel distance: %f\tActual distance: %f", goalYellow.length, goalYellow.distance);
-    // ESP_LOGD(TAG, "[blue] Pixel distance: %f\tActual distance: %f", goalBlue.length, goalBlue.distance);
+    // ESP_LOGD(TAG, "[ball] Pixel distance: %f\tActual distance: %f", orangeBall.length, orangeBall.distance);
+    // ESP_LOGD(TAG, "[ball] Pixel distance: %f", orangeBall.length);
+    // vTaskDelay(pdMS_TO_TICKS(1000));
+    // return;
 
+    // basic localisation
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;
         robotY = CAM_NO_VALUE;
     } else {
-        hmm_vec2 yellowPos = cam_goal_calc(goalYellow.angle, goalYellow.distance);
-        hmm_vec2 bluePos = cam_goal_calc(goalBlue.angle, goalBlue.distance);
+        cam_object_t *targetGoal = NULL;
 
-        if (goalYellow.exists && !goalBlue.exists){
-            // only yellow goal visible
-            robotX = yellowPos.X;
-            robotY = yellowPos.Y;
-            // ESP_LOGD(TAG, "Only yellow");
-        } else if (goalBlue.exists && !goalYellow.exists){
-            // only blue goal visible
-            robotX = bluePos.X;
-            robotY = bluePos.Y;
-            // ESP_LOGD(TAG, "Only blue");
+        // select closest goal to localise on
+        if (goalBlue.exists && !goalYellow.exists){
+            // puts("Blue");
+            targetGoal = &goalBlue;
+        } else if (!goalBlue.exists && goalYellow.exists){
+            // puts("Yellow");
+            targetGoal = &goalYellow;
         } else {
-            // both goals visible
-            if (goalYellow.distance < goalBlue.distance){
-                // yellow goal is closer, use it
-                robotX = yellowPos.X;
-                robotY = yellowPos.Y;
-                // ESP_LOGD(TAG, "Both, selected yellow");
-            } else {
-                // blue goal is closer, use it
-                robotX = bluePos.X;
-                robotY = bluePos.Y;
-                // ESP_LOGD(TAG, "Both, selected blue");
-            }
+            // puts(goalBlue.length < goalYellow.length ? "BLue" : "Yellow");
+            targetGoal = goalBlue.length < goalYellow.length ? &goalBlue : &goalYellow;
         }
-    }
 
-    // ESP_LOGD(TAG, "Robot position: x: %d, y: %d", robotX, robotY);
-    // puts("=============================");
-    // vTaskDelay(pdMS_TO_TICKS(1000));
+        // based on Aparaj's maths on the whiteboard
+        float targetGoalAngle = fmodf((RAD_DEG * atan2f(targetGoal->y, targetGoal->x)) + 360.0f, 360.0f);
+        robotX = targetGoal->x - targetGoal->distance * cosf(targetGoalAngle);
+        robotY = targetGoal->y - targetGoal->distance * sinf(targetGoalAngle);
+
+        // ESP_LOGD(TAG, "Robot position: (%f, %f)", robotX, robotY);
+    }
 }
