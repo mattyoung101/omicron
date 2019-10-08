@@ -93,6 +93,7 @@ static void master_task(void *pvParameter){
     button_event_t buttonEvent = {0};
     float yawOffset = 0.0f;
     float yawRaw = 0.0f; // yaw before offset
+    uint8_t pbErrors = 0;
 
     print_reset_reason();
     robotStateSem = xSemaphoreCreateMutex();
@@ -133,7 +134,7 @@ static void master_task(void *pvParameter){
     #endif
 
     ESP_LOGI(TAG, "=============== Master software init OK ===============");
-    ESP_LOGD(TAG, "Waiting on valid cam packet...");
+    ESP_LOGI(TAG, "Waiting on valid cam packet...");
     xSemaphoreTake(validCamPacket, portMAX_DELAY);
     ESP_LOGI(TAG, "Running!");
     esp_task_wdt_add(NULL);
@@ -217,7 +218,13 @@ static void master_task(void *pvParameter){
         msg.speed = robotState.outSpeed; // motor speed as 0-100%
 
         if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
-            ESP_LOGE(TAG, "Intra-robot Protobuf encode error: %s", PB_GET_ERROR(&stream));
+            ESP_LOGE(TAG, "Protobuf encode error: %s", PB_GET_ERROR(&stream));
+            if (pbErrors++ > 4){
+                ESP_LOGE(TAG, "Too many Protobuf errors, resetting!");
+                abort();
+            }
+        } else {
+            pbErrors = 0;
         }
         comms_uart_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
 
