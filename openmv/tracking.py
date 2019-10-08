@@ -10,8 +10,8 @@ def constrain(val, min_val, max_val):
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
 thresholds = [(69, 100, -4, 127, 27, 127), # yellow
-             (45, 64, -8, 29, -77, -28), # blue
-             (34, 74, 49, 75, 5, 45)] # orange
+             (47, 61, -17, 34, -62, -32), # blue
+             (60, 75, 50, 76, 24, 71)] # orange
 
 # Robot A
 # Yellow (53, 66, 1, 25, 3, 42)
@@ -46,8 +46,8 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above 2 settings get in...
 sensor.skip_frames(time=100)
-sensor.set_windowing((26, 5, 230, 230)) # Robot A
-#sensor.set_windowing((32, 0, 230, 230)) # Robot B
+#sensor.set_windowing((30, 5, 230, 230)) # Robot A
+sensor.set_windowing((32, 0, 230, 230)) # Robot B
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()

@@ -152,7 +152,7 @@ static void can_kick_callback(TimerHandle_t timer){
 // Surge
 void state_defence_surge_update(state_machine_t *fsm){
     static const char *TAG = "DefendSurgeState";
-    imu_correction(&robotState);
+    goal_correction(&robotState);
     om_timer_check_create(&surgeKickTimer, "SurgeCanKick", SURGE_CAN_KICK_TIMEOUT, (void*) fsm, can_kick_callback);
 
     RS_SEM_LOCK
