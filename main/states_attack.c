@@ -3,15 +3,21 @@
 
 robot_state_t robotState = {0};
 SemaphoreHandle_t robotStateSem = NULL;
+#ifdef HAS_KICKER
 bool canShoot = true;
+#else
+bool canShoot = false;
+#endif
 
 fsm_state_t stateAttackIdle = {&state_nothing_enter, &state_nothing_exit, &state_attack_idle_update, "AttackIdle"};
 fsm_state_t stateAttackPursue = {&state_attack_pursue_enter, &state_nothing_exit, &state_attack_pursue_update, "AttackPursue"};
 fsm_state_t stateAttackOrbit = {&state_nothing_enter, &state_nothing_exit, &state_attack_orbit_update, "AttackOrbit"};
-fsm_state_t stateAttackDribble = {&state_nothing_enter, &state_nothing_exit, &state_attack_dribble_update, "AttackDribble"};
+fsm_state_t stateAttackDribble = {&state_attack_dribble_enter, &state_nothing_exit, &state_attack_dribble_update, "AttackDribble"};
 fsm_state_t stateAttackDoubleDefence = {&state_nothing_enter, &state_nothing_exit, &state_attack_doubledefence_update, "AttackDoubleDefence"};
 
 static om_timer_t idleTimer = {NULL, false};
+static om_timer_t dribbleTimer = {NULL, false};
+static bool canExitDribble = false; // true if allowed to exit dribble (dribble timer has gone off)
 static float accelProgress = 0.0f;
 static float accelBegin = 0.0f;
 
@@ -31,11 +37,18 @@ static void idle_timer_callback(TimerHandle_t timer){
     FSM_CHANGE_STATE(Idle);
 }
 
-static void create_timers_if_needed(state_machine_t *fsm){
-    om_timer_check_create(&idleTimer, "IdleTimer", IDLE_TIMEOUT, (void*) fsm, idle_timer_callback);
+static void dribble_timer_callback(TimerHandle_t timer){
+    static const char *TAG = "DribbleTimerCallback";
+    ESP_LOGI(TAG, "Dribble timer has gone off, free to switch out of dribble if willing");
+    canExitDribble = true;
+    om_timer_stop(&dribbleTimer);
 }
 
-/** checks if any of the timers should be disabled based on current robot data */
+static void create_timers_if_needed(state_machine_t *fsm){
+    om_timer_check_create(&idleTimer, "IdleTimer", IDLE_TIMEOUT, (void*) fsm, idle_timer_callback);
+    om_timer_check_create(&dribbleTimer, "DribbleTimer", DRIBBLE_TIMEOUT, NULL, dribble_timer_callback);
+}
+
 static void timer_check(){
     // if the ball is visible, stop the idle timer
     if (orangeBall.exists){
@@ -147,6 +160,11 @@ void state_attack_orbit_update(state_machine_t *fsm){
 }
 
 // Dribble
+void state_attack_dribble_enter(state_machine_t *fsm){
+    create_timers_if_needed(fsm);
+    canExitDribble = false;
+}
+
 void state_attack_dribble_update(state_machine_t *fsm){
     static const char *TAG = "DribbleState";
     
@@ -156,8 +174,6 @@ void state_attack_dribble_update(state_machine_t *fsm){
     RS_SEM_UNLOCK
     goal_correction(&robotState);
     timer_check();
-
-    // printfln("Strength: %f", rs.inBallStrength);
 
     // Check criteria:
     // Ball not visible, ball not in front, ball too far away, not facing goal, should we kick?
@@ -169,14 +185,19 @@ void state_attack_dribble_update(state_machine_t *fsm){
         om_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallAngle > IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER && rs.inBallAngle < IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER){
-        LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,
-                IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);
-        FSM_REVERT;
-    }
+        LOG_ONCE(TAG, "Ball not in front, WILL REVERT, angle: %f, range: %d-%d", robotState.inBallAngle,
+                IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);       
+        om_timer_start(&dribbleTimer);
 
-    // ESP_LOGI(TAG, "Not shooting, goal angle: %d, goal length: %d, can shoot: %s", robotState.inGoalAngle,
-    // robotState.inGoalLength, canShoot ? "yes" : "no");
-    
+        if (canExitDribble){
+            LOG_ONCE(TAG, "Allowed to exit dribble. Reverting now!");
+            FSM_REVERT;
+        }
+    } else {
+        // all checks passed, stop switch out of dribble timer and say we're locked in dribble again
+        om_timer_stop(&dribbleTimer);
+        canExitDribble = false;
+    }
     // } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER)){
     //     LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,
     //             IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);
@@ -193,7 +214,6 @@ void state_attack_dribble_update(state_machine_t *fsm){
     robotState.outSpeed = lerp(accelBegin, DRIBBLE_SPEED, constrain(accelProgress, 0.0f, 1.0f)); 
     // Yeet towards te goal if visible
     robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle;
-    // robotState.outDirection = rs.inBallAngle;
 
     // Update progress for linear interpolation
     accelProgress += ACCEL_PROG;

@@ -11,6 +11,9 @@
 #define CONF_LOG_LEVEL ESP_LOG_DEBUG
 
 // Bluetooth
+#define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
+#define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
+#define DEFENCE false // whether to start out in defence if BT is disabled (mainly for testing)
 #define ROBOT0_NAME "Omicron_Robot0"
 #define ROBOT1_NAME "Omicron_Robot1"
 #define SPP_NAME "Omicron_SPP"
@@ -23,7 +26,6 @@
 #define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
 #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_DYNAMIC // the conflict resolution mode
-#define DEFENCE false // whether to start out in defence (I think? unclear)
 #define BT_MAX_ERRORS 4 // max errors before dropping connection
 
 // Debug
@@ -206,6 +208,7 @@ extern uint8_t ROBOT_MODE;
 #define KICKER_PIN 33
 #define KICKER_DELAY 10 // ms to wait between solenoid activation and deactivation
 #define SHOOT_TIMEOUT 1000 // ms until we are allowed to kick again
+// #define HAS_KICKER // if defined, the robot has a kicker and will be allowed to enter shoot state
 
 // Buttons
 #define RST_BTN 35
