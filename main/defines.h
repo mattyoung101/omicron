@@ -11,9 +11,9 @@
 #define CONF_LOG_LEVEL ESP_LOG_DEBUG
 
 // Bluetooth
-#define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
+// #define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
 #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
-#define DEFENCE false // whether to start out in defence if BT is disabled (mainly for testing)
+#define DEFENCE true // whether to start out in defence if BT is disabled (mainly for testing)
 #define ROBOT0_NAME "Omicron_Robot0"
 #define ROBOT1_NAME "Omicron_Robot1"
 #define SPP_NAME "Omicron_SPP"
@@ -23,8 +23,7 @@
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before another switch is allowed
 #define BT_SWITCH_DELAY 100 // ms, wait this amount of time before a switch is OK before actually switching
-#define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
-#define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
+// #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_DYNAMIC // the conflict resolution mode
 #define BT_MAX_ERRORS 4 // max errors before dropping connection
 
@@ -55,8 +54,8 @@
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
-#define GOAL_WIDTH 60
-#define ENEMY_GOAL GOAL_BLUE
+#define GOAL_WIDTH 50
+#define ENEMY_GOAL GOAL_YELLOW
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -94,7 +93,7 @@ typedef enum {
 // TODO increase P of forward PID so its faster to get back into goal for example after surging
 #define FORWARD_KP 3
 #define FORWARD_KI 0
-#define FORWARD_KD 0
+#define FORWARD_KD 0.0001
 #define FORWARD_MAX 80
 
 // PID which controls the robot centering on the goal
@@ -104,16 +103,16 @@ typedef enum {
 #define SIDE_MAX 80
 
 // PID which controls the robot going to intercept the ball
-#define INTERCEPT_KP 1.5
+#define INTERCEPT_KP 1
 #define INTERCEPT_KI 0
 #define INTERCEPT_KD 0.0005
 #define INTERCEPT_MAX 80
 #define INTERCEPT_MIN 0
 
 // PID which controls the robot turning its back towards the goal
-#define GOALIE_KP 1.5
+#define GOALIE_KP 0.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.2
+#define GOALIE_KD 0.05
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -129,7 +128,7 @@ typedef enum {
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 0.5
+#define GOAL_KP 0.6
 #define GOAL_KI 0
 #define GOAL_KD 0.05
 #define GOAL_MAX_CORRECTION 100
@@ -178,7 +177,7 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IDLE_DISTANCE 85 // distance to sit away from the goal if no ball is visible
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
-#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
+#define DRIBBLE_SPEED 25 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 1 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
@@ -190,12 +189,12 @@ extern uint8_t SURGE_DISTANCE;
 extern uint8_t SURGE_STRENGTH;
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
-#define DEFEND_MIN_STRENGTH 70
+#define DEFEND_MIN_STRENGTH 60
 #define DEFEND_MAX_ANGLE 120
 #define DEFEND_MIN_ANGLE 250
 #define KICKER_STRENGTH 100 // if ball strength greater than this, kick
-#define SURGEON_ANGLE_MIN 10 // angles to surge between
-#define SURGEON_ANGLE_MAX 350
+#define SURGEON_ANGLE_MIN 20 // angles to surge between
+#define SURGEON_ANGLE_MAX 340
 #define SURGE_CAN_KICK_TIMEOUT 500 // ms to be in surge for before we can kick
 
 // General FSM defines
