@@ -1,6 +1,6 @@
 #include "comms_uart.h"
 
-static const char *TAG = "Comms_UART";
+static const char *TAG = "CommsUART";
 uart_data_t receivedData = {0};
 
 /*
