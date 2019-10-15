@@ -98,6 +98,7 @@ void state_attack_orbit_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackOrbit;
 
 // Dribble state: rushes towards goal and dribbles if we had a dribbler
+void state_attack_dribble_enter(state_machine_t *fsm);
 void state_attack_dribble_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackDribble;
 

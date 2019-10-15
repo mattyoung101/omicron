@@ -72,8 +72,9 @@ void comms_bt_receive_task(void *pvParameter){
         RS_SEM_UNLOCK
 
         #ifdef ENABLE_VERBOSE_BT
-            ESP_LOGD(TAG, "Received packet! Ball angle: %f, Ball strength: %f, State: %s, amIAttack: %s", 
-                    recvMsg.ballAngle, recvMsg.ballStrength, recvMsg.fsmState, amIAttack ? "true" : "false");
+            ESP_LOGD(TAG, "Received packet! Ball angle: %f, Ball strength: %f, State: %s, amIAttack: %s, switch ok: %s", 
+                    recvMsg.ballAngle, recvMsg.ballStrength, recvMsg.fsmState, amIAttack ? "true" : "false",
+                    recvMsg.switchOk ? "true" : "false");
         #endif
 
         // handle a weird bug where the state string is just empty text
@@ -164,7 +165,7 @@ void comms_bt_receive_task(void *pvParameter){
                     xTimerStart(cooldownTimer.timer, portMAX_DELAY);
                     alreadyPrinted = false;
 
-                    om_timer_stop(&switchDelayTimer);
+                    // om_timer_stop(&switchDelayTimer);
                     switchRequestQueued = false;
                 }
             } else {
@@ -173,7 +174,7 @@ void comms_bt_receive_task(void *pvParameter){
                     robotState.outSwitchOk ? "yes" : "no", cooldownOn ? "yes" : "no", robotState.inRobotId);
                 #endif
                 switchRequestQueued = false;
-                om_timer_stop(&switchDelayTimer);
+                // om_timer_stop(&switchDelayTimer);
             }
         } else if (wasSwitchOk){
             // if the other robot is not willing to switch, but was previously willing to switch
@@ -181,7 +182,7 @@ void comms_bt_receive_task(void *pvParameter){
             wasSwitchOk = false;
             alreadyPrinted = false;
             switchRequestQueued = false;
-            om_timer_stop(&switchDelayTimer);
+            // om_timer_stop(&switchDelayTimer);
         }
 
         esp_task_wdt_reset();

@@ -10,7 +10,7 @@ static const char *TAG = "CommsBT";
 TaskHandle_t receiveTaskHandle = NULL;
 TaskHandle_t sendTaskHandle = NULL;
 QueueHandle_t packetQueue = NULL;
-static uint8_t switch_buffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
+static uint8_t switchBuffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 static bool isMaster = false;
 static uint8_t totalErrors = 0;
 static bool firstConnection = true;
@@ -45,11 +45,9 @@ static void bt_gap_restart_disc(void){
 /** decode data and push to packet queue */
 static void bt_pb_decode_and_push(uint16_t size, uint8_t *data, uint32_t handle){
     // check if the buffer is exactly equivalent to the string "SWITCH" in which case switch
-    if (memcmp(data, switch_buffer, size) == 0){
-        ESP_LOGI(TAG, "========== Switch request received: switching NOW! ==========");
-        FSM_INVERT_STATE;
-        return;
-    }
+    // FIXME this is broken
+    // This is the buffer we get:
+    // D (62486) CommsBT: 0x3ffdf9c8   9a 1a 81 00 00 48                                 |.....H|
 
     // otherwise, decode the message as a normal protobuf buffer
     BTProvide msg = BTProvide_init_zero;
@@ -64,12 +62,23 @@ static void bt_pb_decode_and_push(uint16_t size, uint8_t *data, uint32_t handle)
             ESP_LOGE(TAG, "Too many errors in a row, dropping connection");
             esp_spp_disconnect(handle);
         }
+        ESP_LOG_BUFFER_HEXDUMP(TAG, data, size, ESP_LOG_DEBUG);
+
+        if (size == 6){
+            // likely to be a switch request if protobuf decode failed and also it's 6 bytes long (length of "SWITCH")
+            // reason we do this is because memcmp is bugged (not the function but our use of it)
+            ESP_LOGI(TAG, "========== Switch request received: switching NOW! ==========");
+            FSM_INVERT_STATE;
+            return;
+        }
     }
 }
 
 /** starts the logic task */
 static void bt_start_tasks(esp_spp_cb_param_t *param){
-    // change into our default mode if it's the first connection
+    // both robots start out in defence by default, and once the first BT connection occurs, will change into their
+    // actual default modes set in NVS. this is so that in case of an error, we always at least have a defender
+    // even if we risk double defence
     if (firstConnection){
         ESP_LOGI(TAG, "First connection, changing into default mode");
         fsm_change_state(stateMachine, ROBOT_MODE == MODE_ATTACK ? &stateAttackPursue : &stateDefenceDefend);
@@ -80,6 +89,7 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
     RS_SEM_UNLOCK
 
     // delay so that Bluetooth, which runs on core 0, will pick up on the fact that we changed states
+    // TODO can probably remove this now due to much better multi-threading implemented now
     vTaskDelay(pdMS_TO_TICKS(500));
 
     xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 4096, (void*) param->open.handle, 
@@ -88,7 +98,7 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
     xTaskCreate(comms_bt_send_task, "BTSendTask", 4096, (void*) param->open.handle, 
             configMAX_PRIORITIES - 5, &sendTaskHandle);
 
-    // if we're here we can assume that the connection was successful
+    // if we're here we can assume that the connection was successful, maybe check task return codes as well?
     btErrors = 0;
 }
 

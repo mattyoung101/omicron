@@ -36,7 +36,7 @@ void om_timer_check_create(om_timer_t *timer, char *timerName, int32_t timeout, 
 static void shoot_timer_callback(TimerHandle_t timer){
     static const char *TAG = "ShootTimerCallback";
     ESP_LOGW(TAG, "Shoot timer gone off, enabling shooting again");
-
+    
     canShoot = true;
     om_timer_stop(&shootTimer);
 }

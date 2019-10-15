@@ -9,16 +9,12 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(54, 92, -18, 25, 29, 90), # yellow
-             (23, 60, -24, 8, -65, -23), # blue
-             (60, 66, 40, 91, -4, 57)] # orange
+thresholds = [(70, 83, 1, 33, -5, 43), # yellow
+             (47, 64, -3, 31, -79, -54), # blue
+             (52, 75, 59, 83, -11, 46)] # orange
 
-# Robot A
-# Yellow (53, 66, 1, 25, 3, 42)
-
-# Robot B
-# Yellow (53, 73, -5, 35, 15, 41)
-# Blue (31, 39, -8, 21, -59, -22)
+# Practice: (53, 67, -128, 12, -128, -28)
+# Actual: (19, 55, -19, 27, -69, -41)
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
@@ -45,9 +41,9 @@ sensor.skip_frames(time=500)
 sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above 2 settings get in...
-sensor.skip_frames(time=500)
-#sensor.set_windowing((24, 0, 240, 240)) # Robot A
-sensor.set_windowing((28, 0, 230, 230)) # Robot B
+sensor.skip_frames(time=100)
+#sensor.set_windowing((30, 5, 230, 230)) # Robot A
+sensor.set_windowing((32, 0, 230, 230)) # Robot B
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -55,14 +51,14 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = int(2 * curr_exposure))
+sensor.set_auto_exposure(False, exposure_us = 20000)
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=(-5.753914, -6.02073, 0.06744033))
+rgb_gain_db=(-5.368132, -6.02073, 2.766099))
 
 # Standard
-sensor.set_brightness(-1)
+sensor.set_brightness(0)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 
@@ -107,8 +103,8 @@ while True:
     begin = utime.time()
     clock.tick()
     img = sensor.snapshot()
-    blobs = img.find_blobs(thresholds, x_stride=5, y_stride=5, pixels_threshold=15,
-            area_threshold=15, merge=False, margin=2)
+    blobs = img.find_blobs(thresholds, x_stride=5, y_stride=5, pixels_threshold=40,
+            area_threshold=15, merge=True, margin=2)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)
 
