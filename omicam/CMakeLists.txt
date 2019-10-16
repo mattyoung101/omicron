@@ -5,7 +5,10 @@ set(CMAKE_C_STANDARD 11)
 
 include_directories(lib)
 include_directories(/opt/vc/include)
-SET(CMAKE_CXX_FLAGS -pthread)
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -pthread")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Og")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_executable(omicam src/main.c
         lib/log.c
@@ -15,7 +18,7 @@ add_executable(omicam src/main.c
         lib/dictionary.c
         lib/dictionary.h
         lib/iniparser.c
-        lib/iniparser.h src/utils.h)
+        lib/iniparser.h src/utils.h src/gpu_manager.c src/gpu_manager.h)
 
 # FIXME: there's gotta be a better way to import the VideoCore SDK than this horseshit, but nothinge lse works
 # as long as this dumbassery works I'm not going to change it since I hate configuring shitty build tools
