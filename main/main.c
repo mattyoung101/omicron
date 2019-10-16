@@ -136,7 +136,7 @@ static void master_task(void *pvParameter){
     ESP_LOGI(TAG, "=============== Master software init OK ===============");
     ESP_LOGI(TAG, "Waiting on valid cam packet...");
     xSemaphoreTake(validCamPacket, portMAX_DELAY);
-    ESP_LOGI(TAG, "Running!");
+    ESP_LOGI(TAG, "Cam packet received. Running!");
     esp_task_wdt_add(NULL);
 
     while (true){
