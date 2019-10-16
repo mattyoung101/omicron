@@ -24,16 +24,14 @@ static const EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2,
 
 static EGLint pbufferAttribs[] = {
         EGL_WIDTH,
-        0,
+        0, // will be set dynamically
         EGL_HEIGHT,
-        0,
+        0, // will bet set dynamically
         EGL_NONE,
 };
 
-static const char *eglGetErrorStr()
-{
-    switch (eglGetError())
-    {
+static const char *eglGetErrorStr(){
+    switch (eglGetError()){
         case EGL_SUCCESS:
             return "The last function succeeded without error.";
         case EGL_NOT_INITIALIZED:
@@ -87,41 +85,43 @@ static EGLDisplay display;
 static EGLSurface surface;
 static EGLContext context;
 
-void gpu_manager_init(uint16_t width, uint16_t height){
+void gpu_manager_init(uint16_t width, uint16_t height) {
     pbufferAttribs[1] = width;
     pbufferAttribs[3] = height;
     int major, minor;
     EGLint numConfigs;
     EGLConfig config;
 
+    // initialise and configure display
     display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (display == EGL_NO_DISPLAY){
+    if (display == EGL_NO_DISPLAY) {
         log_error("Cannot get EGL display: %s", eglGetErrorStr());
         return;
     }
-    if (!eglInitialize(display, &major, &minor)){
+    if (!eglInitialize(display, &major, &minor)) {
         log_error("Failed to initialise EGL: %s", eglGetErrorStr());
         eglTerminate(display);
         return;
     }
-    if (!eglChooseConfig(display, configAttribs, &config, 1, &numConfigs)){
+    if (!eglChooseConfig(display, configAttribs, &config, 1, &numConfigs)) {
         log_error("Failed to choose EGL config: %s", eglGetErrorStr());
         eglTerminate(display);
         return;
     }
 
+    // create and bind surface
     surface = eglCreatePbufferSurface(display, config, pbufferAttribs);
-    if (surface == EGL_NO_SURFACE){
+    if (surface == EGL_NO_SURFACE) {
         log_error("Failed to create EGL pbuffer surface: %s", eglGetErrorStr());
         eglTerminate(display);
         return;
     }
+    eglBindAPI(EGL_OPENGL_API);
+    log_debug("Successfully created and bound EGL surface");
 
-    log_trace("Successfully created EGL surface.");
-    eglBindAPI(EGL_OPENGL_ES_BIT);
-
+    // create context
     context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
-    if (context == EGL_NO_CONTEXT){
+    if (context == EGL_NO_CONTEXT) {
         eglDestroySurface(display, surface);
         eglTerminate(display);
         return;
@@ -131,8 +131,14 @@ void gpu_manager_init(uint16_t width, uint16_t height){
     log_info("Successfully created and initialised EGL context.");
 }
 
-void gpu_manager_shutdown(void){
-    // TODO check if these were created without error
+void gpu_manager_post(uint8_t *frameBuffer){
+    // turn framebuffer into opengl texture
+    // upload to GPU and invoke fragment shader
+    // download resulting texture from GPU back into a new buffer (will need to return this) with glReadPixels
+}
+
+void gpu_manager_dispose(void){
+    log_debug("Disposing GPU manager");
     eglDestroyContext(display, context);
     eglDestroySurface(display, surface);
     eglTerminate(display);

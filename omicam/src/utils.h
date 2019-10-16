@@ -10,5 +10,11 @@
 #define INI_LOAD_BOOL(key) if (iniparser_find_entry(config, "VideoSettings:" #key)) { \
     log_trace("Have bool key: " #key); \
     settings.camera.key = iniparser_getboolean(config, "VideoSettings:" #key, false); \
-}
+} \
+
+/** locks a pthread semaphore, then runs the provided code and unlocks it again **/
+#define PTHREAD_SEM_RUN(sem, code) if (pthread_mutex_trylock(sem)){ \
+    code; \
+    pthread_mutex_unlock(sem); \
+} \
 

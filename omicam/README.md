@@ -4,6 +4,10 @@ This is the custom vision system for our team. It runs on a Raspberry Pi Compute
 on how the vision system works, please see docs/DESCRIPTION.md.
 
 ## Building and running
+### Compiler
+Currently, builds are cross compiled on a Linux computer and uploaded to the Pi. You can get a Raspi cross compiler
+[here](https://github.com/abhiTronix/raspberry-pi-cross-compilers/). We use `cross-gcc-9.1.0-pi_3+`.
+
 ### Installing dependencies
 We ship a pre-compiled version of omxcam as `libomxcam.so` in the lib directory because compiling it is kind of annoying
 and pointless since it hasn't been updated in a very long time.
@@ -16,8 +20,9 @@ by following [this guide](https://github.com/mozilla-iot/wiki/wiki/Loop-mounting
 We don't currently distribute this with the project because it's easy enough to install and would bloat the repo with a 
 bunch of binaries and headers.
 
-Currently, builds are cross compiled on a Linux computer and uploaded to the Pi. You can get a Raspi cross compiler
-[here](https://github.com/abhiTronix/raspberry-pi-cross-compilers/). We use `cross-gcc-9.1.0-pi_3+`.
+**You'll also need to install the following libraries:**
+- [NLopt](https://NLopt.readthedocs.io/en/latest/)
+- [libjpeg-turbo](https://libjpeg-turbo.org/)
 
 ### Importing the project
 Development is done in CLion. You'll need to import the project, and then create a new custom Raspberry Pi toolchain
