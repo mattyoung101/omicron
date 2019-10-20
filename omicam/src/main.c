@@ -10,8 +10,9 @@
 #include <stdbool.h>
 #include <signal.h>
 #include <time.h>
-#include <sys/time.h>
 #include <pthread.h>
+#include <zconf.h>
+#include "defines.h"
 
 #define OMICAM_VERSION "0.1"
 
@@ -20,9 +21,12 @@ static uint32_t frameBytesReceived = 0; // bytes received contributing to this f
 static size_t frameBufferSize = 0; // size of the frame buffer in bytes
 static uint32_t totalFrames = 0; // total frames processed since last timer call
 static uint32_t totalBuffers = 0; // total buffers received since last timer call
+static FILE *logFile = NULL;
 
+#ifdef ENABLE_DIAGNOSTICS
 static pthread_mutex_t timerMutex;
 static pthread_t fpsTimerThread;
+#endif
 
 /** free resources allocated by the app **/
 static void disposeResources(){
@@ -30,8 +34,12 @@ static void disposeResources(){
     free(frameBuffer);
     frameBuffer = NULL;
     gpu_manager_dispose();
+#ifdef ENABLE_DIAGNOSTICS
     pthread_cancel(fpsTimerThread);
     pthread_mutex_destroy(&timerMutex);
+#endif
+    log_trace("Goodbye!");
+    fclose(logFile);
 }
 
 /** cleanly shutdown in case of sigint (CTRL C) and sigterm **/
@@ -42,6 +50,7 @@ static void signal_handler(int sig){
     exit(EXIT_SUCCESS);
 }
 
+#ifdef ENABLE_DIAGNOSTICS
 /** samples and prints FPS every one second - not the best method, but it works **/
 static void *fps_timer(void *arg){
     log_trace("FPS timer thread started");
@@ -56,6 +65,7 @@ static void *fps_timer(void *arg){
         sleep(1);
     }
 }
+#endif
 
 /** called when omxcam receives a video buffer **/
 static void on_video_data(omxcam_buffer_t buf){
@@ -70,10 +80,9 @@ static void on_video_data(omxcam_buffer_t buf){
     for (uint32_t i = 0; i < buf.length; i++){
         frameBuffer[frameBytesReceived++] = buf.data[i];
 
+        // check if we received a new frame - if so: post it to GPU, then clear buffers and log FPS
         if (frameBytesReceived >= frameBufferSize){
-            // we must have received a new frame, so process it then clear out the framebuffer and start again
             gpu_manager_post(frameBuffer);
-
             memset(frameBuffer, 0, frameBufferSize);
             frameBytesReceived = 0;
             PTHREAD_SEM_RUN(&timerMutex, totalFrames++)
@@ -83,25 +92,32 @@ static void on_video_data(omxcam_buffer_t buf){
 }
 
 int main() {
+#ifdef VERBOSE_LOGGING
     log_set_level(LOG_TRACE);
+#else
+    log_set_level(LOG_INFO);
+#endif
+    logFile = fopen("/home/pi/omicam.log", "w");
+    if (logFile != NULL){
+        log_set_fp(logFile);
+    }
     log_info("Omicam v%s - Copyright (c) 2019 Team Omicron. All rights reserved.", OMICAM_VERSION);
 
     log_trace("Loading and parsing config...");
     omxcam_video_settings_t settings;
     settings.on_data = on_video_data;
     settings.format = OMXCAM_FORMAT_RGB888;
-    settings.h264.inline_motion_vectors = OMXCAM_TRUE; // unsure if required but used in examples
+    settings.h264.inline_motion_vectors = OMXCAM_TRUE;
     // we'll use auto exposure for now but we may want to use sports mode perhaps? OMXCAM_EXPOSURE_SPORTS
     // same thing goes with whitebal, auto should be fine for now
     omxcam_video_init(&settings);
 
     // apply custom config from ini file
-    dictionary *config = iniparser_load("omicam.ini");
+    dictionary *config = iniparser_load("../omicam.ini");
     if (config == NULL){
-        log_error("Failed to open config file (error: %d)", errno);
+        log_error("Failed to open config file (error: %s)", strerror(errno));
         return EXIT_FAILURE;
     }
-    iniparser_dump(config, stdout);
     INI_LOAD_INT(framerate)
     INI_LOAD_INT(width)
     INI_LOAD_INT(height)
@@ -117,17 +133,20 @@ int main() {
     // width of frame * height of frame * colour components
     frameBufferSize = settings.camera.width * settings.camera.height * 3;
     frameBuffer = calloc(frameBufferSize, sizeof(uint8_t));
-    log_debug("Allocated %d KB to framebuffer (size: %dx%d)", frameBufferSize / 1024, settings.camera.width,
+    log_debug("Allocated %d KB to framebuffer (size: %dx%d), bit depth: 3", frameBufferSize / 1024, settings.camera.width,
             settings.camera.height);
     gpu_manager_init(settings.camera.width, settings.camera.height);
 
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
+#ifdef ENABLE_DIAGNOSTICS
     pthread_mutex_init(&timerMutex, NULL);
     pthread_create(&fpsTimerThread, NULL, fps_timer, NULL);
+#endif
 
-    log_info("Starting omxcam capture...");
+    log_trace("Starting omxcam capture...");
     omxcam_video_start(&settings, OMXCAM_CAPTURE_FOREVER);
+    log_warn("Omxcam capture thread terminated unexpectedly!");
 
     // clean up (shouldn't really reach here, just in case the signal handler doesn't go off)
     disposeResources();

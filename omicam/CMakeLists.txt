@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.13)
 project(omicam C)
 
 # set variables
@@ -29,7 +29,7 @@ add_executable(omicam src/main.c
         lib/dictionary.c
         lib/dictionary.h
         lib/iniparser.c
-        lib/iniparser.h src/utils.h src/gpu_manager.c src/gpu_manager.h src/localisation.c src/localisation.h src/defines.h)
+        lib/iniparser.h src/utils.h src/gpu_manager.c src/gpu_manager.h src/localisation.c src/localisation.h src/defines.h src/blob_detection.c src/blob_detection.h)
 
 # link GPU libraries
 # FIXME: there's gotta be a better way to import the VideoCore SDK than this horseshit, but nothinge lse works

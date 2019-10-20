@@ -92,6 +92,8 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     EGLint numConfigs;
     EGLConfig config;
 
+    log_debug("Initialising VideoCore GPU...");
+
     // initialise and configure display
     display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
@@ -108,6 +110,7 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
         eglTerminate(display);
         return;
     }
+    log_debug("Successfully initialised EGL");
 
     // create and bind surface
     surface = eglCreatePbufferSurface(display, config, pbufferAttribs);
@@ -128,7 +131,7 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     }
 
     eglMakeCurrent(display, surface, surface, context);
-    log_info("Successfully created and initialised EGL context.");
+    log_info("GPU initialised successfully");
 }
 
 void gpu_manager_post(uint8_t *frameBuffer){
