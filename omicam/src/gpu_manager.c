@@ -1,7 +1,7 @@
 #include "gpu_manager.h"
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
-#include <log.h>
+#include <log/log.h>
 
 // Source for EGL stuff: https://github.com/matusnovak/rpi-opengl-without-x/blob/master/triangle.c (Public Domain)
 

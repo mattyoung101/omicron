@@ -4,31 +4,42 @@ This is the custom vision system for our team. It runs on a Raspberry Pi Compute
 on how the vision system works, please see docs/DESCRIPTION.md.
 
 ## Building and running
-### Compiler
-Currently, builds are cross compiled on a Linux computer and uploaded to the Pi. You can get a Raspi cross compiler
-[here](https://github.com/abhiTronix/raspberry-pi-cross-compilers/). We use `cross-gcc-9.1.0-pi_3+`.
+JetBrains CLion is the only supported IDE for working with Omicam. 
+You have two options to work with the code: remote mode and cross compilation. Remote mode is currently the easiest way
+to work with the project. If you don't have a Pi on you then you could try cross compilation, but this isn't supported.
 
-### Installing dependencies
-We ship a pre-compiled version of omxcam as `libomxcam.so` in the lib directory because compiling it is kind of annoying
-and pointless since it hasn't been updated in a very long time.
-You can get omxcam's source here [here](https://github.com/gagle/raspberrypi-omxcam) if you need to modify it (just replace
-libomxcam.so with your own version).
+### Remote mode
+Firstly, you'll need a board compatible with the Raspi Compute Module 3+ and Pi Cam v2.1. I use a Raspi 3 Model B and
+Pi Cam v1.3.
+
+Flash your Pi's SD card with Raspbian Lite, boot and update it, then install the following packages:
+- CMake: `sudo apt install cmake`
+- [NLopt](https://NLopt.readthedocs.io/en/latest/): follow the instructions linked
+- libjpeg-turbo: `sudo apt install libturbojpeg0 libturbojpeg0-dev`
+
+Import the project into CLion on your host computer and follow the instructions 
+[provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to setup a remote toolchain
+and run configuration. The remote settings are synced in Git, but you may need to modify the IP address to that of your
+local Pi. For some reason it doesn't seem that `raspberrypi.local` works.
+
+To run, just use SHIFT+F10 like you would normally. CLion will handle the rest for you. If you install a new library on
+the host, you will need run Tools->Resync with remote hosts.
+
+### Cross-compilation
+**Warning: this is mostly untested and no longer supported.**
+
+You can get a Raspi cross compiler
+[here](https://github.com/abhiTronix/raspberry-pi-cross-compilers/). We use `cross-gcc-9.1.0-pi_3+`.
 
 You'll also need to acquire the `opt/vc` VideoCore SDK that comes with the Pi and put it in your system at the same path.
 To get this folder, download and mount the September 2019 Raspbian image (may work with other versions, untested)
 by following [this guide](https://github.com/mozilla-iot/wiki/wiki/Loop-mounting-a-Raspberry-Pi-image-file-under-Linux).
-We don't currently distribute this with the project because it's easy enough to install and would bloat the repo with a 
-bunch of binaries and headers.
 
-**You'll also need to install the following libraries:**
-- [NLopt](https://NLopt.readthedocs.io/en/latest/)
-- [libjpeg-turbo](https://libjpeg-turbo.org/)
+Install NLopt and libjpeg-turbo on your host as you'd do on the Pi under remote mode.
 
-### Importing the project
-Development is done in CLion. You'll need to import the project, and then create a new custom Raspberry Pi toolchain
-using `gcc` and `g++` that come with the cross compiler toolchain.
+Import the project into CLion and then create a new Raspberry Pi toolchainusing `gcc` and `g++` that come with the cross 
+compiler toolchain.
 
-### Running
 To run, you'll need to upload the generated binary from `cmake-build-[debug/release]-raspberrypi` to your Pi and execute.
 
 ## License

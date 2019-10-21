@@ -23,3 +23,6 @@
     code; \
     pthread_mutex_unlock(sem); \
 }
+
+/** gets the timestamp in milliseconds **/
+double utils_get_millis();
