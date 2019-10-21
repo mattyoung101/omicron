@@ -15,6 +15,8 @@
 #include "interface/mmal/util/mmal_connection.h"
 #include "defines.h"
 #include "gpu_manager.h"
+#include "utils.h"
+#include <math.h>
 
 // Much of this code is based on RaspiVidYUV:
 // https://github.com/raspberrypi/userland/blob/master/host_applications/linux/apps/raspicam/RaspiVidYUV.c
@@ -54,6 +56,9 @@ static MMAL_POOL_T *cameraPool; /// Pointer to the pool of buffers used by camer
 static int framerate = 0;
 static uint8_t *frameBuffer = NULL;
 static MMAL_PORT_T *cameraVideoPort = NULL;
+#if ENABLE_DIAGNOSTICS
+static double lastFrameTime = 0.0;
+#endif
 
 static bool create_camera_component(void){
     MMAL_COMPONENT_T *camera = 0;
@@ -209,32 +214,19 @@ static bool create_camera_component(void){
         }
 }
 
-static void cam_set_settings(dictionary *config){
-    // set default settings
-    raspicommonsettings_set_defaults(&commonSettings);
-
-    commonSettings.width = iniparser_getint(config, "VideoSettings:width", 640);
-    commonSettings.height = iniparser_getint(config, "VideoSettings:height", 480);
-    commonSettings.verbose = true;
-    framerate = iniparser_getint(config, "VideoSettings:framerate", 60);
-
-    raspicamcontrol_set_defaults(&cameraParameters);
-
-    size_t frameBufferSize = commonSettings.width * commonSettings.height * 3;
-    frameBuffer = calloc(frameBufferSize, sizeof(uint8_t));
-    log_debug("Allocated %d KB to framebuffer (size: %dx%d), bit depth: 3", frameBufferSize / 1024, commonSettings.width,
-            commonSettings.height);
-    gpu_manager_init(commonSettings.width, commonSettings.height);
-}
-
 static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
-    printf("camera buffer callback with size: %d\n", buffer->length);
+    // each time this is called we have a full frame, so dump it in the framebuffer
+    // we may also be able to turn this into an OpenGL texture without any copies?
+//    memcpy(frameBuffer, buffer->data, buffer->length);
 
-    // TODO copy out or something, or better yet pass off to GPU
-    // yo yo yo apparently each buffer is a complete frame!!!!! see line 747 of RaspiVidYUV.c !!!
-    // also this (I believe) is still in VideoCore memory (since it's a buffer header), meaning we haven't copied yet
-    // so it's still fast
+#if ENABLE_DIAGNOSTICS
+    double currentTime = utils_get_millis();
+    double diff = fabs(currentTime - lastFrameTime);
+    printf("Last frame was: %.2f ms ago (%.2f fps)\n", diff, 1000.0 / diff);
+    lastFrameTime = currentTime;
+#endif
 
+    // handle MMAL stuff as well
     mmal_buffer_header_release(buffer);
     if (port->is_enabled){
         MMAL_STATUS_T status = MMAL_SUCCESS;
@@ -250,9 +242,22 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
     }
 }
 
-static void shutdown(MMAL_STATUS_T status){
-    log_info("Closing down camera manager");
+static void cam_set_settings(dictionary *config){
+    // set default settings
+    raspicommonsettings_set_defaults(&commonSettings);
 
+    commonSettings.width = iniparser_getint(config, "VideoSettings:width", 640);
+    commonSettings.height = iniparser_getint(config, "VideoSettings:height", 480);
+    commonSettings.verbose = true;
+    framerate = iniparser_getint(config, "VideoSettings:framerate", 60);
+
+    raspicamcontrol_set_defaults(&cameraParameters);
+
+    size_t frameBufferSize = commonSettings.width * commonSettings.height * 3;
+    frameBuffer = calloc(frameBufferSize, sizeof(uint8_t));
+    log_debug("Allocated %d KB to framebuffer (size: %dx%d), bit depth: 3", frameBufferSize / 1024, commonSettings.width,
+              commonSettings.height);
+    gpu_manager_init(commonSettings.width, commonSettings.height);
 }
 
 void camera_manager_init(dictionary *config){
@@ -300,13 +305,15 @@ void camera_manager_init(dictionary *config){
     return;
 
     error:
-        shutdown(status);
+        log_warn("An error occurred initialising MMAL, shutting down");
+        camera_manager_dispose();
 }
 
 void camera_manager_capture(void){
+    log_trace("Starting capture");
+
     while (true){
         if (mmal_port_parameter_set_boolean(cameraVideoPort, MMAL_PARAMETER_CAPTURE, MMAL_TRUE) != MMAL_SUCCESS){
-            // How to handle?
             log_error("u wot");
         }
 
@@ -319,15 +326,17 @@ void camera_manager_capture(void){
 
 void camera_manager_dispose(void){
     log_trace("Disposing camera manager");
-    free(frameBuffer);
-    frameBuffer = NULL;
 
+    if (mmal_port_parameter_set_boolean(cameraVideoPort, MMAL_PARAMETER_CAPTURE, MMAL_FALSE) != MMAL_SUCCESS){
+        log_error("Failed to stop capture, segfault incoming D:");
+    }
     check_disable_port(cameraVideoPort);
     if (cameraComponent != NULL){
         mmal_component_disable(cameraComponent);
-        mmal_component_disable(cameraComponent);
+        mmal_component_destroy(cameraComponent);
         cameraComponent = NULL;
     }
 
-    bcm_host_deinit();
+    free(frameBuffer);
+    frameBuffer = NULL;
 }
