@@ -29,18 +29,11 @@ add_executable(omicam src/main.c
         lib/iniparser/dictionary.h
         lib/iniparser/iniparser.c
         lib/iniparser/iniparser.h src/utils.h src/gpu_manager.c src/gpu_manager.h src/localisation.c src/localisation.h
-        src/defines.h src/blob_detection.c src/blob_detection.h src/utils.c)
+        src/defines.h src/blob_detection.c src/blob_detection.h src/utils.c lib/raspicam/RaspiCamControl.c lib/raspicam/RaspiCamControl.h
+        lib/raspicam/RaspiHelpers.c lib/raspicam/RaspiHelpers.h src/camera_manager.c src/camera_manager.h lib/raspicam/RaspiCommonSettings.c lib/raspicam/RaspiCommonSettings.h)
 
 # link GPU libraries
-# FIXME: there's gotta be a better way to import the VideoCore SDK than this horseshit, but nothinge lse works
-# as long as this dumbassery works I'm not going to change it since I hate configuring shitty build tools
-# try to find a way to static link these maybe
+file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")
 target_link_libraries(omicam pthread dl rt m
-        /opt/vc/lib/libbrcmGLESv2.so
-        /opt/vc/lib/libbrcmEGL.so
-        /opt/vc/lib/libopenmaxil.so
-        /opt/vc/lib/libvchiq_arm.so
-        /opt/vc/lib/libvcos.so
-        /opt/vc/lib/libvcsm.so
-        /opt/vc/lib/libbcm_host.so
+        ${GPU_LIBS}
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/libomxcam.so)
