@@ -11,6 +11,7 @@
 #include "defines.h"
 #include <math.h>
 #include "camera_manager.h"
+#include "remote_debug.h"
 
 #define OMICAM_VERSION "0.1"
 
@@ -25,6 +26,7 @@ static void disposeResources(){
     log_trace("Disposing resources");
     gpu_manager_dispose();
     camera_manager_dispose();
+    remote_debug_dispose();
     log_trace("Goodbye!");
     fclose(logFile);
 }
@@ -35,15 +37,6 @@ static void signal_handler(int sig){
     disposeResources();
     exit(EXIT_SUCCESS);
 }
-
-/*
-    double currentTime = utils_get_millis();
-    double diff = fabs(currentTime - lastFrameTime);
-    printf("Last frame was: %.2f ms ago (%.2f fps)\n", diff, 1000.0 / diff);
-    lastFrameTime = currentTime;
-    gpu_manager_post(frameBuffer);
-    frameBytesReceived = 0;
- */
 
 int main() {
 #if VERBOSE_LOGGING

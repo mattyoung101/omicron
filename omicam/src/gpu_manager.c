@@ -3,6 +3,7 @@
 #include <GLES2/gl2.h>
 #include <log/log.h>
 
+// Manages the OpenGL ES part of the VideoCore GPU. Receives camera frames, turns them into textures and runs a fragment shader on them.
 // Source for EGL stuff: https://github.com/matusnovak/rpi-opengl-without-x/blob/master/triangle.c (Public Domain)
 
 static const EGLint configAttribs[] = {

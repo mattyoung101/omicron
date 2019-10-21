@@ -4,6 +4,8 @@
 // Rectangle code based on libGDX's Rectangle.java
 // https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/math/Rectangle.java
 
+// eventually (if this is too slow, which it probably will be) this will use connected component labelling algorithms
+
 void rect_merge(rect_t *a, rect_t *b){
 
 }

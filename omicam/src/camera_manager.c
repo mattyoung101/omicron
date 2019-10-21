@@ -16,8 +16,10 @@
 #include "defines.h"
 #include "gpu_manager.h"
 #include "utils.h"
+#include "remote_debug.h"
 #include <math.h>
 
+// Uses Broadcom's MMAL (somehow faster than omxcam) to decode camera frames and pipe them off to the GPU
 // Much of this code is based on RaspiVidYUV:
 // https://github.com/raspberrypi/userland/blob/master/host_applications/linux/apps/raspicam/RaspiVidYUV.c
 // which is under the following license:
@@ -53,7 +55,7 @@ static RASPICAM_CAMERA_PARAMETERS cameraParameters;
 static RASPICOMMONSETTINGS_PARAMETERS commonSettings;
 static MMAL_COMPONENT_T *cameraComponent; /// Pointer to the camera component
 static MMAL_POOL_T *cameraPool; /// Pointer to the pool of buffers used by camera video port
-static int framerate = 0;
+static int framerate = 60;
 static uint8_t *frameBuffer = NULL;
 static MMAL_PORT_T *cameraVideoPort = NULL;
 #if ENABLE_DIAGNOSTICS
@@ -63,7 +65,7 @@ static double lastFrameTime = 0.0;
 static bool create_camera_component(void){
     MMAL_COMPONENT_T *camera = 0;
     MMAL_ES_FORMAT_T *format;
-    MMAL_PORT_T *preview_port = NULL, *video_port = NULL, *still_port = NULL;
+    MMAL_PORT_T *video_port = NULL, *still_port = NULL;
     MMAL_STATUS_T status;
     MMAL_POOL_T *pool;
 
@@ -98,7 +100,6 @@ static bool create_camera_component(void){
         goto error;
     }
 
-    preview_port = camera->output[MMAL_CAMERA_PREVIEW_PORT];
     video_port = camera->output[MMAL_CAMERA_VIDEO_PORT];
     still_port = camera->output[MMAL_CAMERA_CAPTURE_PORT];
 
@@ -214,17 +215,20 @@ static bool create_camera_component(void){
         }
 }
 
+static int64_t frames = 0;
 static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
     // each time this is called we have a full frame, so dump it in the framebuffer
     // we may also be able to turn this into an OpenGL texture without any copies?
-//    memcpy(frameBuffer, buffer->data, buffer->length);
 
-#if ENABLE_DIAGNOSTICS
-    double currentTime = utils_get_millis();
-    double diff = fabs(currentTime - lastFrameTime);
-    printf("Last frame was: %.2f ms ago (%.2f fps)\n", diff, 1000.0 / diff);
-    lastFrameTime = currentTime;
-#endif
+    // send frame to remote debug on every 2nd frame
+    // TODO this causes threading issues, need to spawn a thread or something
+//    if (frames++ % 2 == 0){
+//        puts("JPEG DECODING");
+//        memcpy(frameBuffer, buffer->data, buffer->length);
+//        remote_debug_post_frame(frameBuffer, buffer->length);
+//    } else {
+//        puts("NOT JPEG DECODING");
+//    }
 
     // handle MMAL stuff as well
     mmal_buffer_header_release(buffer);
@@ -240,6 +244,13 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
             log_error("Unable to return a buffer to the camera port");
         }
     }
+
+#if ENABLE_DIAGNOSTICS
+    double currentTime = utils_get_millis();
+    double diff = fabs(currentTime - lastFrameTime);
+    printf("Last frame was: %.2f ms ago (%.2f fps)\n", diff, 1000.0 / diff);
+    lastFrameTime = currentTime;
+#endif
 }
 
 static void cam_set_settings(dictionary *config){
@@ -257,7 +268,9 @@ static void cam_set_settings(dictionary *config){
     frameBuffer = calloc(frameBufferSize, sizeof(uint8_t));
     log_debug("Allocated %d KB to framebuffer (size: %dx%d), bit depth: 3", frameBufferSize / 1024, commonSettings.width,
               commonSettings.height);
+
     gpu_manager_init(commonSettings.width, commonSettings.height);
+    remote_debug_init(commonSettings.width, commonSettings.height);
 }
 
 void camera_manager_init(dictionary *config){

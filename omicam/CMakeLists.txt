@@ -30,10 +30,11 @@ add_executable(omicam src/main.c
         lib/iniparser/iniparser.c
         lib/iniparser/iniparser.h src/utils.h src/gpu_manager.c src/gpu_manager.h src/localisation.c src/localisation.h
         src/defines.h src/blob_detection.c src/blob_detection.h src/utils.c lib/raspicam/RaspiCamControl.c lib/raspicam/RaspiCamControl.h
-        lib/raspicam/RaspiHelpers.c lib/raspicam/RaspiHelpers.h src/camera_manager.c src/camera_manager.h lib/raspicam/RaspiCommonSettings.c lib/raspicam/RaspiCommonSettings.h)
+        lib/raspicam/RaspiHelpers.c lib/raspicam/RaspiHelpers.h src/camera_manager.c src/camera_manager.h lib/raspicam/RaspiCommonSettings.c
+        lib/raspicam/RaspiCommonSettings.h src/remote_debug.c src/remote_debug.h)
 
 # link GPU libraries
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")
 target_link_libraries(omicam pthread dl rt m
         ${GPU_LIBS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/lib/libomxcam.so)
+        /usr/lib/arm-linux-gnueabihf/libturbojpeg.so)
