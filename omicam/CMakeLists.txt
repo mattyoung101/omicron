@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wall -Wextra -pthread")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -g -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s")
+add_definitions(-D_GNU_SOURCE)
 
 # find packages
 find_package(OpenMP)
@@ -31,7 +32,7 @@ add_executable(omicam src/main.c
         lib/iniparser/iniparser.h src/utils.h src/gpu_manager.c src/gpu_manager.h src/localisation.c src/localisation.h
         src/defines.h src/blob_detection.c src/blob_detection.h src/utils.c lib/raspicam/RaspiCamControl.c lib/raspicam/RaspiCamControl.h
         lib/raspicam/RaspiHelpers.c lib/raspicam/RaspiHelpers.h src/camera_manager.c src/camera_manager.h lib/raspicam/RaspiCommonSettings.c
-        lib/raspicam/RaspiCommonSettings.h src/remote_debug.c src/remote_debug.h)
+        lib/raspicam/RaspiCommonSettings.h src/remote_debug.c src/remote_debug.h lib/DG_dynarr.h lib/rpa_queue.c lib/rpa_queue.h)
 
 # link GPU libraries
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")

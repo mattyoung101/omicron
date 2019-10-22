@@ -76,8 +76,6 @@ static bool create_camera_component(void){
         goto error;
     }
 
-    // TODO can we assume default stero mode is off? if not, disable it here
-
     MMAL_PARAMETER_INT32_T camera_num =
             {{MMAL_PARAMETER_CAMERA_NUM, sizeof(camera_num)}, commonSettings.cameraNum};
     status = mmal_port_parameter_set(camera->control, &camera_num.hdr);
@@ -213,22 +211,20 @@ static bool create_camera_component(void){
             mmal_component_destroy(camera);
             return false;
         }
+        return false;
 }
 
-static int64_t frames = 0;
+static uint32_t frames = 0;
 static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
     // each time this is called we have a full frame, so dump it in the framebuffer
     // we may also be able to turn this into an OpenGL texture without any copies?
 
-    // send frame to remote debug on every 2nd frame
-    // TODO this causes threading issues, need to spawn a thread or something
-//    if (frames++ % 2 == 0){
-//        puts("JPEG DECODING");
-//        memcpy(frameBuffer, buffer->data, buffer->length);
-//        remote_debug_post_frame(frameBuffer, buffer->length);
-//    } else {
-//        puts("NOT JPEG DECODING");
-//    }
+    if (frames++ % DEBUG_FRAMERATE == 0){
+        // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
+        uint8_t *decodeBuf = malloc(buffer->length);
+        memcpy(decodeBuf, buffer->data, buffer->length);
+        remote_debug_post_frame(decodeBuf, buffer->length);
+    }
 
     // handle MMAL stuff as well
     mmal_buffer_header_release(buffer);
@@ -299,8 +295,8 @@ void camera_manager_init(dictionary *config){
 
     // Send all the buffers to the camera video port
     {
-        unsigned int num = mmal_queue_length(cameraPool->queue);
-        unsigned int q;
+        uint32_t num = mmal_queue_length(cameraPool->queue);
+        uint32_t q;
         for (q = 0; q < num; q++){
             MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(cameraPool->queue);
 

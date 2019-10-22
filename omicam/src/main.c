@@ -1,4 +1,6 @@
 #define OMX_SKIP64BIT
+#define DG_DYNARR_IMPLEMENTATION // this define is only needed in *one* .c/.cpp file!
+#include "DG_dynarr.h"
 #include <stdio.h>
 #include <stdint.h>
 #include "log/log.h"

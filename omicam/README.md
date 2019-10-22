@@ -15,6 +15,7 @@ Pi Cam v1.3.
 Flash your Pi's SD card with Raspbian Lite, boot and update it, then install the following packages:
 - CMake: `sudo apt install cmake`
 - [NLopt](https://NLopt.readthedocs.io/en/latest/): follow the instructions linked
+- [ConcurrencyKit](https://github.com/concurrencykit/ck): download ck-0.6.0.zip and follow instructions in README
 - libjpeg-turbo: `sudo apt install libturbojpeg0 libturbojpeg0-dev`
 
 Import the project into CLion on your host computer and follow the instructions 
