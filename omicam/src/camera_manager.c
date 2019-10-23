@@ -223,7 +223,7 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
         // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
         uint8_t *decodeBuf = malloc(buffer->length);
         memcpy(decodeBuf, buffer->data, buffer->length);
-        remote_debug_post_frame(decodeBuf, buffer->length);
+        remote_debug_post_frame(decodeBuf);
     }
 
     // handle MMAL stuff as well

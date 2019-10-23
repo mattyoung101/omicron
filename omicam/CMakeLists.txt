@@ -24,15 +24,15 @@ include_directories(/opt/vc/include)
 add_executable(omicam src/main.c
         lib/log/log.c
         lib/log/log.h
-        lib/omxcam/omxcam.h
-        lib/omxcam/omxcam_version.h
         lib/iniparser/dictionary.c
         lib/iniparser/dictionary.h
         lib/iniparser/iniparser.c
         lib/iniparser/iniparser.h src/utils.h src/gpu_manager.c src/gpu_manager.h src/localisation.c src/localisation.h
         src/defines.h src/blob_detection.c src/blob_detection.h src/utils.c lib/raspicam/RaspiCamControl.c lib/raspicam/RaspiCamControl.h
         lib/raspicam/RaspiHelpers.c lib/raspicam/RaspiHelpers.h src/camera_manager.c src/camera_manager.h lib/raspicam/RaspiCommonSettings.c
-        lib/raspicam/RaspiCommonSettings.h src/remote_debug.c src/remote_debug.h lib/DG_dynarr.h lib/rpa_queue.c lib/rpa_queue.h)
+        lib/raspicam/RaspiCommonSettings.h src/remote_debug.c src/remote_debug.h lib/DG_dynarr.h lib/rpa_queue.c lib/rpa_queue.h
+        lib/lodepng.c lib/lodepng.h
+        src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h)
 
 # link GPU libraries
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")

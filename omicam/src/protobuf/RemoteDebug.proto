@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message DebugFrame {
+    string format = 1; // either "PNG" or "JPG"
+    repeated int32 frame = 2 [packed=true]; // the frame data
+}

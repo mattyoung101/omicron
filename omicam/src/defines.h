@@ -7,6 +7,7 @@
 #define USE_RGB 1 // use RGB or use YUV colour space
 #define DEBUG_JPEG_QUALITY 60
 #define DEBUG_FRAMERATE 120 // send a debug frame every X real frames
+#define DEBUG_USE_PNG 1 // use PNG instead of JPEG for remote debug, much slower but higher quality
 
 // Standard port setting for the camera component
 #define MMAL_CAMERA_PREVIEW_PORT 0
