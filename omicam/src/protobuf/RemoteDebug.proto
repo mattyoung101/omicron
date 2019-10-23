@@ -1,6 +1,9 @@
 syntax = "proto3";
 
+// Whenever a debug frame is encoded, this is sent to the remote client to be rendered, over a TCP socket.
+// It may also include geometries that the remote client is instructed to draw such as rectangles or circles
+// (this is because it's much easier to get the remote JavaFX app to draw geometries than to do it manually on a JPEG buffer)
 message DebugFrame {
     string format = 1; // either "PNG" or "JPG"
-    repeated int32 frame = 2 [packed=true]; // the frame data
+    bytes frame = 2; // the frame data, i.e. the actual image itself
 }

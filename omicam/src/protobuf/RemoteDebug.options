@@ -1,2 +1,2 @@
-# 96 kb max frame size
 DebugFrame.frame max_size:96000
+DebugFrame.format max_size:3

@@ -56,3 +56,4 @@ Omicam is available under the main project license, see LICENSE.txt in this dire
 - [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo): Various BSD and Zlib
 - [NLopt](https://github.com/stevengj/nlopt): MIT, as no LGPL code is used
 - [lodepng](https://github.com/lvandeve/lodepng): Zlib license
+- [zed_net](https://github.com/Smilex/zed_net): Public Domain

@@ -1,11 +1,9 @@
 #define OMX_SKIP64BIT
-#define DG_DYNARR_IMPLEMENTATION // this define is only needed in *one* .c/.cpp file!
+#define DG_DYNARR_IMPLEMENTATION
 #include "DG_dynarr.h"
 #include <stdio.h>
-#include <stdint.h>
 #include "log/log.h"
 #include "iniparser/iniparser.h"
-#include "utils.h"
 #include "gpu_manager.h"
 #include <errno.h>
 #include <stdbool.h>
@@ -14,13 +12,8 @@
 #include <math.h>
 #include "camera_manager.h"
 #include "remote_debug.h"
-
 #define OMICAM_VERSION "0.1"
 
-//static uint8_t *frameBuffer = NULL; // the actual frame buffer which contains pixels
-//static uint32_t frameBytesReceived = 0; // bytes received contributing to this frame
-//static size_t frameBufferSize = 0; // size of the frame buffer in bytes
-//static double lastFrameTime = 0.0; // how many milliseconds ago the last frame was received
 static FILE *logFile = NULL;
 
 /** free resources allocated by the app **/
@@ -29,7 +22,7 @@ static void disposeResources(){
     gpu_manager_dispose();
     camera_manager_dispose();
     remote_debug_dispose();
-    log_trace("Goodbye!");
+    log_trace("Closing log file, goodbye!");
     fclose(logFile);
 }
 
