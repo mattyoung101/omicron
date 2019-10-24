@@ -133,7 +133,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
     RS_SEM_UNLOCK
     // if(is_angle_between(rs.inBallAngle, 60, 300)) goal_correction(&robotState);
     // else imu_correction(&robotState);
-    goal_correction(&robotState);
+    imu_correction(&robotState);
     timer_check();
 
     if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
@@ -172,7 +172,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     rs.outSwitchOk = false; // we're trying to shoot so piss off
     RS_SEM_UNLOCK
-    goal_correction(&robotState);
+    imu_correction(&robotState);
     timer_check();
 
     // Check criteria:
@@ -213,7 +213,8 @@ void state_attack_dribble_update(state_machine_t *fsm){
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
     robotState.outSpeed = lerp(accelBegin, DRIBBLE_SPEED, constrain(accelProgress, 0.0f, 1.0f)); 
     // Yeet towards te goal if visible
-    robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle;
+    // robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle;
+    robotState.outDirection = robotState.inBallAngle;
 
     // Update progress for linear interpolation
     accelProgress += ACCEL_PROG;

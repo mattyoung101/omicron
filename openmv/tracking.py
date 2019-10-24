@@ -9,9 +9,9 @@ def constrain(val, min_val, max_val):
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(70, 83, 1, 33, -5, 43), # yellow
-             (47, 64, -3, 31, -79, -54), # blue
-             (52, 75, 59, 83, -11, 46)] # orange
+thresholds = [(48, 68, -16, 45, 49, 77), # yellow
+             (0, 0, 0, 0, 0, 0), # blue
+             (41, 100, 49, 127, 55, 127)] # orange
 
 # Practice: (53, 67, -128, 12, -128, -28)
 # Actual: (19, 55, -19, 27, -69, -41)
@@ -51,11 +51,11 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = 20000)
+sensor.set_auto_exposure(False, int(3 * curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=(-5.368132, -6.02073, 2.766099))
+rgb_gain_db=(-5.886325, -6.02073, -4.082861))
 
 # Standard
 sensor.set_brightness(0)
