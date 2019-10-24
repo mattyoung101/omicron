@@ -2,9 +2,11 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <log/log.h>
+#include <stdbool.h>
 
 // Manages the OpenGL ES part of the VideoCore GPU. Receives camera frames, turns them into textures and runs a fragment shader on them.
 // Source for EGL stuff: https://github.com/matusnovak/rpi-opengl-without-x/blob/master/triangle.c (Public Domain)
+// Guide to OpenGL shaders: https://learnopengl.com/Getting-started/Hello-Triangle
 
 static const EGLint configAttribs[] = {
     EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_BLUE_SIZE, 8, EGL_GREEN_SIZE, 8,
@@ -19,10 +21,7 @@ static const EGLint configAttribs[] = {
 
     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_NONE
 };
-
-static const EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2,
-                                        EGL_NONE};
-
+static const EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
 static EGLint pbufferAttribs[] = {
         EGL_WIDTH,
         0, // will be set dynamically
@@ -30,7 +29,6 @@ static EGLint pbufferAttribs[] = {
         0, // will bet set dynamically
         EGL_NONE,
 };
-
 static const char *eglGetErrorStr(){
     switch (eglGetError()){
         case EGL_SUCCESS:
@@ -81,10 +79,53 @@ static const char *eglGetErrorStr(){
     }
     return "Unknown error!";
 }
+static float rectVertices[] = {
+        -0.5f,  1.0f, 1.0f, 0.0f, 0.0f, // Top-left
+        1.0f,  1.0f, 0.0f, 1.0f, 0.0f, // Top-right
+        1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // Bottom-right
 
+        1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // Bottom-right
+        -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, // Bottom-left
+        -1.0f,  1.0f, 1.0f, 0.0f, 0.0f  // Top-left
+};
 static EGLDisplay display;
 static EGLSurface surface;
 static EGLContext context;
+static uint32_t vertexShader;
+static uint32_t fragmentShader;
+static uint32_t shaderProgram;
+
+// source for reading file: https://stackoverflow.com/a/174552/5007892
+static const GLchar *read_shader(char *path){
+    size_t length = 0;
+    FILE *file = fopen(path, "r");
+    if (file == NULL){
+        log_error("Failed to open shader file: %s", path);
+        return NULL;
+    }
+
+    fseek(file, 0, SEEK_END);
+    length = ftell(file);
+    char *buf = calloc(length + 1, sizeof(char));
+    fseek(file, 0, SEEK_SET);
+    fread(buf, 1, length, file);
+    fclose(file);
+    return buf;
+}
+
+static bool check_shader_compilation(uint32_t shader, char *name){
+    int success;
+    char infoLog[512];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    glGetShaderInfoLog(shader, 512, NULL, infoLog);
+
+    if (!success){
+        log_error("Error compiling %s shader! Log:");
+        log_error("%s", infoLog);
+        return false;
+    }
+    return true;
+}
 
 void gpu_manager_init(uint16_t width, uint16_t height) {
     pbufferAttribs[1] = width;
@@ -92,7 +133,6 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     int major, minor;
     EGLint numConfigs;
     EGLConfig config;
-
     log_debug("Initialising GPU pipeline...");
 
     // initialise and configure display
@@ -111,7 +151,7 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
         eglTerminate(display);
         return;
     }
-    log_debug("Successfully initialised EGL");
+    log_trace("Successfully initialised EGL");
 
     // create and bind surface
     surface = eglCreatePbufferSurface(display, config, pbufferAttribs);
@@ -121,7 +161,6 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
         return;
     }
     eglBindAPI(EGL_OPENGL_API);
-    log_debug("Successfully created and bound EGL surface");
 
     // create context
     context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
@@ -130,19 +169,80 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
         eglTerminate(display);
         return;
     }
-
     eglMakeCurrent(display, surface, surface, context);
-    log_info("GPU initialised successfully");
+    log_debug("Successfully acquired OpenGL context from EGL");
+
+    // print version info
+    const GLubyte *version = glGetString(GL_VERSION);
+    const GLubyte *vendor = glGetString(GL_VENDOR);
+    const GLubyte *renderer = glGetString(GL_RENDERER);
+    const char *eglVendor = eglQueryString(display, EGL_VENDOR);
+    const char *eglVersion = eglQueryString(display, EGL_VERSION);
+    log_debug("GL: %s on %s %s", version, vendor, renderer);
+    log_debug("EGL: %s provided by %s", eglVersion, eglVendor);
+
+    // check the OpenGL context works
+    log_trace("Checking integrity of GL instance....");
+    glViewport(0, 0, width, height);
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    // apparently (according to the triangle.c source) if you update EGL on the Pi it install a "fake version"
+    if (width != viewport[2] || height != viewport[3]){
+        log_warn("OpenGL context integrity check failed (glViewport/glGetIntegerv seems to be broken), check EGL driver");
+    } else {
+        log_trace("OpenGL context seems to be working correctly");
+    }
+
+    // now that we've got an OpenGL context, it's time to create and compile the fragment and vertex shaders
+    log_debug("Creating and compiling shader...");
+    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    shaderProgram = glCreateProgram();
+
+    const GLchar *vertexSource = read_shader("../omicam.vert");
+    const GLchar *fragmentSource = read_shader("../omicam.frag");
+    glShaderSource(vertexShader, 1, &vertexSource, NULL);
+    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+
+    glCompileShader(vertexShader);
+    glCompileShader(fragmentShader);
+    check_shader_compilation(vertexShader, "Vertex");
+    check_shader_compilation(fragmentShader, "Fragment");
+
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    int linkSuccess = 0;
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkSuccess);
+    if(!linkSuccess) {
+        char infoLog[512];
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        log_error("Shader program link failed. Log:");
+        log_error("%s", infoLog);
+    }
+    glUseProgram(shaderProgram);
+    log_debug("GPU pipeline initialised successfully");
+
+    // now I guess we create the quad that holds the texture and render it?
+
+    free((GLchar*) vertexSource);
+    free((GLchar*) fragmentSource);
 }
 
 void gpu_manager_post(uint8_t *frameBuffer){
     // turn framebuffer into opengl texture
     // upload to GPU and invoke fragment shader
     // download resulting texture from GPU back into a new buffer (will need to return this) with glReadPixels
+    // does this need to be run in its own thread??????
 }
 
 void gpu_manager_dispose(void){
     log_trace("Disposing GPU manager");
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+    glDeleteProgram(shaderProgram);
     eglDestroyContext(display, context);
     eglDestroySurface(display, surface);
     eglTerminate(display);

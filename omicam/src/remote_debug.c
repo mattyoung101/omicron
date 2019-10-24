@@ -37,16 +37,17 @@ static char *displayCommand[] = {"D", "I", "S", "P"}; // sent to tell the client
 
 /** encodes and sends the image into a buffer **/
 static void encode_and_send(uint8_t *image, uint32_t imageSize, char *format){
-    DebugFrame msg = DebugFrame_init_default;
+    DebugFrame msg = DebugFrame_init_zero;
     size_t bufSize = imageSize + 1024; // the buffer size is the image size + 1KB of extra protobuf data
     uint8_t *buf = calloc(bufSize, sizeof(uint8_t));
     pb_ostream_t stream = pb_ostream_from_buffer(buf, bufSize);
 
     // fill the protocol buffer with data
     strcpy(msg.format, format);
-    memcpy(msg.frame.bytes, image, imageSize);
-    msg.frame.size = imageSize;
-    // log_trace("Remote debugger is going to encode %d bytes, actual buffer size is: %d", imageSize, bufSize);
+    memcpy(msg.defaultImage.bytes, image, imageSize);
+    msg.defaultImage.size = imageSize;
+
+    // TODO add support for sending the thresholded image as well
 
     // encode to buffer and send it to socket
     if (!pb_encode(&stream, DebugFrame_fields, &msg)){
@@ -56,6 +57,7 @@ static void encode_and_send(uint8_t *image, uint32_t imageSize, char *format){
     if (connected){
         zed_net_tcp_socket_send(&tcpSocket, buf, stream.bytes_written);
         zed_net_tcp_socket_send(&tcpSocket, displayCommand, 4);
+        log_trace("Dispatching frame over TCP");
     }
     free(buf);
 }
@@ -64,7 +66,6 @@ static void encode_and_send(uint8_t *image, uint32_t imageSize, char *format){
 static void *frame_thread(void *param){
     while (true){
         void *frameData = NULL;
-        // receive a new frame or block until one is ready
         if (!rpa_queue_pop(frameQueue, &frameData)){
             log_error("Frame queue pop failed");
             continue;
@@ -73,7 +74,7 @@ static void *frame_thread(void *param){
 #if !DEBUG_USE_PNG
         uint8_t *compressedImage = NULL;
         unsigned long jpegSize = 0;
-        tjCompress2(compressor, frameData, width, 0, height, TJPF_RGB, &compressedImage, &jpegSize, TJSAMP_444,
+        tjCompress2(compressor, frameData, width, 0, height, TJPF_RGB, &compressedImage, &jpegSize, TJSAMP_420,
                 DEBUG_JPEG_QUALITY, TJFLAG_FASTDCT);
 
 #if DEBUG_WRITE_FRAME_DISK
@@ -82,12 +83,12 @@ static void *frame_thread(void *param){
         FILE *out = fopen(filename, "w");
         fwrite(compressedImage, sizeof(uint8_t), jpegSize, out);
         fclose(out);
-        log_trace("JPEG encoder done, num bytes: %lu, written to: %s", jpegSize, filename);
+        log_trace("JPEG encoder done (size: %lu bytes), written to: %s", jpegSize, filename);
         free(filename);
 #else
         log_trace("JPEG encoder done: %lu bytes", jpegSize);
         encode_and_send(compressedImage, jpegSize, "JPG");
-#endif
+#endif // </debug_write_frame_disk>
         tjFree(compressedImage);
         free(frameData);
 #else
@@ -106,7 +107,7 @@ static void *frame_thread(void *param){
         free(frameData);
         free(pngBuffer);
         free(format);
-#endif
+#endif // </debug_use_png>
     }
     return NULL;
 }

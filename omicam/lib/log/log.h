@@ -15,6 +15,7 @@
 // source: https://stackoverflow.com/a/8488201/5007892
 #include <string.h>
 #define __SHORT_FILE__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+#define LOG_USE_COLOR
 // end custom code
 
 #define LOG_VERSION "0.1.0"

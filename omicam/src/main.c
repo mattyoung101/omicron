@@ -10,11 +10,13 @@
 #include <signal.h>
 #include "defines.h"
 #include <math.h>
+#include <pthread.h>
 #include "camera_manager.h"
 #include "remote_debug.h"
 #define OMICAM_VERSION "0.1"
 
 static FILE *logFile = NULL;
+static pthread_mutex_t logLock;
 
 /** free resources allocated by the app **/
 static void disposeResources(){
@@ -24,6 +26,7 @@ static void disposeResources(){
     remote_debug_dispose();
     log_trace("Closing log file, goodbye!");
     fclose(logFile);
+    pthread_mutex_destroy(&logLock);
 }
 
 /** cleanly shutdown in case of sigint (CTRL C) and sigterm **/
@@ -33,6 +36,15 @@ static void signal_handler(int sig){
     exit(EXIT_SUCCESS);
 }
 
+/** lock the logger to prevent malformed prints across threads **/
+static void log_lock_func(void *userdata, int lock){
+    if (lock){
+        pthread_mutex_lock(&logLock);
+    } else {
+        pthread_mutex_unlock(&logLock);
+    }
+}
+
 int main() {
 #if VERBOSE_LOGGING
     log_set_level(LOG_TRACE);
@@ -40,6 +52,8 @@ int main() {
 #else
     log_set_level(LOG_INFO);
 #endif
+    pthread_mutex_init(&logLock, NULL);
+    log_set_lock(log_lock_func);
     logFile = fopen("/home/pi/omicam.log", "w");
     if (logFile != NULL){
         log_set_fp(logFile);

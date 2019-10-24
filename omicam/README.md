@@ -3,6 +3,8 @@
 This is the custom vision system for our team. It runs on a Raspberry Pi Compute Module 3+ with a Pi Camera. For details
 on how the vision system works, please see docs/DESCRIPTION.md.
 
+Omicam is built and maintained by Matt Young, so if you have any questions, please contact: 25070@bbc.qld.edu.au
+
 ## Building and running
 JetBrains CLion is the only supported IDE for working with Omicam. 
 You have two options to work with the code: remote mode and cross compilation. Remote mode is currently the easiest way

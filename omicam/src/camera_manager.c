@@ -262,7 +262,7 @@ static void cam_set_settings(dictionary *config){
 
     size_t frameBufferSize = commonSettings.width * commonSettings.height * 3;
     frameBuffer = calloc(frameBufferSize, sizeof(uint8_t));
-    log_debug("Allocated %d KB to framebuffer (size: %dx%d), bit depth: 3", frameBufferSize / 1024, commonSettings.width,
+    log_trace("Allocated %d KB to framebuffer (size: %dx%d), bit depth: 3", frameBufferSize / 1024, commonSettings.width,
               commonSettings.height);
 
     gpu_manager_init(commonSettings.width, commonSettings.height);
@@ -274,7 +274,7 @@ void camera_manager_init(dictionary *config){
     cam_set_settings(config);
     get_sensor_defaults(commonSettings.cameraNum, commonSettings.camera_name, &commonSettings.width,
             &commonSettings.height);
-    log_trace("camera num: %d, camera name: %s, width: %d, height: %d", commonSettings.cameraNum, commonSettings.camera_name,
+    log_trace("Camera num: %d, camera name: %s, width: %d, height: %d", commonSettings.cameraNum, commonSettings.camera_name,
             commonSettings.width, commonSettings.height);
     log_trace("Framerate is: %d fps", framerate);
 
@@ -319,8 +319,7 @@ void camera_manager_init(dictionary *config){
 }
 
 void camera_manager_capture(void){
-    log_trace("Starting capture");
-
+    log_info("Starting capture");
     while (true){
         if (mmal_port_parameter_set_boolean(cameraVideoPort, MMAL_PARAMETER_CAPTURE, MMAL_TRUE) != MMAL_SUCCESS){
             log_error("u wot");
