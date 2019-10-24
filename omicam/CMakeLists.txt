@@ -31,8 +31,8 @@ add_executable(omicam src/main.c
         src/defines.h src/blob_detection.c src/blob_detection.h src/utils.c lib/raspicam/RaspiCamControl.c lib/raspicam/RaspiCamControl.h
         lib/raspicam/RaspiHelpers.c lib/raspicam/RaspiHelpers.h src/camera_manager.c src/camera_manager.h lib/raspicam/RaspiCommonSettings.c
         lib/raspicam/RaspiCommonSettings.h src/remote_debug.c src/remote_debug.h lib/DG_dynarr.h lib/rpa_queue.c lib/rpa_queue.h
-        lib/lodepng.c lib/lodepng.h
-        src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h)
+        lib/lodepng.c lib/lodepng.h lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
+        src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h lib/zed_net.h)
 
 # link GPU libraries
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")

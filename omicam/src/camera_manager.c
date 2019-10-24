@@ -202,7 +202,7 @@ static bool create_camera_component(void){
     cameraPool = pool;
     cameraComponent = camera;
 
-    log_info("Initialised camera component successfully");
+    log_trace("Initialised camera component successfully");
     return status;
 
     error:
@@ -219,7 +219,7 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
     // each time this is called we have a full frame, so dump it in the framebuffer
     // we may also be able to turn this into an OpenGL texture without any copies?
 
-    if (frames++ % DEBUG_FRAMERATE == 0){
+    if (frames++ % DEBUG_FRAME_EVERY == 0){
         // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
         uint8_t *decodeBuf = malloc(buffer->length);
         memcpy(decodeBuf, buffer->data, buffer->length);
@@ -310,7 +310,7 @@ void camera_manager_init(dictionary *config){
         }
     }
 
-    log_info("MMAL and camera initialised successfully");
+    log_debug("MMAL and camera initialised successfully");
     return;
 
     error:

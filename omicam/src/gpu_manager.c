@@ -93,7 +93,7 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     EGLint numConfigs;
     EGLConfig config;
 
-    log_debug("Initialising VideoCore GPU...");
+    log_debug("Initialising GPU pipeline...");
 
     // initialise and configure display
     display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -142,7 +142,7 @@ void gpu_manager_post(uint8_t *frameBuffer){
 }
 
 void gpu_manager_dispose(void){
-    log_debug("Disposing GPU manager");
+    log_trace("Disposing GPU manager");
     eglDestroyContext(display, context);
     eglDestroySurface(display, surface);
     eglTerminate(display);
