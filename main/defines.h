@@ -13,7 +13,7 @@
 // Bluetooth
 // #define BLUETOOTH_ENABLED // whether or not Bluetooth is enabled
 #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (off for damage detection aways runs)
-#define DEFENCE true // whether to start out in defence if BT is disabled (mainly for testing)
+#define DEFENCE false // whether to start out in defence if BT is disabled (mainly for testing)
 #define ROBOT0_NAME "Omicron_Robot0"
 #define ROBOT1_NAME "Omicron_Robot1"
 #define SPP_NAME "Omicron_SPP"
@@ -177,7 +177,7 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IDLE_DISTANCE 85 // distance to sit away from the goal if no ball is visible
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
-#define DRIBBLE_SPEED 25 // speed at which robot dribbles the ball, out of 100
+#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 1 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
