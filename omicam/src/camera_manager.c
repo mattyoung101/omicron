@@ -216,8 +216,7 @@ static bool create_camera_component(void){
 
 static uint32_t frames = 0;
 static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
-    // each time this is called we have a full frame, so dump it in the framebuffer
-    // we may also be able to turn this into an OpenGL texture without any copies?
+    gpu_manager_post(buffer);
 
     if (frames++ % DEBUG_FRAME_EVERY == 0){
         // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
@@ -230,7 +229,6 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
     mmal_buffer_header_release(buffer);
     if (port->is_enabled){
         MMAL_STATUS_T status = MMAL_SUCCESS;
-
         MMAL_BUFFER_HEADER_T *new_buffer = mmal_queue_get(cameraPool->queue);
 
         if (new_buffer)
@@ -265,6 +263,7 @@ static void cam_set_settings(dictionary *config){
     log_trace("Allocated %d KB to framebuffer (size: %dx%d), bit depth: 3", frameBufferSize / 1024, commonSettings.width,
               commonSettings.height);
 
+    // FIXME needs to be called later I think
     gpu_manager_init(commonSettings.width, commonSettings.height);
     remote_debug_init(commonSettings.width, commonSettings.height);
 }
@@ -334,7 +333,6 @@ void camera_manager_capture(void){
 
 void camera_manager_dispose(void){
     log_trace("Disposing camera manager");
-
     if (mmal_port_parameter_set_boolean(cameraVideoPort, MMAL_PARAMETER_CAPTURE, MMAL_FALSE) != MMAL_SUCCESS){
         log_error("Failed to stop capture, segfault incoming D:");
     }
@@ -344,7 +342,6 @@ void camera_manager_dispose(void){
         mmal_component_destroy(cameraComponent);
         cameraComponent = NULL;
     }
-
     free(frameBuffer);
     frameBuffer = NULL;
 }

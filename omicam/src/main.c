@@ -13,6 +13,8 @@
 #include <pthread.h>
 #include "camera_manager.h"
 #include "remote_debug.h"
+#include "utils.h"
+
 #define OMICAM_VERSION "0.1"
 
 static FILE *logFile = NULL;
@@ -21,8 +23,8 @@ static pthread_mutex_t logLock;
 /** free resources allocated by the app **/
 static void disposeResources(){
     log_trace("Disposing resources");
-    gpu_manager_dispose();
     camera_manager_dispose();
+    gpu_manager_dispose();
     remote_debug_dispose();
     log_trace("Closing log file, goodbye!");
     fclose(logFile);
@@ -60,12 +62,32 @@ int main() {
     }
     log_info("Omicam v%s - Copyright (c) 2019 Team Omicron. All rights reserved.", OMICAM_VERSION);
 
-    log_trace("Loading and parsing config...");
+    log_debug("Loading and parsing config...");
     dictionary *config = iniparser_load("../omicam.ini");
     if (config == NULL){
         log_error("Failed to open config file (error: %s)", strerror(errno));
         return EXIT_FAILURE;
     }
+    char *minBallStr = (char*) iniparser_getstring(config, "Thresholds:minBall", "0,0,0");
+    char *maxBallStr = (char*) iniparser_getstring(config, "Thresholds:maxBall", "0,0,0");
+    gpu_manager_parse_thresh(minBallStr, minBallData);
+    gpu_manager_parse_thresh(maxBallStr, maxBallData);
+
+    char *minLineStr = (char*) iniparser_getstring(config, "Thresholds:minLine", "0,0,0");
+    char *maxLineStr = (char*) iniparser_getstring(config, "Thresholds:maxLine", "0,0,0");
+    gpu_manager_parse_thresh(minLineStr, minLineData);
+    gpu_manager_parse_thresh(maxLineStr, maxLineData);
+
+    char *minBlueStr = (char*) iniparser_getstring(config, "Thresholds:minBlue", "0,0,0");
+    char *maxBlueStr = (char*) iniparser_getstring(config, "Thresholds:maxBlue", "0,0,0");
+    gpu_manager_parse_thresh(minBlueStr, minBlueData);
+    gpu_manager_parse_thresh(maxBlueStr, maxBlueData);
+
+    char *minYellowStr = (char*) iniparser_getstring(config, "Thresholds:minYellow", "0,0,0");
+    char *maxYellowStr = (char*) iniparser_getstring(config, "Thresholds:maxYellow", "0,0,0");
+    gpu_manager_parse_thresh(minYellowStr, minYellowData);
+    gpu_manager_parse_thresh(maxYellowStr, maxYellowData);
+
     camera_manager_init(config);
     iniparser_freedict(config);
 

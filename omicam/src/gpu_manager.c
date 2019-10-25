@@ -3,6 +3,7 @@
 #include <GLES2/gl2.h>
 #include <log/log.h>
 #include <stdbool.h>
+#include <interface/mmal/mmal_buffer.h>
 
 // Manages the OpenGL ES part of the VideoCore GPU. Receives camera frames, turns them into textures and runs a fragment shader on them.
 // Source for EGL stuff: https://github.com/matusnovak/rpi-opengl-without-x/blob/master/triangle.c (Public Domain)
@@ -94,6 +95,77 @@ static EGLContext context;
 static uint32_t vertexShader;
 static uint32_t fragmentShader;
 static uint32_t shaderProgram;
+static GLuint texture;
+static GLint minBallUniform, maxBallUniform, minLineUniform, maxLineUniform, minBlueUniform, maxBlueUniform, minYellowUniform, maxYellowUniform;
+static GLint textureUniform;
+GLfloat minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+
+#define UPDATE_UNIFORM(location, dataName) if (location != -1){ \
+    log_trace("Updating uniform at %d to the following: [%.2f, %.2f, %.2f]", location, dataName[0], dataName[1], dataName[2]); \
+    glUniform3fv(location, 1, dataName); \
+    check_error(); \
+}  else { \
+    log_warn("Failed to update uniform at location: " #location); \
+} \
+
+#define GET_UNIFORM_LOCATION(uniform, name) do { uniform = glGetUniformLocation(shaderProgram, name); \
+    check_error(); \
+    if (uniform == -1){ \
+        log_error("Failed to get uniform location of " name); \
+    } else { \
+        log_trace("Uniform location of " name " gathered successfully: %d", uniform); \
+    }  } while (0); \
+
+static void check_error(void){
+    GLenum error = glGetError();
+    if (error != GL_NO_ERROR){
+        log_warn("An OpenGL error occurred: 0x%X (consult gl2.h:185 for error codes)", error);
+    }
+}
+
+/** Sets all the uniforms to the values specified in the associated uniform array **/
+static void update_uniforms(void) {
+    UPDATE_UNIFORM(minBallUniform, minBallData)
+    UPDATE_UNIFORM(maxBallUniform, maxBallData)
+    UPDATE_UNIFORM(minLineUniform, minLineData)
+    UPDATE_UNIFORM(maxLineUniform, maxLineData)
+    UPDATE_UNIFORM(minBlueUniform, minBlueData)
+    UPDATE_UNIFORM(maxBlueUniform, maxBlueData)
+    UPDATE_UNIFORM(minYellowUniform, minYellowData)
+    UPDATE_UNIFORM(maxYellowUniform, maxYellowData)
+    log_trace("Updated uniforms");
+}
+
+void gpu_manager_parse_thresh(char *threshStr, GLfloat *uniformArray){
+    char *token;
+    char *threshOrig = strdup(threshStr);
+    uint8_t i = 0;
+    token = strtok(threshStr, ",");
+    log_trace("Attempting to parse string %s", threshStr);
+
+    while (token != NULL){
+        char *invalid = NULL;
+        log_trace("Parsing token %s", token);
+        float number = strtof(token, &invalid);
+
+        if (number > 255){
+            log_error("Invalid threshold string \"%s\": token %s > 255 (not in RGB colour range)", threshOrig, token);
+        } else if (strlen(invalid) != 0){
+            log_error("Invalid threshold string \"%s\": invalid token: \"%s\"", threshOrig, invalid);
+        } else {
+            uniformArray[i++] = number;
+            log_trace("Parsed number: %f", number);
+            if (i > 3){
+                log_error("More than three values for key: %s", threshOrig);
+                return;
+            }
+        }
+        token = strtok(NULL, ",");
+    }
+
+    log_trace("Successfully parsed threshold key: %s", threshOrig);
+    free(threshOrig);
+}
 
 // source for reading file: https://stackoverflow.com/a/174552/5007892
 static const GLchar *read_shader(char *path){
@@ -120,7 +192,7 @@ static bool check_shader_compilation(uint32_t shader, char *name){
     glGetShaderInfoLog(shader, 512, NULL, infoLog);
 
     if (!success){
-        log_error("Error compiling %s shader! Log:");
+        log_error("Error compiling %s shader! Log:", name);
         log_error("%s", infoLog);
         return false;
     }
@@ -186,6 +258,7 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     glViewport(0, 0, width, height);
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
+    check_error();
 
     // apparently (according to the triangle.c source) if you update EGL on the Pi it install a "fake version"
     if (width != viewport[2] || height != viewport[3]){
@@ -199,20 +272,25 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     vertexShader = glCreateShader(GL_VERTEX_SHADER);
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     shaderProgram = glCreateProgram();
+    check_error();
 
     const GLchar *vertexSource = read_shader("../omicam.vert");
     const GLchar *fragmentSource = read_shader("../omicam.frag");
     glShaderSource(vertexShader, 1, &vertexSource, NULL);
     glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+    check_error();
 
     glCompileShader(vertexShader);
     glCompileShader(fragmentShader);
     check_shader_compilation(vertexShader, "Vertex");
     check_shader_compilation(fragmentShader, "Fragment");
+    check_error();
 
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
+    check_error();
     glLinkProgram(shaderProgram);
+    check_error();
 
     int linkSuccess = 0;
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkSuccess);
@@ -221,21 +299,47 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         log_error("Shader program link failed. Log:");
         log_error("%s", infoLog);
+    } else {
+        log_trace("Shader built successfully");
     }
     glUseProgram(shaderProgram);
-    log_debug("GPU pipeline initialised successfully");
+    check_error();
 
-    // now I guess we create the quad that holds the texture and render it?
+    log_trace("Initialising and setting shader values...");
+    GET_UNIFORM_LOCATION(minBallUniform, "minBall")
+    GET_UNIFORM_LOCATION(maxBallUniform, "maxBall")
+    GET_UNIFORM_LOCATION(minLineUniform, "minLine")
+    GET_UNIFORM_LOCATION(maxLineUniform, "maxLine")
+    GET_UNIFORM_LOCATION(minBlueUniform, "minBlue")
+    GET_UNIFORM_LOCATION(maxBlueUniform, "maxBlue")
+    GET_UNIFORM_LOCATION(minYellowUniform, "minYellow")
+    GET_UNIFORM_LOCATION(maxYellowUniform, "maxYellow")
+    textureUniform = glGetUniformLocation(shaderProgram, "u_texture");
+    check_error();
+    update_uniforms();
+    // FIXME need to set attributes n shit?
+    log_trace("Shader values set successfully");
+
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    check_error();
+    log_debug("GPU pipeline initialised successfully");
 
     free((GLchar*) vertexSource);
     free((GLchar*) fragmentSource);
 }
 
-void gpu_manager_post(uint8_t *frameBuffer){
+void gpu_manager_post(MMAL_BUFFER_HEADER_T *buf){
     // turn framebuffer into opengl texture
     // upload to GPU and invoke fragment shader
     // download resulting texture from GPU back into a new buffer (will need to return this) with glReadPixels
     // does this need to be run in its own thread??????
+
+    // pretty sure if we just use buf->data it's still on the GP
+    // blah blah bind texture
+
+    check_error();
 }
 
 void gpu_manager_dispose(void){
@@ -243,6 +347,8 @@ void gpu_manager_dispose(void){
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
     glDeleteProgram(shaderProgram);
+    glDeleteTextures(1, &texture);
+
     eglDestroyContext(display, context);
     eglDestroySurface(display, surface);
     eglTerminate(display);

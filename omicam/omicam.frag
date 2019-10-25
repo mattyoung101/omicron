@@ -1,6 +1,5 @@
 precision mediump float;
 
-uniform vec4 color;
 uniform vec3 minBall, maxBall, minLine, maxLine, minYellow, maxYellow, minBlue, maxBlue;
 varying vec2 v_texCoords;
 uniform sampler2D u_texture;

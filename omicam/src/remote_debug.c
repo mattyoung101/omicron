@@ -153,7 +153,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
     } else {
         pthread_setname_np(tcpThread, "TCPThread");
     }
-    log_trace("Remote debugger initialised successfully");
+    log_debug("Remote debugger initialised successfully");
 }
 
 
