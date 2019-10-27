@@ -60,8 +60,7 @@ position instead of scanning over the whole image.
 really worth the cost imo)
 - We have 4 cores to work with, since we run localisation and blob detection at the same time (they are independent processes),
 we can safely use two CPU cores per task. We could simply halve the image and run both bits in parallel then.
-- It's safe to create lots of pthreads, we don't need a thread pool. The overhead should only be about 10us according
-to StackOverflow **(FIXME: ADD LINK WHEN INTERNET RETURNS)**
+- For threading, we use an event queue much like the FreeRTOS queues because spamming pthreads seems to segfault
 
 Biggest bottlenecks are going to likely be:
 1. CPU flood filler, especially if many blobs in image

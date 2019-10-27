@@ -263,7 +263,6 @@ static void cam_set_settings(dictionary *config){
     log_trace("Allocated %d KB to framebuffer (size: %dx%d), bit depth: 3", frameBufferSize / 1024, commonSettings.width,
               commonSettings.height);
 
-    // FIXME needs to be called later I think
     gpu_manager_init(commonSettings.width, commonSettings.height);
     remote_debug_init(commonSettings.width, commonSettings.height);
 }

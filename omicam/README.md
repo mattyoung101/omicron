@@ -1,9 +1,21 @@
 # Omicam
 
-This is the custom vision system for our team. It runs on a Raspberry Pi Compute Module 3+ with a Pi Camera. For details
-on how the vision system works, please see docs/DESCRIPTION.md.
+This is the custom vision system for Team Omicron, to be deployed in the 2020 Internationals. 
+The production setup uses a Raspberry Pi Compute Module 3+ with a Pi Camera v2.
+For the full technical writeup on our custom vision pipeline, please see, docs/DESCRIPTION.md.
 
 Omicam is built and maintained by Matt Young, so if you have any questions, please contact: 25070@bbc.qld.edu.au
+
+## Features list
+- GPU accelerated camera decoding using Broadcom's MMAL, capable of 720p 60fps
+- Zero-copy GPU accelerated image thresholding using OpenGL ES 2.0 shader
+- (NOT YET) Double-buffered GPU frame acquistion
+- Highly optimal CPU connected-component labelling (blob detection) based on recent state-of-the-art papers
+- Advanced localisation by way of non-linear optimisation (Nelder-Mead simplex method provided by NLopt)
+- Wireless frame streaming using libjpeg-turbo over TCP to remote debug/management app called "Omicontrol"
+- Uses less than 1% of the Pi's RAM and less than 50% CPU (so far)
+- Transmits data to main ESP32 microcontroller via Protocol Buffers over 115200 baud UART
+- Well-documented C/GLSL code and associated design documents (see docs folder and inline comments).
 
 ## Building and running
 JetBrains CLion is the only supported IDE for working with Omicam. 

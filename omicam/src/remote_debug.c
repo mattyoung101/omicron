@@ -28,7 +28,9 @@ static uint16_t height = 0;
 static pthread_t frameThread;
 static pthread_t tcpThread;
 static rpa_queue_t *frameQueue = NULL;
+#if DEBUG_WRITE_FRAME_DISK
 static uint32_t frameCounter = 0;
+#endif
 static zed_net_socket_t tcpSocket;
 static zed_net_socket_t remoteSocket;
 static zed_net_address_t remoteAddress;
@@ -63,7 +65,7 @@ static void encode_and_send(uint8_t *image, uint32_t imageSize, char *format){
 }
 
 /** process a single frame then exit **/
-static void *frame_thread(void *param){
+static void *frame_thread(GCC_UNUSED void *param){
     while (true){
         void *frameData = NULL;
         if (!rpa_queue_pop(frameQueue, &frameData)){
@@ -113,7 +115,7 @@ static void *frame_thread(void *param){
 }
 
 /** thread for waiting for TCP connection **/
-static void *tcp_thread(void *arg){
+static void *tcp_thread(GCC_UNUSED void *arg){
     log_debug("Waiting for incoming TCP connection...");
     if (zed_net_tcp_accept(&tcpSocket, &remoteSocket, &remoteAddress) != 0){
         log_warn("Failed to accept TCP client: %s", zed_net_get_error());

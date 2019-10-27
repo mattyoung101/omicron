@@ -24,6 +24,22 @@
     pthread_mutex_unlock(sem); \
 }
 
+#define UPDATE_UNIFORM(location, dataName) if (location != -1){ \
+    log_trace("Updating uniform at %d to the following: [%.2f, %.2f, %.2f]", location, dataName[0], dataName[1], dataName[2]); \
+    glUniform3fv(location, 1, dataName); \
+    check_gl_error(); \
+}  else { \
+    log_warn("Failed to update uniform at location: " #location); \
+}
+
+#define GET_UNIFORM_LOCATION(uniform, name) do { uniform = glGetUniformLocation(shaderProgram, name); \
+    check_gl_error(); \
+    if (uniform == -1){ \
+        log_error("Failed to get uniform location of " name); \
+    } } while (0);
+
+#define GCC_UNUSED __attribute__((unused))
+
 /** first 8 bits of unsigned 16 bit int **/
 #define HIGH_BYTE_16(num) ((uint8_t) ((num >> 8) & 0xFF))
 /** second 8 bits of unsigned 16 bit int **/

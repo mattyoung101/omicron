@@ -39,7 +39,7 @@ static void signal_handler(int sig){
 }
 
 /** lock the logger to prevent malformed prints across threads **/
-static void log_lock_func(void *userdata, int lock){
+static void log_lock_func(GCC_UNUSED void *userdata, int lock){
     if (lock){
         pthread_mutex_lock(&logLock);
     } else {
