@@ -12,6 +12,7 @@
 // - https://learnopengl.com/Getting-started/Hello-Triangle
 // - https://open.gl/drawing
 // - https://open.gl/textures
+// - https://learnopengl.com/Getting-started/Textures
 
 static const EGLint configAttribs[] = {
     EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_BLUE_SIZE, 8, EGL_GREEN_SIZE, 8,
@@ -34,83 +35,36 @@ static EGLint pbufferAttribs[] = {
         0, // will bet set dynamically
         EGL_NONE,
 };
-static const char *eglGetErrorStr(){
-    switch (eglGetError()){
-        case EGL_SUCCESS:
-            return "The last function succeeded without error.";
-        case EGL_NOT_INITIALIZED:
-            return "EGL is not initialized, or could not be initialized, for the "
-                   "specified EGL display connection.";
-        case EGL_BAD_ACCESS:
-            return "EGL cannot access a requested resource (for example a context "
-                   "is bound in another thread).";
-        case EGL_BAD_ALLOC:
-            return "EGL failed to allocate resources for the requested operation.";
-        case EGL_BAD_ATTRIBUTE:
-            return "An unrecognized attribute or attribute value was passed in the "
-                   "attribute list.";
-        case EGL_BAD_CONTEXT:
-            return "An EGLContext argument does not name a valid EGL rendering "
-                   "context.";
-        case EGL_BAD_CONFIG:
-            return "An EGLConfig argument does not name a valid EGL frame buffer "
-                   "configuration.";
-        case EGL_BAD_CURRENT_SURFACE:
-            return "The current surface of the calling thread is a window, pixel "
-                   "buffer or pixmap that is no longer valid.";
-        case EGL_BAD_DISPLAY:
-            return "An EGLDisplay argument does not name a valid EGL display "
-                   "connection.";
-        case EGL_BAD_SURFACE:
-            return "An EGLSurface argument does not name a valid surface (window, "
-                   "pixel buffer or pixmap) configured for GL rendering.";
-        case EGL_BAD_MATCH:
-            return "Arguments are inconsistent (for example, a valid context "
-                   "requires buffers not supplied by a valid surface).";
-        case EGL_BAD_PARAMETER:
-            return "One or more argument values are invalid.";
-        case EGL_BAD_NATIVE_PIXMAP:
-            return "A NativePixmapType argument does not refer to a valid native "
-                   "pixmap.";
-        case EGL_BAD_NATIVE_WINDOW:
-            return "A NativeWindowType argument does not refer to a valid native "
-                   "window.";
-        case EGL_CONTEXT_LOST:
-            return "A power management event has occurred. The application must "
-                   "destroy all contexts and reinitialise OpenGL ES state and "
-                   "objects to continue rendering.";
-        default:
-            break;
-    }
-    return "Unknown error!";
-}
 static float rectVertices[] = {
-        -1.0f,  1.0f, 1.0f, 0.0f, 0.0f, // Top-left
-        1.0f,  1.0f, 0.0f, 1.0f, 0.0f, // Top-right
-        1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // Bottom-right
-
-        1.0f, -1.0f, 0.0f, 0.0f, 1.0f, // Bottom-right
-        -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, // Bottom-left
-        -1.0f,  1.0f, 1.0f, 0.0f, 0.0f  // Top-left
+        // positions          // colors           // texture coords
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
 };
+static GLuint indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
+};
+static uint16_t imageWidth, imageHeight;
 static EGLDisplay display;
 static EGLSurface surface;
 static EGLContext context;
 static uint32_t vertexShader;
 static uint32_t fragmentShader;
 static uint32_t shaderProgram;
-static GLuint texture;
+static GLuint texture; // the last image received from the camera as an OpenGL texture
 static GLuint vbo; // vertex buffer object
+static GLuint ebo; // element buffer object
 static GLint minBallUniform, maxBallUniform, minLineUniform, maxLineUniform, minBlueUniform, maxBlueUniform, minYellowUniform, maxYellowUniform;
 static GLint textureUniform;
 GLfloat minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
-static uint16_t imageWidth, imageHeight;
 
 /** Checks for an OpenGL error and logs if one occurred **/
 static void check_gl_error(void){
     GLenum error = glGetError();
     if (error != GL_NO_ERROR){
-        log_warn("An OpenGL error occurred: 0x%X (consult gl2.h:185 for error codes)", error);
+        log_warn("An OpenGL error occurred: %s (0x%X)", glErrorStr(error), error);
     }
 }
 
@@ -159,6 +113,30 @@ static bool check_shader_compilation(uint32_t shader, char *name){
         return false;
     }
     return true;
+}
+
+uint8_t *gpu_manager_post(MMAL_BUFFER_HEADER_T *buf){
+    // While in theory it should be possible to pass buf->data directly to glTexImage2D, it causes problems in the form
+    // of the program locking up when you try to exit (and probably other things), I gather since MMAL thinks the buffer
+    // is still in use. So instead we'll copy it to shared memory and then send it back to the GPU.
+    uint8_t *texBuf = malloc(buf->length);
+    uint8_t *outBuf = malloc(imageWidth * imageHeight * 3);
+    memcpy(texBuf, buf->data, buf->length);
+
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texBuf);
+    glUniform1i(textureUniform, texture);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glReadPixels(0, 0, imageWidth, imageHeight, GL_RGB, GL_UNSIGNED_BYTE, outBuf);
+
+    check_gl_error();
+    free(texBuf);
+    return outBuf;
 }
 
 void gpu_manager_init(uint16_t width, uint16_t height) {
@@ -232,8 +210,14 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
 
     // first things first, deal with vertex stuff first (create VBOs, etc)
     glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(rectVertices), rectVertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     check_gl_error();
     log_trace("Vertex data initialised successfully");
 
@@ -243,14 +227,14 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     shaderProgram = glCreateProgram();
     check_gl_error();
 
-    // read from disk
+    // read shader from disk
     const GLchar *vertexSource = read_shader("../omicam.vert");
     const GLchar *fragmentSource = read_shader("../omicam.frag");
     glShaderSource(vertexShader, 1, &vertexSource, NULL);
     glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
     check_gl_error();
 
-    // compile
+    // compile shader
     glCompileShader(vertexShader);
     glCompileShader(fragmentShader);
     check_shader_compilation(vertexShader, "Vertex");
@@ -295,8 +279,14 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
 
     // setup attributes
     GLint posAttrib = glGetAttribLocation(shaderProgram, "a_position");
-    glVertexAttribPointer(posAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    GLint texCoordAttrib = glGetAttribLocation(shaderProgram, "a_texCoord");
+    // position attribute
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(posAttrib);
+    // texture coord attribute
+    glVertexAttribPointer(texCoordAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(texCoordAttrib);
+
     check_gl_error();
     log_trace("Shader values set successfully");
 
@@ -314,16 +304,6 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     free((GLchar*) fragmentSource);
 }
 
-void gpu_manager_post(MMAL_BUFFER_HEADER_T *buf){
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // bind texture with glTexImage2D here
-    // TODO we still need to bind the texture before this and also somehow set a_texCoord ??
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
-    check_gl_error();
-}
-
 void gpu_manager_dispose(void){
     log_trace("Disposing GPU manager");
     glDetachShader(shaderProgram, vertexShader);
@@ -333,6 +313,7 @@ void gpu_manager_dispose(void){
     glDeleteProgram(shaderProgram);
     glDeleteTextures(1, &texture);
     glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ebo);
     check_gl_error();
 
     eglDestroyContext(display, context);

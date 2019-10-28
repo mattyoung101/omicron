@@ -4,9 +4,10 @@ project(omicam C)
 # set variables
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wall -Wextra -pthread")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og")
+# TODO in the future add "-fsanitize=undefined -fsanitize=address -fsanitize=leak" for ASan, it won't compile currently
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og -fstack-protector-strong")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -g -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s")
-add_definitions(-D_GNU_SOURCE)
+add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2)
 
 # find packages
 find_package(OpenMP)

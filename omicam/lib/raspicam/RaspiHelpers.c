@@ -154,8 +154,9 @@ MMAL_STATUS_T connect_ports(MMAL_PORT_T *output_port, MMAL_PORT_T *input_port, M
  */
 void check_disable_port(MMAL_PORT_T *port)
 {
-    if (port && port->is_enabled)
+    if (port && port->is_enabled) {
         mmal_port_disable(port);
+    }
 }
 
 /**

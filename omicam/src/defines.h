@@ -24,3 +24,6 @@
 #if (DEBUG_WRITE_FRAME_DISK) && (DEBUG_FRAME_EVERY < 120)
 #error Framerate is too fast to save files to disk. Either disable DEBUG_WRITE_FRAME_DISK or increase DEBUG_FRAME_EVERY.
 #endif
+#if DEBUG_USE_PNG
+#error DEBUG_USE_PNG has currently been removed to reduce code complexity.
+#endif

@@ -3,6 +3,8 @@
 // Misc macros
 
 /** if the key exists in the INI file, puts it into the omxcam settings struct as an integer **/
+#include <GLES2/gl2.h>
+
 #define INI_LOAD_INT(key) if (iniparser_find_entry(config, "VideoSettings:" #key)) { \
     log_trace("Have int key: " #key); \
     settings.camera.key = iniparser_getint(config, "VideoSettings:" #key, -1); \
@@ -26,7 +28,7 @@
 
 #define UPDATE_UNIFORM(location, dataName) if (location != -1){ \
     log_trace("Updating uniform at %d to the following: [%.2f, %.2f, %.2f]", location, dataName[0], dataName[1], dataName[2]); \
-    glUniform3fv(location, 1, dataName); \
+    glUniform3fv(location, 1, dataName); /* count is 1 because it's one vec3 */ \
     check_gl_error(); \
 }  else { \
     log_warn("Failed to update uniform at location: " #location); \
@@ -49,3 +51,7 @@
 
 /** gets the timestamp in milliseconds **/
 double utils_get_millis();
+/** get the last EGL error as a descriptive string **/
+const char *eglGetErrorStr();
+/** GL enum to error **/
+char *glErrorStr(GLenum error);

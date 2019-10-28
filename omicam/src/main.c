@@ -51,6 +51,7 @@ int main() {
 #if VERBOSE_LOGGING
     log_set_level(LOG_TRACE);
     puts("Verbose logging enabled.");
+    printf("Source fortification level: %d\n", _FORTIFY_SOURCE);
 #else
     log_set_level(LOG_INFO);
 #endif

@@ -56,7 +56,6 @@ static RASPICOMMONSETTINGS_PARAMETERS commonSettings;
 static MMAL_COMPONENT_T *cameraComponent; /// Pointer to the camera component
 static MMAL_POOL_T *cameraPool; /// Pointer to the pool of buffers used by camera video port
 static int framerate = 60;
-static uint8_t *frameBuffer = NULL;
 static MMAL_PORT_T *cameraVideoPort = NULL;
 #if ENABLE_DIAGNOSTICS
 static double lastFrameTime = 0.0;
@@ -180,13 +179,11 @@ static bool create_camera_component(void){
         goto error;
     }
 
-    // also skip still port
-
     /* Enable component */
     status = mmal_component_enable(camera);
 
     if (status != MMAL_SUCCESS){
-        log_error("camera component couldn't be enabled");
+        log_error("Failed to enable camera component. Perhaps it's already in use?");
         goto error;
     }
 
@@ -216,13 +213,16 @@ static bool create_camera_component(void){
 
 static uint32_t frames = 0;
 static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
-    gpu_manager_post(buffer);
+    uint8_t *processedFrame = gpu_manager_post(buffer);
 
     if (frames++ % DEBUG_FRAME_EVERY == 0){
         // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
-        uint8_t *decodeBuf = malloc(buffer->length);
-        memcpy(decodeBuf, buffer->data, buffer->length);
-        remote_debug_post_frame(decodeBuf);
+        uint8_t *curFrame = malloc(buffer->length);
+        memcpy(curFrame, buffer->data, buffer->length);
+        remote_debug_post_frame(curFrame, processedFrame);
+    } else {
+        // not needed by remote debugger, so just free it
+        free(processedFrame);
     }
 
     // handle MMAL stuff as well
@@ -247,6 +247,7 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
 #endif
 }
 
+/** called by camera_manager_init() to set the cam settings based on what's in the INI file */
 static void cam_set_settings(dictionary *config){
     // set default settings
     raspicommonsettings_set_defaults(&commonSettings);
@@ -258,11 +259,6 @@ static void cam_set_settings(dictionary *config){
 
     raspicamcontrol_set_defaults(&cameraParameters);
 
-    size_t frameBufferSize = commonSettings.width * commonSettings.height * 3;
-    frameBuffer = calloc(frameBufferSize, sizeof(uint8_t));
-    log_trace("Allocated %d KB to framebuffer (size: %dx%d), bit depth: 3", frameBufferSize / 1024, commonSettings.width,
-              commonSettings.height);
-
     gpu_manager_init(commonSettings.width, commonSettings.height);
     remote_debug_init(commonSettings.width, commonSettings.height);
 }
@@ -270,15 +266,15 @@ static void cam_set_settings(dictionary *config){
 void camera_manager_init(dictionary *config){
     bcm_host_init();
     cam_set_settings(config);
-    get_sensor_defaults(commonSettings.cameraNum, commonSettings.camera_name, &commonSettings.width,
-            &commonSettings.height);
-    log_trace("Camera num: %d, camera name: %s, width: %d, height: %d", commonSettings.cameraNum, commonSettings.camera_name,
+
+    get_sensor_defaults(commonSettings.cameraNum, commonSettings.camera_name, &commonSettings.width, &commonSettings.height);
+    log_debug("Camera num: %d, camera name: %s, width: %d, height: %d", commonSettings.cameraNum, commonSettings.camera_name,
             commonSettings.width, commonSettings.height);
-    log_trace("Framerate is: %d fps", framerate);
+    log_debug("Framerate is: %d fps", framerate);
 
+
+    log_trace("Creating and connecting components...");
     create_camera_component();
-
-    log_trace("Connecting components...");
     cameraVideoPort = cameraComponent->output[MMAL_CAMERA_VIDEO_PORT];
     MMAL_STATUS_T status;
 
@@ -341,6 +337,4 @@ void camera_manager_dispose(void){
         mmal_component_destroy(cameraComponent);
         cameraComponent = NULL;
     }
-    free(frameBuffer);
-    frameBuffer = NULL;
 }

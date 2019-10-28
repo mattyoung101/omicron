@@ -19,8 +19,12 @@ extern GLfloat minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], m
  * @param height the height of the framebuffer
  **/
 void gpu_manager_init(uint16_t width, uint16_t height);
-/** Posts a frame to the GPU for processing **/
-void gpu_manager_post(MMAL_BUFFER_HEADER_T *buf);
+/**
+ * Posts a frame to the GPU for processing
+ * @param buf the MMAL buffer header containing the frame data
+ * @return The buffer containing the received pixels from the GPU. You MUST free this buffer to prevent memory leaks.
+ **/
+uint8_t *gpu_manager_post(MMAL_BUFFER_HEADER_T *buf);
 /** Destroys the display and context safely **/
 void gpu_manager_dispose(void);
 /** Parses a string in the format "x,y,z" into three numbers to be stored in a uniform array **/
