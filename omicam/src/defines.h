@@ -6,7 +6,7 @@
 #define ENABLE_DIAGNOSTICS 0 // enable or disable performance (i.e. FPS) diagnostics
 #define USE_RGB 1 // use RGB or use YUV colour space
 #define DEBUG_JPEG_QUALITY 30 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
-#define DEBUG_FRAME_EVERY 120 // send a debug frame every X real frames
+#define DEBUG_FRAME_EVERY 60 // send a debug frame every X real frames
 #define DEBUG_USE_PNG 0 // use PNG instead of JPEG for remote debug, much slower but higher quality
 #define DEBUG_WRITE_FRAME_DISK 0 // whether or not to write the frame to disk in the remote debugger
 #define DEBUG_PORT 47208 // which port the remote debug TCP server runs on

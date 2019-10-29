@@ -53,10 +53,13 @@
 
 static RASPICAM_CAMERA_PARAMETERS cameraParameters;
 static RASPICOMMONSETTINGS_PARAMETERS commonSettings;
-static MMAL_COMPONENT_T *cameraComponent; /// Pointer to the camera component
-static MMAL_POOL_T *cameraPool; /// Pointer to the pool of buffers used by camera video port
+static MMAL_COMPONENT_T *cameraComponent; // Pointer to the camera component
+static MMAL_POOL_T *cameraPool; // Pointer to the pool of buffers used by camera video port
 static int framerate = 60;
 static MMAL_PORT_T *cameraVideoPort = NULL;
+// it seems that the MMAL will post useless buffers that cause the app to hang on exit, hence this value to ignore them
+// if we are currently disposing the camera manager
+static _Atomic bool ignoreCallback = false;
 #if ENABLE_DIAGNOSTICS
 static double lastFrameTime = 0.0;
 #endif
@@ -213,19 +216,25 @@ static bool create_camera_component(void){
 
 static uint32_t frames = 0;
 static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
+    if (ignoreCallback){
+        // log_trace("Callback is being ignored (probably disposing)");
+        goto end;
+    }
     uint8_t *processedFrame = gpu_manager_post(buffer);
 
     if (frames++ % DEBUG_FRAME_EVERY == 0){
         // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
-        uint8_t *curFrame = malloc(buffer->length);
-        memcpy(curFrame, buffer->data, buffer->length);
-        remote_debug_post_frame(curFrame, processedFrame);
+        // the buffer will be automatically freed by the encoding thread once processed successfully
+        uint8_t *camFrame = malloc(buffer->length);
+        memcpy(camFrame, buffer->data, buffer->length);
+        remote_debug_post_frame(camFrame, processedFrame);
     } else {
         // not needed by remote debugger, so just free it
         free(processedFrame);
     }
 
     // handle MMAL stuff as well
+    end:
     mmal_buffer_header_release(buffer);
     if (port->is_enabled){
         MMAL_STATUS_T status = MMAL_SUCCESS;
@@ -328,6 +337,7 @@ void camera_manager_capture(void){
 
 void camera_manager_dispose(void){
     log_trace("Disposing camera manager");
+    ignoreCallback = true;
     if (mmal_port_parameter_set_boolean(cameraVideoPort, MMAL_PARAMETER_CAPTURE, MMAL_FALSE) != MMAL_SUCCESS){
         log_error("Failed to stop capture, segfault incoming D:");
     }

@@ -135,7 +135,7 @@ uint8_t *gpu_manager_post(MMAL_BUFFER_HEADER_T *buf){
     glReadPixels(0, 0, imageWidth, imageHeight, GL_RGB, GL_UNSIGNED_BYTE, outBuf);
 
     check_gl_error();
-    free(texBuf);
+    free(texBuf); // allocated just to store the texture in, not needed anymore
     return outBuf;
 }
 

@@ -37,18 +37,23 @@ static zed_net_address_t remoteAddress;
 static _Atomic bool connected = false;
 static char *displayCommand[] = {"D", "I", "S", "P"}; // sent to tell the client that a full frame has been sent
 
+typedef struct {
+    uint8_t *camFrame;
+    uint8_t *threshFrame;
+} frame_entry_t;
+
 /** encodes and sends the image into a buffer **/
-static void encode_and_send(frame_t camFrame, frame_t threshFrame){
+static void encode_and_send(uint8_t *image, uint32_t imageSize){
     DebugFrame msg = DebugFrame_init_zero;
-    size_t bufSize = camFrame.size + threshFrame.size + 1024;
-    uint8_t *buf = malloc(bufSize);
+    size_t bufSize = imageSize + 1024; // the buffer size is the image size + 1KB of extra protobuf data
+    uint8_t *buf = calloc(bufSize, sizeof(uint8_t));
     pb_ostream_t stream = pb_ostream_from_buffer(buf, bufSize);
 
     // fill the protocol buffer with data
-    memcpy(msg.defaultImage.bytes, camFrame.buf, camFrame.size);
-    memcpy(msg.threshImage.bytes, threshFrame.buf, threshFrame.size);
-    msg.defaultImage.size = camFrame.size;
-    msg.threshImage.size = threshFrame.size;
+    memcpy(msg.defaultImage.bytes, image, imageSize);
+    msg.defaultImage.size = imageSize;
+
+    // TODO add support for sending the thresholded image as well
 
     // encode to buffer and send it to socket
     if (!pb_encode(&stream, DebugFrame_fields, &msg)){
@@ -64,58 +69,53 @@ static void encode_and_send(frame_t camFrame, frame_t threshFrame){
 }
 
 /**
- * Compresses an image to a JPEG or PNG depending on what's defined
- * @param data the image data
- * @return the compressed image buffer, must be freed manually
+ * Compresses an image to JPEG with libturbo-jpeg
+ * @param frameData the RGB framebuffer
+ * @param jpegSize a pointer to a variable holding the size in bytes of the JPEG image
+ * @return the encoded JPEG image. Must be freed manually.
  */
-static frame_t compress_image(uint8_t *data){
+static uint8_t *compress_image(uint8_t *frameData, unsigned long *jpegSize){
     uint8_t *compressedImage = NULL;
-    unsigned long jpegSize = 0;
-    tjCompress2(compressor, data, width, 0, height, TJPF_RGB, &compressedImage, &jpegSize, TJSAMP_420,
-                DEBUG_JPEG_QUALITY, TJFLAG_FASTDCT);
-#if DEBUG_WRITE_FRAME_DISK
-        char *filename = calloc(32, sizeof(char));
-        sprintf(filename, "frame_%d.jpg", frameCounter++);
-        FILE *out = fopen(filename, "w");
-        fwrite(compressedImage, sizeof(uint8_t), jpegSize, out);
-        fclose(out);
-        log_trace("JPEG encoder done (size: %lu bytes), written to: %s", jpegSize, filename);
-        free(filename);
-#else
-    log_trace("JPEG encoder done: %lu bytes", jpegSize);
-#endif
-
-    frame_t image = {0};
-    image.buf = compressedImage;
-    image.size = jpegSize;
-    return image;
+    tjCompress2(compressor, frameData, width, 0, height, TJPF_RGB, &compressedImage, jpegSize,
+                TJSAMP_420, DEBUG_JPEG_QUALITY, TJFLAG_FASTDCT);
+    return compressedImage;
 }
 
 /** process a single frame then exit **/
 static void *frame_thread(GCC_UNUSED void *param){
     while (true){
-        frame_entry_t *entry = NULL;
-        if (!rpa_queue_pop(frameQueue, (void*) &entry)){
+        void *queueData = NULL;
+        if (!rpa_queue_pop(frameQueue, &queueData)){
             log_error("Frame queue pop failed");
             continue;
         }
-        // Figured out the cause of the segfault: for whatever reason, tjCompress2 hates empty calloc'd arrays
-        // So it seems glReadPixels is not reading anything or is at least reading blank pixels
+        frame_entry_t *entry= (frame_entry_t*) queueData;
+        uint8_t *camFrame = entry->camFrame;
+        uint8_t *threshFrame = entry->threshFrame;
 
-        // FIXME there is a severe memory corruption bug around here, currently working on fixing it
+        unsigned long camImageSize = 0;
+        unsigned long threshImageSize = 0;
+        uint8_t *camImgCompressed = compress_image(camFrame, &camImageSize);
+        uint8_t *threshImgCompressed = compress_image(threshFrame, &threshImageSize);
 
-        puts("about to encode");
-        frame_t encodedCamFrame = compress_image(entry->cameraFrame);
-        puts("encoded successfully");
-//        frame_t encodedThreshFrame = compress_image(entry->threshFrame);
-//        encode_and_send(encodedCamFrame, encodedThreshFrame);
-
-        tjFree(encodedCamFrame.buf);
-//        tjFree(encodedThreshFrame.buf);
-        printf("pointer to camera frame: 0x%X\n", entry->cameraFrame);
-        free(entry->cameraFrame);
-        free(entry->threshFrame);
-        free(entry);
+#if DEBUG_WRITE_FRAME_DISK
+        char *filename = calloc(32, sizeof(char));
+        sprintf(filename, "frame_%d.jpg", frameCounter++);
+        FILE *out = fopen(filename, "w");
+        fwrite(camImgCompressed, sizeof(uint8_t), camImageSize, out);
+        fclose(out);
+        log_trace("JPEG encoder done (size: %lu bytes), written to: %s", camImageSize, filename);
+        free(filename);
+#else
+        log_trace("JPEG encoder done, cam img: %lu bytes, thresh img: %lu bytes, total: %lu bytes", camImageSize,
+                  threshImageSize, threshImageSize + camImageSize);
+//        encode_and_send(camImgCompressed, camImageSize);
+#endif
+        tjFree(camImgCompressed); // these two are allocated by tjCompress2 when compress_image is called
+        tjFree(threshImgCompressed);
+        free(camFrame); // these two are allocated elsewhere in the program each tick and must be freed
+        free(threshFrame);
+        free(entry); // this is malloc'd below and must be freed
     }
     return NULL;
 }
@@ -164,17 +164,14 @@ void remote_debug_init(uint16_t w, uint16_t h){
     log_debug("Remote debugger initialised successfully");
 }
 
-void remote_debug_post_frame(uint8_t *cameraFrame, uint8_t *threshFrame){
-    // both entry, cameraFrame and threshFrame will be free'd by the debug post thread
-    frame_entry_t *entry = calloc(1, sizeof(frame_entry_t));
-    entry->cameraFrame = cameraFrame;
+
+void remote_debug_post_frame(uint8_t *camFrame, uint8_t *threshFrame){
+    frame_entry_t *entry = malloc(sizeof(frame_entry_t));
+    entry->camFrame = camFrame;
     entry->threshFrame = threshFrame;
 
-    if (!rpa_queue_trypush(frameQueue, &entry)){
+    if (!rpa_queue_trypush(frameQueue, entry)){
         log_warn("Failed to push new frame to queue (perhaps it's full)");
-        free(cameraFrame);
-        free(threshFrame);
-        free(entry);
     }
 }
 

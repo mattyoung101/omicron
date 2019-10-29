@@ -3198,7 +3198,9 @@ static void getPixelColorRGBA8(unsigned char* r, unsigned char* g,
         }
     } else if(mode->colortype == LCT_RGB) {
         if(mode->bitdepth == 8) {
-            *r = in[i * 3 + 0]; *g = in[i * 3 + 1]; *b = in[i * 3 + 2];
+            *r = in[i * 3 + 0];
+            *g = in[i * 3 + 1];
+            *b = in[i * 3 + 2];
             if(mode->key_defined && *r == mode->key_r && *g == mode->key_g && *b == mode->key_b) *a = 0;
             else *a = 255;
         } else {
