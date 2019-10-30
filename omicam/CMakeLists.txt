@@ -3,11 +3,17 @@ project(omicam C)
 
 # set variables
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_FLAGS " ${CMAKE_C_FLAGS} -Wall -Wextra -pthread")
-# TODO in the future add "-fsanitize=undefined -fsanitize=address -fsanitize=leak" for ASan, it won't compile currently
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og -fstack-protector-strong")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -g -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s")
 add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pthread")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og -fstack-protector-strong -fsanitize=address -fno-omit-frame-pointer")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -g -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s")
+
+# the way we've set this up, debug is compiled to be OCD in its memory protection, with almost all sanitizers enabled
+# and the stack protector enabled as well. this makes it very slow and resource intensive but easy to spot bugs.
+# ideally, the program will be tested extensively in debug until its known to be secure, then run in release mode.
+# relesae optimises purely for performance, with literally zero safety considerations (even going so far as to completely
+# trust the FPU for all float calcs). ok nkw rjis, djis id eoif
 
 # find packages
 find_package(OpenMP)
@@ -32,8 +38,8 @@ add_executable(omicam src/main.c
         src/defines.h src/blob_detection.c src/blob_detection.h src/utils.c lib/raspicam/RaspiCamControl.c lib/raspicam/RaspiCamControl.h
         lib/raspicam/RaspiHelpers.c lib/raspicam/RaspiHelpers.h src/camera_manager.c src/camera_manager.h lib/raspicam/RaspiCommonSettings.c
         lib/raspicam/RaspiCommonSettings.h src/remote_debug.c src/remote_debug.h lib/DG_dynarr.h lib/rpa_queue.c lib/rpa_queue.h
-        lib/lodepng.c lib/lodepng.h lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
-        src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h lib/zed_net.h)
+        lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
+        src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h lib/zed_net.h lib/dyad/dyad.c lib/dyad/dyad.h)
 
 # link GPU libraries
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")

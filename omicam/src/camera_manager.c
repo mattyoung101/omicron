@@ -216,12 +216,9 @@ static bool create_camera_component(void){
 
 static uint32_t frames = 0;
 static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
-    if (ignoreCallback){
-        // log_trace("Callback is being ignored (probably disposing)");
-        goto end;
-    }
-    uint8_t *processedFrame = gpu_manager_post(buffer);
+    if (ignoreCallback) goto end;
 
+    uint8_t *processedFrame = gpu_manager_post(buffer);
     if (frames++ % DEBUG_FRAME_EVERY == 0){
         // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
         // the buffer will be automatically freed by the encoding thread once processed successfully
@@ -233,8 +230,8 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
         free(processedFrame);
     }
 
-    // handle MMAL stuff as well
     end:
+    // handle MMAL stuff as well
     mmal_buffer_header_release(buffer);
     if (port->is_enabled){
         MMAL_STATUS_T status = MMAL_SUCCESS;

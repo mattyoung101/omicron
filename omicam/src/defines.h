@@ -9,7 +9,7 @@
 #define DEBUG_FRAME_EVERY 60 // send a debug frame every X real frames
 #define DEBUG_USE_PNG 0 // use PNG instead of JPEG for remote debug, much slower but higher quality
 #define DEBUG_WRITE_FRAME_DISK 0 // whether or not to write the frame to disk in the remote debugger
-#define DEBUG_PORT 47208 // which port the remote debug TCP server runs on
+#define DEBUG_PORT 42708 // which port the remote debug TCP server runs on
 
 // Standard port setting for the camera component
 #define MMAL_CAMERA_PREVIEW_PORT 0

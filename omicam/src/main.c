@@ -48,10 +48,13 @@ static void log_lock_func(GCC_UNUSED void *userdata, int lock){
 }
 
 int main() {
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    signal(SIGPIPE, SIG_IGN);
+
 #if VERBOSE_LOGGING
     log_set_level(LOG_TRACE);
     puts("Verbose logging enabled.");
-    printf("Source fortification level: %d\n", _FORTIFY_SOURCE);
 #else
     log_set_level(LOG_INFO);
 #endif
@@ -60,8 +63,11 @@ int main() {
     logFile = fopen("/home/pi/omicam.log", "w");
     if (logFile != NULL){
         log_set_fp(logFile);
+    } else {
+        fprintf(stderr, "Failed to open log file: %s\n", strerror(errno));
     }
     log_info("Omicam v%s - Copyright (c) 2019 Team Omicron. All rights reserved.", OMICAM_VERSION);
+    log_debug("Build date: %s %s (%d)", __DATE__, __TIME__);
 
     log_debug("Loading and parsing config...");
     dictionary *config = iniparser_load("../omicam.ini");
@@ -91,9 +97,6 @@ int main() {
 
     camera_manager_init(config);
     iniparser_freedict(config);
-
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
 
     // this will block the main thread
     camera_manager_capture();
