@@ -62,4 +62,3 @@ Omicam is available under the main project license, see LICENSE.txt in this dire
 - [rpa_queue](https://github.com/chrismerck/rpa_queue): Apache 2
 - [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo): Various BSD and Zlib
 - [NLopt](https://github.com/stevengj/nlopt): MIT, as no LGPL code is used
-- [Dyad](https://github.com/rxi/dyad): MIT license

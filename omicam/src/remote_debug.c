@@ -7,13 +7,19 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <rpa_queue.h>
+#include <string.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "DG_dynarr.h"
 #include "protobuf/RemoteDebug.pb.h"
 #include "nanopb/pb_encode.h"
 #include "pb.h"
 #include "utils.h"
-#include "dyad/dyad.h"
+#include <unistd.h>
+#include <errno.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 // Manages encoding camera frames to JPG images (with turbo-jpeg) or PNG images (with lodepng) and sending them over a
 // TCP socket to the eventual Kotlin remote debugging application
@@ -28,15 +34,15 @@ static rpa_queue_t *frameQueue = NULL;
 #if DEBUG_WRITE_FRAME_DISK
 static uint32_t frameCounter = 0;
 #endif
-static _Atomic bool connected = false;
-static dyad_Stream *server = NULL;
-static dyad_Stream *remote = NULL;
+static _Atomic int sockfd, connfd = -1;
 
 /** Used as an easier way to pass two pointers to the thread queue (since it only takes a void*) */
 typedef struct {
     uint8_t *camFrame;
     uint8_t *threshFrame;
 } frame_entry_t;
+
+static void init_tcp_socket(void);
 
 /** encodes and sends the image into a buffer **/
 static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize){
@@ -52,15 +58,27 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.threshImage.size = threshImgSize;
 
     // encode to buffer and send it to socket
-    if (!pb_encode(&stream, DebugFrame_fields, &msg)){
+    if (!pb_encode_delimited(&stream, DebugFrame_fields, &msg)){
         log_error("Protobuf encode failed: %s", PB_GET_ERROR(&stream));
     }
     log_trace("Final protobuf stream size: %d bytes", stream.bytes_written);
-    if (connected){
-//        size_t bytesWritten = stream.bytes_written;
-//        dyad_write(server, buf, bufSize);
-        dyad_writef(server, strdup("DISP")); // fixme leak
-        log_trace("Dispatching frame over TCP");
+
+    // dispatch the buffer over TCP and handle errors
+    if (connfd != -1){
+        ssize_t written = write(connfd, buf, stream.bytes_written);
+        if (written == -1){
+            log_warn("Failed to write to TCP socket: %s", strerror(errno));
+
+            if (errno == EPIPE || errno == ECONNRESET){
+                log_info("Assuming client has disconnected, restarting socket server");
+                close(sockfd);
+                close(connfd);
+                connfd = -1;
+                init_tcp_socket();
+            }
+        } else {
+            log_trace("Written %d bytes successfully to TCP", written);
+        }
     }
     free(buf);
 }
@@ -113,42 +131,56 @@ static void *frame_thread(GCC_UNUSED void *param){
         tjFree(threshImgCompressed);
         free(camFrame); // this is malloc'd and copied from MMAL_BUFFER_HEADER_T in camera_manager
         free(threshFrame); // this is malloc'd and copied from glReadPixels in gpu_manager
-        free(entry); // this is malloc'd below and must be freed
+        free(entry); // this is malloc'd when we push to the queue and must be freed
     }
     return NULL;
 }
 
-static void *dyad_update_thread(GCC_UNUSED void *arg){
-    log_trace("TCP thread running");
-    while (true) {
-        while (dyad_getStreamCount() > 0) {
-            dyad_update();
-        }
+static void *tcp_thread(GCC_UNUSED void *arg){
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in serverAddr = {0};
+    struct sockaddr_in clientAddr = {0};
+    socklen_t clientAddrLen = 69;
+
+    if (sockfd == -1){
+        log_error("Failed to create TCP socket: %s", strerror(errno));
+        return NULL;
+    }
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    serverAddr.sin_port = htons(DEBUG_PORT);
+
+    if (bind(sockfd, &serverAddr, sizeof(serverAddr)) != 0){
+        log_error("Failed to bind TCP socket: %s", strerror(errno));
+        return NULL;
+    }
+    if (listen(sockfd, 4) != 0){
+        log_error("Failed to listen TCP socket: %s", strerror(errno));
+        return NULL;
+    }
+    clientAddrLen = sizeof(clientAddr);
+    log_debug("Awaiting client connection to TCP socket");
+
+    // block until a connection occurs (hence why this runs on its own thread)
+    connfd = accept(sockfd, (struct sockaddr*) &clientAddr, &clientAddrLen);
+    if (connfd == -1){
+        log_error("Failed to accept TCP connection: %s", strerror(errno));
+        close(sockfd);
+        return NULL;
+    } else {
+        log_info("Accepted client connection from %s:%d", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
     }
     return NULL;
 }
 
-static void dyad_onAccept(dyad_Event *event);
-
-static void dyad_onDisconnect(dyad_Event *event){
-    log_info("Debug app client %s:%d timed out or disconnected", dyad_getAddress(event->stream), dyad_getPort(event->stream));
-    remote = NULL;
-    connected = false;
-
-    // re-open the server for a new connection
-    // TODO it does NOT appear that the use after free occurs here, nonetheless this code is shit and should be rewritten
-    dyad_close(server);
-    server = dyad_newStream();
-    dyad_addListener(server, DYAD_EVENT_ACCEPT, dyad_onAccept, NULL);
-    dyad_listen(server, DEBUG_PORT);
-}
-
-static void dyad_onAccept(dyad_Event *event) {
-    log_info("Accepted debug app connection from %s:%d", dyad_getAddress(event->remote), dyad_getPort(event->remote));
-    remote = event->remote;
-    dyad_addListener(event->remote, DYAD_EVENT_TIMEOUT, dyad_onDisconnect, NULL);
-    dyad_addListener(event->remote, DYAD_EVENT_CLOSE, dyad_onDisconnect, NULL);
-    connected = true;
+static void init_tcp_socket(void){
+    int err = pthread_create(&tcpThread, NULL, tcp_thread, NULL);
+    if (err != 0){
+        log_error("Failed to create TCP thread: %s", strerror(err));
+    } else {
+        pthread_setname_np(tcpThread, "TCPThread");
+        log_trace("TCP thread created successfully");
+    }
 }
 
 void remote_debug_init(uint16_t w, uint16_t h){
@@ -168,22 +200,9 @@ void remote_debug_init(uint16_t w, uint16_t h){
         pthread_setname_np(frameThread, "RDEncoder");
     }
 
-    // init TCP socket
-    dyad_init();
-    server = dyad_newStream();
-    dyad_addListener(server, DYAD_EVENT_ACCEPT, dyad_onAccept, NULL);
-    dyad_listen(server, DEBUG_PORT);
-
-    err = pthread_create(&tcpThread, NULL, dyad_update_thread, NULL);
-    if (err != 0){
-        log_error("Failed to create TCP thread: %s", strerror(err));
-    } else {
-        pthread_setname_np(tcpThread, "TCPThread");
-    }
-
+    init_tcp_socket();
     log_debug("Remote debugger initialised successfully");
 }
-
 
 void remote_debug_post_frame(uint8_t *camFrame, uint8_t *threshFrame){
     frame_entry_t *entry = malloc(sizeof(frame_entry_t));
@@ -191,7 +210,7 @@ void remote_debug_post_frame(uint8_t *camFrame, uint8_t *threshFrame){
     entry->threshFrame = threshFrame;
 
     if (!rpa_queue_trypush(frameQueue, entry)){
-        log_warn("Failed to push new frame to queue (perhaps it's full)");
+        log_warn("Failed to push new frame to queue (perhaps it's full or network is busy)");
     }
 }
 
@@ -199,7 +218,9 @@ void remote_debug_dispose(){
     log_trace("Disposing remote debugger");
     pthread_cancel(frameThread);
     pthread_cancel(tcpThread);
+    usleep(500000); // wait 500ms for threads to cancel
     rpa_queue_destroy(frameQueue);
     tjDestroy(compressor);
-    dyad_shutdown();
+    close(sockfd);
+    close(connfd);
 }

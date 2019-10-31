@@ -42,8 +42,6 @@
 
 #define GCC_UNUSED __attribute__((unused))
 
-//#define DYAD_CHECK_UPDATE if (dyad_getStreamCount() > 0) { dyad_update(); }
-
 /** first 8 bits of unsigned 16 bit int **/
 #define HIGH_BYTE_16(num) ((uint8_t) ((num >> 8) & 0xFF))
 /** second 8 bits of unsigned 16 bit int **/

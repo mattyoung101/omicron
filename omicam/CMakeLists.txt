@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 11)
 add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pthread")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og -fstack-protector-strong -fsanitize=address -fno-omit-frame-pointer")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og -fstack-protector-strong -fsanitize=address -fno-omit-frame-pointer -static-libsan")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -g -Ofast -mfpu=vfp -mfloat-abi=hard -march=armv6zk -mtune=arm1176jzf-s")
 
 # the way we've set this up, debug is compiled to be OCD in its memory protection, with almost all sanitizers enabled
@@ -39,7 +39,7 @@ add_executable(omicam src/main.c
         lib/raspicam/RaspiHelpers.c lib/raspicam/RaspiHelpers.h src/camera_manager.c src/camera_manager.h lib/raspicam/RaspiCommonSettings.c
         lib/raspicam/RaspiCommonSettings.h src/remote_debug.c src/remote_debug.h lib/DG_dynarr.h lib/rpa_queue.c lib/rpa_queue.h
         lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
-        src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h lib/zed_net.h lib/dyad/dyad.c lib/dyad/dyad.h)
+        src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h)
 
 # link GPU libraries
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")
