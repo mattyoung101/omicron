@@ -1,8 +1,9 @@
+package com.omicron.omicontrol
+
+import RemoteDebug
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.nio.ByteBuffer
-import java.nio.channels.ServerSocketChannel
-import java.nio.channels.SocketChannel
 import kotlin.concurrent.thread
 
 class ConnectionManager {
@@ -21,6 +22,7 @@ class ConnectionManager {
 
             val msg = RemoteDebug.DebugFrame.parseDelimitedFrom(stream)
             println("received message???? default image: ${msg.defaultImage.size()}")
+            Values.eventBus.post(msg)
         }
     }
 
@@ -33,7 +35,10 @@ class ConnectionManager {
 
     fun connect(ip: String = Values.REMOTE_IP, port: Int = Values.REMOTE_PORT){
         println("Connecting to remote at $ip:$port")
-        socket.connect(InetSocketAddress(Values.REMOTE_IP, Values.REMOTE_PORT))
+        socket.connect(InetSocketAddress(
+            Values.REMOTE_IP,
+            Values.REMOTE_PORT
+        ))
         tcpThread.start()
         println("Connected successfully")
     }

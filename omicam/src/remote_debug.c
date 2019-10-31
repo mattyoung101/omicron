@@ -57,11 +57,10 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.defaultImage.size = camImgSize;
     msg.threshImage.size = threshImgSize;
 
-    // encode to buffer and send it to socket
+    // encode to buffer
     if (!pb_encode_delimited(&stream, DebugFrame_fields, &msg)){
         log_error("Protobuf encode failed: %s", PB_GET_ERROR(&stream));
     }
-    log_trace("Final protobuf stream size: %d bytes", stream.bytes_written);
 
     // dispatch the buffer over TCP and handle errors
     if (connfd != -1){
@@ -77,7 +76,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
                 init_tcp_socket();
             }
         } else {
-            log_trace("Written %d bytes successfully to TCP", written);
+//            log_trace("Written %d bytes successfully to TCP", written);
         }
     }
     free(buf);
@@ -114,6 +113,7 @@ static void *frame_thread(GCC_UNUSED void *param){
         uint8_t *camImgCompressed = compress_image(camFrame, &camImageSize);
         uint8_t *threshImgCompressed = compress_image(threshFrame, &threshImageSize);
 
+        // TODO remove DEBUG_WRITE_FRAME_DISK now that remote works
 #if DEBUG_WRITE_FRAME_DISK
         char *filename = calloc(32, sizeof(char));
         sprintf(filename, "frame_%d.jpg", frameCounter++);
@@ -123,8 +123,8 @@ static void *frame_thread(GCC_UNUSED void *param){
         log_trace("JPEG encoder done (size: %lu bytes), written to: %s", camImageSize, filename);
         free(filename);
 #else
-        log_trace("JPEG encoder done, cam img: %lu bytes, thresh img: %lu bytes, total: %lu bytes", camImageSize,
-                  threshImageSize, threshImageSize + camImageSize);
+//        log_trace("JPEG encoder done, cam img: %lu bytes, thresh img: %lu bytes, total: %lu bytes", camImageSize,
+//                  threshImageSize, threshImageSize + camImageSize);
         encode_and_send(camImgCompressed, camImageSize, threshImgCompressed, threshImageSize);
 #endif
         tjFree(camImgCompressed); // these two are allocated by tjCompress2 when compress_image is called in this thread
@@ -218,7 +218,7 @@ void remote_debug_dispose(){
     log_trace("Disposing remote debugger");
     pthread_cancel(frameThread);
     pthread_cancel(tcpThread);
-    usleep(500000); // wait 500ms for threads to cancel
+    usleep(100000); // wait 100ms for threads to cancel
     rpa_queue_destroy(frameQueue);
     tjDestroy(compressor);
     close(sockfd);
