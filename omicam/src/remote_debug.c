@@ -123,8 +123,8 @@ static void *frame_thread(GCC_UNUSED void *param){
         log_trace("JPEG encoder done (size: %lu bytes), written to: %s", camImageSize, filename);
         free(filename);
 #else
-//        log_trace("JPEG encoder done, cam img: %lu bytes, thresh img: %lu bytes, total: %lu bytes", camImageSize,
-//                  threshImageSize, threshImageSize + camImageSize);
+        log_trace("JPEG encoder done, cam img: %lu bytes, thresh img: %lu bytes, total: %lu bytes", camImageSize,
+                  threshImageSize, threshImageSize + camImageSize);
         encode_and_send(camImgCompressed, camImageSize, threshImgCompressed, threshImageSize);
 #endif
         tjFree(camImgCompressed); // these two are allocated by tjCompress2 when compress_image is called in this thread

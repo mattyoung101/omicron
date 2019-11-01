@@ -4,10 +4,15 @@ import com.google.common.eventbus.Subscribe
 import com.omicron.omicontrol.Styles
 import com.omicron.omicontrol.Utils
 import com.omicron.omicontrol.Values
+import javafx.application.Platform
 import javafx.geometry.Pos
+import javafx.scene.control.Alert
+import javafx.scene.control.ButtonType
 import javafx.scene.control.TextField
+import javafx.scene.layout.Region
 import tornadofx.*
 import java.net.ConnectException
+import kotlin.system.exitProcess
 
 class ConnectView : View() {
     init {
@@ -51,12 +56,35 @@ class ConnectView : View() {
                             Values.connectionManager.connect(ipField.text, portField.text.toInt())
                             Utils.transitionMetro(this@ConnectView, CameraView())
                         } catch (e: Exception){
-                            // TODO display popup
+                            val alert = Alert(
+                                Alert.AlertType.ERROR, e.toString(), ButtonType.OK
+                            ).apply {
+                                headerText = "Failed to connect to remote"
+                                title = "Connection error"
+                                isResizable = true
+                                setOnShown {
+                                    Platform.runLater {
+                                        isResizable = false
+                                        dialogPane.scene.window.sizeToScene()
+                                    }
+                                }
+                            }
+                            alert.dialogPane.minHeight = Region.USE_PREF_SIZE
+                            alert.show()
                             e.printStackTrace()
                         }
                     }
                 }
+                addClass(Styles.paddedBox)
+                alignment = Pos.CENTER
+            }
 
+            hbox {
+                button("Quit"){
+                    setOnAction {
+                        exitProcess(0)
+                    }
+                }
                 addClass(Styles.paddedBox)
                 alignment = Pos.CENTER
             }

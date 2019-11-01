@@ -1,5 +1,6 @@
 package com.omicron.omicontrol
 
+import com.omicron.omicontrol.views.CameraView
 import com.omicron.omicontrol.views.ConnectView
 import tornadofx.App
 import tornadofx.importStylesheet
