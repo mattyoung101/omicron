@@ -31,9 +31,6 @@ static uint16_t height = 0;
 static pthread_t frameThread;
 static pthread_t tcpThread;
 static rpa_queue_t *frameQueue = NULL;
-#if DEBUG_WRITE_FRAME_DISK
-static uint32_t frameCounter = 0;
-#endif
 static _Atomic int sockfd, connfd = -1;
 
 /** Used as an easier way to pass two pointers to the thread queue (since it only takes a void*) */
@@ -107,31 +104,28 @@ static void *frame_thread(GCC_UNUSED void *param){
         frame_entry_t *entry = (frame_entry_t*) queueData;
         uint8_t *camFrame = entry->camFrame; // normal view from the camera
         uint8_t *threshFrame = entry->threshFrame; // thresholded view from the camera
-
         unsigned long camImageSize = 0;
         unsigned long threshImageSize = 0;
+
+        // if the application is shutdown now, we don't want to cancel this thread until we've safely allocated and
+        // de-allocated everything (to prevent memory leaks and stop ASan from complaining)
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+
         uint8_t *camImgCompressed = compress_image(camFrame, &camImageSize);
         uint8_t *threshImgCompressed = compress_image(threshFrame, &threshImageSize);
 
-        // TODO remove DEBUG_WRITE_FRAME_DISK now that remote works
-#if DEBUG_WRITE_FRAME_DISK
-        char *filename = calloc(32, sizeof(char));
-        sprintf(filename, "frame_%d.jpg", frameCounter++);
-        FILE *out = fopen(filename, "w");
-        fwrite(camImgCompressed, sizeof(uint8_t), camImageSize, out);
-        fclose(out);
-        log_trace("JPEG encoder done (size: %lu bytes), written to: %s", camImageSize, filename);
-        free(filename);
-#else
-        log_trace("JPEG encoder done, cam img: %lu bytes, thresh img: %lu bytes, total: %lu bytes", camImageSize,
-                  threshImageSize, threshImageSize + camImageSize);
+//        log_trace("JPEG encoder done, cam img: %lu bytes, thresh img: %lu bytes, total: %lu bytes", camImageSize,
+//                  threshImageSize, threshImageSize + camImageSize);
         encode_and_send(camImgCompressed, camImageSize, threshImgCompressed, threshImageSize);
-#endif
+
         tjFree(camImgCompressed); // these two are allocated by tjCompress2 when compress_image is called in this thread
         tjFree(threshImgCompressed);
         free(camFrame); // this is malloc'd and copied from MMAL_BUFFER_HEADER_T in camera_manager
         free(threshFrame); // this is malloc'd and copied from glReadPixels in gpu_manager
         free(entry); // this is malloc'd when we push to the queue and must be freed
+
+        // now that everything has been run it's safe to cancel this thread again
+        pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     }
     return NULL;
 }
@@ -205,6 +199,11 @@ void remote_debug_init(uint16_t w, uint16_t h){
 }
 
 void remote_debug_post_frame(uint8_t *camFrame, uint8_t *threshFrame){
+    if (connfd == -1){
+        free(camFrame);
+        free(threshFrame);
+        return;
+    }
     frame_entry_t *entry = malloc(sizeof(frame_entry_t));
     entry->camFrame = camFrame;
     entry->threshFrame = threshFrame;
@@ -218,7 +217,6 @@ void remote_debug_dispose(){
     log_trace("Disposing remote debugger");
     pthread_cancel(frameThread);
     pthread_cancel(tcpThread);
-    usleep(100000); // wait 100ms for threads to cancel
     rpa_queue_destroy(frameQueue);
     tjDestroy(compressor);
     close(sockfd);

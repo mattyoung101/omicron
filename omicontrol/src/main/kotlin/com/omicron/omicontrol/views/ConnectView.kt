@@ -1,9 +1,6 @@
 package com.omicron.omicontrol.views
 
-import com.google.common.eventbus.Subscribe
-import com.omicron.omicontrol.Styles
-import com.omicron.omicontrol.Utils
-import com.omicron.omicontrol.Values
+import com.omicron.omicontrol.*
 import javafx.application.Platform
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
@@ -11,7 +8,6 @@ import javafx.scene.control.ButtonType
 import javafx.scene.control.TextField
 import javafx.scene.layout.Region
 import tornadofx.*
-import java.net.ConnectException
 import kotlin.system.exitProcess
 
 class ConnectView : View() {
@@ -39,13 +35,13 @@ class ConnectView : View() {
 
             hbox {
                 label("Remote IP: ")
-                ipField = textfield(Values.REMOTE_IP)
+                ipField = textfield(REMOTE_IP)
                 alignment = Pos.CENTER
             }
 
             hbox {
                 label("Remote port: ")
-                portField = textfield(Values.REMOTE_PORT.toString())
+                portField = textfield(REMOTE_PORT.toString())
                 alignment = Pos.CENTER
             }
 
@@ -53,13 +49,13 @@ class ConnectView : View() {
                 button("Connect"){
                     setOnAction {
                         try {
-                            Values.connectionManager.connect(ipField.text, portField.text.toInt())
+                            CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
                             Utils.transitionMetro(this@ConnectView, CameraView())
                         } catch (e: Exception){
                             val alert = Alert(
                                 Alert.AlertType.ERROR, e.toString(), ButtonType.OK
                             ).apply {
-                                headerText = "Failed to connect to remote"
+                                headerText = "Failed to connect to remote:"
                                 title = "Connection error"
                                 isResizable = true
                                 setOnShown {

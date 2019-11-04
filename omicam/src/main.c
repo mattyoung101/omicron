@@ -11,6 +11,7 @@
 #include "defines.h"
 #include <math.h>
 #include <pthread.h>
+#include <arm_neon.h>
 #include "camera_manager.h"
 #include "remote_debug.h"
 #include "utils.h"

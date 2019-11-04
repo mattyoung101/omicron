@@ -195,20 +195,21 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     log_debug("GL: %s on %s %s", version, vendor, renderer);
     log_debug("EGL: %s provided by %s", eglVersion, eglVendor);
 
-    // check the OpenGL context works
+    // set viewport (for vertex projection)
     glViewport(0, 0, width, height);
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
     check_gl_error();
 
     // apparently (according to the triangle.c source) if you update EGL on the Pi it install a "fake version"
+    // this section detects to make sure OpenGL is working as expected
     if (width != viewport[2] || height != viewport[3]){
         log_warn("OpenGL context integrity check failed (glViewport/glGetIntegerv seems to be broken), check EGL driver");
     } else {
         log_trace("OpenGL context seems to be working correctly");
     }
 
-    // first things first, deal with vertex stuff first (create VBOs, etc)
+    // first things first, deal with vertex stuff (create VBOs, etc)
     glGenBuffers(1, &vbo);
     glGenBuffers(1, &ebo);
 

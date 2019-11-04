@@ -20,6 +20,7 @@ void main() {
 //    gl_FragColor.g = inRange(texCol, minLine, maxLine) ? 1.0 : 0.0;
 //    gl_FragColor.b = inRange(texCol, minBlue, maxBlue) || inRange(texCol, minYellow, maxYellow) ? 1.0 : 0.0;
     gl_FragColor = vec4(texCol, 1.0);
+//    gl_FragColor = vec4(1.0);
 
     // so the output of this fragment shader is three bitmasks:
     // red channel = ball pixels, green channel = line pixels, b channel = any goal pixels
