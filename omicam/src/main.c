@@ -1,3 +1,4 @@
+#define OMX_SKIP64BIT
 #define DG_DYNARR_IMPLEMENTATION
 #include "DG_dynarr.h"
 #include <stdio.h>
@@ -14,7 +15,6 @@
 #include "camera_manager.h"
 #include "remote_debug.h"
 #include "utils.h"
-#include "blob_detection.h"
 
 #define OMICAM_VERSION "0.1"
 
@@ -78,23 +78,23 @@ int main() {
     }
     char *minBallStr = (char*) iniparser_getstring(config, "Thresholds:minBall", "0,0,0");
     char *maxBallStr = (char*) iniparser_getstring(config, "Thresholds:maxBall", "0,0,0");
-    blob_detector_parse_thresh(minBallStr, minBallData);
-    blob_detector_parse_thresh(maxBallStr, maxBallData);
+    gpu_manager_parse_thresh(minBallStr, minBallData);
+    gpu_manager_parse_thresh(maxBallStr, maxBallData);
 
     char *minLineStr = (char*) iniparser_getstring(config, "Thresholds:minLine", "0,0,0");
     char *maxLineStr = (char*) iniparser_getstring(config, "Thresholds:maxLine", "0,0,0");
-    blob_detector_parse_thresh(minLineStr, minLineData);
-    blob_detector_parse_thresh(maxLineStr, maxLineData);
+    gpu_manager_parse_thresh(minLineStr, minLineData);
+    gpu_manager_parse_thresh(maxLineStr, maxLineData);
 
     char *minBlueStr = (char*) iniparser_getstring(config, "Thresholds:minBlue", "0,0,0");
     char *maxBlueStr = (char*) iniparser_getstring(config, "Thresholds:maxBlue", "0,0,0");
-    blob_detector_parse_thresh(minBlueStr, minBlueData);
-    blob_detector_parse_thresh(maxBlueStr, maxBlueData);
+    gpu_manager_parse_thresh(minBlueStr, minBlueData);
+    gpu_manager_parse_thresh(maxBlueStr, maxBlueData);
 
     char *minYellowStr = (char*) iniparser_getstring(config, "Thresholds:minYellow", "0,0,0");
     char *maxYellowStr = (char*) iniparser_getstring(config, "Thresholds:maxYellow", "0,0,0");
-    blob_detector_parse_thresh(minYellowStr, minYellowData);
-    blob_detector_parse_thresh(maxYellowStr, maxYellowData);
+    gpu_manager_parse_thresh(minYellowStr, minYellowData);
+    gpu_manager_parse_thresh(maxYellowStr, maxYellowData);
 
     camera_manager_init(config);
     iniparser_freedict(config);

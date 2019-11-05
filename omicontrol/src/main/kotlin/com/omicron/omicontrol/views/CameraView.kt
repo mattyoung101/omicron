@@ -90,7 +90,7 @@ class CameraView : View() {
                 stackpane {
                     defaultImageView = imageview()
                     threshImageView = imageview{
-//                        blendMode = BlendMode.ADD
+                        blendMode = BlendMode.ADD
                     }
                 }
                 alignment = Pos.CENTER
