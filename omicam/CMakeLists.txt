@@ -5,9 +5,10 @@ project(omicam C)
 set(CMAKE_C_STANDARD 11)
 add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -D__ARM_NEON)
 
-set(SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fno-omit-frame-pointer -static-libsan")
+# -ffast-math -mfpu=neon -mfloat-abi=hard -march=armv7l"
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pthread")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og ${SAFETY_FLAGS} -ffast-math -mfpu=neon -mfloat-abi=hard -march=armv7l -mtune=arm1176jzf-s")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og -fstack-protector-strong -fsanitize=address -fno-omit-frame-pointer -static-libsan -mfpu=neon -mfloat-abi=hard -march=armv7l -mtune=arm1176jzf-s")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -g -Ofast -mfpu=neon -mfloat-abi=hard -march=armv7l -mtune=arm1176jzf-s")
 
 # the way we've set this up, debug is compiled to be OCD in its memory protection, with almost all sanitizers enabled

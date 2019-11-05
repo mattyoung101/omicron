@@ -17,6 +17,7 @@
 #include "gpu_manager.h"
 #include "utils.h"
 #include "remote_debug.h"
+#include "blob_detection.h"
 #include <math.h>
 
 // Uses Broadcom's MMAL (somehow faster than omxcam) to decode camera frames and pipe them off to the GPU
@@ -218,7 +219,7 @@ static uint32_t frames = 0;
 static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
     if (ignoreCallback) goto end;
 
-    uint8_t *processedFrame = gpu_manager_post(buffer);
+    uint8_t *processedFrame = blob_detector_post(buffer, commonSettings.width, commonSettings.height);
     if (frames++ % DEBUG_FRAME_EVERY == 0){
         // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
         // the buffer will be automatically freed by the encoding thread once processed successfully
@@ -258,8 +259,8 @@ static void cam_set_settings(dictionary *config){
     // set default settings
     raspicommonsettings_set_defaults(&commonSettings);
 
-    commonSettings.width = iniparser_getint(config, "VideoSettings:width", 640);
-    commonSettings.height = iniparser_getint(config, "VideoSettings:height", 480);
+    commonSettings.width = iniparser_getint(config, "VideoSettings:width", 1280);
+    commonSettings.height = iniparser_getint(config, "VideoSettings:height", 720);
     commonSettings.verbose = true;
     framerate = iniparser_getint(config, "VideoSettings:framerate", 60);
 

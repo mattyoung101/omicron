@@ -321,31 +321,3 @@ void gpu_manager_dispose(void){
     eglDestroySurface(display, surface);
     eglTerminate(display);
 }
-
-void gpu_manager_parse_thresh(char *threshStr, GLfloat *uniformArray){
-    char *token;
-    char *threshOrig = strdup(threshStr);
-    uint8_t i = 0;
-    token = strtok(threshStr, ",");
-
-    while (token != NULL){
-        char *invalid = NULL;
-        float number = strtof(token, &invalid);
-
-        if (number > 255){
-            log_error("Invalid threshold string \"%s\": token %s > 255 (not in RGB colour range)", threshOrig, token);
-        } else if (strlen(invalid) != 0){
-            log_error("Invalid threshold string \"%s\": invalid token: \"%s\"", threshOrig, invalid);
-        } else {
-            uniformArray[i++] = number;
-            if (i > 3){
-                log_error("Too many values for key: %s (max: 3)", threshOrig);
-                return;
-            }
-        }
-        token = strtok(NULL, ",");
-    }
-    // log_trace("Successfully parsed threshold key: %s", threshOrig);
-    free(threshOrig);
-}
-
