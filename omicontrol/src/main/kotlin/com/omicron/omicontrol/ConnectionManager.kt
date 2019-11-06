@@ -15,6 +15,8 @@ class ConnectionManager {
     /** code run by tcpThread **/
     private fun tcpThreadFun(){
         val stream = socket.getInputStream()
+        println("TCP THREAD STARTED")
+
         while (true){
             if (Thread.interrupted() || requestShutdown){
                 println("TCP thread interrupted, closing socket")
@@ -38,6 +40,7 @@ class ConnectionManager {
         println("Connecting to remote at $ip:$port")
 
         // re-create thread and socket (to support reconnecting)
+        requestShutdown = false
         socket.close()
         socket = Socket()
         socket.connect(InetSocketAddress(REMOTE_IP, REMOTE_PORT))

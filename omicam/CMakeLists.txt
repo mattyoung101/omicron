@@ -42,8 +42,6 @@ add_executable(omicam src/main.c
         lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
         src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h)
 
-# link GPU libraries
+# link GPU libraries, it's extremely important to link against these not the shitty mesa drivers becuase they don't work
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")
-target_link_libraries(omicam pthread dl rt m
-        ${GPU_LIBS}
-        /usr/lib/arm-linux-gnueabihf/libturbojpeg.so)
+target_link_libraries(omicam pthread dl rt m ${GPU_LIBS} SDL2 turbojpeg)

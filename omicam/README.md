@@ -27,8 +27,14 @@ Pi Cam v1.3.
 Flash your Pi's SD card with Raspbian Lite, boot and update it, then install the following packages:
 - CMake: `sudo apt install cmake`
 - Clang and lldb: `sudo apt install clang lldb`
-- [NLopt](https://NLopt.readthedocs.io/en/latest/): follow the instructions linked
+- NLopt: follow the instructions linked [here](https://NLopt.readthedocs.io/en/latest/)
 - libjpeg-turbo: `sudo apt install libturbojpeg0 libturbojpeg0-dev`
+- SDL2: `sudo apt install libsdl2-2.0.0 libsdl2-2.0-0-dbgsym libsdl2-dev libsdl2-doc`
+
+**Note on SDL:** can also be compiled from source (most tutorials do this). libsdl2-dev installs the broken mesa-common-dev
+packages, so if you're experiencing EGL or OpenGL errors in external applications build it instead. I'd advise against
+getting the pre-compiled releases from the website because following their instructions will _permanently break_ the file
+permissions of your system.
 
 Import the project into CLion on your host computer and follow the 
 [instructions provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to setup a remote toolchain
@@ -62,3 +68,4 @@ Omicam is available under the main project license, see LICENSE.txt in this dire
 - [rpa_queue](https://github.com/chrismerck/rpa_queue): Apache 2
 - [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo): Various BSD and Zlib
 - [NLopt](https://github.com/stevengj/nlopt): MIT, as no LGPL code is used
+- [SDL](https://www.libsdl.org/): Zlib license

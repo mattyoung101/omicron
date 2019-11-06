@@ -24,6 +24,7 @@ class CameraView : View() {
         reloadStylesheetsOnFocus()
         title = "Camera View | Omicontrol"
         EVENT_BUS.register(this)
+        println("Making new Camera View")
     }
 
     private lateinit var defaultImageView: ImageView
@@ -31,7 +32,7 @@ class CameraView : View() {
 
     @Subscribe
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
-        defaultImageView.image = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
+//        defaultImageView.image = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
         threshImageView.image = Image(ByteArrayInputStream(message.threshImage.toByteArray()))
     }
 
@@ -51,6 +52,7 @@ class CameraView : View() {
                 item("Disconnect"){
                     setOnAction {
                         CONNECTION_MANAGER.disconnect()
+                        EVENT_BUS.unregister(this)
                         Utils.transitionMetro(this@CameraView, ConnectView())
                     }
                     accelerator = KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)
@@ -90,7 +92,7 @@ class CameraView : View() {
                 stackpane {
                     defaultImageView = imageview()
                     threshImageView = imageview{
-                        blendMode = BlendMode.ADD
+//                         blendMode = BlendMode.SCREEN
                     }
                 }
                 alignment = Pos.CENTER

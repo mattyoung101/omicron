@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <interface/mmal/mmal_buffer.h>
 #include "utils.h"
+#include <SDL2/SDL.h>
 
 // Manages the OpenGL ES part of the VideoCore GPU. Receives camera frames, turns them into textures and runs a fragment shader on them.
 // Source for EGL stuff: https://github.com/matusnovak/rpi-opengl-without-x/blob/master/triangle.c (Public Domain)
@@ -14,51 +15,18 @@
 // - https://open.gl/textures
 // - https://learnopengl.com/Getting-started/Textures
 
-static const EGLint configAttribs[] = {
-    EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_BLUE_SIZE, 8, EGL_GREEN_SIZE, 8,
-    EGL_RED_SIZE, 8, EGL_DEPTH_SIZE, 8,
-
-    // Uncomment the following to enable MSAA
-    // EGL_SAMPLE_BUFFERS, 1, // <-- Must be set to 1 to enable multisampling!
-    // EGL_SAMPLES, 4, // <-- Number of samples
-
-    // Uncomment the following to enable stencil buffer
-    // EGL_STENCIL_SIZE, 1,
-
-    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, EGL_NONE
-};
-static const EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
-static EGLint pbufferAttribs[] = {
-        EGL_WIDTH,
-        0, // will be set dynamically
-        EGL_HEIGHT,
-        0, // will bet set dynamically
-        EGL_NONE,
-};
-static float rectVertices[] = {
-        // positions          // colors           // texture coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
-};
-static GLuint indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-};
 static uint16_t imageWidth, imageHeight;
-static EGLDisplay display;
-static EGLSurface surface;
-static EGLContext context;
 static uint32_t vertexShader;
 static uint32_t fragmentShader;
 static uint32_t shaderProgram;
-static GLuint texture; // the last image received from the camera as an OpenGL texture
-static GLuint vbo; // vertex buffer object
-static GLuint ebo; // element buffer object
 static GLint minBallUniform, maxBallUniform, minLineUniform, maxLineUniform, minBlueUniform, maxBlueUniform, minYellowUniform, maxYellowUniform;
 static GLint textureUniform;
 GLfloat minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+
+static SDL_Window *window = NULL;
+static SDL_Renderer *renderer = NULL;
+static SDL_GLContext context;
+static SDL_Texture *renderTex, *frameTex, *testBmp = NULL;
 
 /** Checks for an OpenGL error and logs if one occurred **/
 static void check_gl_error(void){
@@ -115,211 +83,109 @@ static bool check_shader_compilation(uint32_t shader, char *name){
     return true;
 }
 
+static int32_t ticks = 0;
 uint8_t *gpu_manager_post(MMAL_BUFFER_HEADER_T *buf){
-    // While in theory it should be possible to pass buf->data directly to glTexImage2D, it causes problems in the form
-    // of the program locking up when you try to exit (and probably other things), I gather since MMAL thinks the buffer
-    // is still in use. So instead we'll copy it to shared memory and then send it back to the GPU.
-    uint8_t *texBuf = malloc(buf->length);
     uint8_t *outBuf = malloc(imageWidth * imageHeight * 3);
-    memcpy(texBuf, buf->data, buf->length);
+//    uint8_t number = (uint8_t) (rand() % (255 + 1 - 0) - 0); // NOLINT
 
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    /*
+     * OK, so likely you're aware of what the problem (if not check the build folder for out.bmp or Omicontrol)
+     * Basically it's the whole rendering the white strip, but more so, the fact that the software renderer is
+     * STILL broken and not only that, but it's somehow faster than GPU (I assume because it bypasses all the copying?)
+     *
+     * It's not a camera issue because the same thing happens with just a blank colour (via memset) or with a BMP image.
+     * It's also not a hardware issue since it seems to happen with the software renderer (may want to check with
+     * SDL_CreateSoftwareRenderer and the SDL_Surface setup).
+     * So I'm thinking it's a threading issue since you'll observe this executes from the MMAL thread. We can check
+     * by making a new main file which just loads and displays the test BMP image. Otherwise regretfully it's a
+     * raspi driver issue which means we're fucked and have to do it via CPU instead (which may be worth it anyway
+     * since GPU copying takes bloody ages).
+     */
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imageWidth, imageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texBuf);
-    glUniform1i(textureUniform, texture);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+    // "pitch" is supposed to be the number of bytes in a single row in the image, however, that causes a heap buffer
+    // overflow so instead we use height and somehow that works??? honestly don't even know. I assume it's the way
+    // MMAL stores the buffer or something
+    // FIXME check if SDL_LockTexture and UnlockTexture is faster - note that are WRITE-ONLY!!!
+    SDL_UpdateTexture(frameTex, NULL, buf->data, imageHeight * 3);
+    SDL_RenderCopy(renderer, frameTex, NULL, NULL);
+    SDL_RenderPresent(renderer);
+    SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_RGB888, outBuf, imageHeight * 3);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glReadPixels(0, 0, imageWidth, imageHeight, GL_RGB, GL_UNSIGNED_BYTE, outBuf);
+//    if (ticks++ > 120){
+//        puts("saving to disk");
+//        // note byte order is little endian
+//        SDL_Surface *surf = SDL_CreateRGBSurface(0, imageWidth, imageHeight, 24, 0, 0, 0, 0);
+//        if (surf == NULL){
+//            log_error("SDL_CreateRGBSurface failed: %s", SDL_GetError());
+//            return NULL;
+//        }
+//        SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_RGB888, surf->pixels, surf->pitch);
+//        SDL_SaveBMP(surf, "frame.bmp");
+//        SDL_FreeSurface(surf);
+//        ticks = 0;
+//    }
 
     check_gl_error();
-    free(texBuf); // allocated just to store the texture in, not needed anymore
     return outBuf;
 }
 
 void gpu_manager_init(uint16_t width, uint16_t height) {
-    pbufferAttribs[1] = width;
-    pbufferAttribs[3] = height;
     imageWidth = width;
     imageHeight = height;
-    int major, minor;
-    EGLint numConfigs;
-    EGLConfig config;
-    log_debug("Initialising GPU pipeline...");
+    log_debug("Initialising GPU pipleine...");
 
-    // initialise and configure display
-    display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (display == EGL_NO_DISPLAY) {
-        log_error("Cannot get EGL display: %s", eglGetErrorStr());
+    if (SDL_Init(SDL_INIT_VIDEO) != 0){
+        log_error("Failed to initialise SDL2: %s", SDL_GetError());
         return;
     }
-    if (!eglInitialize(display, &major, &minor)) {
-        log_error("Failed to initialise EGL: %s", eglGetErrorStr());
-        eglTerminate(display);
+
+    uint32_t windowFlags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
+    window = SDL_CreateWindow("Omicam", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, windowFlags);
+    if (window == NULL){
+        log_error("Failed to create SDL window: %s", SDL_GetError());
         return;
     }
-    if (!eglChooseConfig(display, configAttribs, &config, 1, &numConfigs)) {
-        log_error("Failed to choose EGL config: %s", eglGetErrorStr());
-        eglTerminate(display);
+    context = SDL_GL_CreateContext(window);
+
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    if (renderer == NULL){
+        log_error("Failed to create SDL renderer: %s", SDL_GetError());
         return;
     }
-    log_trace("Successfully initialised EGL");
 
-    // create and bind surface
-    surface = eglCreatePbufferSurface(display, config, pbufferAttribs);
-    if (surface == EGL_NO_SURFACE) {
-        log_error("Failed to create EGL pbuffer surface: %s", eglGetErrorStr());
-        eglTerminate(display);
+    renderTex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, width, height);
+    frameTex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, width, height);
+    if (frameTex == NULL || renderTex == NULL){
+        log_error("Failed to create textures: %s", SDL_GetError());
         return;
     }
-    eglBindAPI(EGL_OPENGL_API);
 
-    // create context
-    context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
-    if (context == EGL_NO_CONTEXT) {
-        eglDestroySurface(display, surface);
-        eglTerminate(display);
+    SDL_Surface *testBmpSurf = SDL_LoadBMP("../test.bmp");
+    if (testBmpSurf == NULL){
+        log_error("Failed to load test bitmap: %s", SDL_GetError());
         return;
     }
-    eglMakeCurrent(display, surface, surface, context);
-    log_debug("Successfully acquired OpenGL context from EGL");
-
-    // print version info
-    const GLubyte *version = glGetString(GL_VERSION);
-    const GLubyte *vendor = glGetString(GL_VENDOR);
-    const GLubyte *renderer = glGetString(GL_RENDERER);
-    const char *eglVendor = eglQueryString(display, EGL_VENDOR);
-    const char *eglVersion = eglQueryString(display, EGL_VERSION);
-    log_debug("GL: %s on %s %s", version, vendor, renderer);
-    log_debug("EGL: %s provided by %s", eglVersion, eglVendor);
-
-    // set viewport (for vertex projection)
-    glViewport(0, 0, width, height);
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-    check_gl_error();
-
-    // apparently (according to the triangle.c source) if you update EGL on the Pi it install a "fake version"
-    // this section detects to make sure OpenGL is working as expected
-    if (width != viewport[2] || height != viewport[3]){
-        log_warn("OpenGL context integrity check failed (glViewport/glGetIntegerv seems to be broken), check EGL driver");
-    } else {
-        log_trace("OpenGL context seems to be working correctly");
+    testBmp = SDL_CreateTextureFromSurface(renderer, testBmpSurf);
+    if (testBmp == NULL){
+        log_error("Test BMP is: %s", SDL_GetError());
+        return;
     }
+    SDL_FreeSurface(testBmpSurf);
 
-    // first things first, deal with vertex stuff (create VBOs, etc)
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(rectVertices), rectVertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    check_gl_error();
-    log_trace("Vertex data initialised successfully");
-
-    // now create the vertex and fragment shaders
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    shaderProgram = glCreateProgram();
-    check_gl_error();
-
-    // read shader from disk
-    const GLchar *vertexSource = read_shader("../omicam.vert");
-    const GLchar *fragmentSource = read_shader("../omicam.frag");
-    glShaderSource(vertexShader, 1, &vertexSource, NULL);
-    glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-    check_gl_error();
-
-    // compile shader
-    glCompileShader(vertexShader);
-    glCompileShader(fragmentShader);
-    check_shader_compilation(vertexShader, "Vertex");
-    check_shader_compilation(fragmentShader, "Fragment");
-    check_gl_error();
-
-    // attach to shader program and link (this does the actual compilation)
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    check_gl_error();
-    glLinkProgram(shaderProgram);
-    check_gl_error();
-
-    // handle link errors and use program if successful
-    int linkSuccess = 0;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkSuccess);
-    if(!linkSuccess) {
-        char infoLog[512];
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        log_error("Shader program link failed. Log:");
-        log_error("%s", infoLog);
-    } else {
-        log_trace("Shader built successfully");
-        glUseProgram(shaderProgram);
-    }
-    check_gl_error();
-
-    // uniforms are variables in the GLSL shader accessible by the CPU, in this case we keep the ball thresholds in there
-    // so they can be modified by a simple INI and also at runtime
-    // we use macros because there's a shitload of code to error check each one of these
-    GET_UNIFORM_LOCATION(minBallUniform, "minBall")
-    GET_UNIFORM_LOCATION(maxBallUniform, "maxBall")
-    GET_UNIFORM_LOCATION(minLineUniform, "minLine")
-    GET_UNIFORM_LOCATION(maxLineUniform, "maxLine")
-    GET_UNIFORM_LOCATION(minBlueUniform, "minBlue")
-    GET_UNIFORM_LOCATION(maxBlueUniform, "maxBlue")
-    GET_UNIFORM_LOCATION(minYellowUniform, "minYellow")
-    GET_UNIFORM_LOCATION(maxYellowUniform, "maxYellow")
-    textureUniform = glGetUniformLocation(shaderProgram, "u_texture");
-    check_gl_error();
-    update_uniforms();
-
-    // setup attributes
-    GLint posAttrib = glGetAttribLocation(shaderProgram, "a_position");
-    GLint texCoordAttrib = glGetAttribLocation(shaderProgram, "a_texCoord");
-    // position attribute
-    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(posAttrib);
-    // texture coord attribute
-    glVertexAttribPointer(texCoordAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(texCoordAttrib);
-
-    check_gl_error();
-    log_trace("Shader values set successfully");
-
-    // now that we've got our vertices and the shaders to deal with them, it's time to create the texture
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    check_gl_error();
-
-    log_debug("GPU pipeline initialised successfully");
-    free((GLchar*) vertexSource);
-    free((GLchar*) fragmentSource);
+    log_debug("SDL window and renderer created successfully");
 }
 
 void gpu_manager_dispose(void){
     log_trace("Disposing GPU manager");
-    glDetachShader(shaderProgram, vertexShader);
-    glDetachShader(shaderProgram, fragmentShader);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-    glDeleteProgram(shaderProgram);
-    glDeleteTextures(1, &texture);
-    glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &ebo);
-    check_gl_error();
-
-    eglDestroyContext(display, context);
-    eglDestroySurface(display, surface);
-    eglTerminate(display);
+    SDL_DestroyTexture(renderTex);
+    SDL_DestroyTexture(frameTex);
+    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
+    SDL_GL_DeleteContext(context);
+    SDL_DestroyTexture(testBmp);
+    SDL_Quit();
 }
 
 void gpu_manager_parse_thresh(char *threshStr, GLfloat *uniformArray){

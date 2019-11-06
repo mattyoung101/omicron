@@ -49,6 +49,12 @@
 /** unpack two 8 bit integers into a 16 bit integer **/
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
 
+#define SDL_CHECK(func) do { \
+    if ((func) != 0){ \
+        log_error("SDL function failed in %s:%d: %s", __FILE__, __LINE__, SDL_GetError()); \
+    } \
+} while (0);
+
 /** gets the timestamp in milliseconds **/
 double utils_get_millis();
 /** get the last EGL error as a descriptive string **/
