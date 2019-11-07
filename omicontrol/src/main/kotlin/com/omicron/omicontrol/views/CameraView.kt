@@ -32,7 +32,7 @@ class CameraView : View() {
 
     @Subscribe
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
-//        defaultImageView.image = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
+        defaultImageView.image = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
         threshImageView.image = Image(ByteArrayInputStream(message.threshImage.toByteArray()))
     }
 
@@ -92,7 +92,7 @@ class CameraView : View() {
                 stackpane {
                     defaultImageView = imageview()
                     threshImageView = imageview{
-//                         blendMode = BlendMode.SCREEN
+                         blendMode = BlendMode.SCREEN
                     }
                 }
                 alignment = Pos.CENTER

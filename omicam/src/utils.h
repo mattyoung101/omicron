@@ -61,3 +61,5 @@ double utils_get_millis();
 const char *eglGetErrorStr();
 /** GL enum to error **/
 char *glErrorStr(GLenum error);
+/** SDL rendering test **/
+void sdl_test_main(void);

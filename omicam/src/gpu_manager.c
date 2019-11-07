@@ -25,8 +25,7 @@ GLfloat minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueD
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
-static SDL_GLContext context;
-static SDL_Texture *renderTex, *frameTex, *testBmp = NULL;
+static SDL_Texture *renderTex = NULL, *frameTex = NULL, *testBmp = NULL;
 
 /** Checks for an OpenGL error and logs if one occurred **/
 static void check_gl_error(void){
@@ -88,21 +87,6 @@ uint8_t *gpu_manager_post(MMAL_BUFFER_HEADER_T *buf){
     uint8_t *outBuf = malloc(imageWidth * imageHeight * 3);
 //    uint8_t number = (uint8_t) (rand() % (255 + 1 - 0) - 0); // NOLINT
 
-    /*
-     * OK, so likely you're aware of what the problem (if not check the build folder for out.bmp or Omicontrol)
-     * Basically it's the whole rendering the white strip, but more so, the fact that the software renderer is
-     * STILL broken and not only that, but it's somehow faster than GPU (I assume because it bypasses all the copying?)
-     *
-     * It's not a camera issue because the same thing happens with just a blank colour (via memset) or with a BMP image.
-     * It's also not a hardware issue since it seems to happen with the software renderer (may want to check with
-     * SDL_CreateSoftwareRenderer and the SDL_Surface setup).
-     * So I'm thinking it's a threading issue since you'll observe this executes from the MMAL thread. We can check
-     * by making a new main file which just loads and displays the test BMP image. Otherwise regretfully it's a
-     * raspi driver issue which means we're fucked and have to do it via CPU instead (which may be worth it anyway
-     * since GPU copying takes bloody ages).
-     */
-
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderClear(renderer);
     // "pitch" is supposed to be the number of bytes in a single row in the image, however, that causes a heap buffer
     // overflow so instead we use height and somehow that works??? honestly don't even know. I assume it's the way
@@ -113,22 +97,28 @@ uint8_t *gpu_manager_post(MMAL_BUFFER_HEADER_T *buf){
     SDL_RenderPresent(renderer);
     SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_RGB888, outBuf, imageHeight * 3);
 
-//    if (ticks++ > 120){
-//        puts("saving to disk");
-//        // note byte order is little endian
-//        SDL_Surface *surf = SDL_CreateRGBSurface(0, imageWidth, imageHeight, 24, 0, 0, 0, 0);
-//        if (surf == NULL){
-//            log_error("SDL_CreateRGBSurface failed: %s", SDL_GetError());
-//            return NULL;
-//        }
-//        SDL_RenderReadPixels(renderer, NULL, SDL_PIXELFORMAT_RGB888, surf->pixels, surf->pitch);
-//        SDL_SaveBMP(surf, "frame.bmp");
-//        SDL_FreeSurface(surf);
-//        ticks = 0;
-//    }
-
     check_gl_error();
     return outBuf;
+}
+
+void gpu_manager_test(void){
+    puts("running GPU manager test");
+    SDL_SetRenderTarget(renderer, frameTex);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, testBmp, NULL, NULL);
+    SDL_RenderPresent(renderer);
+
+    puts("saving to disk");
+    // note byte order is little endian
+    SDL_Surface *surf = SDL_CreateRGBSurface(0, imageWidth, imageHeight, 24, 0, 0, 0, 0);
+    if (surf == NULL){
+        log_error("SDL_CreateRGBSurface failed: %s", SDL_GetError());
+        return;
+    }
+    SDL_RenderReadPixels(renderer, NULL, surf->format->format, surf->pixels, surf->pitch);
+    SDL_SaveBMP(surf, "frame.bmp");
+    SDL_FreeSurface(surf);
 }
 
 void gpu_manager_init(uint16_t width, uint16_t height) {
@@ -141,13 +131,11 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
         return;
     }
 
-    uint32_t windowFlags = SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN;
-    window = SDL_CreateWindow("Omicam", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, windowFlags);
+    window = SDL_CreateWindow("Omicam", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, 0);
     if (window == NULL){
         log_error("Failed to create SDL window: %s", SDL_GetError());
         return;
     }
-    context = SDL_GL_CreateContext(window);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     if (renderer == NULL){
@@ -169,7 +157,7 @@ void gpu_manager_init(uint16_t width, uint16_t height) {
     }
     testBmp = SDL_CreateTextureFromSurface(renderer, testBmpSurf);
     if (testBmp == NULL){
-        log_error("Test BMP is: %s", SDL_GetError());
+        log_error("Failed to create test bitmap texture: %s", SDL_GetError());
         return;
     }
     SDL_FreeSurface(testBmpSurf);
@@ -183,7 +171,6 @@ void gpu_manager_dispose(void){
     SDL_DestroyTexture(frameTex);
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
-    SDL_GL_DeleteContext(context);
     SDL_DestroyTexture(testBmp);
     SDL_Quit();
 }

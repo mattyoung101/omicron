@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include <EGL/egl.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 // source: https://stackoverflow.com/a/3756954/5007892
 double utils_get_millis(){
@@ -86,4 +88,8 @@ char *glErrorStr(GLenum error){
         default:
             return "Unknown GL error!?";
     }
+}
+
+void sdl_test_main(void){
+    puts("running SDL test main");
 }

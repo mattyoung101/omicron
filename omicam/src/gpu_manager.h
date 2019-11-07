@@ -29,3 +29,5 @@ uint8_t *gpu_manager_post(MMAL_BUFFER_HEADER_T *buf);
 void gpu_manager_dispose(void);
 /** Parses a string in the format "x,y,z" into three numbers to be stored in a uniform array **/
 void gpu_manager_parse_thresh(char *threshStr, GLfloat *uniformArray);
+/** Test to make sure SDL is working properly for debugging **/
+void gpu_manager_test(void);

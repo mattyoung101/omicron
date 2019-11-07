@@ -70,6 +70,13 @@ int main() {
     log_info("Omicam v%s - Copyright (c) 2019 Team Omicron. All rights reserved.", OMICAM_VERSION);
     log_debug("Build date: %s %s (%d)", __DATE__, __TIME__);
 
+
+    // FIXME JUST TO TEST GPU
+    gpu_manager_init(1280, 720);
+    gpu_manager_test();
+    gpu_manager_dispose();
+    return EXIT_SUCCESS;
+
     log_debug("Loading and parsing config...");
     dictionary *config = iniparser_load("../omicam.ini");
     if (config == NULL){
