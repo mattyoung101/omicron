@@ -49,6 +49,7 @@ static pthread_t threads[BLOB_NUM_THREADS] = {0};
 static rpa_queue_t *queues[BLOB_NUM_THREADS] = {0};
 static uint8_t *receivedFrame = NULL; // global received frame, accessed by all threads
 static uint8_t *processedBall = NULL; // global processed ball data, allocated each time blob_detector_post is called
+static uint8_t *processedGoal = NULL;
 static pthread_cond_t doneCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t doneMutex = PTHREAD_MUTEX_INITIALIZER;
 static uint8_t doneThreads = 0; // number of completed threads
@@ -68,7 +69,9 @@ void *blob_worker(void *param){
         for (uint32_t i = range->min; i < range->max; i++){
             uint8_t colour[3] = {receivedFrame[i + R], receivedFrame[i + G], receivedFrame[i + B]};
             bool isBall = in_range(colour, minBallData, maxBallData);
+            bool isGoal = in_range(colour, minYellowData, maxYellowData) || in_range(colour, minBlueData, maxBlueData);
             processedBall[i] = isBall ? 255 : 0;
+            processedGoal[i] = isGoal ? 255 : 0;
         }
 
         // notify the main thread we're done
@@ -105,6 +108,7 @@ void blob_detector_init(uint16_t width, uint16_t height){
 
 uint8_t *blob_detector_post(MMAL_BUFFER_HEADER_T *buffer, uint16_t width, uint16_t height){
     processedBall = malloc(width * height); // would probably make more sense not to free this but RD code gets confusing
+    processedGoal = malloc(width * height);
     memcpy(receivedFrame, buffer->data, buffer->length); // copy frame to global variable for all threads to access
     doneThreads = 0;
     int32_t divisionSize = (width * height) / BLOB_NUM_THREADS;
@@ -146,6 +150,8 @@ uint8_t *blob_detector_post(MMAL_BUFFER_HEADER_T *buffer, uint16_t width, uint16
 //    }
 
     // "processedBall" will be freed later, and "receivedFrame" is private to us and allocated only once
+    // FIXME in future pass on this as well (in some sort of struct I guess) but for now it's not needed
+    free(processedGoal);
     return processedBall;
 }
 

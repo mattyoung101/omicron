@@ -7,15 +7,15 @@ For the full technical writeup on our custom vision pipeline, please see, docs/D
 Omicam is built and maintained by Matt Young, so if you have any questions, please contact: 25070@bbc.qld.edu.au
 
 ## Features list
-- GPU accelerated camera decoding using Broadcom's MMAL, capable of 720p 60fps
-- Zero-copy GPU accelerated image thresholding using OpenGL ES 2.0 shader
-- (NOT YET) Double-buffered GPU frame acquistion
-- Highly optimal CPU connected-component labelling (blob detection) based on recent state-of-the-art papers
-- Advanced localisation by way of non-linear optimisation (Nelder-Mead simplex method provided by NLopt)
-- Wireless frame streaming using libjpeg-turbo over TCP to remote debug/management app called "Omicontrol"
-- Uses less than 1% of the Pi's RAM and less than 50% CPU (so far)
-- Transmits data to main ESP32 microcontroller via Protocol Buffers over 115200 baud UART
-- Well-documented C/GLSL code and associated design documents (see docs folder and inline comments).
+- GPU accelerated camera decoding using Broadcom's MMAL libraries, capable of 720p 60fps
+- Custom designed multi-threaded colour segmentation with linear threads vs. framerate relationship
+- **(WIP)** Highly optimal CPU connected-component labelling (blob detection) based on recent state-of-the-art papers
+- **(WIP)** Advanced localisation by way of non-linear optimisation (Nelder-Mead simplex method provided by NLopt)
+- Wireless, multi-threaded frame streaming using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app
+    - Network protocol uses TCP socket and Protocol Buffers
+- Uses less than 5% of the Pi's RAM in release mode (sanitizers disabled)
+- **(WIP)** Transmits data to main ESP32 microcontroller via Protocol Buffers over 115200 baud UART
+- Well-documented C and associated design documents (see docs folder and inline comments).
 
 ## Building and running
 JetBrains CLion is the only supported IDE for working with Omicam. We use CLion's full remote mode to work with the Pi.
@@ -30,6 +30,8 @@ Flash your Pi's SD card with Raspbian Lite, boot and update it, then install the
 - [NLopt](https://NLopt.readthedocs.io/en/latest/): follow the instructions linked
 - libjpeg-turbo: `sudo apt install libturbojpeg0 libturbojpeg0-dev`
 
+**FIXME: talk about how to add optimisations to the NLopt build (adding O3 and hard FPU, etc)**
+
 Import the project into CLion on your host computer and follow the 
 [instructions provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to setup a remote toolchain
 and run configuration. The remote settings should be synced in Git, but you may need to modify the IP address to that of your
@@ -41,7 +43,8 @@ To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion 
 - **It is extremely important that you compile with Clang, NOT gcc** as it appears that gcc's implementation 
 of Address Sanitizer doesn't work (only Clang's does). You can do this by changing the compiler path from the default gcc 
 to /usr/bin/clang in CLion's toolchain settings. You should be able to compile with gcc for release mode as ASan isn't
-used but it's not recommended.
+used but it's not recommended. While ASan is a vital tool for debugging, if you are only building for release you
+can use GCC if you want.
 
 - Currently you should leave the debugger as the default gdb because it seems lldb doesn't work, and you won't notice a
 difference in CLion. 
@@ -49,6 +52,8 @@ difference in CLion.
 - You will need to disable the visual Address Sanitizer output as that is also broken.
 
 - If you install a new library on the Pi, you will need run Tools->Resync with remote hosts to update the new headers.
+
+- CLion's remote upload occasionally (few times per full day of work) fails temporarily, just ignore it and try again.
 
 ## License
 Omicam is available under the main project license, see LICENSE.txt in this directory or the root directory.
