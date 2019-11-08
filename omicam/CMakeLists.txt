@@ -45,6 +45,6 @@ add_executable(omicam src/main.c
 
 # link GPU libraries
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")
-target_link_libraries(omicam pthread dl rt m
+target_link_libraries(omicam pthread dl rt m SDL2
         ${GPU_LIBS}
         /usr/lib/arm-linux-gnueabihf/libturbojpeg.so)

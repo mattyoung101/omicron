@@ -21,7 +21,7 @@ static uint32_t fragmentShader;
 static uint32_t shaderProgram;
 static GLint minBallUniform, maxBallUniform, minLineUniform, maxLineUniform, minBlueUniform, maxBlueUniform, minYellowUniform, maxYellowUniform;
 static GLint textureUniform;
-GLfloat minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+static GLfloat minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
