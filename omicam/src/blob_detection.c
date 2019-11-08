@@ -1,16 +1,15 @@
 #include "blob_detection.h"
-#include "defines.h"
+#include "utils.h"
 #include <math.h>
-#include <arm_neon.h>
 #include <stdlib.h>
 #include <log/log.h>
 #include <omp.h>
+#include <rpa_queue.h>
 
 // Rectangle code based on libGDX's Rectangle.java
 // https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/math/Rectangle.java
 // eventually (if this is too slow, which it probably will be) this will use connected component labelling algorithms
-
-uint8_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+// pthread condition example source: https://gist.github.com/rtv/4989304
 
 #if !BLOB_USE_NEON
 /**
@@ -30,8 +29,8 @@ static inline bool in_range(const uint8_t *value, const uint8_t *min, const uint
 /**
  * Thresholds a colour, using vectors instructions (SIMD/NEON)
  * @param value the colour in question, must be a 3 element array
- * @param min the minimum colour, 3 element array
- * @param max the maximum colour, 3 element array
+ * @param min the minimum colour, vector should contain 3 elements (R, G, B)
+ * @param max the maximum colour, vector should contain 3 elements (R, G, B)
  * @return whether or not colour is in range of min and max
  */
 static inline bool in_range(uint8x8_t value, uint8x8_t min, uint8x8_t max){
@@ -41,52 +40,157 @@ static inline bool in_range(uint8x8_t value, uint8x8_t min, uint8x8_t max){
 }
 #endif
 
-uint8_t *blob_detector_post(MMAL_BUFFER_HEADER_T *buffer, uint16_t width, uint16_t height){
-    // RGB image where R=line, G=goal (yellow or blue), B=ball
-    uint8_t *processed = malloc(width * height * 3);
-    uint8_t *frame = buffer->data;
-
-    for (int y = 0; y < height; y++){
-        for (int x = 0; x < width; x++){
-            uint32_t base = x + width * y + height;
-
 #if BLOB_USE_NEON
-            uint8_t scalarColour[3] = {frame[base + R], frame[base + G], frame[base + B]};
-            uint8x8_t colour = vld1_u8(scalarColour); // "load a single vector from memory"
+uint8x8_t minBallData, maxBallData, minLineData, maxLineData, minBlueData, maxBlueData, minYellowData, maxYellowData;
 #else
-            uint8_t colour[3] = {frame[base + R], frame[base + G], frame[base + B]};
+uint8_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 #endif
+static pthread_t threads[BLOB_NUM_THREADS] = {0};
+static rpa_queue_t *queues[BLOB_NUM_THREADS] = {0};
+static uint8_t *receivedFrame = NULL; // global received frame, accessed by all threads
+static uint8_t *processedBall = NULL; // global processed ball data, allocated each time blob_detector_post is called
+static pthread_cond_t doneCond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t doneMutex = PTHREAD_MUTEX_INITIALIZER;
+static uint8_t doneThreads = 0; // number of completed threads
 
-            // bool isLine = in_range(colour, minLineData, maxLineData); // R channel
-            // bool isGoal = in_range(colour, minBlueData, maxBlueData) || in_range(colour, minYellowData, maxYellowData); // G channel
-            bool isBall = in_range(colour, minBallData, maxBallData); // B channel
+void *blob_worker(void *param){
+    int32_t id = (int32_t) param;
+    log_trace("Blob worker running with id: %d", id);
 
-            processed[base + R] = /*isLine ? 255 : */0;
-            processed[base + G] = /*isGoal ? 255 : */0;
-            processed[base + B] = isBall ? 255 : 0;
+    while (true){
+        void *queueData = NULL;
+        if (!rpa_queue_pop(queues[id], &queueData)){
+            log_error("Worker %d: Failed to pop item from queue");
+            continue;
+        }
+        array_range_t *range = (array_range_t*) queueData;
+
+        for (uint32_t i = range->min; i < range->max; i++){
+            uint8_t colour[3] = {receivedFrame[i + R], receivedFrame[i + G], receivedFrame[i + B]};
+            bool isBall = in_range(colour, minBallData, maxBallData);
+            processedBall[i] = isBall ? 255 : 0;
+        }
+
+        // notify the main thread we're done
+        pthread_mutex_lock(&doneMutex);
+        doneThreads++;
+        pthread_cond_signal(&doneCond);
+        pthread_mutex_unlock(&doneMutex);
+        free(range);
+    }
+}
+
+void blob_detector_init(uint16_t width, uint16_t height){
+    log_trace("Initialising blob detector...");
+    receivedFrame = calloc(width * height * 3, sizeof(uint8_t));
+    pthread_cond_init(&doneCond, NULL);
+    pthread_mutex_init(&doneMutex, NULL);
+
+    log_debug("Creating %d blob detector worker thread(s)", BLOB_NUM_THREADS);
+    for (int i = 0; i < BLOB_NUM_THREADS; i++){
+        if (!rpa_queue_create(&queues[i], 2)){
+            log_error("Failed to create work queue for blob thread %d", i);
+        }
+
+        int err = pthread_create(&threads[i], NULL, blob_worker, (void*) i);
+        if (err != 0){
+            log_error("Failed to create blob worker thread %d: %s", i, strerror(err));
+        } else {
+            char buf[32];
+            sprintf(buf, "Blob Worker %d", i);
+            pthread_setname_np(threads[i], buf);
+        }
+    }
+}
+
+uint8_t *blob_detector_post(MMAL_BUFFER_HEADER_T *buffer, uint16_t width, uint16_t height){
+    processedBall = malloc(width * height); // would probably make more sense not to free this but RD code gets confusing
+    memcpy(receivedFrame, buffer->data, buffer->length); // copy frame to global variable for all threads to access
+    doneThreads = 0;
+    int32_t divisionSize = (width * height) / BLOB_NUM_THREADS;
+
+    // setup work queues (essentially, divide the image into equally sized strips)
+    doneThreads = 0;
+    uint32_t last = 0;
+    for (int i = 0; i < BLOB_NUM_THREADS; i++){
+        array_range_t *range = malloc(sizeof(array_range_t));
+        range->min = last;
+        range->max = last + divisionSize;
+        last += divisionSize;
+        if (!rpa_queue_trypush(queues[i], range)){
+            log_error("Failed to push frame region to blob worker %d (is the queue full?)", i);
         }
     }
 
-    // "frame" is owned by the GPU, so we don't free it, and "processed" will be freed later
-    return processed;
+    // wait for threads to complete, each time a thread completes it will post the done condition
+    pthread_mutex_lock(&doneMutex);
+    while (doneThreads < BLOB_NUM_THREADS){
+        pthread_cond_wait(&doneCond, &doneMutex);
+    }
+    pthread_mutex_unlock(&doneMutex);
+
+//    for (int y = 0; y < height; y++){
+//        for (int x = 0; x < width; x++){
+//            uint32_t i = x + width * y + height;
+//#if BLOB_USE_NEON
+//            uint8_t scalarColour[3] = {frame[i + R], frame[i + G], frame[i + B]};
+//            uint8x8_t colour = vld1_u8(scalarColour); // "load a single vector from memory"
+//#else
+//            uint8_t colour[3] = {frame[i + R], frame[i + G], frame[i + B]};
+//#endif
+//            // bool isLine = in_range(colour, minLineData, maxLineData); // R channel
+//            // bool isGoal = in_range(colour, minBlueData, maxBlueData) || in_range(colour, minYellowData, maxYellowData); // G channel
+//            bool isBall = in_range(colour, minBallData, maxBallData); // B channel
+//            processedBall[i] = isBall ? 255 : 0;
+//        }
+//    }
+
+    // "processedBall" will be freed later, and "receivedFrame" is private to us and allocated only once
+    return processedBall;
 }
 
+void blob_detector_dispose(void){
+    log_trace("Disposing blob detector");
+    for (int i = 0; i < BLOB_NUM_THREADS; i++){
+        pthread_cancel(threads[i]);
+        rpa_queue_destroy(queues[i]);
+    }
+    free(receivedFrame);
+    pthread_cond_destroy(&doneCond);
+    pthread_mutex_destroy(&doneMutex);
+}
+
+// FIXME: using this macro breaks the curly brace insertion in CLion for some fucking reason
+//#if BLOB_USE_NEON
+//void blob_detector_parse_thresh(char *threshStr, uint8x8_t *array){
+//#else
+//void blob_detector_parse_thresh(char *threshStr, uint8_t *array){
+//#endif
 void blob_detector_parse_thresh(char *threshStr, uint8_t *array){
     char *token;
     char *threshOrig = strdup(threshStr);
     uint8_t i = 0;
+#if BLOB_USE_NEON
+    uint8_t arr[8] = {0}; // in NEON mode, we have to use the vector functions to copy it out (apparently)
+#endif
     token = strtok(threshStr, ",");
 
     while (token != NULL){
         char *invalid = NULL;
-        float number = strtof(token, &invalid);
+        int32_t number = strtol(token, &invalid, 10);
 
         if (number > 255){
             log_error("Invalid threshold string \"%s\": token %s > 255 (not in RGB colour range)", threshOrig, token);
         } else if (strlen(invalid) != 0){
             log_error("Invalid threshold string \"%s\": invalid token: \"%s\"", threshOrig, invalid);
         } else {
+#if BLOB_USE_NEON
+            // put into temp array, to be copied out later
+            arr[i++] = (uint8_t) number;
+#else
+            // put directly into array
             array[i++] = number;
+#endif
             if (i > 3){
                 log_error("Too many values for key: %s (max: 3)", threshOrig);
                 return;
@@ -95,5 +199,9 @@ void blob_detector_parse_thresh(char *threshStr, uint8_t *array){
         token = strtok(NULL, ",");
     }
     // log_trace("Successfully parsed threshold key: %s", threshOrig);
+#if BLOB_USE_NEON
+    // now we can copy our temp array into the 8x8 vector
+    *array = vld1_u8(arr);
+#endif
     free(threshOrig);
 }

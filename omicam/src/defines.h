@@ -8,7 +8,10 @@
 #define DEBUG_JPEG_QUALITY 30 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define DEBUG_FRAME_EVERY 5 // send a debug frame every X real frames
 #define DEBUG_PORT 42708 // which port the remote debug TCP server runs on
+// FIXME temporary while debug frame format is cooked
+#define DEBUG_ENABLED 0 // whether or not remote debug is enabled
 #define BLOB_USE_NEON 0 // whether or not to enable NEON optimisations in blob detection
+#define BLOB_NUM_THREADS 4 // number of worker threads for blob detector
 
 // Standard port setting for the camera component
 #define MMAL_CAMERA_PREVIEW_PORT 0

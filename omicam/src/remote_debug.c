@@ -92,7 +92,6 @@ static uint8_t *compress_image(uint8_t *frameData, unsigned long *jpegSize){
     return compressedImage;
 }
 
-/** process a single frame then exit **/
 static void *frame_thread(GCC_UNUSED void *param){
     while (true){
         void *queueData = NULL;
@@ -172,8 +171,7 @@ static void init_tcp_socket(void){
     if (err != 0){
         log_error("Failed to create TCP thread: %s", strerror(err));
     } else {
-        pthread_setname_np(tcpThread, "TCPThread");
-        log_trace("TCP thread created successfully");
+        pthread_setname_np(tcpThread, "TCP Thread");
     }
 }
 
@@ -191,7 +189,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
     if (err != 0){
         log_error("Failed to create frame encoding thread: %s", strerror(err));
     } else {
-        pthread_setname_np(frameThread, "RDEncoder");
+        pthread_setname_np(frameThread, "RD Encoder");
     }
 
     init_tcp_socket();
