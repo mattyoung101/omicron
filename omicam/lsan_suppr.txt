@@ -1,2 +1,1 @@
-# leak originates from SDL2, is only 28 bytes and I'm not sure where it comes from so ignore
-leak:cam_set_settings
+# put leak sanitizer things here

@@ -5,10 +5,11 @@ project(omicam C)
 set(CMAKE_C_STANDARD 11)
 add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -D__ARM_NEON)
 
-set(SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fno-omit-frame-pointer -static-libsan")
+# -ffast-math -mfpu=neon -mfloat-abi=hard -march=armv7l
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pthread")
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og ${SAFETY_FLAGS} -ffast-math -mfpu=neon -mfloat-abi=hard -march=armv7l -mtune=arm1176jzf-s")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -g -Ofast -mfpu=neon -mfloat-abi=hard -march=armv7l -mtune=arm1176jzf-s")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -g -Og -fstack-protector-strong -fsanitize=address -fno-omit-frame-pointer -static-libsan -ffast-math -mfpu=neon -mfloat-abi=hard -march=armv7")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -g -Ofast -mfpu=neon -mfloat-abi=hard -march=armv7 -mtune=arm1176jzf-s")
 
 # the way we've set this up, debug is compiled to be OCD in its memory protection, with almost all sanitizers enabled
 # and the stack protector enabled as well. this makes it very slow and resource intensive but easy to spot bugs.
@@ -42,6 +43,8 @@ add_executable(omicam src/main.c
         lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
         src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h)
 
-# link GPU libraries, it's extremely important to link against these not the shitty mesa drivers becuase they don't work
+# link GPU libraries
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")
-target_link_libraries(omicam pthread dl rt m ${GPU_LIBS} SDL2 turbojpeg)
+target_link_libraries(omicam pthread dl rt m
+        ${GPU_LIBS}
+        /usr/lib/arm-linux-gnueabihf/libturbojpeg.so)

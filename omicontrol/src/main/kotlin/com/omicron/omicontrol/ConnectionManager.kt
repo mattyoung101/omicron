@@ -21,6 +21,7 @@ class ConnectionManager {
             if (Thread.interrupted() || requestShutdown){
                 println("TCP thread interrupted, closing socket")
                 socket.close()
+                requestShutdown = false
                 return
             }
 
