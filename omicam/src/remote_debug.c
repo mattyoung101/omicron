@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <netinet/in.h>
+#include <zlib.h>
 #include <arpa/inet.h>
 
 // Manages encoding camera frames to JPG images (with turbo-jpeg) or PNG images (with lodepng) and sending them over a
@@ -26,12 +27,12 @@
 // source for libjpeg-turbo usage: https://stackoverflow.com/a/17671012/5007892
 
 static tjhandle compressor;
-static uint16_t width = 0;
-static uint16_t height = 0;
-static pthread_t frameThread;
-static pthread_t tcpThread;
+static _Atomic uint16_t width = 0;
+static _Atomic uint16_t height = 0;
+static pthread_t frameThread, tcpThread, thermalThread;
 static rpa_queue_t *frameQueue = NULL;
 static _Atomic int sockfd, connfd = -1;
+static _Atomic float temperature = 0.0f;
 
 /** Used as an easier way to pass two pointers to the thread queue (since it only takes a void*) */
 typedef struct {
@@ -41,7 +42,31 @@ typedef struct {
 
 static void init_tcp_socket(void);
 
-/** encodes and sends the image into a buffer **/
+/**
+ * Converts an image buffer containing a single colour channel (the output of the blob detector) to a correct
+ * 3 channel RGB image
+ * @param buf the image buffer
+ * @param size width * height of original image
+ * @return the 3-channel image, must be freed
+ */
+static uint8_t *duplicate_colour_channels(const uint8_t *buf){
+    uint8_t *img = malloc(width * height * 3);
+
+    // TODO this method is bloody broken for some reason
+    for (int i = 0; i < (width * height); i++){
+        uint8_t pixel = buf[i];
+
+        // set the three colour channels
+        img[i + 0] = pixel;
+        img[i + 1] = pixel;
+        img[i + 2] = pixel;
+    }
+    return img;
+}
+
+/**
+ * Encodes the given JPEG images into a Protocl Buffer and disaptches it over the TCP socket, if connected.
+ */
 static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize){
     DebugFrame msg = DebugFrame_init_zero;
     size_t bufSize = camImgSize + threshImgSize + 512; // the buffer size is the image sizes + 1KB of extra protobuf data
@@ -50,9 +75,10 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
 
     // fill the protocol buffer with data
     memcpy(msg.defaultImage.bytes, camImg, camImgSize);
-    memcpy(msg.threshImage.bytes, threshImg, threshImgSize);
+    memcpy(msg.ballThreshImage.bytes, threshImg, threshImgSize);
     msg.defaultImage.size = camImgSize;
-    msg.threshImage.size = threshImgSize;
+    msg.ballThreshImage.size = threshImgSize;
+    msg.temperature = temperature;
 
     // encode to buffer
     if (!pb_encode_delimited(&stream, DebugFrame_fields, &msg)){
@@ -61,6 +87,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
 
     // dispatch the buffer over TCP and handle errors
     if (connfd != -1){
+        // TODO this seems to hang if the client terminates unexpectedly/refuses to read
         ssize_t written = write(connfd, buf, stream.bytes_written);
         if (written == -1){
             log_warn("Failed to write to TCP socket: %s", strerror(errno));
@@ -92,6 +119,27 @@ static uint8_t *compress_image(uint8_t *frameData, unsigned long *jpegSize){
     return compressedImage;
 }
 
+/**
+ * Compresses the given buffer, from the blob detector, with zlib. Assumes the buffer size is equal to width * height.
+ * @param inBuffer the output of blob_detector_post(), must be width * height bytes
+ * @return a newly allocated buffer with the compressed data, must be freed
+ */
+static uint8_t *compress_thresh_image(uint8_t *inBuffer, unsigned long *outputSize){
+    unsigned long inSize = width * height;
+    unsigned long outSize = compressBound(width * height);
+    uint8_t *outBuf = malloc(outSize);
+
+    int result = compress2(outBuf, &outSize, inBuffer, inSize, DEBUG_COMPRESSION_LEVEL);
+    if (result != Z_OK){
+        log_error("Failed to zlib compress buffer, error: %d", result);
+        return NULL;
+    } else {
+        *outputSize = outSize;
+        return outBuf;
+    }
+}
+
+// TODO set frame thread priority!
 static void *frame_thread(GCC_UNUSED void *param){
     while (true){
         void *queueData = NULL;
@@ -110,26 +158,46 @@ static void *frame_thread(GCC_UNUSED void *param){
         // de-allocated everything (to prevent memory leaks and stop ASan from complaining)
         pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
+        uint8_t *threshImgCompressed = compress_thresh_image(threshFrame, &threshImageSize);
         uint8_t *camImgCompressed = compress_image(camFrame, &camImageSize);
-        uint8_t *threshImgCompressed = compress_image(threshFrame, &threshImageSize);
-
-//        log_trace("JPEG encoder done, cam img: %lu bytes, thresh img: %lu bytes, total: %lu bytes", camImageSize,
-//                  threshImageSize, threshImageSize + camImageSize);
         encode_and_send(camImgCompressed, camImageSize, threshImgCompressed, threshImageSize);
 
-        tjFree(camImgCompressed); // these two are allocated by tjCompress2 when compress_image is called in this thread
-        tjFree(threshImgCompressed);
+        tjFree(camImgCompressed); // allocated by tjCompress2 when compress_image is called in this thread
+        tjFree(threshImgCompressed); // allocated by compress_thresh_frame when zlib compressing
         free(camFrame); // this is malloc'd and copied from MMAL_BUFFER_HEADER_T in camera_manager
-        free(threshFrame); // this is malloc'd and copied from glReadPixels in gpu_manager
+        free(threshFrame); // this is malloc'd by the blob detector
         free(entry); // this is malloc'd when we push to the queue and must be freed
-
-        // now that everything has been run it's safe to cancel this thread again
         pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     }
     return NULL;
 }
 
-static void *tcp_thread(GCC_UNUSED void *arg){
+/** reads the CPU temperature every DEBUG_TEMP_REPORTING_INTERVAL seconds **/
+static void *thermal_thread(void *arg){
+    while (true){
+        // general idea from https://www.raspberrypi.org/forums/viewtopic.php?t=170112#p1091895
+        FILE *temp = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
+        char buf[32];
+        if (temp == NULL){
+            log_error("Failed to open temperature source, aborting thermal monitor.");
+            return NULL;
+        }
+        if (fgets(buf, 32, temp) == NULL){
+            log_warn("Failed to read temperature");
+            continue;
+        }
+        fclose(temp);
+
+        long tempLong = strtol(buf, NULL, 10);
+        float tempDegrees = (float) tempLong / 1000.0f;
+        temperature = tempDegrees;
+
+        log_debug("Temperature is %f degrees", tempDegrees);
+        sleep(DEBUG_TEMP_REPORTING_INTERVAL);
+    }
+}
+
+static void *tcp_thread(void *arg){
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in serverAddr = {0};
     struct sockaddr_in clientAddr = {0};
@@ -184,12 +252,18 @@ void remote_debug_init(uint16_t w, uint16_t h){
         log_error("Failed to create frame queue");
     }
 
-    // init frame thread
+    // init threads
     int err = pthread_create(&frameThread, NULL, frame_thread, NULL);
     if (err != 0){
         log_error("Failed to create frame encoding thread: %s", strerror(err));
     } else {
         pthread_setname_np(frameThread, "RD Encoder");
+    }
+    err = pthread_create(&thermalThread, NULL, thermal_thread, NULL);
+    if (err != 0){
+        log_error("Failed to create thermal reporting thread: %s", strerror(err));
+    } else {
+        pthread_setname_np(thermalThread, "ThermalMonitor");
     }
 
     init_tcp_socket();
@@ -211,12 +285,23 @@ void remote_debug_post_frame(uint8_t *camFrame, uint8_t *threshFrame){
     }
 }
 
-void remote_debug_dispose(){
+void remote_debug_dispose(void){
     log_trace("Disposing remote debugger");
+    // FIXME if you are connected to remote when this is called, you get a segfault in libturbojpeg memcpy somewhere (see ASan output)
     pthread_cancel(frameThread);
     pthread_cancel(tcpThread);
+    pthread_cancel(thermalThread);
     rpa_queue_destroy(frameQueue);
     tjDestroy(compressor);
     close(sockfd);
     close(connfd);
+    connfd = -1;
+}
+
+bool remote_debug_is_connected(void){
+#if DEBUG_ALWAYS_SEND
+    return true;
+#else
+    return connfd != -1;
+#endif
 }

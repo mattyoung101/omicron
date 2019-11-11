@@ -14,7 +14,6 @@
 #include "interface/mmal/util/mmal_default_components.h"
 #include "interface/mmal/util/mmal_connection.h"
 #include "defines.h"
-#include "gpu_manager.h"
 #include "utils.h"
 #include "remote_debug.h"
 #include "blob_detection.h"
@@ -219,11 +218,11 @@ static uint32_t frames = 0;
 static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer){
     if (ignoreCallback) goto end;
 
-    // FIXME replace DEBUG_ENABLED with a check `remote_debug_is_connected` which checks if connfd == -1
-    // FIXME the frame returned by this is NOT IN THE CORRECT FORMAT FOR THE REMOTE DEBUGGER!!! get the java app to do it
+    // FIXME later on we may need to copy processedFrame if there's ever any threading issues
     uint8_t *processedFrame = blob_detector_post(buffer, commonSettings.width, commonSettings.height);
+
 #if DEBUG_ENABLED
-    if (frames++ % DEBUG_FRAME_EVERY == 0){
+    if (frames++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()){
         // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
         // the buffer will be automatically freed by the encoding thread once processed successfully
         uint8_t *camFrame = malloc(buffer->length);
@@ -272,7 +271,6 @@ static void cam_set_settings(dictionary *config){
 
     raspicamcontrol_set_defaults(&cameraParameters);
 
-//    gpu_manager_init(commonSettings.width, commonSettings.height);
     blob_detector_init(commonSettings.width, commonSettings.height);
     remote_debug_init(commonSettings.width, commonSettings.height);
 }

@@ -52,23 +52,30 @@ class ConnectView : View() {
                             CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
                             Utils.transitionMetro(this@ConnectView, CameraView())
                         } catch (e: Exception){
-                            val alert = Alert(
-                                Alert.AlertType.ERROR, e.toString(), ButtonType.OK
-                            ).apply {
-                                headerText = "Failed to connect to remote:"
-                                title = "Connection error"
-                                isResizable = true
-                                setOnShown {
-                                    Platform.runLater {
-                                        isResizable = false
-                                        dialogPane.scene.window.sizeToScene()
-                                    }
-                                }
-                            }
-                            alert.dialogPane.minHeight = Region.USE_PREF_SIZE
-                            alert.show()
+                            Utils.showGenericAlert(Alert.AlertType.ERROR, "Error: $e\n\nPlease check the Pi is" +
+                                    " powered on, and Omicam is running successfully.",
+                                "Failed to establish connection to camera")
                             e.printStackTrace()
                         }
+                    }
+                }
+                addClass(Styles.paddedBox)
+                alignment = Pos.CENTER
+            }
+
+            hbox {
+                button("?"){
+                    setOnAction {
+                        Utils.showGenericAlert(Alert.AlertType.INFORMATION,
+                            """
+                                Welcome to Omicontrol, the wireless debugging, controlling and monitoring app used by Team Omicron.
+                                
+                                To begin, please make sure you're connected to the same network as the Raspberry Pi.
+                                This can be achieved to the "Omicam" hotspot, or by having the Pi connect to your Wi-Fi.
+                                
+                                Then, use the default IP and port to connect. If that fails, run an nmap scan or check
+                                your router to find the Pi's IP address. The port will be the same (unless you changed it).
+                            """.trimIndent(), "Tutorial")
                     }
                 }
                 addClass(Styles.paddedBox)

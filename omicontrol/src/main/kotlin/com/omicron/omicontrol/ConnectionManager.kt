@@ -8,14 +8,13 @@ import kotlin.concurrent.thread
 
 class ConnectionManager {
     private var socket = Socket()
-    private val msgBuffer = ByteBuffer.allocateDirect(512000) // 512 KB, current buffers are around 55 KB
     private var requestShutdown = false
     private var tcpThread = thread(start=false){}
 
     /** code run by tcpThread **/
     private fun tcpThreadFun(){
         val stream = socket.getInputStream()
-        println("TCP THREAD STARTED")
+        println("TCP thread started")
 
         while (true){
             if (Thread.interrupted() || requestShutdown){
@@ -26,7 +25,13 @@ class ConnectionManager {
             }
 
             val msg = RemoteDebug.DebugFrame.parseDelimitedFrom(stream)
-            EVENT_BUS.post(msg)
+            if (msg == null){
+                println("Remote has likely disconnected")
+                EVENT_BUS.post(RemoteShutdownEvent())
+                Thread.currentThread().interrupt()
+            } else {
+                EVENT_BUS.post(msg)
+            }
         }
     }
 

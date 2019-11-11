@@ -1,14 +1,17 @@
-Team Omicron (2019)
+Team Omicron (2020)
 ====================
 
-This repository contains the code powering Team Omicron's 2019 robot, competing in RoboCup Jr Soccer. It is written
-mostly in C, with some Python scripts for code generation and debugging.
+This repository contains the code powering Team Omicron's 2020 robot, competing in RoboCup Jr Open Soccer at the Bordeaux
+Internationals. The Omicam and the ESP32 firmware are written in C, Teensy firmware in C++ (Arduino), and Omicontrol in Kotlin.
 
-For more information on our robot, please see our team's PowerPoint and poster.
+For more information on our robot that isn't covered here (especially hardware), please see our team's PowerPoint and poster.
 
-Contact Matt Young (25070@bbc.qld.edu.au) for any questions, queries, qualms or concerns.
+Contact repo maintainer Matt Young (25070@bbc.qld.edu.au) for any questions, queries, qualms or concerns - I will forward
+you to the appropriate team member.
 
 ## General overview
+**TODO update for new robot**
+
 Our robot consists of two microcontrollers: the ESP32 which acts as a master for running logic, and a Teensy 3.5
 slave which reads light sensors and controls motors. The ESP project is in main/ and components/, while the Teensy
 project is in Teensy/. The ESP project uses the ESP-IDF toolchain, and as of writing (October 2019) it is believed that
@@ -26,18 +29,17 @@ bytes are sent over UART clocked at 115200 baud.
 
 For more information about our gameplay features and hardware, you should consult Omicron's team poster and/or website.
 
-### Important notice about IDF version
-Due to the fact that we sync the file `sdkconfig`, it's important that you use the exact same IDF version that we do, to avoid merge conflicts.
-This project currently uses the **[v3.3 release branch](https://github.com/espressif/esp-idf/tree/release/v3.3) version** (i.e. the latest commit on origin/release/v3.3).
-
-Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/versions.html) for more information about IDF versions.
+### Team history and current members
+**TODO and list members**
 
 ## Directory structure
 - .vscode: VSCode settings, mainly spellchecking. In order to create `c_cpp_properties.json` for the C/C++ extension (which is not synced on Git), please see `docs/c_properties_template.txt`.
-- components: contains libraries, see below for links and licenses
-- docs: contains various bits of documentation, templates, etc
+- components: contains ESP32 libraries, see below for links and licenses
+- docs: contains various bits of documentation, templates, etc for ESP32 project
 - main: contains the main code that runs on the master and slave ESP32
-- openmv: contains the code that runs on our camera, the OpenMV H7
+- omicam: contains our advanced custom camera running on a Raspberry Pi Compute Module 3+, please see the README inside
+- omicontrol: contains our custom remote debug/management app for the robot and camera, see the README inside for more info
+- openmv: contains the legacy camera code that used to run on our old OpenMV H7, now replaced by the custom Omicam. Scheduled for removal soon.
 - scripts: contains various Python scripts for generating code and simple debugging
     - midis: contains MIDI files to be converted and played on the robot
 - Teensy: contains PlatformIO project for Teensy slave
@@ -50,6 +52,14 @@ This code is currently proprietary and confidential to Brisbane Boys' College an
 
 _If we are allowed to, the code will be made available under a permissive open source license once our competition is done._
 
+## Developer notes
+### IDF version
+Due to the fact that we sync the file `sdkconfig`, it's important that you use the exact same IDF version that we do, to avoid merge conflicts.
+This project currently uses the **[v3.3 release branch](https://github.com/espressif/esp-idf/tree/release/v3.3) version** (i.e. the latest commit on origin/release/v3.3).
+
+Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/versions.html) for more information about IDF versions.
+
+**TODO this is only for ESP, also we should move ESP project to a subfolder**
 ## Libraries and licenses
 - [ESP-IDF](https://github.com/espressif/esp-idf/): Apache 2 license
 - [DG_dynarr](https://github.com/DanielGibson/Snippets/blob/master/DG_dynarr.h): Public domain

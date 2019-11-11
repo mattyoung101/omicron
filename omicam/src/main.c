@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include "log/log.h"
 #include "iniparser/iniparser.h"
-#include "gpu_manager.h"
 #include <errno.h>
 #include <stdbool.h>
 #include <signal.h>
@@ -24,10 +23,10 @@ static pthread_mutex_t logLock;
 static void disposeResources(){
     log_trace("Disposing resources");
     camera_manager_dispose();
-//    gpu_manager_dispose();
     remote_debug_dispose();
     blob_detector_dispose();
     log_trace("Closing log file, goodbye!");
+    fflush(logFile);
     fclose(logFile);
     pthread_mutex_destroy(&logLock);
 }
@@ -74,7 +73,7 @@ int main() {
         fprintf(stderr, "Failed to open log file: %s\n", strerror(errno));
     }
     log_info("Omicam v%s - Copyright (c) 2019 Team Omicron. All rights reserved.", OMICAM_VERSION);
-    log_debug("Build date: %s %s (%d)", __DATE__, __TIME__);
+    log_debug("Last full rebuild: %s %s (%d)", __DATE__, __TIME__);
 
     log_debug("Loading and parsing config...");
     dictionary *config = iniparser_load("../omicam.ini");
