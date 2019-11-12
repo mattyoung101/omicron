@@ -2,6 +2,7 @@ package com.omicron.omicontrol.views
 
 import com.omicron.omicontrol.*
 import javafx.application.Platform
+import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
@@ -24,9 +25,11 @@ class ConnectView : View() {
             lateinit var ipField: TextField
             lateinit var portField: TextField
 
+            // TODO use forms for all this shit
+
             // title label
             hbox {
-                label("Connect to Robot") {
+                label("Omicontrol Connection Setup") {
                     addClass(Styles.titleLabel)
                     alignment = Pos.CENTER
                 }
@@ -42,6 +45,15 @@ class ConnectView : View() {
             hbox {
                 label("Remote port: ")
                 portField = textfield(REMOTE_PORT.toString())
+                alignment = Pos.CENTER
+            }
+
+            hbox {
+                label("Choose view: ")
+                combobox<String> {
+                    items = FXCollections.observableArrayList("Camera view", "Robot view")
+                    selectionModel.selectFirst()
+                }
                 alignment = Pos.CENTER
             }
 
@@ -75,7 +87,7 @@ class ConnectView : View() {
                                 
                                 Then, use the default IP and port to connect. If that fails, run an nmap scan or check
                                 your router to find the Pi's IP address. The port will be the same (unless you changed it).
-                            """.trimIndent(), "Tutorial")
+                            """.trimIndent(), "Connection Help")
                     }
                 }
                 addClass(Styles.paddedBox)

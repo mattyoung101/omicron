@@ -30,6 +30,7 @@ include_directories(lib)
 include_directories(/opt/vc/include)
 
 # add source files
+# probably not pragmatic CMake but screw you, this is a build script, it just builds my shit alright
 add_executable(omicam src/main.c
         lib/log/log.c
         lib/log/log.h
@@ -41,7 +42,7 @@ add_executable(omicam src/main.c
         lib/raspicam/RaspiHelpers.c lib/raspicam/RaspiHelpers.h src/camera_manager.c src/camera_manager.h lib/raspicam/RaspiCommonSettings.c
         lib/raspicam/RaspiCommonSettings.h src/remote_debug.c src/remote_debug.h lib/DG_dynarr.h lib/rpa_queue.c lib/rpa_queue.h
         lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
-        src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h)
+        src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h src/alloc_pool.c src/alloc_pool.h lib/map.c lib/map.h)
 
 # link GPU libraries
 file(GLOB GPU_LIBS "/opt/vc/lib/lib*.so")

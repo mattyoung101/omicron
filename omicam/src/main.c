@@ -1,5 +1,6 @@
 #define DG_DYNARR_IMPLEMENTATION
 #include "DG_dynarr.h"
+#undef DG_DYNARR_IMPLEMENTATION
 #include <stdio.h>
 #include "log/log.h"
 #include "iniparser/iniparser.h"
@@ -13,6 +14,7 @@
 #include "remote_debug.h"
 #include "utils.h"
 #include "blob_detection.h"
+#include "alloc_pool.h"
 
 #define OMICAM_VERSION "0.1"
 
@@ -25,6 +27,7 @@ static void disposeResources(){
     camera_manager_dispose();
     remote_debug_dispose();
     blob_detector_dispose();
+    alp_free_pool(FRAME_POOL);
     log_trace("Closing log file, goodbye!");
     fflush(logFile);
     fclose(logFile);
@@ -81,6 +84,17 @@ int main() {
         log_error("Failed to open config file (error: %s)", strerror(errno));
         return EXIT_FAILURE;
     }
+
+//    puts("Quick test of alloc pool");
+//    alp_create("Test");
+//    uint8_t *data = alp_malloc("Test", 420);
+//    memset(data, 0, 69);
+//    uint8_t *data2 = alp_malloc("Test", 32);
+//    memset(data2, 3, 4);
+//    uint8_t *fuckYou = malloc(4096);
+//    fuckYou[0] = 1;
+//    puts("test passed successfully");
+    alp_create(FRAME_POOL);
 
     char *minBallStr = (char*) iniparser_getstring(config, "Thresholds:minBall", "0,0,0");
     char *maxBallStr = (char*) iniparser_getstring(config, "Thresholds:maxBall", "0,0,0");

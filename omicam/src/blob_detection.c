@@ -134,7 +134,7 @@ uint8_t *blob_detector_post(MMAL_BUFFER_HEADER_T *buffer, uint16_t width, uint16
     pthread_mutex_unlock(&doneMutex);
 
     // "processedBall" will be freed later, and "receivedFrame" is not allocated
-    // FIXME in future pass on this as well (in some sort of struct I guess) but for now it's not needed
+    // FIXME in future, pass on this as well (in some sort of struct I guess) but for now it's not needed
     free(processedGoal);
     return processedBall;
 }
@@ -145,7 +145,6 @@ void blob_detector_dispose(void){
         pthread_cancel(threads[i]);
         rpa_queue_destroy(queues[i]);
     }
-//    free(receivedFrame);
     pthread_cond_destroy(&doneCond);
     pthread_mutex_destroy(&doneMutex);
 }

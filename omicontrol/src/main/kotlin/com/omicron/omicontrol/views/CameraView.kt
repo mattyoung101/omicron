@@ -15,8 +15,8 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import java.util.zip.Inflater
 import RemoteDebug
-import javafx.scene.effect.BlendMode
 import javafx.scene.paint.Color
+import kotlin.math.floor
 
 class CameraView : View() {
     init {
@@ -25,15 +25,15 @@ class CameraView : View() {
         EVENT_BUS.register(this)
         println("Making new Camera View")
     }
-    private lateinit var defaultImageView: ImageView
-    private lateinit var display: GraphicsContext
+    /** displays the normal image **/
+    private lateinit var defaultImage: ImageView
+    /** displays the ball thresh image **/
+    private lateinit var ballThreshDisplay: GraphicsContext
     private val compressor = Inflater()
 
     @ExperimentalUnsignedTypes
     @Subscribe
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
-        val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
-
         // decompress the threshold image
         compressor.reset()
         compressor.setInput(message.ballThreshImage.toByteArray())
@@ -41,22 +41,18 @@ class CameraView : View() {
         val bytes = compressor.inflate(outBuf)
 
         runLater {
-            display.globalBlendMode = BlendMode.SRC_OVER
-            display.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
-
-
-            display.drawImage(img, 0.0, 0.0)
+            val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
+            defaultImage.image = img
 
             // because the threshold image is 1 bit, we have to clone the colour channels to make a valid RGB image
-            display.globalBlendMode = BlendMode.SCREEN
+            ballThreshDisplay.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
             for (i in 0 until bytes) {
                 val byte: Int = outBuf[i].toUByte().toInt()
+                if (byte == 0) continue; // skip black pixels
                 val x = i % IMAGE_WIDTH.toInt()
-                val y = i / IMAGE_WIDTH.toInt()
-                display.pixelWriter.setColor(x, y, Color.grayRgb(byte))
+                val y = floor(i / IMAGE_WIDTH).toInt()
+                ballThreshDisplay.pixelWriter.setColor(x, y, Color.ORANGE)
             }
-//            display.fill = Color.BLACK
-//            display.fillRect(0.0, 0.0, 1280.0, 720.0)
         }
     }
 
@@ -64,8 +60,9 @@ class CameraView : View() {
     fun receiveRemoteShutdownEvent(message: RemoteShutdownEvent){
         println("Received remote shutdown event")
         runLater {
-            Utils.showGenericAlert(Alert.AlertType.ERROR, "The remote connection has unexpectedly terminated.\n\n" +
-                    "Please check Omicam is still running and try again.", "Connection error")
+            Utils.showGenericAlert(Alert.AlertType.ERROR, "The remote connection has unexpectedly terminated.\n" +
+                    "Please check Omicam is still running and try again.\n\nError description: Protobuf message was null",
+                "Connection error")
             Utils.transitionMetro(this, ConnectView())
         }
     }
@@ -93,14 +90,33 @@ class CameraView : View() {
                 }
             }
             menu("Actions") {
-                item("Reboot remote")
-                item("Shutdown remote")
-                item("Save thresholds")
+                item("Reboot remote").setOnAction {
+                    // send reboot command id
+                }
+                item("Shutdown remote").setOnAction {
+                    // send shutdown command id
+                }
+                item("Save thresholds").setOnAction {
+                    // send save thresholds command id
+                }
             }
             menu("Help") {
+                item("What's this?").setOnAction {
+                    Utils.showGenericAlert(Alert.AlertType.INFORMATION, """
+                        In the camera view, you can see the output of the camera and tune new thresholds. Use the pane
+                        on the side to select different colours and view their threshold masks. Use the sliders below the 
+                        select box to tune the thresholds. Your results will be reflected in near real-time.
+                        
+                        Use the Actions menu to run commands such as shutdown and rebooting the Pi. It's VERY IMPORTANT
+                        that you select Actions > Save Thresholds before changing colours, in order to save your tuned
+                        thresholds to disk.
+                        
+                        This view only lets you interact with the camera. To interact with the robot, please visit
+                        the main menu and select "Robot" instead of "Camera".
+                    """.trimIndent(), "Camera View Help")
+                }
                 item("About").setOnAction {
-                    Utils.showGenericAlert(Alert.AlertType.INFORMATION, "Copyright (c) 2019 Team Omicron. See LICENSE.txt" +
-                            "\n\nAuthors:\n- Matt Young (matt.young.1@outlook.com)",
+                    Utils.showGenericAlert(Alert.AlertType.INFORMATION, "Copyright (c) 2019 Team Omicron. See LICENSE.txt",
                         "Omicontrol v${VERSION}", "About")
                 }
             }
@@ -111,12 +127,24 @@ class CameraView : View() {
                 // we render the image and the thresh image on top of each other. the thresh image is rendered
                 // with add blending (so white pixels black pixels are see through and white pixels are white)
                 // TODO in future we need to add a toggle pane to select the different channels of the image
-                canvas(IMAGE_WIDTH, IMAGE_HEIGHT){
-                        display = graphicsContext2D
+
+                stackpane {
+                    defaultImage = imageview().apply {
+//                        blendMode = BlendMode.OVERLAY
+                    }
+                    canvas(IMAGE_WIDTH, IMAGE_HEIGHT) { ballThreshDisplay = graphicsContext2D }.apply {
+//                        blendMode = BlendMode.OVERLAY
+                    }
                 }
-                alignment = Pos.CENTER
+                alignment = Pos.CENTER_RIGHT
             }
+            alignment = Pos.CENTER_RIGHT
+        }
+
+        vbox {
+            paddingTop = 25.0
             alignment = Pos.CENTER
+            button("Switch to robot view")
         }
     }
 }

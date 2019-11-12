@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+// This files contains all the messages we send/receive with the ESP32 over UART
+
+// Message that we (the Pi) send to the ESP32 with the ball data. The reason this is separate from the LocalisationData
+// is that this should be sent more frequently than that one is (due to the time it takes to converge on a solution).
+message BallData {
+    float angle = 1;
+    float distance = 2;
+}
+
+// Message that we (the Pi) send to the ESP32 to inform it of our latest localised position
+message LocalisationData {
+    float estimatedX = 1;
+    float estimatedY = 2;
+    float error = 3; // value of error function on optimisation completion
+}

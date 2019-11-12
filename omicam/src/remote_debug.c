@@ -33,6 +33,7 @@ static pthread_t frameThread, tcpThread, thermalThread;
 static rpa_queue_t *frameQueue = NULL;
 static _Atomic int sockfd, connfd = -1;
 static _Atomic float temperature = 0.0f;
+static bool thermalThrottling = false;
 
 /** Used as an easier way to pass two pointers to the thread queue (since it only takes a void*) */
 typedef struct {
@@ -41,28 +42,6 @@ typedef struct {
 } frame_entry_t;
 
 static void init_tcp_socket(void);
-
-/**
- * Converts an image buffer containing a single colour channel (the output of the blob detector) to a correct
- * 3 channel RGB image
- * @param buf the image buffer
- * @param size width * height of original image
- * @return the 3-channel image, must be freed
- */
-static uint8_t *duplicate_colour_channels(const uint8_t *buf){
-    uint8_t *img = malloc(width * height * 3);
-
-    // TODO this method is bloody broken for some reason
-    for (int i = 0; i < (width * height); i++){
-        uint8_t pixel = buf[i];
-
-        // set the three colour channels
-        img[i + 0] = pixel;
-        img[i + 1] = pixel;
-        img[i + 2] = pixel;
-    }
-    return img;
-}
 
 /**
  * Encodes the given JPEG images into a Protocl Buffer and disaptches it over the TCP socket, if connected.
@@ -176,23 +155,34 @@ static void *frame_thread(GCC_UNUSED void *param){
 static void *thermal_thread(void *arg){
     while (true){
         // general idea from https://www.raspberrypi.org/forums/viewtopic.php?t=170112#p1091895
-        FILE *temp = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
+        FILE *tempFile = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
         char buf[32];
-        if (temp == NULL){
+        if (tempFile == NULL){
             log_error("Failed to open temperature source, aborting thermal monitor.");
             return NULL;
         }
-        if (fgets(buf, 32, temp) == NULL){
+        if (fgets(buf, 32, tempFile) == NULL){
             log_warn("Failed to read temperature");
             continue;
         }
-        fclose(temp);
+        fclose(tempFile);
 
         long tempLong = strtol(buf, NULL, 10);
         float tempDegrees = (float) tempLong / 1000.0f;
         temperature = tempDegrees;
-
         log_debug("Temperature is %f degrees", tempDegrees);
+
+        if (temperature >= 80.0f && !thermalThrottling){
+            log_warn("The temperature is currently %.2f degrees, which means the ARM CPU will enable thermal throttling to prevent damage.",
+                    temperature);
+            log_warn("Please review your cooling setup, and install/upgrade your cooler if deemed necessary.");
+            thermalThrottling = true;
+        } else if (temperature < 75.0f && thermalThrottling){
+            log_info("The temperature has returned to normal, so the ARM CPU will disable thermal throttling (currently: %.2f degrees)",
+                    temperature);
+            thermalThrottling = false;
+        }
+
         sleep(DEBUG_TEMP_REPORTING_INTERVAL);
     }
 }
