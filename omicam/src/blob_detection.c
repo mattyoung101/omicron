@@ -11,6 +11,14 @@
 // eventually (if this is too slow, which it probably will be) this will use connected component labelling algorithms
 // pthread condition example source: https://gist.github.com/rtv/4989304
 
+static inline uint8_t imax8(uint8_t first, uint8_t second){
+    return first > second ? first : second;
+}
+
+static inline uint8_t imin8(uint8_t first, uint8_t second){
+    return first < second ? first : second;
+}
+
 #if !BLOB_USE_NEON
 /**
  * Thresholds a colour, using scalar instructions (no SIMD/NEON)
@@ -19,11 +27,24 @@
  * @param max the maximum colour, 3 element array
  * @return whether or not colour is in range of min and max
  */
-static inline bool in_range(const uint8_t *value, const uint8_t *min, const uint8_t *max){
-    bool red = value[R] >= min[R] && value[R] <= max[R];
-    bool green = value[G] >= min[G] && value[G] <= max[G];
-    bool blue = value[B] >= min[B] && value[B] <= max[B];
-    return red && green && blue;
+static inline __attribute__((hot)) bool in_range(const uint8_t *value, const uint8_t *min, const uint8_t *max){
+//    bool red = value[R] >= min[R] && value[R] <= max[R];
+//    bool green = value[G] >= min[G] && value[G] <= max[G];
+//    bool blue = value[B] >= min[B] && value[B] <= max[B];
+//    return red && green && blue;
+
+    // based on OpenMV's threshold editor code:
+    // https://github.com/openmv/qt-creator/blob/66f56c420e651ca5f0bfcf300ac826a7bb7c27c6/src/plugins/openmv/tools/thresholdeditor.cpp#L65
+    // only based on, not copied from, so GPL does not apply
+    bool rMinOk = value[R] >= imin8(min[R], max[R]);
+    bool rMaxOk = value[R] <= imax8(max[R], min[R]);
+
+    bool gMinOk = value[G] >= imin8(min[G], max[G]);
+    bool gMaxOk = value[G] <= imax8(max[G], min[G]);
+
+    bool bMinOk = value[B] >= imin8(min[B], max[B]);
+    bool bMaxOk = value[B] <= imax8(max[B], min[B]);
+    return (rMinOk && rMaxOk && gMinOk && gMaxOk && bMinOk && bMaxOk);
 }
 #else
 /**
@@ -65,6 +86,7 @@ void *blob_worker(void *param){
             continue;
         }
         array_range_t *range = (array_range_t*) queueData;
+        uint32_t counter = 0;
 
         for (uint32_t i = range->min; i < range->max; i++){
             uint8_t colour[3] = {receivedFrame[i + R], receivedFrame[i + G], receivedFrame[i + B]};
@@ -72,6 +94,15 @@ void *blob_worker(void *param){
             bool isGoal = in_range(colour, minYellowData, maxYellowData) || in_range(colour, minBlueData, maxBlueData);
             processedBall[i] = isBall ? 255 : 0;
             processedGoal[i] = isGoal ? 255 : 0;
+
+//            if (counter++ % (id + 1) == 0){
+//                processedBall[i] = 255;
+//            } else {
+//                processedBall[i] = 0;
+//            }
+
+//            processedBall[i] = id % 2 == 0 ? 255 : 0;
+
         }
 
         // notify the main thread we're done

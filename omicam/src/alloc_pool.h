@@ -32,6 +32,13 @@ void *alp_malloc(POOL_REF_T id, size_t bytes);
  */
 void *alp_calloc(POOL_REF_T id, size_t nmemb, size_t size);
 /**
+ * Adds an allocation that wasn't allocated with alp_calloc or alp_malloc to the pool to be freed.
+ * Please make sure the buffer you're providing is one that can be freed with free() or else bad things will happen.
+ * @param id the pool ID
+ * @param allocation the external allocation
+ */
+void alp_register_allocation(POOL_REF_T id, void *allocation);
+/**
  * Destroys all allocations owned by the given pool, but does not destroy the pool itself.
  * @param id the ID of the pool
  */

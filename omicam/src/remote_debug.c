@@ -16,6 +16,7 @@
 #include "nanopb/pb_encode.h"
 #include "pb.h"
 #include "utils.h"
+#include "alloc_pool.h"
 #include <unistd.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -33,6 +34,7 @@ static pthread_t frameThread, tcpThread, thermalThread;
 static rpa_queue_t *frameQueue = NULL;
 static _Atomic int sockfd, connfd = -1;
 static _Atomic float temperature = 0.0f;
+static _Atomic bool createdThermThread = false;
 static bool thermalThrottling = false;
 
 /** Used as an easier way to pass two pointers to the thread queue (since it only takes a void*) */
@@ -170,16 +172,13 @@ static void *thermal_thread(void *arg){
         long tempLong = strtol(buf, NULL, 10);
         float tempDegrees = (float) tempLong / 1000.0f;
         temperature = tempDegrees;
-        log_debug("Temperature is %f degrees", tempDegrees);
+//        log_debug("Temperature is %.2f degrees", tempDegrees);
 
-        if (temperature >= 80.0f && !thermalThrottling){
-            log_warn("The temperature is currently %.2f degrees, which means the ARM CPU will enable thermal throttling to prevent damage.",
-                    temperature);
-            log_warn("Please review your cooling setup, and install/upgrade your cooler if deemed necessary.");
+        if (tempDegrees >= 80.0f && !thermalThrottling){
+            log_warn("CPU will probably be thermal throttling now (current temp: %.2f degrees, max is 80 degrees)", tempDegrees);
             thermalThrottling = true;
-        } else if (temperature < 75.0f && thermalThrottling){
-            log_info("The temperature has returned to normal, so the ARM CPU will disable thermal throttling (currently: %.2f degrees)",
-                    temperature);
+        } else if (tempDegrees <= 75.0f && thermalThrottling){
+            log_info("CPU will probably NO LONGER be thermal throttling now (current temp: %.2f degrees)", tempDegrees);
             thermalThrottling = false;
         }
 
@@ -238,6 +237,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
     compressor = tjInitCompress();
     width = w;
     height = h;
+    alp_create("RD");
     if (!rpa_queue_create(&frameQueue, 4)){
         log_error("Failed to create frame queue");
     }
@@ -249,11 +249,15 @@ void remote_debug_init(uint16_t w, uint16_t h){
     } else {
         pthread_setname_np(frameThread, "RD Encoder");
     }
-    err = pthread_create(&thermalThread, NULL, thermal_thread, NULL);
-    if (err != 0){
-        log_error("Failed to create thermal reporting thread: %s", strerror(err));
-    } else {
-        pthread_setname_np(thermalThread, "ThermalMonitor");
+
+    if (!createdThermThread) {
+        err = pthread_create(&thermalThread, NULL, thermal_thread, NULL);
+        if (err != 0) {
+            log_error("Failed to create thermal reporting thread: %s", strerror(err));
+        } else {
+            pthread_setname_np(thermalThread, "ThermalMonitor");
+            createdThermThread = true;
+        }
     }
 
     init_tcp_socket();
@@ -261,17 +265,22 @@ void remote_debug_init(uint16_t w, uint16_t h){
 }
 
 void remote_debug_post_frame(uint8_t *camFrame, uint8_t *threshFrame){
+#if !DEBUG_ALWAYS_SEND
     if (connfd == -1){
         free(camFrame);
         free(threshFrame);
         return;
     }
+#endif
     frame_entry_t *entry = malloc(sizeof(frame_entry_t));
     entry->camFrame = camFrame;
     entry->threshFrame = threshFrame;
 
     if (!rpa_queue_trypush(frameQueue, entry)){
         log_warn("Failed to push new frame to queue (perhaps it's full or network is busy)");
+        free(camFrame);
+        free(entry);
+        free(threshFrame);
     }
 }
 
@@ -283,6 +292,7 @@ void remote_debug_dispose(void){
     pthread_cancel(thermalThread);
     rpa_queue_destroy(frameQueue);
     tjDestroy(compressor);
+    alp_free_pool("RD");
     close(sockfd);
     close(connfd);
     connfd = -1;

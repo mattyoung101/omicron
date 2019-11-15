@@ -16,6 +16,12 @@ import javafx.scene.input.KeyCombination
 import java.util.zip.Inflater
 import RemoteDebug
 import javafx.scene.paint.Color
+import java.awt.image.BufferedImage
+import java.io.File
+import java.io.FileWriter
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.imageio.ImageIO
+import kotlin.concurrent.thread
 import kotlin.math.floor
 
 class CameraView : View() {
@@ -30,6 +36,8 @@ class CameraView : View() {
     /** displays the ball thresh image **/
     private lateinit var ballThreshDisplay: GraphicsContext
     private val compressor = Inflater()
+    private val writeToDisk = AtomicBoolean(false)
+    private var renderThresholds = true
 
     @ExperimentalUnsignedTypes
     @Subscribe
@@ -44,15 +52,50 @@ class CameraView : View() {
             val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
             defaultImage.image = img
 
-            // because the threshold image is 1 bit, we have to clone the colour channels to make a valid RGB image
-            ballThreshDisplay.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
-            for (i in 0 until bytes) {
-                val byte: Int = outBuf[i].toUByte().toInt()
-                if (byte == 0) continue; // skip black pixels
-                val x = i % IMAGE_WIDTH.toInt()
-                val y = floor(i / IMAGE_WIDTH).toInt()
-                ballThreshDisplay.pixelWriter.setColor(x, y, Color.ORANGE)
+            // write the received image data to the canvas, skipping black pixels (this fakes blend mode which won't work
+            // for some reason)
+            if (renderThresholds) {
+                ballThreshDisplay.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+                for (i in 0 until bytes) {
+                    val byte = outBuf[i].toUByte().toInt()
+                    if (byte == 0) continue // skip black pixels
+
+                    val x = i % IMAGE_WIDTH.toInt()
+                    val y = floor(i / IMAGE_WIDTH).toInt()
+                    ballThreshDisplay.pixelWriter.setColor(x, y, Color.ORANGE)
+                }
             }
+        }
+
+        if (writeToDisk.compareAndExchange(true, false)){
+            println("Writing buffer to disk")
+            run {
+                val outFile = File("threshold.raw")
+                val writer = outFile.printWriter()
+
+                for ((count, i) in (0 until bytes).withIndex()) {
+                    val byte: Int = outBuf[i].toUByte().toInt()
+                    writer.print(if (byte == 0) 0 else 1)
+
+                    if (count % IMAGE_WIDTH.toInt() == 0) {
+                        writer.print("\n")
+                    }
+                }
+                writer.close()
+            }
+
+            run {
+                val outFile = File("threshold.png")
+                val img = BufferedImage(IMAGE_WIDTH.toInt(), IMAGE_HEIGHT.toInt(), BufferedImage.TYPE_BYTE_GRAY)
+                for (i in 0 until bytes) {
+                    val x = i % IMAGE_WIDTH.toInt()
+                    val y = floor(i / IMAGE_WIDTH).toInt()
+                    val byte: Int = outBuf[i].toUByte().toInt()
+                    img.setRGB(x, y, if (byte == 0) java.awt.Color.BLACK.rgb else java.awt.Color.WHITE.rgb)
+                }
+                ImageIO.write(img, "png", outFile)
+            }
+            println("Written successfully")
         }
     }
 
@@ -90,14 +133,17 @@ class CameraView : View() {
                 }
             }
             menu("Actions") {
-                item("Reboot remote").setOnAction {
+                item("Reboot camera").setOnAction {
                     // send reboot command id
                 }
-                item("Shutdown remote").setOnAction {
+                item("Shutdown camera").setOnAction {
                     // send shutdown command id
                 }
                 item("Save thresholds").setOnAction {
                     // send save thresholds command id
+                }
+                item("Write next threshold buffer to disk").setOnAction {
+                    writeToDisk.set(true)
                 }
             }
             menu("Help") {
@@ -122,23 +168,21 @@ class CameraView : View() {
             }
         }
 
-        vbox {
-            hbox {
-                // we render the image and the thresh image on top of each other. the thresh image is rendered
-                // with add blending (so white pixels black pixels are see through and white pixels are white)
-                // TODO in future we need to add a toggle pane to select the different channels of the image
-
-                stackpane {
-                    defaultImage = imageview().apply {
-//                        blendMode = BlendMode.OVERLAY
-                    }
-                    canvas(IMAGE_WIDTH, IMAGE_HEIGHT) { ballThreshDisplay = graphicsContext2D }.apply {
-//                        blendMode = BlendMode.OVERLAY
-                    }
-                }
-                alignment = Pos.CENTER_RIGHT
+        hbox {
+            vbox {
+                label("For fuck sake")
+                alignment = Pos.TOP_LEFT
             }
-            alignment = Pos.CENTER_RIGHT
+
+            vbox {
+                stackpane {
+                    defaultImage = imageview()
+                    canvas(IMAGE_WIDTH, IMAGE_HEIGHT) { ballThreshDisplay = graphicsContext2D }
+                }
+                alignment = Pos.TOP_RIGHT
+            }
+
+            alignment = Pos.TOP_LEFT
         }
 
         vbox {

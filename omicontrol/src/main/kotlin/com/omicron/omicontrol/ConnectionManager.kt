@@ -54,6 +54,10 @@ class ConnectionManager {
         println("Connected successfully")
     }
 
+    fun encodeAndSend(command: RemoteDebug.DebugCommand){
+        command.writeDelimitedTo(socket.getOutputStream())
+    }
+
     fun disconnect(){
         requestShutdown = true
     }

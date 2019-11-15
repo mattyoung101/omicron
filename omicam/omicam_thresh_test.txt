@@ -1,0 +1,6 @@
+Use this thresh settings:
+min 64, 64, 64
+max 128, 128, 128
+
+The green is in the threshold so should be visible
+The blue should not be
