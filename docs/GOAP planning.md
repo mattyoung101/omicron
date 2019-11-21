@@ -4,7 +4,7 @@ Planning for if we were going to implement GOAP on our current robots.
 ## Actions
 - GoDirectlyToBall: if ball in front, go and pick it up
 - OrbitBall: if ball behind, go and orbit to pick it up
-- DriveToGoal: drive with the ball in hand to the goal
+- DriveToGoal: drive with the ball in capture zone to the goal
 - Score: when near the ball, go at YEET speed or kick if we had a kicker
 - AvoidLine: do line avoidance
 

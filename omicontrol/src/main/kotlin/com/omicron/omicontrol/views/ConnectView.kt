@@ -2,6 +2,7 @@ package com.omicron.omicontrol.views
 
 import com.omicron.omicontrol.*
 import javafx.application.Platform
+import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
@@ -24,9 +25,11 @@ class ConnectView : View() {
             lateinit var ipField: TextField
             lateinit var portField: TextField
 
+            // TODO use forms for all this shit
+
             // title label
             hbox {
-                label("Connect to Robot") {
+                label("Omicontrol Connection Setup") {
                     addClass(Styles.titleLabel)
                     alignment = Pos.CENTER
                 }
@@ -46,29 +49,45 @@ class ConnectView : View() {
             }
 
             hbox {
+                label("Choose view: ")
+                combobox<String> {
+                    items = FXCollections.observableArrayList("Camera view", "Robot view")
+                    selectionModel.selectFirst()
+                }
+                alignment = Pos.CENTER
+            }
+
+            hbox {
                 button("Connect"){
                     setOnAction {
                         try {
                             CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
                             Utils.transitionMetro(this@ConnectView, CameraView())
                         } catch (e: Exception){
-                            val alert = Alert(
-                                Alert.AlertType.ERROR, e.toString(), ButtonType.OK
-                            ).apply {
-                                headerText = "Failed to connect to remote:"
-                                title = "Connection error"
-                                isResizable = true
-                                setOnShown {
-                                    Platform.runLater {
-                                        isResizable = false
-                                        dialogPane.scene.window.sizeToScene()
-                                    }
-                                }
-                            }
-                            alert.dialogPane.minHeight = Region.USE_PREF_SIZE
-                            alert.show()
+                            Utils.showGenericAlert(Alert.AlertType.ERROR, "Error: $e\n\nPlease check the Pi is" +
+                                    " powered on, and Omicam is running successfully.",
+                                "Failed to establish connection to camera")
                             e.printStackTrace()
                         }
+                    }
+                }
+                addClass(Styles.paddedBox)
+                alignment = Pos.CENTER
+            }
+
+            hbox {
+                button("?"){
+                    setOnAction {
+                        Utils.showGenericAlert(Alert.AlertType.INFORMATION,
+                            """
+                                Welcome to Omicontrol, the wireless debugging, controlling and monitoring app used by Team Omicron.
+                                
+                                To begin, please make sure you're connected to the same network as the Raspberry Pi.
+                                This can be achieved to the "Omicam" hotspot, or by having the Pi connect to your Wi-Fi.
+                                
+                                Then, use the default IP and port to connect. If that fails, run an nmap scan or check
+                                your router to find the Pi's IP address. The port will be the same (unless you changed it).
+                            """.trimIndent(), "Connection Help")
                     }
                 }
                 addClass(Styles.paddedBox)

@@ -1,2 +1,2 @@
 DebugFrame.defaultImage max_size:96000
-DebugFrame.threshImage max_size:96000
+DebugFrame.ballThreshImage max_size:96000
