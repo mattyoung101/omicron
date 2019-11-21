@@ -153,7 +153,7 @@ void fsm_dump(state_machine_t *fsm){
     if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
         printf("BEGIN FSM DUMP\nState history (%d entries):\n", da_count(fsm->stateHistory));
         
-        for (int i = 0; i < da_count(fsm->stateHistory); i++){
+        for (size_t i = 0; i < da_count(fsm->stateHistory); i++){
             fsm_state_t *state = da_get(fsm->stateHistory, i);
             printf("\t%d. %s\n", i, state->name);
         }

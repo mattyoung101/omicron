@@ -28,6 +28,7 @@
 #include "bno055.h"
 #include "button.h"
 #include "movavg.h"
+#include "goap.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
