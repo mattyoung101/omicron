@@ -44,11 +44,12 @@ float polarToBearing(float angle){
 #define YSPEED_KD 1
 #define YSPEED_MAX 100
 
-float velcontrol_xSpeed;
-float velcontrol_ySpeed;
-float velcontrol_direction;
-float velcontrol_speed;
+#define COORD_KP 1
+#define COORD_KI 1
+#define COORD_KD 1
+#define COORD_MAX 100
 
+// Placeholder mouse sensor outputs
 float mouse_xSpeed;
 float mouse_ySpeed;
 
@@ -58,5 +59,14 @@ float outputSpeed;
 // Config PIDs
 static pid_config_t xSpeedPID = {XSPEED_KP, XSPEED_KI, XSPEED_KD, XSPEED_MAX, 0};
 static pid_config_t ySpeedPID = {YSPEED_KP, YSPEED_KI, YSPEED_KD, YSPEED_MAX, 0};
+static pid_config_t coordPID = {COORD_KP, COORD_KI, COORD_KD, COORD_MAX, 0};
 
 void velcontrol_updatePID(float direction, float speed);
+void velcontrol_moveToCoord(int targetX, int targetY, int xPos, int yPos);
+
+// ================================================== ACTION CODE MODULE ================================================== //
+
+// Orbit defines
+#define ORBITAL_RADIUS 150 // mm I think
+
+void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool reversed);
