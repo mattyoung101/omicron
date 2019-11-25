@@ -59,5 +59,6 @@ void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool revers
         targetSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleDifference) / 90.0));
     }
 
+    // Send to velocity control module
     velcontrol_updatePID(polarToBearing(tangentAngle), targetSpeed);
 }

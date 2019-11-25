@@ -75,4 +75,8 @@ void velcontrol_moveToCoord(int targetX, int targetY, int xPos, int yPos);
 #define ORBIT_SPEED_FAST 500 // mm/s i think
 #define ORBIT_SPEED_SLOW 50 // mm/s i think
 
+// Defence defines
+
 void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool reversed);
+
+void action_calculateDefence(int ballX, int ballY, int xPos, int yPos);
