@@ -31,6 +31,10 @@ float polarToBearing(float angle){
     return fmodf(angle + 270, 360);
 }
 
+inline float lerp(float fromValue, float toValue, float progress){
+    return fromValue + (toValue - fromValue) * progress;
+}
+
 // ================================================== VELOCITY CONTROL MODULE ================================================== //
 
 // Defines for PID
@@ -68,5 +72,7 @@ void velcontrol_moveToCoord(int targetX, int targetY, int xPos, int yPos);
 
 // Orbit defines
 #define ORBITAL_RADIUS 150 // mm I think
+#define ORBIT_SPEED_FAST 500 // mm/s i think
+#define ORBIT_SPEED_SLOW 50 // mm/s i think
 
 void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool reversed);

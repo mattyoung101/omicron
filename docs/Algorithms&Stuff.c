@@ -1,6 +1,7 @@
 #include "Algorithms&Stuff.h"
 
 robot_state_t robotState = {0};
+ball_data_t ballData = {0};
 
 // ================================================== VELOCITY CONTROL MODULE ================================================== //
 
@@ -40,13 +41,23 @@ void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool revers
     int orbitalRadius = ballX - xPos < 0 ? -ORBITAL_RADIUS : ORBITAL_RADIUS;
 
     // Calculate angle and distance to ball
-    float orbitalAngle = polarToBearing(RAD_DEG * atan2f(ballY - yPos, ballX - xPos - ORBITAL_RADIUS));
+    float orbitalAngle = RAD_DEG * atan2f(ballY - yPos, ballX - xPos - ORBITAL_RADIUS);
     float orbitalDistance = sqrtf(powf(ballX - xPos - ORBITAL_RADIUS, 2) + powf(ballY - yPos, 2));
 
     // Check if inside the orbital (if so then the tangent calculation will die)
-    orbitalDistance = orbitalDistance < ORBITAL_RADIUS : ORBITAL_RADIUS : orbitalDistance;
+    orbitalDistance = orbitalDistance < ORBITAL_RADIUS ? ORBITAL_RADIUS : orbitalDistance;
 
     // Calculate the tangent to the orbital and apply reversed orbit
     float tangentAngle = reversed ? orbitalAngle - RAD_DEG * asinf(orbitalRadius / orbitalDistance) : orbitalAngle + RAD_DEG * asinf(orbitalRadius / orbitalDistance);
 
+    // Calculate optimal movement speed
+    float angleDifference = fabsf(tangentAngle - (float)ballData.angle);
+    float targetSpeed;
+    if(reversed){
+        targetSpeed = lerp((float)ORBIT_SPEED_FAST, (float)ORBIT_SPEED_SLOW, (1.0 - (float)fabsf(angleDifference) / 90.0));
+    } else {
+        targetSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleDifference) / 90.0));
+    }
+
+    velcontrol_updatePID(polarToBearing(tangentAngle), targetSpeed);
 }
