@@ -34,6 +34,28 @@ void velcontrol_moveToCoord(int targetX, int targetY, int xPos, int yPos){
 
 // ================================================== ACTION CODE MODULE ================================================== //
 
+void action_headingCorrection(float heading){
+    robotState.outRotation = pid_update(&headingPID, heading, 0.0f, 0.0f);
+}
+
+void action_goalCorrection(int xPos, int yPos, bool isGoalie){
+    float goalAngle = polarToBearing(RAD_DEG * atan2(yPos + (isGoalie ? FIELD_LENGTH : -FIELD_LENGTH), xPos));
+    if(isGoalie){
+        robotState.outRotation = pid_update(&goalPID, floatMod(floatMod(goalAngle, 360.0f), 360.0f) - 180.0f, 0.0f, 0.0f);
+    } else {
+        robotState.outRotation = pid_update(&goalPID, floatMod(floatMod(goalAngle, 360.0f) + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f);
+    }
+}
+
+void action_aimbot(int xPos, int yPos, bool backKick){
+    float goalAngle = polarToBearing(RAD_DEG * atan2(yPos - FIELD_LENGTH, xPos));
+    if(backKick){
+        robotState.outRotation = pid_update(&aimbotPID, floatMod(floatMod(goalAngle, 360.0f), 360.0f) - 180.0f, 0.0f, 0.0f);
+    } else {
+        robotState.outRotation = pid_update(&aimbotPID, floatMod(floatMod(goalAngle, 360.0f) + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f);
+    }
+}
+
 // See Desmos link for orbit visulisation: https://www.desmos.com/calculator/rd4cuoks3b
 void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool reversed){
     // Check which side to orbit
@@ -49,7 +71,7 @@ void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool revers
     // Calculate the tangent to the orbital and apply reversed orbit
     float tangentAngle = reversed ? orbitalAngle - RAD_DEG * asinf(orbitalRadius / orbitalDistance) : orbitalAngle + RAD_DEG * asinf(orbitalRadius / orbitalDistance);
 
-    // Calculate optimal movement speed
+    // Calculate movement speed
     float angleDifference = fabsf(tangentAngle - (float)ballData.angle);
     float targetSpeed;
     if(reversed){
@@ -74,8 +96,8 @@ void action_calculateDefence(int ballX, int ballY, int xPos, int yPos){
         targetY = sqrtf(DEFEND_HEIGHT * powf(DEFEND_RADIUS, 2));
     } else {
         // Don't ask me what this means, cos even though I wrote it, I couldn't possibly tell you
-        targetX = sqrtf((DEFEND_WIDTH * DEFEND_HEIGHT * pow(DEFEND_RADIUS, 2)) / DEFEND_HEIGHT + ((DEFEND_WIDTH * pow(ballY, 2)) / pow(ballX, 2))) * signf(ballX);
-        targetY = fabsf((ballY / ballX) * targetX); // Wow something REMOTELY READABLE
+        targetX = sqrtf((DEFEND_WIDTH * DEFEND_HEIGHT * pow(DEFEND_RADIUS, 2)) / DEFEND_HEIGHT + ((DEFEND_WIDTH * pow(ballY + FIELD_LENGTH, 2)) / pow(ballX, 2))) * signf(ballX);
+        targetY = fabsf(((ballY + FIELD_LENGTH) / ballX) * targetX); // Wow something REMOTELY READABLE
     }
 
     // Send to velocity control module

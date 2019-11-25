@@ -79,7 +79,34 @@ void velcontrol_moveToCoord(int targetX, int targetY, int xPos, int yPos);
 #define DEFEND_RADIUS 200 // mm
 #define DEFEND_WIDTH 2 // Arbitrary width constant
 #define DEFEND_HEIGHT 1 // Arbitrary height constant
+#define FIELD_LENGTH 1000 // mm TODO: FIX THIS
+
+// Heading PID defines
+#define HEADING_KP 1
+#define HEADING_KI 1
+#define HEADING_KD 1
+#define HEADING_MAX 100
+
+// Goal PID defines
+#define GOAL_KP 1
+#define GOAL_KI 1
+#define GOAL_KD 1
+#define GOAL_MAX 100
+
+// Aimbot PID defines
+#define AIMBOT_KP 1
+#define AIMBOT_KI 1
+#define AIMBOT_KD 1
+#define AIMBOT_MAX 100
+
+// Config PIDs
+static pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX, 0};
+static pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX, 0};
+static pid_config_t aimbotPID = {AIMBOT_KP, AIMBOT_KI, AIMBOT_KD, AIMBOT_MAX, 0};
+
+void action_headingCorrection(float heading);
+void action_goalCorrection(int xPos, int yPos, bool isGoalie);
+void action_aimbot(int xPos, int yPos, bool backKick);
 
 void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool reversed);
-
 void action_calculateDefence(int ballX, int ballY, int xPos, int yPos);
