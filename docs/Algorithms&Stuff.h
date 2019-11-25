@@ -6,10 +6,10 @@
 
 // All the stuffs for the ball
 typedef struct{
-    int x; // X position of the ball relative to the center of the robot in mm
-    int y; // Y position of the ball relative to the center of the robot in mm
+    int x; // X position of the ball relative to the center of the field in mm
+    int y; // Y position of the ball relative to the center of the field in mm
     int angle; // Angle towards the ball in true bearing
-    int range; // Distance to the ball in mm
+    int range; // Distance from robot to ball in mm
 } ball_data_t;
 
 // All the stuffs for the robot
@@ -76,6 +76,9 @@ void velcontrol_moveToCoord(int targetX, int targetY, int xPos, int yPos);
 #define ORBIT_SPEED_SLOW 50 // mm/s i think
 
 // Defence defines
+#define DEFEND_RADIUS 200 // mm
+#define DEFEND_WIDTH 2 // Arbitrary width constant
+#define DEFEND_HEIGHT 1 // Arbitrary height constant
 
 void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool reversed);
 

@@ -35,7 +35,6 @@ void velcontrol_moveToCoord(int targetX, int targetY, int xPos, int yPos){
 // ================================================== ACTION CODE MODULE ================================================== //
 
 // See Desmos link for orbit visulisation: https://www.desmos.com/calculator/rd4cuoks3b
-
 void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool reversed){
     // Check which side to orbit
     int orbitalRadius = ballX - xPos < 0 ? -ORBITAL_RADIUS : ORBITAL_RADIUS;
@@ -61,4 +60,24 @@ void action_calculateOrbit(int ballX, int ballY, int xPos, int yPos, bool revers
 
     // Send to velocity control module
     velcontrol_updatePID(polarToBearing(tangentAngle), targetSpeed);
+}
+
+// See Desmos link for defence visualisation: https://www.desmos.com/calculator/2j3gnop9ix
+void action_calculateDefence(int ballX, int ballY, int xPos, int yPos){
+    // Calculate point to move to
+    int targetX;
+    int targetY;
+
+    // Check if ball is directly in front (this will result in a divide by zero error)
+    if(ballX == 0){
+        targetX = 0;
+        targetY = sqrtf(DEFEND_HEIGHT * powf(DEFEND_RADIUS, 2));
+    } else {
+        // Don't ask me what this means, cos even though I wrote it, I couldn't possibly tell you
+        targetX = sqrtf((DEFEND_WIDTH * DEFEND_HEIGHT * pow(DEFEND_RADIUS, 2)) / DEFEND_HEIGHT + ((DEFEND_WIDTH * pow(ballY, 2)) / pow(ballX, 2))) * signf(ballX);
+        targetY = fabsf((ballY / ballX) * targetX); // Wow something REMOTELY READABLE
+    }
+
+    // Send to velocity control module
+    velcontrol_moveToCoord(targetX, targetY, xPos, yPos);
 }
