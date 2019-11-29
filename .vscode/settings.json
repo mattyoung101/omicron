@@ -13,7 +13,8 @@
         "handmademath.h": "c",
         "tsop.h": "c",
         "comms_uart.h": "c",
-        "*.txt": "plaintext"
+        "*.txt": "plaintext",
+        "algorithms&stuff.h": "c"
     },
     "cSpell.words": [
         "Bluedroid",
