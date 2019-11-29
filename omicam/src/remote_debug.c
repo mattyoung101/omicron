@@ -74,7 +74,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
             log_warn("Failed to write to TCP socket: %s", strerror(errno));
 
             if (errno == EPIPE || errno == ECONNRESET){
-                log_info("Assuming client has disconnected, restarting socket server");
+                log_info("This error indicates the client disconnected. Restarting socket server...");
                 close(sockfd);
                 close(connfd);
                 connfd = -1;
@@ -218,7 +218,7 @@ static void *tcp_thread(void *arg){
         close(sockfd);
         return NULL;
     } else {
-        log_info("Accepted client connection from %s:%d", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+        log_info("Accepted client connection from %s:%d, streaming will now begin", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
     }
     return NULL;
 }

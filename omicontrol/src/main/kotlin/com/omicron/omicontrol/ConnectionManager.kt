@@ -3,6 +3,7 @@ package com.omicron.omicontrol
 import RemoteDebug
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.SocketException
 import java.nio.ByteBuffer
 import kotlin.concurrent.thread
 
@@ -24,13 +25,23 @@ class ConnectionManager {
                 return
             }
 
-            val msg = RemoteDebug.DebugFrame.parseDelimitedFrom(stream)
-            if (msg == null){
+            var caughtException = false
+            var msgNull = false
+            try {
+                val msg = RemoteDebug.DebugFrame.parseDelimitedFrom(stream)
+                if (msg == null){
+                    msgNull = true
+                } else {
+                    EVENT_BUS.post(msg)
+                }
+            } catch (e: SocketException){
+                caughtException = true
+            }
+
+            if (msgNull || caughtException){
                 println("Remote has likely disconnected")
                 EVENT_BUS.post(RemoteShutdownEvent())
                 Thread.currentThread().interrupt()
-            } else {
-                EVENT_BUS.post(msg)
             }
         }
     }

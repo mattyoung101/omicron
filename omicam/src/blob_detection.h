@@ -50,8 +50,7 @@ void blob_detector_init(uint16_t width, uint16_t height);
  * @param height the height of the image in pixels
  * @return the thresholded image as a RGB pixel buffer, must be freed
  */
-uint8_t *blob_detector_post(MMAL_BUFFER_HEADER_T *buffer, uint16_t width, uint16_t height);
-void blob_detector_run(uint8_t *img);
+uint8_t *blob_detector_post(uint8_t *buffer, uint16_t width, uint16_t height);
 #if BLOB_USE_NEON
 /** Parses a string in the format "x,y,z" into three numbers to be stored in the given array (vector mode) **/
 void blob_detector_parse_thresh(char *threshStr, uint8x8_t *array);

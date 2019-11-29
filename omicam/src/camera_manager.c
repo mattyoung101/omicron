@@ -18,6 +18,7 @@
 #include "remote_debug.h"
 #include "blob_detection.h"
 #include <math.h>
+#include "stb_image.h"
 
 // Uses Broadcom's MMAL (somehow faster than omxcam) to decode camera frames and pipe them off to the GPU
 // Much of this code is based on RaspiVidYUV:
@@ -60,6 +61,7 @@ static MMAL_PORT_T *cameraVideoPort = NULL;
 // it seems that the MMAL will post useless buffers that cause the app to hang on exit, hence this value to ignore them
 // if we are currently disposing the camera manager
 static _Atomic bool ignoreCallback = false;
+static uint8_t *testImage = NULL;
 #if ENABLE_DIAGNOSTICS
 static double lastFrameTime = 0.0;
 #endif
@@ -219,14 +221,14 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
     if (ignoreCallback) goto end;
 
     // FIXME later on we may need to copy processedFrame if there's ever any threading issues
-    uint8_t *processedFrame = blob_detector_post(buffer, commonSettings.width, commonSettings.height);
+    uint8_t *processedFrame = blob_detector_post(testImage, commonSettings.width, commonSettings.height);
 
 #if DEBUG_ENABLED
     if (frames++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()){
         // for the remote debugger, frames are processed on another thread so we must copy the buffer before posting it
         // the buffer will be automatically freed by the encoding thread once processed successfully
         uint8_t *camFrame = malloc(buffer->length);
-        memcpy(camFrame, buffer->data, buffer->length);
+        memcpy(camFrame, testImage, commonSettings.width * commonSettings.height * 3);
         remote_debug_post_frame(camFrame, processedFrame);
     } else {
         // not needed by remote debugger, so just free it
@@ -278,6 +280,13 @@ static void cam_set_settings(dictionary *config){
 void camera_manager_init(dictionary *config){
     bcm_host_init();
     cam_set_settings(config);
+
+    log_trace("Loading test image...");
+    int testWidth, testHeight, channels = 0;
+    testImage = stbi_load("../omicam_thresh_test.png", &testWidth, &testHeight, &channels, 3);
+    if (testImage == NULL){
+        log_warn("Failed to load test image: %s", stbi_failure_reason());
+    }
 
     get_sensor_defaults(commonSettings.cameraNum, commonSettings.camera_name, &commonSettings.width, &commonSettings.height);
     log_debug("Camera num: %d, camera name: %s, width: %d, height: %d", commonSettings.cameraNum, commonSettings.camera_name,
@@ -350,4 +359,5 @@ void camera_manager_dispose(void){
         mmal_component_destroy(cameraComponent);
         cameraComponent = NULL;
     }
+    stbi_image_free(testImage);
 }

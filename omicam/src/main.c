@@ -1,5 +1,8 @@
 #define DG_DYNARR_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
 #include "DG_dynarr.h"
+#include "stb_image.h"
+#undef STB_IMAGE_IMPLEMENTATION
 #undef DG_DYNARR_IMPLEMENTATION
 #include <stdio.h>
 #include "log/log.h"
