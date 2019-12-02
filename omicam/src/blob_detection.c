@@ -74,6 +74,7 @@ static uint8_t *processedGoal = NULL;
 static pthread_cond_t doneCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t doneMutex = PTHREAD_MUTEX_INITIALIZER;
 static uint8_t doneThreads = 0; // number of completed threads
+static uint16_t width, height = 0;
 
 void *blob_worker(void *param){
     int32_t id = (int32_t) param;
@@ -90,6 +91,9 @@ void *blob_worker(void *param){
 
         for (uint32_t i = range->min; i < range->max; i++){
             uint8_t colour[3] = {receivedFrame[i + R], receivedFrame[i + G], receivedFrame[i + B]};
+            uint32_t x = i % width;
+            uint32_t y = i / width;
+
             bool isBall = in_range(colour, minBallData, maxBallData);
             bool isGoal = in_range(colour, minYellowData, maxYellowData) || in_range(colour, minBlueData, maxBlueData);
             processedBall[i] = isBall ? 255 : 0;
@@ -102,7 +106,6 @@ void *blob_worker(void *param){
 //            }
 
 //            processedBall[i] = id % 2 == 0 ? 255 : 0;
-
         }
 
         // notify the main thread we're done
@@ -114,11 +117,13 @@ void *blob_worker(void *param){
     }
 }
 
-void blob_detector_init(uint16_t width, uint16_t height){
+void blob_detector_init(uint16_t w, uint16_t h){
     log_trace("Initialising blob detector...");
 //    receivedFrame = calloc(width * height * 3, sizeof(uint8_t));
     pthread_cond_init(&doneCond, NULL);
     pthread_mutex_init(&doneMutex, NULL);
+    width = w;
+    height = h;
 
     log_debug("Creating %d blob detector worker thread(s)", BLOB_NUM_THREADS);
     for (int i = 0; i < BLOB_NUM_THREADS; i++){
@@ -137,12 +142,14 @@ void blob_detector_init(uint16_t width, uint16_t height){
     }
 }
 
-uint8_t *blob_detector_post(MMAL_BUFFER_HEADER_T *buffer, uint16_t width, uint16_t height){
+uint8_t *blob_detector_post(uint8_t *buffer, uint16_t width, uint16_t height){
     processedBall = malloc(width * height); // would probably make more sense not to free this but RD code gets confusing
     processedGoal = malloc(width * height);
-    receivedFrame = buffer->data; // since received frame is read only, we don't need to memcpy
+    receivedFrame = buffer; // since received frame is read only, we don't need to memcpy
     doneThreads = 0;
     int32_t divisionSize = (width * height) / BLOB_NUM_THREADS;
+
+    // FIXME use barriers instead of locks
 
     // setup work queues (essentially, divide the image into equally sized strips)
     doneThreads = 0;

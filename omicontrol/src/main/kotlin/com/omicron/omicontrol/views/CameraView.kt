@@ -170,7 +170,6 @@ class CameraView : View() {
 
         hbox {
             vbox {
-                label("For fuck sake")
                 alignment = Pos.TOP_LEFT
             }
 
