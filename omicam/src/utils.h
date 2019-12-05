@@ -1,44 +1,19 @@
 #pragma once
-
-// Misc macros
-
-/** if the key exists in the INI file, puts it into the omxcam settings struct as an integer **/
 #include <GLES2/gl2.h>
+#include "defines.h"
 
-#define INI_LOAD_INT(key) if (iniparser_find_entry(config, "VideoSettings:" #key)) { \
-    log_trace("Have int key: " #key); \
-    settings.camera.key = iniparser_getint(config, "VideoSettings:" #key, -1); \
-} else { \
-    log_trace("Using default value for int key: " # key); \
-}
+// Misc macros and data
 
-/** if the key exists in the INI file, puts it into the omxcam settings struct as a boolean **/
-#define INI_LOAD_BOOL(key) if (iniparser_find_entry(config, "VideoSettings:" #key)) { \
-    log_trace("Have bool key: " #key); \
-    settings.camera.key = iniparser_getboolean(config, "VideoSettings:" #key, false); \
-} else { \
-    log_trace("Using default value for bool key: " # key); \
-}
+#if BLOB_USE_NEON
+extern uint8x8_t minBallData, maxBallData, minLineData, maxLineData, minBlueData, maxBlueData, minYellowData, maxYellowData;
+#else
+extern uint8_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+#endif
 
-/** locks a pthread semaphore, then runs the provided code and unlocks it again **/
-#define PTHREAD_SEM_RUN(sem, code) if (pthread_mutex_trylock(sem)){ \
-    code; \
-    pthread_mutex_unlock(sem); \
-}
-
-#define UPDATE_UNIFORM(location, dataName) if (location != -1){ \
-    log_trace("Updating uniform at %d to the following: [%.2f, %.2f, %.2f]", location, dataName[0], dataName[1], dataName[2]); \
-    glUniform3fv(location, 1, dataName); /* count is 1 because it's one vec3 */ \
-    check_gl_error(); \
-}  else { \
-    log_warn("Failed to update uniform at location: " #location); \
-}
-
-#define GET_UNIFORM_LOCATION(uniform, name) do { uniform = glGetUniformLocation(shaderProgram, name); \
-    check_gl_error(); \
-    if (uniform == -1){ \
-        log_error("Failed to get uniform location of " name); \
-    } } while (0);
+/** Parses a string in the format "x,y,z" into three numbers to be stored in the given array  **/
+void utils_parse_thresh(char *threshStr, uint8_t *array);
+/** gets the timestamp in milliseconds **/
+double utils_get_millis();
 
 #define GCC_UNUSED __attribute__((unused))
 
@@ -54,12 +29,3 @@
         log_error("SDL function failed in %s:%d: %s", __FILE__, __LINE__, SDL_GetError()); \
     } \
 } while (0);
-
-/** gets the timestamp in milliseconds **/
-double utils_get_millis();
-/** get the last EGL error as a descriptive string **/
-const char *eglGetErrorStr();
-/** GL enum to error **/
-char *glErrorStr(GLenum error);
-/** SDL rendering test **/
-void sdl_test_main(void);

@@ -13,11 +13,10 @@
 #include "defines.h"
 #include <math.h>
 #include <pthread.h>
-#include "camera_manager.h"
 #include "remote_debug.h"
 #include "utils.h"
-#include "blob_detection.h"
 #include "alloc_pool.h"
+#include "computer_vision.h"
 
 #define OMICAM_VERSION "0.1"
 
@@ -27,10 +26,8 @@ static pthread_mutex_t logLock;
 /** free resources allocated by the app **/
 static void disposeResources(){
     log_trace("Disposing resources");
-    camera_manager_dispose();
+    vision_dispose();
     remote_debug_dispose();
-    blob_detector_dispose();
-    alp_free_pool(FRAME_POOL);
     log_trace("Closing log file, goodbye!");
     fflush(logFile);
     fclose(logFile);
@@ -88,40 +85,30 @@ int main() {
         return EXIT_FAILURE;
     }
 
-//    puts("Quick test of alloc pool");
-//    alp_create("Test");
-//    uint8_t *data = alp_malloc("Test", 420);
-//    memset(data, 0, 69);
-//    uint8_t *data2 = alp_malloc("Test", 32);
-//    memset(data2, 3, 4);
-//    uint8_t *fuckYou = malloc(4096);
-//    fuckYou[0] = 1;
-//    puts("test passed successfully");
-    alp_create(FRAME_POOL);
-
     char *minBallStr = (char*) iniparser_getstring(config, "Thresholds:minBall", "0,0,0");
     char *maxBallStr = (char*) iniparser_getstring(config, "Thresholds:maxBall", "0,0,0");
-    blob_detector_parse_thresh(minBallStr, PRE minBallData);
-    blob_detector_parse_thresh(maxBallStr, PRE maxBallData);
+    utils_parse_thresh(minBallStr, PRE minBallData);
+    utils_parse_thresh(maxBallStr, PRE maxBallData);
 
     char *minLineStr = (char*) iniparser_getstring(config, "Thresholds:minLine", "0,0,0");
     char *maxLineStr = (char*) iniparser_getstring(config, "Thresholds:maxLine", "0,0,0");
-    blob_detector_parse_thresh(minLineStr, PRE minLineData);
-    blob_detector_parse_thresh(maxLineStr, PRE maxLineData);
+    utils_parse_thresh(minLineStr, PRE minLineData);
+    utils_parse_thresh(maxLineStr, PRE maxLineData);
 
     char *minBlueStr = (char*) iniparser_getstring(config, "Thresholds:minBlue", "0,0,0");
     char *maxBlueStr = (char*) iniparser_getstring(config, "Thresholds:maxBlue", "0,0,0");
-    blob_detector_parse_thresh(minBlueStr, PRE minBlueData);
-    blob_detector_parse_thresh(maxBlueStr, PRE maxBlueData);
+    utils_parse_thresh(minBlueStr, PRE minBlueData);
+    utils_parse_thresh(maxBlueStr, PRE maxBlueData);
 
     char *minYellowStr = (char*) iniparser_getstring(config, "Thresholds:minYellow", "0,0,0");
     char *maxYellowStr = (char*) iniparser_getstring(config, "Thresholds:maxYellow", "0,0,0");
-    blob_detector_parse_thresh(minYellowStr, PRE minYellowData);
-    blob_detector_parse_thresh(maxYellowStr, PRE maxYellowData);
+    utils_parse_thresh(minYellowStr, PRE minYellowData);
+    utils_parse_thresh(maxYellowStr, PRE maxYellowData);
 
-    camera_manager_init(config);
+    // start OpenCV frame grabbing, which blocks the main thread until it's done
+    vision_init();
+
+    // this dictionary may be needed by the vision module to initialise some things, so we free it after
+    // the application is done
     iniparser_freedict(config);
-
-    // this will block the main thread
-    camera_manager_capture();
 }

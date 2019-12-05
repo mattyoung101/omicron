@@ -4,92 +4,60 @@
 #include <math.h>
 #include <stdint.h>
 #include <sys/time.h>
-#include <EGL/egl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <log/log.h>
+
+// FIXME deprecate and remove BLOB_USE_NEON since we don't really use it anymore
+#if BLOB_USE_NEON
+uint8x8_t minBallData, maxBallData, minLineData, maxLineData, minBlueData, maxBlueData, minYellowData, maxYellowData;
+#else
+uint8_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+#endif
+
+void utils_parse_thresh(char *threshStr, uint8_t *array){
+    char *token;
+    char *threshOrig = strdup(threshStr);
+    uint8_t i = 0;
+#if BLOB_USE_NEON
+    uint8_t arr[8] = {0}; // in NEON mode, we have to use the vector functions to copy it out (apparently)
+#endif
+    token = strtok(threshStr, ",");
+
+    while (token != NULL){
+        char *invalid = NULL;
+        int32_t number = strtol(token, &invalid, 10);
+
+        if (number > 255){
+            log_error("Invalid threshold string \"%s\": token %s > 255 (not in RGB colour range)", threshOrig, token);
+        } else if (strlen(invalid) != 0){
+            log_error("Invalid threshold string \"%s\": invalid token: \"%s\"", threshOrig, invalid);
+        } else {
+#if BLOB_USE_NEON
+            // put into temp array, to be copied out later
+            arr[i++] = (uint8_t) number;
+#else
+            // put directly into array
+            array[i++] = number;
+#endif
+            if (i > 3){
+                log_error("Too many values for key: %s (max: 3)", threshOrig);
+                return;
+            }
+        }
+        token = strtok(NULL, ",");
+    }
+    // log_trace("Successfully parsed threshold key: %s", threshOrig);
+#if BLOB_USE_NEON
+    // now we can copy our temp array into the 8x8 vector
+    *array = vld1_u8(arr);
+#endif
+    free(threshOrig);
+}
 
 // source: https://stackoverflow.com/a/3756954/5007892
 double utils_get_millis(){
     struct timeval  tv;
     gettimeofday(&tv, NULL);
     return (tv.tv_sec) * 1000.0 + (tv.tv_usec) / 1000.0;
-}
-
-const char *eglGetErrorStr(){
-    switch (eglGetError()){
-        case EGL_SUCCESS:
-            return "The last function succeeded without error.";
-        case EGL_NOT_INITIALIZED:
-            return "EGL is not initialized, or could not be initialized, for the "
-                   "specified EGL display connection.";
-        case EGL_BAD_ACCESS:
-            return "EGL cannot access a requested resource (for example a context "
-                   "is bound in another thread).";
-        case EGL_BAD_ALLOC:
-            return "EGL failed to allocate resources for the requested operation.";
-        case EGL_BAD_ATTRIBUTE:
-            return "An unrecognized attribute or attribute value was passed in the "
-                   "attribute list.";
-        case EGL_BAD_CONTEXT:
-            return "An EGLContext argument does not name a valid EGL rendering "
-                   "context.";
-        case EGL_BAD_CONFIG:
-            return "An EGLConfig argument does not name a valid EGL frame buffer "
-                   "configuration.";
-        case EGL_BAD_CURRENT_SURFACE:
-            return "The current surface of the calling thread is a window, pixel "
-                   "buffer or pixmap that is no longer valid.";
-        case EGL_BAD_DISPLAY:
-            return "An EGLDisplay argument does not name a valid EGL display "
-                   "connection.";
-        case EGL_BAD_SURFACE:
-            return "An EGLSurface argument does not name a valid surface (window, "
-                   "pixel buffer or pixmap) configured for GL rendering.";
-        case EGL_BAD_MATCH:
-            return "Arguments are inconsistent (for example, a valid context "
-                   "requires buffers not supplied by a valid surface).";
-        case EGL_BAD_PARAMETER:
-            return "One or more argument values are invalid.";
-        case EGL_BAD_NATIVE_PIXMAP:
-            return "A NativePixmapType argument does not refer to a valid native "
-                   "pixmap.";
-        case EGL_BAD_NATIVE_WINDOW:
-            return "A NativeWindowType argument does not refer to a valid native "
-                   "window.";
-        case EGL_CONTEXT_LOST:
-            return "A power management event has occurred. The application must "
-                   "destroy all contexts and reinitialise OpenGL ES state and "
-                   "objects to continue rendering.";
-        default:
-            break;
-    }
-    return "Unknown error!";
-}
-
-char *glErrorStr(GLenum error){
-    /*
-    #define GL_NO_ERROR                       0
-    #define GL_INVALID_ENUM                   0x0500
-    #define GL_INVALID_VALUE                  0x0501
-    #define GL_INVALID_OPERATION              0x0502
-    #define GL_OUT_OF_MEMORY                  0x0505
-     */
-    switch (error){
-        case GL_NO_ERROR:
-            return "GL_NO_ERROR";
-        case GL_INVALID_ENUM:
-            return "GL_INVALID_ENUM";
-        case GL_INVALID_VALUE:
-            return "GL_INVALID_VALUE";
-        case GL_INVALID_OPERATION:
-            return "GL_INVALID_OPERATION";
-        case GL_OUT_OF_MEMORY:
-            return "GL_OUT_OF_MEMORY";
-        default:
-            return "Unknown GL error!?";
-    }
-}
-
-void sdl_test_main(void){
-    puts("running SDL test main");
 }

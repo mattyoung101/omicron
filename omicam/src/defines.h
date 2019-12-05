@@ -1,7 +1,6 @@
 #pragma once
 
 // Misc constants and settings
-
 // TODO I think at lot of these should be editable with ini
 
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
@@ -16,8 +15,12 @@
 #define DEBUG_ALWAYS_SEND 0 // if true, ignore whether or not a connection exists and always send debug frames
 #define DEBUG_TEMP_REPORTING_INTERVAL 2 // record the every this many seconds
 
-#define BLOB_USE_NEON 0 // whether or not to enable NEON optimisations in blob detection
+#define BLOB_USE_NEON 0 // TODO (deprecate and remove this) whether or not to enable NEON optimisations in blob detection
 #define BLOB_NUM_THREADS 4 // number of worker threads for blob detector
+
+#define BUILD_TARGET_JETSON 0 // Omicam will be running on an NVIDIA Jetson Nano
+#define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC (assumes no camera available and uses test imagery)
+#define BUILD_TARGET BUILD_TARGET_PC
 
 #define LOCALISE_NUM_THREADS 4 // number of worker threads used by localisation raycaster
 
