@@ -13,6 +13,7 @@
 #include "defines.h"
 #include <math.h>
 #include <pthread.h>
+#include <pwd.h>
 #include "remote_debug.h"
 #include "utils.h"
 #include "alloc_pool.h"
@@ -69,7 +70,10 @@ int main() {
 #endif
     pthread_mutex_init(&logLock, NULL);
     log_set_lock(log_lock_func);
-    logFile = fopen("/home/pi/omicam.log", "w");
+
+    struct passwd *pw = getpwuid(getuid());
+    char *homedir = pw->pw_dir;
+    logFile = fopen(strcat(homedir, "/omicam.log"), "w");
     if (logFile != NULL){
         log_set_fp(logFile);
     } else {

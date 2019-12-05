@@ -13,9 +13,12 @@ set (SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fno-omit-frame-p
 set (NEON_FLAGS "-ffast-math -march=native -mtune=native") # TODO add back when on Jetson: -mfpu=neon -mfloat-abi=hard
 # (we generate debug info in all modes since it adds no performance penalty and is good for debug)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -g3 -pthread")
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -g3 -pthread")
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Og ${SAFETY_FLAGS} ${NEON_FLAGS}") # safety features and debug optimiastion
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Og ${SAFETY_FLAGS} ${NEON_FLAGS}")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${NEON_FLAGS}") # full optimisation and no safety features
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${NEON_FLAGS}")
 
 # find packages
 find_package(OpenMP)
