@@ -109,8 +109,15 @@ int main() {
     utils_parse_thresh(minYellowStr, PRE minYellowData);
     utils_parse_thresh(maxYellowStr, PRE maxYellowData);
 
+    uint16_t width = iniparser_getint(config, "VideoSettings:width", 1280);
+    uint16_t height = iniparser_getint(config, "VideoSettings:height", 720);
+    uint16_t framerate = iniparser_getint(config, "VideoSettings:framerate", 60);
+
     // start OpenCV frame grabbing, which blocks the main thread until it's done
+    remote_debug_init(width, height);
     vision_init();
+
+    // FIXME the reason for the fucking segfault is because at the moment remote debug is never bloody initialised
 
     // this dictionary may be needed by the vision module to initialise some things, so we free it after
     // the application is done

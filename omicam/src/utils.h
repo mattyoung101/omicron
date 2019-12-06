@@ -7,11 +7,11 @@
 #if BLOB_USE_NEON
 extern uint8x8_t minBallData, maxBallData, minLineData, maxLineData, minBlueData, maxBlueData, minYellowData, maxYellowData;
 #else
-extern uint8_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+extern int16_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 #endif
 
 /** Parses a string in the format "x,y,z" into three numbers to be stored in the given array  **/
-void utils_parse_thresh(char *threshStr, uint8_t *array);
+void utils_parse_thresh(char *threshStr, int16_t *array);
 /** gets the timestamp in milliseconds **/
 double utils_get_millis();
 

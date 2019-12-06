@@ -12,30 +12,42 @@
 // Essentially it's just a wrapper for OpenCV
 
 // FIXME GET THE FUCKING PIECE OF SHIT KNOWN AS C++ TO FUCKING BE ABLE TO CALL THE FUCKING LOG FUCKING LIBRARY
-
 static _Atomic bool done = false;
+static pthread_t cvThread = {0};
 
-void vision_init(void){
+static void *cv_thread(void *arg){
 #if BUILD_TARGET == BUILD_TARGET_PC
-    puts("Build target is PC, using test images");
+    log_trace("Build target is PC, using test images");
     cv::UMat frame = cv::imread("../omicam_thresh_test.png", cv::IMREAD_COLOR).getUMat(cv::ACCESS_READ);
+    if (frame.empty()){
+        log_error("Unable to load OpenCV test image");
+    }
 #else
     log_trace("Build target is Jetson, initialises capture stream");
-    // gstreamer and shit
+    // TODO gstreamer and shit
     log_trace("OpenCV capture initialised successfully");
 #endif
 
-    // TODO we're probably gonna have to start up a new fucking thread here since this shit seems to fucking segfault
-    // with no fucking help from the useless piece of fucking shit known as asan
-    while (!done){
-        // read in a new camera frame or just use the old one
+    while (true){
+
     }
+    return nullptr;
+}
+
+void vision_init(void){
+    int err = pthread_create(&cvThread, nullptr, cv_thread, nullptr);
+    if (err != 0){
+        log_error("Failed to create OpenCV thread: %s", strerror(err));
+    } else {
+        pthread_setname_np(cvThread, "CV Thread");
+    }
+    pthread_join(cvThread, nullptr);
 
     // dispose resources
-    puts("Capture stopped");
+    log_debug("Capture stopped");
 }
 
 void vision_dispose(void){
-    puts("Stopping OpenCV capture...");
-    done = true;
+    log_trace("Stopping OpenCV capture...");
+    pthread_cancel(cvThread);
 }
