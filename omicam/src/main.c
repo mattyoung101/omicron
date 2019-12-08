@@ -19,8 +19,6 @@
 #include "alloc_pool.h"
 #include "computer_vision.h"
 
-#define OMICAM_VERSION "0.1"
-
 static FILE *logFile = NULL;
 static pthread_mutex_t logLock;
 
@@ -51,12 +49,6 @@ static void log_lock_func(GCC_UNUSED void *userdata, int lock){
     }
 }
 
-#if BLOB_USE_NEON
-#define PRE & // the NEON function takes a pointer to an uint8x8_t
-#else
-#define PRE // the scalar function just takes an array via a pointer
-#endif
-
 int main() {
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -80,7 +72,7 @@ int main() {
         fprintf(stderr, "Failed to open log file: %s\n", strerror(errno));
     }
     log_info("Omicam v%s - Copyright (c) 2019 Team Omicron. All rights reserved.", OMICAM_VERSION);
-    log_debug("Last full rebuild: %s %s (%d)", __DATE__, __TIME__);
+    log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);
 
     log_debug("Loading and parsing config...");
     dictionary *config = iniparser_load("../omicam.ini");
@@ -91,23 +83,25 @@ int main() {
 
     char *minBallStr = (char*) iniparser_getstring(config, "Thresholds:minBall", "0,0,0");
     char *maxBallStr = (char*) iniparser_getstring(config, "Thresholds:maxBall", "0,0,0");
-    utils_parse_thresh(minBallStr, PRE minBallData);
-    utils_parse_thresh(maxBallStr, PRE maxBallData);
+    utils_parse_thresh(minBallStr, minBallData);
+    utils_parse_thresh(maxBallStr, maxBallData);
+    log_trace("Min ball threshold: (%d,%d,%d), Max ball threshold: (%d,%d,%d)", minBallData[0], minBallData[1], minBallData[2],
+            maxBallData[0], maxBallData[1], maxBallData[2]);
 
     char *minLineStr = (char*) iniparser_getstring(config, "Thresholds:minLine", "0,0,0");
     char *maxLineStr = (char*) iniparser_getstring(config, "Thresholds:maxLine", "0,0,0");
-    utils_parse_thresh(minLineStr, PRE minLineData);
-    utils_parse_thresh(maxLineStr, PRE maxLineData);
+    utils_parse_thresh(minLineStr, minLineData);
+    utils_parse_thresh(maxLineStr, maxLineData);
 
     char *minBlueStr = (char*) iniparser_getstring(config, "Thresholds:minBlue", "0,0,0");
     char *maxBlueStr = (char*) iniparser_getstring(config, "Thresholds:maxBlue", "0,0,0");
-    utils_parse_thresh(minBlueStr, PRE minBlueData);
-    utils_parse_thresh(maxBlueStr, PRE maxBlueData);
+    utils_parse_thresh(minBlueStr, minBlueData);
+    utils_parse_thresh(maxBlueStr, maxBlueData);
 
     char *minYellowStr = (char*) iniparser_getstring(config, "Thresholds:minYellow", "0,0,0");
     char *maxYellowStr = (char*) iniparser_getstring(config, "Thresholds:maxYellow", "0,0,0");
-    utils_parse_thresh(minYellowStr, PRE minYellowData);
-    utils_parse_thresh(maxYellowStr, PRE maxYellowData);
+    utils_parse_thresh(minYellowStr, minYellowData);
+    utils_parse_thresh(maxYellowStr, maxYellowData);
 
     uint16_t width = iniparser_getint(config, "VideoSettings:width", 1280);
     uint16_t height = iniparser_getint(config, "VideoSettings:height", 720);
@@ -116,10 +110,10 @@ int main() {
     // start OpenCV frame grabbing, which blocks the main thread until it's done
     remote_debug_init(width, height);
     vision_init();
-
-    // FIXME the reason for the fucking segfault is because at the moment remote debug is never bloody initialised
+    log_warn("Vision terminated unexpectedly?");
 
     // this dictionary may be needed by the vision module to initialise some things, so we free it after
     // the application is done
     iniparser_freedict(config);
+    disposeResources();
 }

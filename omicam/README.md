@@ -7,15 +7,16 @@ For the full technical writeup on our custom vision pipeline, please see, docs/D
 Omicam is built and maintained by Matt Young, so if you have any questions, please contact: 25070@bbc.qld.edu.au
 
 ## Features list
-- GPU accelerated camera decoding using Broadcom's MMAL libraries, capable of 720p 60fps
-- Custom designed multi-threaded colour segmentation with linear threads vs. framerate relationship
-- **(WIP)** Highly optimal CPU connected-component labelling (blob detection) based on recent state-of-the-art papers
-- **(WIP)** Advanced localisation by way of non-linear optimisation (Nelder-Mead simplex method provided by NLopt)
-- Wireless, multi-threaded frame streaming using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app
-    - Network protocol uses TCP socket and Protocol Buffers
-- Uses less than 5% of the Pi's RAM in release mode (sanitizers disabled)
-- **(WIP)** Transmits data to main ESP32 microcontroller via Protocol Buffers over 115200 baud UART
-- Well-documented C and associated design documents (see docs folder and inline comments).
+- Efficient camera decoding using V4L2 via gstreamer
+- State of the art, GPU accelerated image processing using OpenCV and OpenCL
+- Highly advanced, millimetre accurate, custom localisation algorithm using non-linear optimisation methods
+- Fast, custom designed omnidirectional camera dewarping with nearest neighbour interpolation
+- Asynchronous, wireless frame streaming using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app
+    - Network protocol uses TCP socket and Protocol Buffers with zlib compression (low bandwidth requirements)
+    - Also transmits misc. data like temperature of the Jetson
+- Low RAM usage in release mode
+- Written almost entirely in C11 (just a little C++ for interfacing with OpenCV)
+- Well-documented code and design document
 
 ## Building and running
 ### Instructions

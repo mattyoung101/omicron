@@ -237,7 +237,6 @@ void remote_debug_init(uint16_t w, uint16_t h){
     compressor = tjInitCompress();
     width = w;
     height = h;
-    alp_create("RD");
     if (!rpa_queue_create(&frameQueue, 4)){
         log_error("Failed to create frame queue");
     }
@@ -255,7 +254,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
         if (err != 0) {
             log_error("Failed to create thermal reporting thread: %s", strerror(err));
         } else {
-            pthread_setname_np(thermalThread, "ThermalMonitor");
+            pthread_setname_np(thermalThread, "Thermal Thread");
             createdThermThread = true;
         }
     }
@@ -292,7 +291,6 @@ void remote_debug_dispose(void){
     pthread_cancel(thermalThread);
     rpa_queue_destroy(frameQueue);
     tjDestroy(compressor);
-    alp_free_pool("RD");
     close(sockfd);
     close(connfd);
     connfd = -1;
