@@ -5,12 +5,15 @@ This is the custom wireless debugging and management app for Team Omicron, to be
 The app is written in Kotlin using JavaFX (via TornadoFX) for the UI. It enables developers to control the robot, view
 debug information, view the camera output and edit camera calibration values.
 
+Omicontrol is built and maintained by Matt Young, so if you have any questions, please contact: 25070@bbc.qld.edu.au
+
 ## Features list
-- Decode Omicam JPEG stream while overlaying threshold information
+- Easy to use UI with built-in tutorials
+- Decode Omicam JPEG/data stream while overlaying threshold information
 - Edit and upload camera thresholds on the fly
-- Control the Jetson system (reboot, shutdown, halt, etc)
+- Control the Jetson system (reboot, shutdown, halt) and ESP32 (reboot)
 - Visualise both robots' localised position on the field
-- Control the robots through commands like "reset to starting formation" and click to move to location
+- Control the robots through a multitude of useful commands including automatically resetting to starting positions
 - Large buttons designed for tablet usage
 - Dark theme!!!
 
