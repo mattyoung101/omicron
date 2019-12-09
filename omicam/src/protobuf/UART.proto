@@ -5,8 +5,14 @@ syntax = "proto3";
 // Message that we (the Pi) send to the ESP32 with the ball data. The reason this is separate from the LocalisationData
 // is that this should be sent more frequently than that one is (due to the time it takes to converge on a solution).
 message BallData {
-    float angle = 1;
-    float distance = 2;
+    float ballX = 1;
+    float ballY = 2;
+
+    float goalBlueX = 3;
+    float goalBlueY = 4;
+
+    float goalYellowX = 5;
+    float goalYellowY = 6;
 }
 
 // Message that we (the Pi) send to the ESP32 to inform it of our latest localised position

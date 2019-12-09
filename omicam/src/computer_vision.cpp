@@ -9,9 +9,12 @@
 #include "opencv2/core/mat.hpp"
 #include <opencv2/core/ocl.hpp>
 #include <opencv2/core/cuda.hpp>
+#include <map>
 #include "defines.h"
 #include "utils.h"
+// yeah this is bad practice, what are you gonna do?
 using namespace cv;
+using namespace std;
 
 // This file handles all the OpenCV tasks in C++ code, which is then called by the C code in the rest of the project
 // Essentially it's just a wrapper for OpenCV
@@ -41,8 +44,8 @@ static void *cv_thread(void *arg){
         // get a frame from the capture stream and call it "frame"
 #endif
         UMat ballThresh;
-        UMat ballLabels;
-        auto ballStats = UMat(frame.size(), CV_32S);
+        Mat ballLabels;
+        auto ballStats = Mat(frame.size(), CV_32S);
         auto ballCentroids = Mat(frame.size(), CV_64F);
 
         // the loop will look like:
@@ -54,16 +57,53 @@ static void *cv_thread(void *arg){
         inRange(frame, minBallScalar, maxBallScalar, ballThresh);
         int nLabels = connectedComponentsWithStats(ballThresh, ballLabels, ballStats, ballCentroids);
 
-#if BUILD_TARGET == BUILD_TARGET_PC
-        UMat labelDisplay;
-        cvtColor(ballThresh, labelDisplay, COLOR_GRAY2RGB);
-        for (int label = 0; label < nLabels; label++){
-//            auto centre = Point(ballCentroids.at<int>(label, 0), ballCentroids.at<int>(label, 1));
-            auto centre = Point(512, 512);
-            circle(labelDisplay, centre, 8, Scalar(0, 0, 255), FILLED);
+        // map between id and size, again we skip id 0 because that is the background
+        map<int, int> labelSizes;
+        for (int label = 1; label < nLabels; label++){
+            int size = ballStats.at<int>(label, CC_STAT_AREA);
+            labelSizes.insert({label, size});
         }
 
+        // find the biggest blob
+        // it may be better to rewrite this without a map and instead just use the comparator, look into that in future
+        vector<pair<int, int>> pairs;
+        pairs.reserve(labelSizes.size());
+        for (auto & labelSize : labelSizes){
+            pairs.emplace_back(labelSize);
+        }
+        sort(pairs.begin(), pairs.end(), [=](pair<int, int>& a, pair<int, int>& b){
+            return a.second < b.second;
+        });
+        reverse(pairs.begin(), pairs.end());
+        auto largestId = pairs[0].first;
+        auto largestCentroid = Point(ballCentroids.at<double>(largestId, 0), ballCentroids.at<double>(largestId, 1));
+
+#if DEBUG_ENABLED
+        // dispatch thresholded frame and centroid to remote debugger
+        Mat ballThreshCopy;
+        ballThresh.copyTo(ballThreshCopy);
+#endif
+
+#if BUILD_TARGET == BUILD_TARGET_PC
+        // if the target is PC then render some debug info
+        UMat labelDisplay;
+        cvtColor(ballThresh, labelDisplay, COLOR_GRAY2RGB);
+
+        // it appears that label 0 is always the background so we skip it (may want to confirm this)
+        for (int label = 1; label < nLabels; label++){
+            auto centre = Point(ballCentroids.at<double>(label, 0), ballCentroids.at<double>(label, 1));
+            int rectX = ballStats.at<int>(label, CC_STAT_LEFT);
+            int rectY = ballStats.at<int>(label, CC_STAT_TOP);
+            int rectW = ballStats.at<int>(label, CC_STAT_WIDTH);
+            int rectH = ballStats.at<int>(label, CC_STAT_HEIGHT);
+            auto rect = Rect(rectX, rectY, rectW, rectH);
+
+            Scalar colour = label == largestId ? Scalar(0, 255, 0) : Scalar(0, 0, 255);
+            rectangle(labelDisplay, rect, colour, 4);
+            circle(labelDisplay, centre, 8, Scalar(0, 0, 255), FILLED);
+        }
         imshow("Omicam (ESC to exit)", labelDisplay);
+
         // wait unless the escape key is pressed
         if (waitKey(250) == 27){
             log_info("Escape key pressed, quitting program");
@@ -79,9 +119,8 @@ void vision_init(void){
     bool openCLDevice = false;
     ocl::setUseOpenCL(true);
     ocl::Context ctx = ocl::Context::getDefault();
-    if (ctx.ptr()){
+    if (ctx.ptr())
         openCLDevice = true;
-    }
     int numCudaDevices = cuda::getCudaEnabledDeviceCount();
     log_info("System info: %d CPU core(s), %d CUDA device(s) available, %s", numCpus, numCudaDevices,
              openCLDevice ? "OpenCL available" : "OpenCL unavailable");

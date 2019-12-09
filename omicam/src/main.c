@@ -110,7 +110,7 @@ int main() {
     // start OpenCV frame grabbing, which blocks the main thread until it's done
     remote_debug_init(width, height);
     vision_init();
-    log_warn("Vision terminated unexpectedly?");
+    log_warn("Vision terminated unexpectedly!");
 
     // this dictionary may be needed by the vision module to initialise some things, so we free it after
     // the application is done
