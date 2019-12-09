@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <log/log.h>
+#include "pb.h"
+#include "nanopb/pb_encode.h"
 
 int16_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 
@@ -47,9 +49,19 @@ void utils_parse_thresh(char *threshStr, int16_t *array){
     free(threshOrig);
 }
 
+void utils_cv_transmit_data(BallData ballData){
+    uint8_t buf[128] = {0};
+    pb_ostream_t stream = pb_ostream_from_buffer(buf, 128);
+    if (!pb_encode_delimited(&stream, BallData_fields, &ballData)){
+        log_error("Failed to encode vision protocol buffer message");
+        return;
+    }
+    // TODO send with comms_uart
+}
+
 // source: https://stackoverflow.com/a/3756954/5007892
 double utils_get_millis(){
-    struct timeval  tv;
+    struct timeval tv;
     gettimeofday(&tv, NULL);
     return (tv.tv_sec) * 1000.0 + (tv.tv_usec) / 1000.0;
 }

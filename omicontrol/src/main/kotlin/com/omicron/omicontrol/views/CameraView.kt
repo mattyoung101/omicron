@@ -139,7 +139,7 @@ class CameraView : View() {
                 item("Shutdown camera").setOnAction {
                     // send shutdown command id
                 }
-                item("Save thresholds").setOnAction {
+                item("Save config").setOnAction {
                     // send save thresholds command id
                 }
                 item("Write next threshold buffer to disk").setOnAction {

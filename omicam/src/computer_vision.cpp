@@ -12,6 +12,7 @@
 #include <map>
 #include "defines.h"
 #include "utils.h"
+#include "remote_debug.h"
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
 using namespace std;
@@ -25,6 +26,7 @@ static pthread_t cvThread = {0};
 static void *cv_thread(void *arg){
     Scalar minBallScalar = Scalar(minBallData[0], minBallData[1], minBallData[2]);
     Scalar maxBallScalar = Scalar(maxBallData[0], maxBallData[1], maxBallData[2]);
+    uint32_t frames = 0;
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
@@ -41,51 +43,56 @@ static void *cv_thread(void *arg){
 
     while (true){
 #if BUILD_TARGET == BUILD_TARGET_JETSON
-        // get a frame from the capture stream and call it "frame"
+        // get a frame from the capture stream and call it "frame" to match up with the other stuff
 #endif
         UMat ballThresh;
-        Mat ballLabels;
-        auto ballStats = Mat(frame.size(), CV_32S);
-        auto ballCentroids = Mat(frame.size(), CV_64F);
+        Mat ballLabels, ballStats, ballCentroids;
 
-        // the loop will look like:
-        // 1. threshold (may have to convert to HSV first)
-        // 2. find blobs
-        // 3. copy UMat to Mat (copy back to CPU), pipe this off to remote debug and localisation
-        // 4. send protobuf packet to ESP containing largest blob rect for ball
-
+        // all the image processing is done in these two functions, threshold then find connected components!
         inRange(frame, minBallScalar, maxBallScalar, ballThresh);
         int nLabels = connectedComponentsWithStats(ballThresh, ballLabels, ballStats, ballCentroids);
 
-        // map between id and size, again we skip id 0 because that is the background
-        map<int, int> labelSizes;
-        for (int label = 1; label < nLabels; label++){
-            int size = ballStats.at<int>(label, CC_STAT_AREA);
-            labelSizes.insert({label, size});
-        }
-
         // find the biggest blob
-        // it may be better to rewrite this without a map and instead just use the comparator, look into that in future
-        vector<pair<int, int>> pairs;
-        pairs.reserve(labelSizes.size());
-        for (auto & labelSize : labelSizes){
-            pairs.emplace_back(labelSize);
+        vector<int> sortedLabels;
+        for (int label = 1; label < nLabels; label++){
+            sortedLabels.push_back(label);
         }
-        sort(pairs.begin(), pairs.end(), [=](pair<int, int>& a, pair<int, int>& b){
-            return a.second < b.second;
+        sort(sortedLabels.begin(), sortedLabels.end(), [=](const int &a, const int &b){
+            int aSize = ballStats.at<int>(a, CC_STAT_AREA);
+            int bSize = ballStats.at<int>(b, CC_STAT_AREA);
+            return aSize < bSize;
         });
-        reverse(pairs.begin(), pairs.end());
-        auto largestId = pairs[0].first;
+        reverse(sortedLabels.begin(), sortedLabels.end());
+        auto largestId = sortedLabels[0];
         auto largestCentroid = Point(ballCentroids.at<double>(largestId, 0), ballCentroids.at<double>(largestId, 1));
 
+        // dispatch frames to remote debugger
 #if DEBUG_ENABLED
-        // dispatch thresholded frame and centroid to remote debugger
-        Mat ballThreshCopy;
-        ballThresh.copyTo(ballThreshCopy);
+        if (frames++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()) {
+            // frame is a 3 channel BGR image (hence the "* 3") which must be converted to RGB
+            auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
+            UMat frameRGB;
+            cvtColor(frame, frameRGB, COLOR_BGR2RGB);
+            memcpy(frameData, frameRGB.getMat(ACCESS_READ).data, frame.rows * frame.cols * 3);
+
+            // ballThresh is just a 1-bit mask so it has only one channel
+            auto *ballThreshData = (uint8_t*) malloc(ballThresh.rows * ballThresh.cols);
+            memcpy(ballThreshData, ballThresh.getMat(ACCESS_READ).data, ballThresh.rows * ballThresh.cols);
+
+            // post to remote debugger
+            remote_debug_post(frameData, ballThreshData);
+        }
 #endif
+
+        // encode protocol buffer to send to ESP over UART
+        BallData data = BallData_init_zero;
+        data.ballX = largestCentroid.x;
+        data.ballY = largestCentroid.y;
+        utils_cv_transmit_data(data);
 
 #if BUILD_TARGET == BUILD_TARGET_PC
         // if the target is PC then render some debug info
+        // TODO look into sending this Mat instead of labelling stuff in Omicam (probably easier/more efficient?)
         UMat labelDisplay;
         cvtColor(ballThresh, labelDisplay, COLOR_GRAY2RGB);
 
@@ -105,12 +112,17 @@ static void *cv_thread(void *arg){
         imshow("Omicam (ESC to exit)", labelDisplay);
 
         // wait unless the escape key is pressed
-        if (waitKey(250) == 27){
+        if (waitKey(50) == 27){
             log_info("Escape key pressed, quitting program");
             break;
         }
 #endif
     }
+
+    destroyAllWindows();
+#if BUILD_TARGET == BUILD_TARGET_JETSON
+    // TODO close video capture
+#endif
     return nullptr;
 }
 
@@ -122,8 +134,9 @@ void vision_init(void){
     if (ctx.ptr())
         openCLDevice = true;
     int numCudaDevices = cuda::getCudaEnabledDeviceCount();
+    log_info("OpenCV version: %d.%d", CV_VERSION_MAJOR, CV_VERSION_MINOR);
     log_info("System info: %d CPU core(s), %d CUDA device(s) available, %s", numCpus, numCudaDevices,
-             openCLDevice ? "OpenCL available" : "OpenCL unavailable");
+            openCLDevice ? "OpenCL available" : "OpenCL unavailable");
 
     int err = pthread_create(&cvThread, nullptr, cv_thread, nullptr);
     if (err != 0){
@@ -131,6 +144,7 @@ void vision_init(void){
     } else {
         pthread_setname_np(cvThread, "CV Thread");
     }
+    // cout << getBuildInformation();
 
     log_info("Vision started");
     pthread_join(cvThread, nullptr);

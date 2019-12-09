@@ -121,7 +121,7 @@ static uint8_t *compress_thresh_image(uint8_t *inBuffer, unsigned long *outputSi
 }
 
 // TODO set frame thread priority!
-static void *frame_thread(GCC_UNUSED void *param){
+static void *frame_thread(void *param){
     while (true){
         void *queueData = NULL;
         if (!rpa_queue_pop(frameQueue, &queueData)){
@@ -263,7 +263,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
     log_debug("Remote debugger initialised successfully");
 }
 
-void remote_debug_post_frame(uint8_t *camFrame, uint8_t *threshFrame){
+void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame){
 #if !DEBUG_ALWAYS_SEND
     if (connfd == -1){
         free(camFrame);

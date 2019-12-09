@@ -7,7 +7,7 @@ set(CMAKE_CPP_STANDARD 17)
 add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -D__ARM_NEON)
 
 # enable ASan and stack protection
-set (SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fno-omit-frame-pointer -static-libsan")
+set (SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -static-libsan")
 # enable NEON (fast math is required due to a hardware bug), the march stuff may not be required but doesn't really matter
 # if anything related to NLopt or math in general breaks, use -mfpu=vfp and disable ffast-math
 set (NEON_FLAGS "-ffast-math -march=native -mtune=native") # TODO add back when on Jetson: -mfpu=neon -mfloat-abi=hard
