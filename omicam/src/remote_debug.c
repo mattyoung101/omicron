@@ -12,9 +12,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "DG_dynarr.h"
-#include "protobuf/RemoteDebug.pb.h"
-#include "nanopb/pb_encode.h"
-#include "pb.h"
 #include "utils.h"
 #include "alloc_pool.h"
 #include <unistd.h>
@@ -34,13 +31,14 @@ static pthread_t frameThread, tcpThread, thermalThread;
 static rpa_queue_t *frameQueue = NULL;
 static _Atomic int sockfd, connfd = -1;
 static _Atomic float temperature = 0.0f;
-static _Atomic bool createdThermThread = false;
 static bool thermalThrottling = false;
 
 /** Used as an easier way to pass two pointers to the thread queue (since it only takes a void*) */
 typedef struct {
     uint8_t *camFrame;
     uint8_t *threshFrame;
+    RDRect ballRect;
+    RDPoint ballCentroid;
 } frame_entry_t;
 
 static void init_tcp_socket(void);
@@ -48,9 +46,10 @@ static void init_tcp_socket(void);
 /**
  * Encodes the given JPEG images into a Protocl Buffer and disaptches it over the TCP socket, if connected.
  */
-static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize){
+static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize,
+        frame_entry_t *entry){
     DebugFrame msg = DebugFrame_init_zero;
-    size_t bufSize = camImgSize + threshImgSize + 512; // the buffer size is the image sizes + 1KB of extra protobuf data
+    size_t bufSize = camImgSize + threshImgSize + 1024; // the buffer size is the image sizes + 1KB of extra protobuf data
     uint8_t *buf = malloc(bufSize); // we'll malloc this since we won't ever send the garbage on the end
     pb_ostream_t stream = pb_ostream_from_buffer(buf, bufSize);
 
@@ -60,6 +59,8 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.defaultImage.size = camImgSize;
     msg.ballThreshImage.size = threshImgSize;
     msg.temperature = temperature;
+    msg.ballCentroid = entry->ballCentroid;
+    msg.ballRect = entry->ballRect;
 
     // encode to buffer
     if (!pb_encode_delimited(&stream, DebugFrame_fields, &msg)){
@@ -81,10 +82,10 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
                 init_tcp_socket();
             }
         } else {
-//            log_trace("Written %d bytes successfully to TCP", written);
+            // log_trace("Written %d bytes successfully to TCP", written);
         }
     }
-    free(buf);
+    free(buf); // allocated above and no longer needed once transmission is done
 }
 
 /**
@@ -141,13 +142,13 @@ static void *frame_thread(void *param){
 
         uint8_t *threshImgCompressed = compress_thresh_image(threshFrame, &threshImageSize);
         uint8_t *camImgCompressed = compress_image(camFrame, &camImageSize);
-        encode_and_send(camImgCompressed, camImageSize, threshImgCompressed, threshImageSize);
+        encode_and_send(camImgCompressed, camImageSize, threshImgCompressed, threshImageSize, entry);
 
         tjFree(camImgCompressed); // allocated by tjCompress2 when compress_image is called in this thread
-        tjFree(threshImgCompressed); // allocated by compress_thresh_frame when zlib compressing
-        free(camFrame); // this is malloc'd and copied from MMAL_BUFFER_HEADER_T in camera_manager
-        free(threshFrame); // this is malloc'd by the blob detector
-        free(entry); // this is malloc'd when we push to the queue and must be freed
+        free(threshImgCompressed); // allocated by compress_thresh_frame when zlib compressing
+        free(camFrame); // this is malloc'd and copied from the OpenCV frame in computer_vision.cpp
+        free(threshFrame); // this is malloc'd and copied from the OpenCV threshold frame in computer_vision.cpp
+        free(entry); // this is malloc'd in this file when we push to the queue
         pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     }
     return NULL;
@@ -155,7 +156,9 @@ static void *frame_thread(void *param){
 
 /** reads the CPU temperature every DEBUG_TEMP_REPORTING_INTERVAL seconds **/
 static void *thermal_thread(void *arg){
+    log_trace("Created thermal thread");
     while (true){
+        // FIXME update this to work with jetson
         // general idea from https://www.raspberrypi.org/forums/viewtopic.php?t=170112#p1091895
         FILE *tempFile = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
         char buf[32];
@@ -172,7 +175,7 @@ static void *thermal_thread(void *arg){
         long tempLong = strtol(buf, NULL, 10);
         float tempDegrees = (float) tempLong / 1000.0f;
         temperature = tempDegrees;
-//        log_debug("Temperature is %.2f degrees", tempDegrees);
+        // log_debug("Temperature is %.2f degrees", tempDegrees);
 
         if (tempDegrees >= 80.0f && !thermalThrottling){
             log_warn("CPU will probably be thermal throttling now (current temp: %.2f degrees, max is 80 degrees)", tempDegrees);
@@ -249,22 +252,20 @@ void remote_debug_init(uint16_t w, uint16_t h){
         pthread_setname_np(frameThread, "RD Encoder");
     }
 
-    if (!createdThermThread) {
-        err = pthread_create(&thermalThread, NULL, thermal_thread, NULL);
-        if (err != 0) {
-            log_error("Failed to create thermal reporting thread: %s", strerror(err));
-        } else {
-            pthread_setname_np(thermalThread, "Thermal Thread");
-            createdThermThread = true;
-        }
+    err = pthread_create(&thermalThread, NULL, thermal_thread, NULL);
+    if (err != 0) {
+        log_error("Failed to create thermal reporting thread: %s", strerror(err));
+    } else {
+        pthread_setname_np(thermalThread, "Thermal Thread");
     }
 
     init_tcp_socket();
     log_debug("Remote debugger initialised successfully");
 }
 
-void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame){
+void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPoint ballCentroid){
 #if !DEBUG_ALWAYS_SEND
+    // we're not connected so free this data
     if (connfd == -1){
         free(camFrame);
         free(threshFrame);
@@ -274,6 +275,8 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame){
     frame_entry_t *entry = malloc(sizeof(frame_entry_t));
     entry->camFrame = camFrame;
     entry->threshFrame = threshFrame;
+    entry->ballRect = ballRect;
+    entry->ballCentroid = ballCentroid;
 
     if (!rpa_queue_trypush(frameQueue, entry)){
         log_warn("Failed to push new frame to queue (perhaps it's full or network is busy)");

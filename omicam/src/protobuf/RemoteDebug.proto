@@ -2,6 +2,18 @@ syntax = "proto3";
 
 // This file contains all the messages we send/receive with Omicontrol over TCP
 
+message RDRect {
+    int32 x = 1;
+    int32 y = 2;
+    int32 width = 3;
+    int32 height = 4;
+}
+
+message RDPoint {
+    int32 x = 1;
+    int32 y = 2;
+}
+
 // Whenever a debug frame is encoded, this is sent to the remote client to be rendered over a TCP socket.
 // It may also include geometries that the remote client is instructed to draw such as rectangles or circles
 // (this is because it's much easier to get the remote JavaFX app to draw geometries than to do it manually on a JPEG buffer)
@@ -9,6 +21,8 @@ message DebugFrame {
     bytes defaultImage = 1; // the encoded image of just the normal view from the camera
     bytes ballThreshImage = 2; // the zlib encoded buffer of the ball's binary threshold image
     float temperature = 3; // the temperature of the CPU on the Pi
+    RDRect ballRect = 4; // the bounding box of the ball
+    RDPoint ballCentroid = 5; // the centroid of the ball
 }
 
 // A message sent by the Omicontrol app to Omicam containing a command and some data

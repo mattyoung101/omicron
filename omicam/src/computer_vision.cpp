@@ -79,8 +79,16 @@ static void *cv_thread(void *arg){
             auto *ballThreshData = (uint8_t*) malloc(ballThresh.rows * ballThresh.cols);
             memcpy(ballThreshData, ballThresh.getMat(ACCESS_READ).data, ballThresh.rows * ballThresh.cols);
 
+            // get coords of ball centroid and ball rect to dispatch
+            RDPoint ballCentroid = {largestCentroid.x, largestCentroid.y};
+            int rectX = ballStats.at<int>(largestId, CC_STAT_LEFT);
+            int rectY = ballStats.at<int>(largestId, CC_STAT_TOP);
+            int rectW = ballStats.at<int>(largestId, CC_STAT_WIDTH);
+            int rectH = ballStats.at<int>(largestId, CC_STAT_HEIGHT);
+            RDRect ballRect = {rectX, rectY, rectW, rectH};
+
             // post to remote debugger
-            remote_debug_post(frameData, ballThreshData);
+            remote_debug_post(frameData, ballThreshData, ballRect, ballCentroid);
         }
 #endif
 

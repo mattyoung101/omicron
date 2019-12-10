@@ -16,12 +16,7 @@ import javafx.scene.input.KeyCombination
 import java.util.zip.Inflater
 import RemoteDebug
 import javafx.scene.paint.Color
-import java.awt.image.BufferedImage
-import java.io.File
-import java.io.FileWriter
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.imageio.ImageIO
-import kotlin.concurrent.thread
 import kotlin.math.floor
 
 class CameraView : View() {
@@ -33,10 +28,9 @@ class CameraView : View() {
     }
     /** displays the normal image **/
     private lateinit var defaultImage: ImageView
-    /** displays the ball thresh image **/
-    private lateinit var ballThreshDisplay: GraphicsContext
+    /** displays the thresh image(s) **/
+    private lateinit var threshDisplay: GraphicsContext
     private val compressor = Inflater()
-    private val writeToDisk = AtomicBoolean(false)
     private var renderThresholds = true
 
     @ExperimentalUnsignedTypes
@@ -55,47 +49,30 @@ class CameraView : View() {
             // write the received image data to the canvas, skipping black pixels (this fakes blend mode which won't work
             // for some reason)
             if (renderThresholds) {
-                ballThreshDisplay.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+                threshDisplay.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+
+                // FIXME this is very slow in the order of 10-30 ms, find some way to speed it up
                 for (i in 0 until bytes) {
                     val byte = outBuf[i].toUByte().toInt()
                     if (byte == 0) continue // skip black pixels
 
                     val x = i % IMAGE_WIDTH.toInt()
                     val y = floor(i / IMAGE_WIDTH).toInt()
-                    ballThreshDisplay.pixelWriter.setColor(x, y, Color.ORANGE)
+                    threshDisplay.pixelWriter.setColor(x, y, Color.ORANGE)
                 }
+
+                // draw ball centre
+                threshDisplay.fill = Color.RED
+                val ballX = message.ballCentroid.x.toDouble()
+                val ballY = message.ballCentroid.y.toDouble()
+                threshDisplay.fillOval(ballX, ballY, 10.0, 10.0)
+
+                // draw ball bounding box
+                threshDisplay.stroke = Color.RED
+                threshDisplay.lineWidth = 4.0
+                threshDisplay.strokeRect(message.ballRect.x.toDouble(), message.ballRect.y.toDouble(),
+                    message.ballRect.width.toDouble(), message.ballRect.height.toDouble())
             }
-        }
-
-        if (writeToDisk.compareAndExchange(true, false)){
-            println("Writing buffer to disk")
-            run {
-                val outFile = File("threshold.raw")
-                val writer = outFile.printWriter()
-
-                for ((count, i) in (0 until bytes).withIndex()) {
-                    val byte: Int = outBuf[i].toUByte().toInt()
-                    writer.print(if (byte == 0) 0 else 1)
-
-                    if (count % IMAGE_WIDTH.toInt() == 0) {
-                        writer.print("\n")
-                    }
-                }
-                writer.close()
-            }
-
-            run {
-                val outFile = File("threshold.png")
-                val img = BufferedImage(IMAGE_WIDTH.toInt(), IMAGE_HEIGHT.toInt(), BufferedImage.TYPE_BYTE_GRAY)
-                for (i in 0 until bytes) {
-                    val x = i % IMAGE_WIDTH.toInt()
-                    val y = floor(i / IMAGE_WIDTH).toInt()
-                    val byte: Int = outBuf[i].toUByte().toInt()
-                    img.setRGB(x, y, if (byte == 0) java.awt.Color.BLACK.rgb else java.awt.Color.WHITE.rgb)
-                }
-                ImageIO.write(img, "png", outFile)
-            }
-            println("Written successfully")
         }
     }
 
@@ -142,9 +119,6 @@ class CameraView : View() {
                 item("Save config").setOnAction {
                     // send save thresholds command id
                 }
-                item("Write next threshold buffer to disk").setOnAction {
-                    writeToDisk.set(true)
-                }
             }
             menu("Help") {
                 item("What's this?").setOnAction {
@@ -153,8 +127,8 @@ class CameraView : View() {
                         on the side to select different colours and view their threshold masks. Use the sliders below the 
                         select box to tune the thresholds. Your results will be reflected in near real-time.
                         
-                        Use the Actions menu to run commands such as shutdown and rebooting the Pi. It's VERY IMPORTANT
-                        that you select Actions > Save Thresholds before changing colours, in order to save your tuned
+                        Use the Actions menu to run commands such as shutdown and rebooting the Jetson. It's VERY IMPORTANT
+                        that you select Actions > Save Config before changing colours, in order to save your tuned
                         thresholds to disk.
                         
                         This view only lets you interact with the camera. To interact with the robot, please visit
@@ -170,18 +144,56 @@ class CameraView : View() {
 
         hbox {
             vbox {
-                alignment = Pos.TOP_LEFT
+                alignment = Pos.TOP_CENTER
+                minWidth = 240.0
+                label("Information")
+
+                hbox {
+                    label("R Min")
+                    slider(min = 0, max = 255)
+                }
+                hbox {
+                    label("R Max")
+                    slider(min = 0, max = 255)
+                }
+
+                hbox {
+                    label("R Min")
+                    slider(min = 0, max = 255)
+                }
+                hbox {
+                    label("R Max")
+                    slider(min = 0, max = 255)
+                }
+
+                hbox {
+                    label("B Min")
+                    slider(min = 0, max = 255)
+                }
+                hbox {
+                    label("B Max")
+                    slider(min = 0, max = 255)
+                }
+
+                hbox {
+                    label("G Min")
+                    slider(min = 0, max = 255)
+                }
+                hbox {
+                    label("G Max")
+                    slider(min = 0, max = 255)
+                }
             }
 
             vbox {
                 stackpane {
                     defaultImage = imageview()
-                    canvas(IMAGE_WIDTH, IMAGE_HEIGHT) { ballThreshDisplay = graphicsContext2D }
+                    canvas(IMAGE_WIDTH, IMAGE_HEIGHT) { threshDisplay = graphicsContext2D }
                 }
                 alignment = Pos.TOP_RIGHT
             }
 
-            alignment = Pos.TOP_LEFT
+            alignment = Pos.TOP_RIGHT
         }
 
         vbox {

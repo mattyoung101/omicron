@@ -36,6 +36,7 @@ class ConnectionManager {
                 }
             } catch (e: SocketException){
                 caughtException = true
+                e.printStackTrace()
             }
 
             if (msgNull || caughtException){

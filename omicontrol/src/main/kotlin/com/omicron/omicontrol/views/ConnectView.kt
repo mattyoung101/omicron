@@ -64,7 +64,7 @@ class ConnectView : View() {
                             CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
                             Utils.transitionMetro(this@ConnectView, CameraView())
                         } catch (e: Exception){
-                            Utils.showGenericAlert(Alert.AlertType.ERROR, "Error: $e\n\nPlease check the Pi is" +
+                            Utils.showGenericAlert(Alert.AlertType.ERROR, "Error: $e\n\nPlease check the Jetson is" +
                                     " powered on, and Omicam is running successfully.",
                                 "Failed to establish connection to camera")
                             e.printStackTrace()
@@ -82,11 +82,11 @@ class ConnectView : View() {
                             """
                                 Welcome to Omicontrol, the wireless debugging, controlling and monitoring app used by Team Omicron.
                                 
-                                To begin, please make sure you're connected to the same network as the Raspberry Pi.
-                                This can be achieved to the "Omicam" hotspot, or by having the Pi connect to your Wi-Fi.
+                                To begin, please make sure you're connected to the same network as the Jetson Nano.
+                                This can be achieved to the "Omicam" hotspot, or by having the Jetson connect to your Wi-Fi.
                                 
                                 Then, use the default IP and port to connect. If that fails, run an nmap scan or check
-                                your router to find the Pi's IP address. The port will be the same (unless you changed it).
+                                your router to find the Jetson's IP address. The port will be the same (unless you changed it).
                             """.trimIndent(), "Connection Help")
                     }
                 }
