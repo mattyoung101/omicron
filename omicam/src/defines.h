@@ -24,7 +24,8 @@
 #define DEBUG_ALWAYS_SEND 0 // if true, ignore whether or not a connection exists and always send debug frames
 #define DEBUG_TEMP_REPORTING_INTERVAL 2 // record the temperature every this many seconds
 enum debug_commands_t {
-    CMD_POWER_OFF = 0, // ask Omicam to shutdown the Jetson
+    CMD_OK = 0, // the last command completed successfully
+    CMD_POWER, // ask Omicam to shutdown the Jetson
     CMD_POWER_REBOOT, // ask Omicam to reboot the Jetson
     CMD_THRESHOLDS_GET_ALL, // return the current thresholds for all object
     CMD_THRESHOLDS_SET, // set the specified object's threshold to the given value

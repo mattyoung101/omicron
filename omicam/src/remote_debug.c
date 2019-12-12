@@ -49,6 +49,68 @@ typedef struct {
 static void init_tcp_socket(void);
 
 /**
+ * Quickly encodes and sends the given DebugCommand back to Omicontrol as a response
+ */
+static void send_response(DebugCommand command){
+    uint8_t buf[512] = {0};
+    pb_ostream_t stream = pb_ostream_from_buffer(buf, 512);
+
+    if (!pb_encode_delimited(&stream, DebugCommand_fields, &command)){
+        log_error("Failed to encode Omicontrol response: %s", PB_GET_ERROR(&stream));
+    } else {
+        // NOLINTNEXTLINE we're ignoring the response code here for now, TODO implement better error handling
+        write(connfd, buf, stream.bytes_written);
+    }
+}
+
+/** reads and procesess Omicontrol messages **/
+static void read_remote_messages(){
+    // read potential protobuf command from Omicontrol socket, recycling buffer
+    // https://stackoverflow.com/a/3054519/5007892
+    int availableBytes = 0;
+    ioctl(connfd, FIONREAD, &availableBytes);
+
+    if (availableBytes > 0) {
+        uint8_t *buf = malloc(availableBytes + 1);
+        ssize_t readBytes = read(connfd, buf, availableBytes);
+
+        pb_istream_t inputStream = pb_istream_from_buffer(buf, readBytes);
+        DebugCommand message = DebugCommand_init_zero;
+
+        if (!pb_decode_delimited(&inputStream, DebugCommand_fields, &message)){
+            log_error("Failed to decode Omicontrol Protobuf message: %s", PB_GET_ERROR(&inputStream));
+            return;
+        }
+
+        switch (message.messageId){
+            case CMD_THRESHOLDS_GET_ALL: {
+                break;
+            }
+
+            case CMD_THRESHOLDS_SET: {
+                break;
+            }
+
+            case CMD_THRESHOLDS_WRITE_DISK: {
+                log_debug("Received request to write thresholds to disk");
+                // ... you would do it here ...
+                DebugCommand response = DebugCommand_init_zero;
+                response.messageId = CMD_OK;
+                send_response(response);
+                break;
+            }
+
+            default: {
+                log_warn("Unhandled debug message id: %d", message.messageId);
+                break;
+            }
+        }
+
+        free(buf);
+    }
+}
+
+/**
  * Encodes the given JPEG images into a Protocl Buffer and disaptches it over the TCP socket, if connected.
  */
 static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize, frame_entry_t *entry){
@@ -83,41 +145,6 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
                 close(connfd);
                 connfd = -1;
                 init_tcp_socket();
-            }
-        }
-
-        // read potential protobuf command from Omicontrol socket, recycling buffer
-        // https://stackoverflow.com/a/3054519/5007892
-        int availableBytes = 0;
-        ioctl(connfd, FIONREAD);
-        if (availableBytes > 0) {
-            memset(buf, 0, bufSize);
-            ssize_t readBytes = read(connfd, buf, availableBytes);
-
-            pb_istream_t inputStream = pb_istream_from_buffer(buf, readBytes);
-            DebugCommand message = DebugCommand_init_zero;
-
-            if (!pb_decode_delimited(&inputStream, DebugCommand_fields, &message)){
-                log_error("Failed to decode Omicontrol Protobuf message: %s", PB_GET_ERROR(&inputStream));
-            }
-
-            switch (message.messageId){
-                case CMD_THRESHOLDS_GET_ALL: {
-                    break;
-                }
-
-                case CMD_THRESHOLDS_SET: {
-                    break;
-                }
-
-                case CMD_THRESHOLDS_WRITE_DISK: {
-                    break;
-                }
-
-                default: {
-                    log_warn("Unhandled debug message id: %d", message.messageId);
-                    break;
-                }
             }
         }
     }
@@ -179,6 +206,7 @@ static void *frame_thread(void *param){
         // de-allocated everything (to prevent memory leaks and stop ASan from complaining)
         pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 
+        read_remote_messages();
         uint8_t *threshImgCompressed = compress_thresh_image(threshFrame, &threshImageSize);
         uint8_t *camImgCompressed = compress_image(camFrame, &camImageSize);
         encode_and_send(camImgCompressed, camImageSize, threshImgCompressed, threshImageSize, entry);

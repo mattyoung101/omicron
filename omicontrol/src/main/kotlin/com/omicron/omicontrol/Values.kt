@@ -13,12 +13,13 @@ const val REMOTE_IP = "127.0.0.1"
 const val REMOTE_PORT = 42708
 val CONNECTION_MANAGER = ConnectionManager()
 val EVENT_BUS = EventBus()
-const val IMAGE_SIZE_SCALAR = 0.9
+const val IMAGE_SIZE_SCALAR = 1.0
 const val IMAGE_WIDTH = 1280.0
 const val IMAGE_HEIGHT = 720.0
 const val DEBUG_CAMERA_VIEW = false
 
 enum class DebugCommands {
+    CMD_OK, // the last command completed successfully
     CMD_POWER_OFF, // ask Omicam to shutdown the Jetson
     CMD_POWER_REBOOT, // ask Omicam to reboot the Jetson
     CMD_THRESHOLDS_GET_ALL, // return the current thresholds for all object

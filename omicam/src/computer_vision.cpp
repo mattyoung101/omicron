@@ -34,7 +34,7 @@ static void *cv_thread(void *arg){
     if (frame.empty()){
         log_error("Unable to load OpenCV test image");
     }
-    namedWindow("Omicam (ESC to exit)", WINDOW_AUTOSIZE);
+//    namedWindow("Omicam (ESC to exit)", WINDOW_AUTOSIZE);
 #else
     log_trace("Build target is Jetson, initialising VideoCapture");
     // TODO ... gstreamer and shit ...
@@ -76,6 +76,12 @@ static void *cv_thread(void *arg){
             auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
             UMat frameRGB;
             cvtColor(frame, frameRGB, COLOR_BGR2RGB);
+
+            char buf[128] = {0};
+            snprintf(buf, 128, "Frame %d (Omicam v%s)", frames, OMICAM_VERSION);
+            putText(frameRGB, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.5,
+                    Scalar(255, 0, 0), 1, FILLED, false);
+
             memcpy(frameData, frameRGB.getMat(ACCESS_READ).data, frame.rows * frame.cols * 3);
 
             // ballThresh is just a 1-bit mask so it has only one channel
@@ -120,7 +126,7 @@ static void *cv_thread(void *arg){
             rectangle(labelDisplay, rect, colour, 4);
             circle(labelDisplay, centre, 8, Scalar(0, 0, 255), FILLED);
         }
-        imshow("Omicam (ESC to exit)", labelDisplay);
+//        imshow("Omicam (ESC to exit)", labelDisplay);
 
         // wait unless the escape key is pressed
         if (waitKey(50) == 27){

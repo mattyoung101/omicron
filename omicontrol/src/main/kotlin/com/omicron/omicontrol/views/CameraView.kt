@@ -51,6 +51,7 @@ class CameraView : View() {
         val bytes = compressor.inflate(outBuf)
 
         runLater {
+            val begin = System.currentTimeMillis()
             val temp = message.temperature
             temperatureLabel.text = "${String.format("%.2f", temp)}°C"
             if (temp >= 75.0){
@@ -90,13 +91,12 @@ class CameraView : View() {
                     message.ballRect.width.toDouble(), message.ballRect.height.toDouble())
             }
 
+            // TODO this method is apparently incredibly inefficient, so I reckon we remove it and go back to what we had before
             val fbo = threshDisplay.canvas.snapshot(null, null)
             threshDisplayScaled.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
             threshDisplayScaled.drawImage(fbo, 0.0, 0.0, IMAGE_WIDTH * IMAGE_SIZE_SCALAR, IMAGE_HEIGHT * IMAGE_SIZE_SCALAR)
 
-//            val r = Random()
-//            threshDisplayScaled.fill = Color.rgb(r.nextInt(255), r.nextInt(255), r.nextInt(255))
-//            threshDisplayScaled.fillRect(0.0, 0.0, 1280.0, 720.0)
+            println("Frame update took: ${System.currentTimeMillis() - begin} ms")
         }
     }
 
@@ -181,12 +181,16 @@ class CameraView : View() {
                 item("Save config"){
                     accelerator = KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN)
                     setOnAction {
-                        Utils.showGenericAlert(
+                        val msg = RemoteDebug.DebugCommand.newBuilder()
+                            .setMessageId(DebugCommands.CMD_THRESHOLDS_WRITE_DISK.ordinal)
+                            .build()
+                        CONNECTION_MANAGER.encodeAndSend(msg, {
+                            Utils.showGenericAlert(
                             Alert.AlertType.INFORMATION, "Your settings have been saved to the remote host.",
                             "Config saved successfully"
-                        )
+                            )
+                        })
                     }
-                    // send save thresholds command id
                 }
             }
             menu("Help") {

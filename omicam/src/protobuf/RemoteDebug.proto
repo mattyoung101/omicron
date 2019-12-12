@@ -34,6 +34,7 @@ message DebugFrame {
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
 message DebugCommand {
     // List of commands:
+    // CMD_OK: the last command completed successfully
     // CMD_POWER_OFF: ask Omicam to shutdown the Jetson
     // CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
     // CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
