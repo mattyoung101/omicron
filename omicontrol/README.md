@@ -7,6 +7,9 @@ debug information, view the camera output and edit camera calibration values.
 
 Omicontrol is built and maintained by Matt Young, so if you have any questions, please contact: 25070@bbc.qld.edu.au
 
+**Note:** The code quality in this project is kind of bad, because I'm not experienced with UI development (so you
+won't be seeing any proper design patterns like MVC). My apologies in advance!
+
 ## Features list
 - Easy to use UI with built-in tutorials
 - Decode Omicam JPEG/data stream while overlaying threshold information

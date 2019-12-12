@@ -57,6 +57,16 @@ class ConnectView : View() {
                 alignment = Pos.CENTER
             }
 
+            if (DEBUG_CAMERA_VIEW){
+                button("Force camera view"){
+                    setOnAction {
+                        println("Forcing transition to camera view")
+                        Utils.transitionMetro(this@ConnectView, CameraView())
+                    }
+                }
+                addClass(Styles.paddedBox)
+            }
+
             hbox {
                 button("Connect"){
                     setOnAction {

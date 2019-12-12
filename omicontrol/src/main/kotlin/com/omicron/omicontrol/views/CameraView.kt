@@ -15,6 +15,9 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import java.util.zip.Inflater
 import RemoteDebug
+import javafx.scene.control.Label
+import javafx.scene.control.Slider
+import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.floor
@@ -30,6 +33,7 @@ class CameraView : View() {
     private lateinit var defaultImage: ImageView
     /** displays the thresh image(s) **/
     private lateinit var threshDisplay: GraphicsContext
+    private lateinit var temperatureLabel: Label
     private val compressor = Inflater()
     private var renderThresholds = true
 
@@ -39,10 +43,12 @@ class CameraView : View() {
         // decompress the threshold image
         compressor.reset()
         compressor.setInput(message.ballThreshImage.toByteArray())
-        val outBuf = ByteArray(1048576) // 1 megabyte (in binary bytes)
+        val outBuf = ByteArray(1024 * 1024) // 1 megabyte (in binary bytes)
         val bytes = compressor.inflate(outBuf)
 
         runLater {
+            temperatureLabel.text = "${String.format("%.2f", message.temperature)}°C"
+
             val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
             defaultImage.image = img
 
@@ -54,7 +60,7 @@ class CameraView : View() {
                 // FIXME this is very slow in the order of 10-30 ms, find some way to speed it up
                 for (i in 0 until bytes) {
                     val byte = outBuf[i].toUByte().toInt()
-                    if (byte == 0) continue // skip black pixels
+                    if (byte == 0) continue
 
                     val x = i % IMAGE_WIDTH.toInt()
                     val y = floor(i / IMAGE_WIDTH).toInt()
@@ -87,6 +93,15 @@ class CameraView : View() {
         }
     }
 
+    private fun applyColourSliderProperties(slider: Slider){
+        slider.apply {
+            blockIncrement = 1.0
+            majorTickUnit = 1.0
+            minorTickCount = 0
+            isSnapToTicks = true
+        }
+    }
+
     override val root = vbox {
         setPrefSize(1600.0, 900.0)
 
@@ -116,7 +131,14 @@ class CameraView : View() {
                 item("Shutdown camera").setOnAction {
                     // send shutdown command id
                 }
-                item("Save config").setOnAction {
+                item("Save config"){
+                    accelerator = KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN)
+                    setOnAction {
+                        Utils.showGenericAlert(
+                            Alert.AlertType.INFORMATION, "Your settings have been saved to the remote host.",
+                            "Config saved successfully"
+                        )
+                    }
                     // send save thresholds command id
                 }
             }
@@ -144,48 +166,6 @@ class CameraView : View() {
 
         hbox {
             vbox {
-                alignment = Pos.TOP_CENTER
-                minWidth = 240.0
-                label("Information")
-
-                hbox {
-                    label("R Min")
-                    slider(min = 0, max = 255)
-                }
-                hbox {
-                    label("R Max")
-                    slider(min = 0, max = 255)
-                }
-
-                hbox {
-                    label("R Min")
-                    slider(min = 0, max = 255)
-                }
-                hbox {
-                    label("R Max")
-                    slider(min = 0, max = 255)
-                }
-
-                hbox {
-                    label("B Min")
-                    slider(min = 0, max = 255)
-                }
-                hbox {
-                    label("B Max")
-                    slider(min = 0, max = 255)
-                }
-
-                hbox {
-                    label("G Min")
-                    slider(min = 0, max = 255)
-                }
-                hbox {
-                    label("G Max")
-                    slider(min = 0, max = 255)
-                }
-            }
-
-            vbox {
                 stackpane {
                     defaultImage = imageview()
                     canvas(IMAGE_WIDTH, IMAGE_HEIGHT) { threshDisplay = graphicsContext2D }
@@ -193,13 +173,71 @@ class CameraView : View() {
                 alignment = Pos.TOP_RIGHT
             }
 
-            alignment = Pos.TOP_RIGHT
+            vbox {
+                hbox {
+                    label("Camera Configuration") {
+                        addClass(Styles.bigLabel)
+                        alignment = Pos.TOP_CENTER
+                    }
+                    hgrow = Priority.ALWAYS
+                    alignment = Pos.TOP_CENTER
+                }
+
+                // TODO we're gonna need to get the initial values from the remote to populate the sliders with
+                // TODO make all the sliders text fields so you can type in values if required (or maybe if you click on the label it lets you do that)
+
+                val colours = listOf("R", "G", "B")
+                form {
+                    for (colour in colours){
+                        fieldset {
+                            field("$colour Min") {
+                                val minSlider = slider(min=0, max=255){
+                                    applyColourSliderProperties(this)
+                                }
+                                label("000"){
+                                    minSlider.valueProperty().addListener { _, _, newValue ->
+                                        text = newValue.toInt().toString().padStart(3, '0')
+                                    }
+                                }
+                            }
+
+                            field("$colour Max") {
+                                val maxSlider = slider(min=0, max=255){
+                                    applyColourSliderProperties(this)
+                                }
+                                label("000"){
+                                    maxSlider.valueProperty().addListener { _, _, newValue ->
+                                        text = newValue.toInt().toString().padStart(3, '0')
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    fieldset {
+                        field {
+                            label("Temperature: ")
+                            temperatureLabel = label("Unknown")
+                        }
+                    }
+                }
+
+                hgrow = Priority.ALWAYS
+                alignment = Pos.TOP_LEFT
+            }
+
+            hgrow = Priority.ALWAYS
         }
 
         vbox {
             paddingTop = 25.0
             alignment = Pos.CENTER
             button("Switch to robot view")
+        }
+
+        if (DEBUG_CAMERA_VIEW){
+            threshDisplay.fill = Color.WHITE
+            threshDisplay.fillRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
         }
     }
 }
