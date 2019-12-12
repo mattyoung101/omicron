@@ -14,6 +14,12 @@ message RDPoint {
     int32 y = 2;
 }
 
+message RDThreshold {
+    int32 objectId = 1;
+    repeated int32 min = 2;
+    repeated int32 max = 3;
+}
+
 // Whenever a debug frame is encoded, this is sent to the remote client to be rendered over a TCP socket.
 // It may also include geometries that the remote client is instructed to draw such as rectangles or circles
 // (this is because it's much easier to get the remote JavaFX app to draw geometries than to do it manually on a JPEG buffer)
@@ -25,15 +31,27 @@ message DebugFrame {
     RDPoint ballCentroid = 5; // the centroid of the ball
 }
 
-// A message sent by the Omicontrol app to Omicam containing a command and some data
+// This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
 message DebugCommand {
     // List of commands:
-    // CMD_POWER_OFF: power off the camera module, equivalent to sudo shutdown now
-    // CMD_POWER_REBOOT: reboot the camera module, equivalent to sudo reboot now
+    // CMD_POWER_OFF: ask Omicam to shutdown the Jetson
+    // CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
+    // CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
+    // CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
+    // CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
     // CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
+    // CMD_MOVE_RESET: move to starting position
+    // CMD_MOVE_HALT: stops the robot in place, braking
+    // CMD_MOVE_RESUME: allows the robot to move again
+    // CMD_MOVE_ORIENT: orient to a specific direction
     int32 messageId = 1;
 
     // may be set if CMD_MOVE_TO_XY is the messageId
-    int32 coordX = 2;
-    int32 coordY = 3;
+    RDPoint coords = 2;
+    // may be set if CMD_MOVE_ORIENT is the messageId
+    float orientation = 3;
+    // may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+    repeated RDThreshold allThresholds = 4;
+    // may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+    repeated RDThreshold threshold = 5;
 }

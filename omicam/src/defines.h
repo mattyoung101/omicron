@@ -4,10 +4,12 @@
 
 /*
  * Version history:
- * 0.0.0: basic CPU blob detection, remote debugger implemented
- * 1.0.0: switch to OpenCV blob detection, etc etc etc
+ * 0.0.0a: basic CPU blob detection, remote debugger implemented
+ * 1.0.0a: switch to OpenCV blob detection and have it working
+ * 1.1.0a: (WORK IN PROGRESS) Omicontrol integration works*
+ *
  */
-#define OMICAM_VERSION "1.0.0"
+#define OMICAM_VERSION "1.0.0a"
 
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define ENABLE_DIAGNOSTICS 0 // enable or disable performance (i.e. FPS) diagnostics
@@ -21,6 +23,18 @@
 #define DEBUG_ENABLED 1 // whether or not remote debug is enabled
 #define DEBUG_ALWAYS_SEND 0 // if true, ignore whether or not a connection exists and always send debug frames
 #define DEBUG_TEMP_REPORTING_INTERVAL 2 // record the temperature every this many seconds
+enum debug_commands_t {
+    CMD_POWER_OFF = 0, // ask Omicam to shutdown the Jetson
+    CMD_POWER_REBOOT, // ask Omicam to reboot the Jetson
+    CMD_THRESHOLDS_GET_ALL, // return the current thresholds for all object
+    CMD_THRESHOLDS_SET, // set the specified object's threshold to the given value
+    CMD_THRESHOLDS_WRITE_DISK, // writes the current thresholds to the INI file and then to disk
+    CMD_MOVE_TO_XY, // move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
+    CMD_MOVE_RESET, // move to starting position
+    CMD_MOVE_HALT, // stops the robot in place, braking
+    CMD_MOVE_RESUME, // allows the robot to move again
+    CMD_MOVE_ORIENT, // orient to a specific direction
+};
 
 #define BUILD_TARGET_JETSON 0 // Omicam will be running on an NVIDIA Jetson Nano
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC (assumes no camera available and uses test imagery)

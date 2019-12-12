@@ -76,7 +76,7 @@ class ConnectView : View() {
                         } catch (e: Exception){
                             Utils.showGenericAlert(Alert.AlertType.ERROR, "Error: $e\n\nPlease check the Jetson is" +
                                     " powered on, and Omicam is running successfully.",
-                                "Failed to establish connection to camera")
+                                "Failed to establish connection")
                             e.printStackTrace()
                         }
                     }
@@ -93,9 +93,13 @@ class ConnectView : View() {
                                 Welcome to Omicontrol, the wireless debugging, controlling and monitoring app used by Team Omicron.
                                 
                                 To begin, please make sure you're connected to the same network as the Jetson Nano.
-                                This can be achieved to the "Omicam" hotspot, or by having the Jetson connect to your Wi-Fi.
+                                This can be achieved to by connecting to the "Omicam" hotspot, or by having the Jetson connect 
+                                to your Wi-Fi (not usually viable in competition).
                                 
-                                Then, use the default IP and port to connect. If that fails, run an nmap scan or check
+                                Use the "Choose view" dropdown to select whether you want to edit camera settings ("Camera view"),
+                                or control the robots ("Robot view").
+                                
+                                The default IP and port should be correct. If that fails, run an nmap scan or check
                                 your router to find the Jetson's IP address. The port will be the same (unless you changed it).
                             """.trimIndent(), "Connection Help")
                     }

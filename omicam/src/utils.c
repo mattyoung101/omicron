@@ -53,7 +53,7 @@ void utils_cv_transmit_data(BallData ballData){
     uint8_t buf[128] = {0};
     pb_ostream_t stream = pb_ostream_from_buffer(buf, 128);
     if (!pb_encode_delimited(&stream, BallData_fields, &ballData)){
-        log_error("Failed to encode vision protocol buffer message");
+        log_error("Failed to encode vision protocol buffer message: %s", PB_GET_ERROR(&stream));
         return;
     }
     // TODO send with comms_uart

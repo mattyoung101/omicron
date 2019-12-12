@@ -15,11 +15,13 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import java.util.zip.Inflater
 import RemoteDebug
+import javafx.collections.FXCollections
+import javafx.scene.Cursor
+import javafx.scene.canvas.Canvas
 import javafx.scene.control.Label
 import javafx.scene.control.Slider
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.floor
 
 class CameraView : View() {
@@ -33,9 +35,11 @@ class CameraView : View() {
     private lateinit var defaultImage: ImageView
     /** displays the thresh image(s) **/
     private lateinit var threshDisplay: GraphicsContext
+    private lateinit var threshDisplayScaled: GraphicsContext
     private lateinit var temperatureLabel: Label
     private val compressor = Inflater()
     private var renderThresholds = true
+    private var hideCameraFrame = false
 
     @ExperimentalUnsignedTypes
     @Subscribe
@@ -47,15 +51,21 @@ class CameraView : View() {
         val bytes = compressor.inflate(outBuf)
 
         runLater {
-            temperatureLabel.text = "${String.format("%.2f", message.temperature)}°C"
+            val temp = message.temperature
+            temperatureLabel.text = "${String.format("%.2f", temp)}°C"
+            if (temp >= 75.0){
+                temperatureLabel.textFill = Color.RED
+            } else {
+                temperatureLabel.textFill = Color.WHITE
+            }
 
             val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
-            defaultImage.image = img
 
             // write the received image data to the canvas, skipping black pixels (this fakes blend mode which won't work
             // for some reason)
             if (renderThresholds) {
                 threshDisplay.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+                if (!hideCameraFrame) threshDisplay.drawImage(img, 0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
 
                 // FIXME this is very slow in the order of 10-30 ms, find some way to speed it up
                 for (i in 0 until bytes) {
@@ -79,6 +89,14 @@ class CameraView : View() {
                 threshDisplay.strokeRect(message.ballRect.x.toDouble(), message.ballRect.y.toDouble(),
                     message.ballRect.width.toDouble(), message.ballRect.height.toDouble())
             }
+
+            val fbo = threshDisplay.canvas.snapshot(null, null)
+            threshDisplayScaled.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+            threshDisplayScaled.drawImage(fbo, 0.0, 0.0, IMAGE_WIDTH * IMAGE_SIZE_SCALAR, IMAGE_HEIGHT * IMAGE_SIZE_SCALAR)
+
+//            val r = Random()
+//            threshDisplayScaled.fill = Color.rgb(r.nextInt(255), r.nextInt(255), r.nextInt(255))
+//            threshDisplayScaled.fillRect(0.0, 0.0, 1280.0, 720.0)
         }
     }
 
@@ -99,6 +117,35 @@ class CameraView : View() {
             majorTickUnit = 1.0
             minorTickCount = 0
             isSnapToTicks = true
+        }
+    }
+
+    private fun generateSlider(colour: String, type: String): Field {
+        return field("$colour $type") {
+            val colourSlider = slider(min=0, max=255){
+                applyColourSliderProperties(this)
+            }
+
+            label("000"){
+                colourSlider.valueProperty().addListener { _, _, newValue ->
+                    text = newValue.toInt().toString().padStart(3, '0')
+                }
+                cursor = Cursor.HAND
+
+                // allow the user to manually input the threshold value
+                setOnMouseClicked {
+                    val result = Utils.showTextInputDialog("Enter new value (0-255):", "Manual threshold input",
+                        default = colourSlider.value.toInt().toString())
+                    val newValue = result.toIntOrNull() ?: return@setOnMouseClicked
+
+                    if (newValue > 255 || newValue < 0){
+                        Utils.showGenericAlert(Alert.AlertType.ERROR, "\"$result\" is out of range (required range: 0-255).",
+                            "Invalid input")
+                    } else {
+                        colourSlider.valueProperty().set(newValue.toDouble())
+                    }
+                }
+            }
         }
     }
 
@@ -145,16 +192,16 @@ class CameraView : View() {
             menu("Help") {
                 item("What's this?").setOnAction {
                     Utils.showGenericAlert(Alert.AlertType.INFORMATION, """
-                        In the camera view, you can see the output of the camera and tune new thresholds. Use the pane
-                        on the side to select different colours and view their threshold masks. Use the sliders below the 
-                        select box to tune the thresholds. Your results will be reflected in near real-time.
+                        In the camera view, you can see the output of the camera and tune new thresholds. Use the "Select
+                        object" dropdown to select which object to view, then adjust the sliders. Select "None" to view
+                        just the normal camera frame, and tick the "Hide camera frame" button to view just the thresholds.
                         
-                        Use the Actions menu to run commands such as shutdown and rebooting the Jetson. It's VERY IMPORTANT
-                        that you select Actions > Save Config before changing colours, in order to save your tuned
-                        thresholds to disk.
+                        Only the coloured blobs (corresponding to the selected colour) are pixels included in the threshold.
                         
-                        This view only lets you interact with the camera. To interact with the robot, please visit
-                        the main menu and select "Robot" instead of "Camera".
+                        Pro Tip! Click on the number to the right of each threshold slider to type in its value manually.
+                        
+                        It's VERY IMPORTANT that you select Actions > Save Config (or CTRL+S) before quitting to write
+                        your threshold values to the remote INI file.
                     """.trimIndent(), "Camera View Help")
                 }
                 item("About").setOnAction {
@@ -168,7 +215,16 @@ class CameraView : View() {
             vbox {
                 stackpane {
                     defaultImage = imageview()
-                    canvas(IMAGE_WIDTH, IMAGE_HEIGHT) { threshDisplay = graphicsContext2D }
+
+                    // hidden canvas which is actually rendered to of original size
+                    Canvas(IMAGE_WIDTH, IMAGE_HEIGHT).apply {
+                        threshDisplay = graphicsContext2D
+                    }
+
+                    // real canvas which the frame buffer is copied to and downscaled
+                    canvas(IMAGE_WIDTH * IMAGE_SIZE_SCALAR, IMAGE_HEIGHT * IMAGE_SIZE_SCALAR){
+                        threshDisplayScaled = graphicsContext2D
+                    }
                 }
                 alignment = Pos.TOP_RIGHT
             }
@@ -188,36 +244,40 @@ class CameraView : View() {
 
                 val colours = listOf("R", "G", "B")
                 form {
+                    // RGB colour sliders
                     for (colour in colours){
                         fieldset {
-                            field("$colour Min") {
-                                val minSlider = slider(min=0, max=255){
-                                    applyColourSliderProperties(this)
-                                }
-                                label("000"){
-                                    minSlider.valueProperty().addListener { _, _, newValue ->
-                                        text = newValue.toInt().toString().padStart(3, '0')
-                                    }
-                                }
-                            }
+                            add(generateSlider(colour, "Min"))
+                            add(generateSlider(colour, "Max"))
+                        }
+                    }
 
-                            field("$colour Max") {
-                                val maxSlider = slider(min=0, max=255){
-                                    applyColourSliderProperties(this)
-                                }
-                                label("000"){
-                                    maxSlider.valueProperty().addListener { _, _, newValue ->
-                                        text = newValue.toInt().toString().padStart(3, '0')
-                                    }
-                                }
-                            }
+                    // temperature display
+                    fieldset {
+                        field {
+                            label("Temperature: ")
+                            temperatureLabel = label("Unknown")
                         }
                     }
 
                     fieldset {
                         field {
-                            label("Temperature: ")
-                            temperatureLabel = label("Unknown")
+                            label("Select object: ")
+                            combobox<String> {
+                                items = FXCollections.observableArrayList("None", "Ball", "Yellow Goal", "Blue Goal", "Lines")
+                                selectionModel.selectFirst()
+                            }
+                        }
+                    }
+
+                    fieldset{
+                        field {
+                            label("Hide camera frame: ")
+                            checkbox {
+                                selectedProperty().addListener { _, _, newValue ->
+                                    hideCameraFrame = newValue
+                                }
+                            }
                         }
                     }
                 }
@@ -236,8 +296,8 @@ class CameraView : View() {
         }
 
         if (DEBUG_CAMERA_VIEW){
-            threshDisplay.fill = Color.WHITE
-            threshDisplay.fillRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+            threshDisplayScaled.fill = Color.WHITE
+            threshDisplayScaled.fillRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
         }
     }
 }

@@ -109,6 +109,8 @@ int main() {
 
     // start OpenCV frame grabbing, which blocks the main thread until it's done
     remote_debug_init(width, height);
+    fflush(stdout);
+    fflush(logFile);
     vision_init();
     log_warn("Vision terminated unexpectedly!");
 

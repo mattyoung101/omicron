@@ -19,6 +19,8 @@
 #include <netinet/in.h>
 #include <zlib.h>
 #include <arpa/inet.h>
+#include <sys/ioctl.h>
+#include "nanopb/pb_decode.h"
 
 // Manages encoding camera frames to JPG images (with turbo-jpeg) or PNG images (with lodepng) and sending them over a
 // TCP socket to the eventual Kotlin remote debugging application
@@ -29,7 +31,10 @@ static _Atomic uint16_t width = 0;
 static _Atomic uint16_t height = 0;
 static pthread_t frameThread, tcpThread, thermalThread;
 static rpa_queue_t *frameQueue = NULL;
-static _Atomic int sockfd, connfd = -1;
+/** the file descriptor of the server socket **/
+static _Atomic int sockfd = -1;
+/** the file descriptor of the connection to the client **/
+static _Atomic int connfd = -1;
 static _Atomic float temperature = 0.0f;
 static bool thermalThrottling = false;
 
@@ -46,8 +51,7 @@ static void init_tcp_socket(void);
 /**
  * Encodes the given JPEG images into a Protocl Buffer and disaptches it over the TCP socket, if connected.
  */
-static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize,
-        frame_entry_t *entry){
+static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize, frame_entry_t *entry){
     DebugFrame msg = DebugFrame_init_zero;
     size_t bufSize = camImgSize + threshImgSize + 1024; // the buffer size is the image sizes + 1KB of extra protobuf data
     uint8_t *buf = malloc(bufSize); // we'll malloc this since we won't ever send the garbage on the end
@@ -62,7 +66,6 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.ballCentroid = entry->ballCentroid;
     msg.ballRect = entry->ballRect;
 
-    // encode to buffer
     if (!pb_encode_delimited(&stream, DebugFrame_fields, &msg)){
         log_error("Protobuf encode failed: %s", PB_GET_ERROR(&stream));
     }
@@ -81,11 +84,45 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
                 connfd = -1;
                 init_tcp_socket();
             }
-        } else {
-            // log_trace("Written %d bytes successfully to TCP", written);
+        }
+
+        // read potential protobuf command from Omicontrol socket, recycling buffer
+        // https://stackoverflow.com/a/3054519/5007892
+        int availableBytes = 0;
+        ioctl(connfd, FIONREAD);
+        if (availableBytes > 0) {
+            memset(buf, 0, bufSize);
+            ssize_t readBytes = read(connfd, buf, availableBytes);
+
+            pb_istream_t inputStream = pb_istream_from_buffer(buf, readBytes);
+            DebugCommand message = DebugCommand_init_zero;
+
+            if (!pb_decode_delimited(&inputStream, DebugCommand_fields, &message)){
+                log_error("Failed to decode Omicontrol Protobuf message: %s", PB_GET_ERROR(&inputStream));
+            }
+
+            switch (message.messageId){
+                case CMD_THRESHOLDS_GET_ALL: {
+                    break;
+                }
+
+                case CMD_THRESHOLDS_SET: {
+                    break;
+                }
+
+                case CMD_THRESHOLDS_WRITE_DISK: {
+                    break;
+                }
+
+                default: {
+                    log_warn("Unhandled debug message id: %d", message.messageId);
+                    break;
+                }
+            }
         }
     }
-    free(buf); // allocated above and no longer needed once transmission is done
+
+    free(buf);
 }
 
 /**
@@ -123,6 +160,8 @@ static uint8_t *compress_thresh_image(uint8_t *inBuffer, unsigned long *outputSi
 
 // TODO set frame thread priority!
 static void *frame_thread(void *param){
+    log_trace("Frame encode thread started");
+
     while (true){
         void *queueData = NULL;
         if (!rpa_queue_pop(frameQueue, &queueData)){
@@ -156,7 +195,8 @@ static void *frame_thread(void *param){
 
 /** reads the CPU temperature every DEBUG_TEMP_REPORTING_INTERVAL seconds **/
 static void *thermal_thread(void *arg){
-    log_trace("Created thermal thread");
+    log_trace("Thermal thread started");
+
     while (true){
         // FIXME update this to work with jetson
         // general idea from https://www.raspberrypi.org/forums/viewtopic.php?t=170112#p1091895
@@ -189,6 +229,7 @@ static void *thermal_thread(void *arg){
     }
 }
 
+/** this thread handles establishing a TCP socket, and waits for a client to connect **/
 static void *tcp_thread(void *arg){
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in serverAddr = {0};
@@ -251,7 +292,6 @@ void remote_debug_init(uint16_t w, uint16_t h){
     } else {
         pthread_setname_np(frameThread, "RD Encoder");
     }
-
     err = pthread_create(&thermalThread, NULL, thermal_thread, NULL);
     if (err != 0) {
         log_error("Failed to create thermal reporting thread: %s", strerror(err));
