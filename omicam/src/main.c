@@ -65,7 +65,8 @@ int main() {
 
     struct passwd *pw = getpwuid(getuid());
     char *homedir = pw->pw_dir;
-    logFile = fopen(strcat(homedir, "/omicam.log"), "w");
+    // FIXME this will fail if the directory doesn't exist!
+    logFile = fopen(strcat(homedir, "/Documents/TeamOmicron/Omicam/omicam.log"), "wb");
     if (logFile != NULL){
         log_set_fp(logFile);
     } else {
