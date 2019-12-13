@@ -6,14 +6,15 @@
 
 // Misc macros and data
 
-extern int16_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+extern int32_t *thresholds[];
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /** Parses a string in the format "x,y,z" into three numbers to be stored in the given array  **/
-void utils_parse_thresh(char *threshStr, int16_t *array);
+void utils_parse_thresh(char *threshStr, int32_t *array);
 /** Gets the timestamp in milliseconds **/
 double utils_get_millis();
 /**

@@ -26,11 +26,6 @@ import org.tinylog.kotlin.Logger
 import kotlin.math.floor
 
 class CameraView : View() {
-    init {
-        reloadStylesheetsOnFocus()
-        title = "Camera View | Omicontrol"
-        EVENT_BUS.register(this)
-    }
     /** displays the normal image **/
     private lateinit var defaultImage: ImageView
     /** displays the thresh image(s) **/
@@ -40,6 +35,26 @@ class CameraView : View() {
     private val compressor = Inflater()
     private var renderThresholds = true
     private var hideCameraFrame = false
+    /** mapping between each field object and its threshold **/
+    private val objectThresholds = hashMapOf<FieldObjects, RemoteDebug.RDThreshold>()
+
+    init {
+        reloadStylesheetsOnFocus()
+        title = "Camera View | Omicontrol"
+        EVENT_BUS.register(this)
+
+        // get threshold slider values
+        val command = RemoteDebug.DebugCommand
+            .newBuilder()
+            .setMessageId(DebugCommands.CMD_THRESHOLDS_GET_ALL.ordinal)
+            .build()
+        CONNECTION_MANAGER.encodeAndSend(command, {
+            for ((i, thresh) in it.allThresholdsList.withIndex()){
+                println("Object ${FieldObjects.values()[i]} min: ${thresh.minList}, max: ${thresh.maxList}")
+                objectThresholds[FieldObjects.values()[i]] = thresh
+            }
+        })
+    }
 
     @ExperimentalUnsignedTypes
     @Subscribe
@@ -268,7 +283,7 @@ class CameraView : View() {
                         field {
                             label("Select object: ")
                             combobox<String> {
-                                items = FXCollections.observableArrayList("None", "Ball", "Yellow Goal", "Blue Goal", "Lines")
+                                items = FXCollections.observableArrayList(FieldObjects.values().map { it.toString() })
                                 selectionModel.selectFirst()
                             }
                         }

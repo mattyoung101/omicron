@@ -1,5 +1,5 @@
 DebugFrame.defaultImage max_size:96000
 DebugFrame.ballThreshImage max_size:96000
-DebugCommand.allThresholds max_count:8 fixed_count:true
+DebugCommand.allThresholds max_count:5 fixed_count:true
 RDThreshold.min max_count:3 fixed_count:true
 RDThreshold.max max_count:3 fixed_count:true

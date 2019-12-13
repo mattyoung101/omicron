@@ -93,6 +93,26 @@ static void read_remote_messages(){
 
         switch (message.messageId){
             case CMD_THRESHOLDS_GET_ALL: {
+                log_debug("Received CMD_THREHSOLD_GET_ALL");
+
+                DebugCommand response = DebugCommand_init_zero;
+                response.messageId = CMD_OK;
+                int i = 0;
+                for (int obj = 1; obj <= 4; obj++) {
+                    int32_t *min = thresholds[i++];
+                    int32_t *max = thresholds[i++];
+                    printf("obj id %d, min (%d, %d, %d), max (%d, %d, %d)\n", obj, min[0], min[1], min[2], max[0],
+                           max[1], max[2]);
+
+                    // memcpy won't work with this so we have to do it semi-manually
+                    for (int j = 0; j < 3; j++) {
+                        response.allThresholds[obj].min[j] = min[j];
+                    }
+                    for (int j = 0; j < 3; j++) {
+                        response.allThresholds[obj].max[j] = max[j];
+                    }
+                }
+                send_response(response);
                 break;
             }
 
@@ -101,7 +121,7 @@ static void read_remote_messages(){
             }
 
             case CMD_THRESHOLDS_WRITE_DISK: {
-                log_debug("Received request to write thresholds to disk");
+                log_debug("Received CMD_THRESHOLDS_WRITE_DISK");
                 // ... you would do it here ...
                 DebugCommand response = DebugCommand_init_zero;
                 response.messageId = CMD_OK;

@@ -31,3 +31,12 @@ enum class DebugCommands {
     CMD_MOVE_RESUME, // allows the robot to move again
     CMD_MOVE_ORIENT, // orient to a specific direction
 }
+
+/** objects on the field **/
+enum class FieldObjects {
+    OBJ_NONE,
+    OBJ_BALL,
+    OBJ_GOAL_YELLOW,
+    OBJ_GOAL_BLUE,
+    OBJ_LINES
+};

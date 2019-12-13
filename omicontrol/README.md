@@ -29,3 +29,4 @@ Omicam is available under the license of the whole Team Omicron repo, see LICENS
 ## Libraries and licenses
 - [Protocol Buffers](https://github.com/protocolbuffers/protobuf): BSD 3-clause
 - [TornadoFX](https://github.com/edvin/tornadofx): Apache 2
+- Apache Commons Lang & Codec: Apache 2

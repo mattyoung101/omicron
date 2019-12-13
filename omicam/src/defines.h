@@ -36,6 +36,13 @@ enum debug_commands_t {
     CMD_MOVE_RESUME, // allows the robot to move again
     CMD_MOVE_ORIENT, // orient to a specific direction
 };
+enum field_objects_t {
+    OBJ_NONE = 0,
+    OBJ_BALL,
+    OBJ_GOAL_YELLOW,
+    OBJ_GOAL_BLUE,
+    OBJ_LINES,
+};
 
 #define BUILD_TARGET_JETSON 0 // Omicam will be running on an NVIDIA Jetson Nano
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC (assumes no camera available and uses test imagery)

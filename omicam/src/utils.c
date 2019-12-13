@@ -10,7 +10,15 @@
 #include "pb.h"
 #include "nanopb/pb_encode.h"
 
-int16_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+
+/*
+ * OBJ_BALL,
+ * OBJ_GOAL_YELLOW,
+ * OBJ_GOAL_BLUE,
+ * OBJ_LINES,
+ */
+int32_t *thresholds[] = {minBallData, maxBallData, minYellowData, maxYellowData, minBlueData, maxBlueData, minLineData, maxLineData};
 
 // https://stackoverflow.com/a/1726321/5007892
 static void remove_spaces(char* s) {
@@ -22,7 +30,7 @@ static void remove_spaces(char* s) {
     } while ((*s++ = *d++));
 }
 
-void utils_parse_thresh(char *threshStr, int16_t *array){
+void utils_parse_thresh(char *threshStr, int32_t *array){
     char *token;
     char *threshOrig = strdup(threshStr);
     int16_t i = 0;
