@@ -22,6 +22,7 @@ import javafx.scene.control.Label
 import javafx.scene.control.Slider
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
+import org.tinylog.kotlin.Logger
 import kotlin.math.floor
 
 class CameraView : View() {
@@ -29,7 +30,6 @@ class CameraView : View() {
         reloadStylesheetsOnFocus()
         title = "Camera View | Omicontrol"
         EVENT_BUS.register(this)
-        println("Making new Camera View")
     }
     /** displays the normal image **/
     private lateinit var defaultImage: ImageView
@@ -96,13 +96,13 @@ class CameraView : View() {
             threshDisplayScaled.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
             threshDisplayScaled.drawImage(fbo, 0.0, 0.0, IMAGE_WIDTH * IMAGE_SIZE_SCALAR, IMAGE_HEIGHT * IMAGE_SIZE_SCALAR)
 
-            println("Frame update took: ${System.currentTimeMillis() - begin} ms")
+            // Logger.trace("Frame update took: ${System.currentTimeMillis() - begin} ms")
         }
     }
 
     @Subscribe
     fun receiveRemoteShutdownEvent(message: RemoteShutdownEvent){
-        println("Received remote shutdown event")
+        Logger.info("Received remote shutdown event")
         runLater {
             Utils.showGenericAlert(Alert.AlertType.ERROR, "The remote connection has unexpectedly terminated.\n" +
                     "Please check Omicam is still running and try again.\n\nError description: Protobuf message was null",
@@ -210,7 +210,7 @@ class CameraView : View() {
                 }
                 item("About").setOnAction {
                     Utils.showGenericAlert(Alert.AlertType.INFORMATION, "Copyright (c) 2019 Team Omicron. See LICENSE.txt",
-                        "Omicontrol v${VERSION}", "About")
+                        "Omicontrol v${OMICONTROL_VERSION}", "About")
                 }
             }
         }

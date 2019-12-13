@@ -3050,6 +3050,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * List of commands:
+     * CMD_OK: the last command completed successfully
      * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
      * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
      * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
@@ -3311,6 +3312,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * List of commands:
+     * CMD_OK: the last command completed successfully
      * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
      * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
      * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
@@ -3926,6 +3928,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * List of commands:
+       * CMD_OK: the last command completed successfully
        * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
        * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
        * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
@@ -3946,6 +3949,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * List of commands:
+       * CMD_OK: the last command completed successfully
        * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
        * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
        * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
@@ -3969,6 +3973,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * List of commands:
+       * CMD_OK: the last command completed successfully
        * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
        * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
        * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
@@ -4853,6 +4858,851 @@ public final class RemoteDebug {
 
   }
 
+  public interface RDMsgFrameOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RDMsgFrame)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    boolean hasFrame();
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    RemoteDebug.DebugFrame getFrame();
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    RemoteDebug.DebugFrameOrBuilder getFrameOrBuilder();
+
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    boolean hasCommand();
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    RemoteDebug.DebugCommand getCommand();
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    RemoteDebug.DebugCommandOrBuilder getCommandOrBuilder();
+
+    /**
+     * <pre>
+     * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+     * </pre>
+     *
+     * <code>optional int32 whichMessage = 3;</code>
+     */
+    int getWhichMessage();
+  }
+  /**
+   * <pre>
+   * Container for messages, contains exactly one sub message
+   * </pre>
+   *
+   * Protobuf type {@code RDMsgFrame}
+   */
+  public  static final class RDMsgFrame extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:RDMsgFrame)
+      RDMsgFrameOrBuilder {
+    // Use RDMsgFrame.newBuilder() to construct.
+    private RDMsgFrame(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RDMsgFrame() {
+      whichMessage_ = 0;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private RDMsgFrame(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              RemoteDebug.DebugFrame.Builder subBuilder = null;
+              if (frame_ != null) {
+                subBuilder = frame_.toBuilder();
+              }
+              frame_ = input.readMessage(RemoteDebug.DebugFrame.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(frame_);
+                frame_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 18: {
+              RemoteDebug.DebugCommand.Builder subBuilder = null;
+              if (command_ != null) {
+                subBuilder = command_.toBuilder();
+              }
+              command_ = input.readMessage(RemoteDebug.DebugCommand.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(command_);
+                command_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 24: {
+
+              whichMessage_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RemoteDebug.internal_static_RDMsgFrame_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RemoteDebug.internal_static_RDMsgFrame_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RemoteDebug.RDMsgFrame.class, RemoteDebug.RDMsgFrame.Builder.class);
+    }
+
+    public static final int FRAME_FIELD_NUMBER = 1;
+    private RemoteDebug.DebugFrame frame_;
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    public boolean hasFrame() {
+      return frame_ != null;
+    }
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    public RemoteDebug.DebugFrame getFrame() {
+      return frame_ == null ? RemoteDebug.DebugFrame.getDefaultInstance() : frame_;
+    }
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    public RemoteDebug.DebugFrameOrBuilder getFrameOrBuilder() {
+      return getFrame();
+    }
+
+    public static final int COMMAND_FIELD_NUMBER = 2;
+    private RemoteDebug.DebugCommand command_;
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    public boolean hasCommand() {
+      return command_ != null;
+    }
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    public RemoteDebug.DebugCommand getCommand() {
+      return command_ == null ? RemoteDebug.DebugCommand.getDefaultInstance() : command_;
+    }
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    public RemoteDebug.DebugCommandOrBuilder getCommandOrBuilder() {
+      return getCommand();
+    }
+
+    public static final int WHICHMESSAGE_FIELD_NUMBER = 3;
+    private int whichMessage_;
+    /**
+     * <pre>
+     * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+     * </pre>
+     *
+     * <code>optional int32 whichMessage = 3;</code>
+     */
+    public int getWhichMessage() {
+      return whichMessage_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (frame_ != null) {
+        output.writeMessage(1, getFrame());
+      }
+      if (command_ != null) {
+        output.writeMessage(2, getCommand());
+      }
+      if (whichMessage_ != 0) {
+        output.writeInt32(3, whichMessage_);
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (frame_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getFrame());
+      }
+      if (command_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getCommand());
+      }
+      if (whichMessage_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, whichMessage_);
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RemoteDebug.RDMsgFrame)) {
+        return super.equals(obj);
+      }
+      RemoteDebug.RDMsgFrame other = (RemoteDebug.RDMsgFrame) obj;
+
+      boolean result = true;
+      result = result && (hasFrame() == other.hasFrame());
+      if (hasFrame()) {
+        result = result && getFrame()
+            .equals(other.getFrame());
+      }
+      result = result && (hasCommand() == other.hasCommand());
+      if (hasCommand()) {
+        result = result && getCommand()
+            .equals(other.getCommand());
+      }
+      result = result && (getWhichMessage()
+          == other.getWhichMessage());
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasFrame()) {
+        hash = (37 * hash) + FRAME_FIELD_NUMBER;
+        hash = (53 * hash) + getFrame().hashCode();
+      }
+      if (hasCommand()) {
+        hash = (37 * hash) + COMMAND_FIELD_NUMBER;
+        hash = (53 * hash) + getCommand().hashCode();
+      }
+      hash = (37 * hash) + WHICHMESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getWhichMessage();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDMsgFrame parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDMsgFrame parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RemoteDebug.RDMsgFrame prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * Container for messages, contains exactly one sub message
+     * </pre>
+     *
+     * Protobuf type {@code RDMsgFrame}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RDMsgFrame)
+        RemoteDebug.RDMsgFrameOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RemoteDebug.internal_static_RDMsgFrame_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RemoteDebug.internal_static_RDMsgFrame_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RemoteDebug.RDMsgFrame.class, RemoteDebug.RDMsgFrame.Builder.class);
+      }
+
+      // Construct using RemoteDebug.RDMsgFrame.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (frameBuilder_ == null) {
+          frame_ = null;
+        } else {
+          frame_ = null;
+          frameBuilder_ = null;
+        }
+        if (commandBuilder_ == null) {
+          command_ = null;
+        } else {
+          command_ = null;
+          commandBuilder_ = null;
+        }
+        whichMessage_ = 0;
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RemoteDebug.internal_static_RDMsgFrame_descriptor;
+      }
+
+      public RemoteDebug.RDMsgFrame getDefaultInstanceForType() {
+        return RemoteDebug.RDMsgFrame.getDefaultInstance();
+      }
+
+      public RemoteDebug.RDMsgFrame build() {
+        RemoteDebug.RDMsgFrame result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RemoteDebug.RDMsgFrame buildPartial() {
+        RemoteDebug.RDMsgFrame result = new RemoteDebug.RDMsgFrame(this);
+        if (frameBuilder_ == null) {
+          result.frame_ = frame_;
+        } else {
+          result.frame_ = frameBuilder_.build();
+        }
+        if (commandBuilder_ == null) {
+          result.command_ = command_;
+        } else {
+          result.command_ = commandBuilder_.build();
+        }
+        result.whichMessage_ = whichMessage_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RemoteDebug.RDMsgFrame) {
+          return mergeFrom((RemoteDebug.RDMsgFrame)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RemoteDebug.RDMsgFrame other) {
+        if (other == RemoteDebug.RDMsgFrame.getDefaultInstance()) return this;
+        if (other.hasFrame()) {
+          mergeFrame(other.getFrame());
+        }
+        if (other.hasCommand()) {
+          mergeCommand(other.getCommand());
+        }
+        if (other.getWhichMessage() != 0) {
+          setWhichMessage(other.getWhichMessage());
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RemoteDebug.RDMsgFrame parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RemoteDebug.RDMsgFrame) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private RemoteDebug.DebugFrame frame_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.DebugFrame, RemoteDebug.DebugFrame.Builder, RemoteDebug.DebugFrameOrBuilder> frameBuilder_;
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public boolean hasFrame() {
+        return frameBuilder_ != null || frame_ != null;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public RemoteDebug.DebugFrame getFrame() {
+        if (frameBuilder_ == null) {
+          return frame_ == null ? RemoteDebug.DebugFrame.getDefaultInstance() : frame_;
+        } else {
+          return frameBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public Builder setFrame(RemoteDebug.DebugFrame value) {
+        if (frameBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          frame_ = value;
+          onChanged();
+        } else {
+          frameBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public Builder setFrame(
+          RemoteDebug.DebugFrame.Builder builderForValue) {
+        if (frameBuilder_ == null) {
+          frame_ = builderForValue.build();
+          onChanged();
+        } else {
+          frameBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public Builder mergeFrame(RemoteDebug.DebugFrame value) {
+        if (frameBuilder_ == null) {
+          if (frame_ != null) {
+            frame_ =
+              RemoteDebug.DebugFrame.newBuilder(frame_).mergeFrom(value).buildPartial();
+          } else {
+            frame_ = value;
+          }
+          onChanged();
+        } else {
+          frameBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public Builder clearFrame() {
+        if (frameBuilder_ == null) {
+          frame_ = null;
+          onChanged();
+        } else {
+          frame_ = null;
+          frameBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public RemoteDebug.DebugFrame.Builder getFrameBuilder() {
+        
+        onChanged();
+        return getFrameFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public RemoteDebug.DebugFrameOrBuilder getFrameOrBuilder() {
+        if (frameBuilder_ != null) {
+          return frameBuilder_.getMessageOrBuilder();
+        } else {
+          return frame_ == null ?
+              RemoteDebug.DebugFrame.getDefaultInstance() : frame_;
+        }
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.DebugFrame, RemoteDebug.DebugFrame.Builder, RemoteDebug.DebugFrameOrBuilder> 
+          getFrameFieldBuilder() {
+        if (frameBuilder_ == null) {
+          frameBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.DebugFrame, RemoteDebug.DebugFrame.Builder, RemoteDebug.DebugFrameOrBuilder>(
+                  getFrame(),
+                  getParentForChildren(),
+                  isClean());
+          frame_ = null;
+        }
+        return frameBuilder_;
+      }
+
+      private RemoteDebug.DebugCommand command_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.DebugCommand, RemoteDebug.DebugCommand.Builder, RemoteDebug.DebugCommandOrBuilder> commandBuilder_;
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public boolean hasCommand() {
+        return commandBuilder_ != null || command_ != null;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public RemoteDebug.DebugCommand getCommand() {
+        if (commandBuilder_ == null) {
+          return command_ == null ? RemoteDebug.DebugCommand.getDefaultInstance() : command_;
+        } else {
+          return commandBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public Builder setCommand(RemoteDebug.DebugCommand value) {
+        if (commandBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          command_ = value;
+          onChanged();
+        } else {
+          commandBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public Builder setCommand(
+          RemoteDebug.DebugCommand.Builder builderForValue) {
+        if (commandBuilder_ == null) {
+          command_ = builderForValue.build();
+          onChanged();
+        } else {
+          commandBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public Builder mergeCommand(RemoteDebug.DebugCommand value) {
+        if (commandBuilder_ == null) {
+          if (command_ != null) {
+            command_ =
+              RemoteDebug.DebugCommand.newBuilder(command_).mergeFrom(value).buildPartial();
+          } else {
+            command_ = value;
+          }
+          onChanged();
+        } else {
+          commandBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public Builder clearCommand() {
+        if (commandBuilder_ == null) {
+          command_ = null;
+          onChanged();
+        } else {
+          command_ = null;
+          commandBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public RemoteDebug.DebugCommand.Builder getCommandBuilder() {
+        
+        onChanged();
+        return getCommandFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public RemoteDebug.DebugCommandOrBuilder getCommandOrBuilder() {
+        if (commandBuilder_ != null) {
+          return commandBuilder_.getMessageOrBuilder();
+        } else {
+          return command_ == null ?
+              RemoteDebug.DebugCommand.getDefaultInstance() : command_;
+        }
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.DebugCommand, RemoteDebug.DebugCommand.Builder, RemoteDebug.DebugCommandOrBuilder> 
+          getCommandFieldBuilder() {
+        if (commandBuilder_ == null) {
+          commandBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.DebugCommand, RemoteDebug.DebugCommand.Builder, RemoteDebug.DebugCommandOrBuilder>(
+                  getCommand(),
+                  getParentForChildren(),
+                  isClean());
+          command_ = null;
+        }
+        return commandBuilder_;
+      }
+
+      private int whichMessage_ ;
+      /**
+       * <pre>
+       * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+       * </pre>
+       *
+       * <code>optional int32 whichMessage = 3;</code>
+       */
+      public int getWhichMessage() {
+        return whichMessage_;
+      }
+      /**
+       * <pre>
+       * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+       * </pre>
+       *
+       * <code>optional int32 whichMessage = 3;</code>
+       */
+      public Builder setWhichMessage(int value) {
+        
+        whichMessage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+       * </pre>
+       *
+       * <code>optional int32 whichMessage = 3;</code>
+       */
+      public Builder clearWhichMessage() {
+        
+        whichMessage_ = 0;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:RDMsgFrame)
+    }
+
+    // @@protoc_insertion_point(class_scope:RDMsgFrame)
+    private static final RemoteDebug.RDMsgFrame DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RemoteDebug.RDMsgFrame();
+    }
+
+    public static RemoteDebug.RDMsgFrame getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RDMsgFrame>
+        PARSER = new com.google.protobuf.AbstractParser<RDMsgFrame>() {
+      public RDMsgFrame parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new RDMsgFrame(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RDMsgFrame> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RDMsgFrame> getParserForType() {
+      return PARSER;
+    }
+
+    public RemoteDebug.RDMsgFrame getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_RDRect_descriptor;
   private static final 
@@ -4878,6 +5728,11 @@ public final class RemoteDebug {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_DebugCommand_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RDMsgFrame_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_RDMsgFrame_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -4898,7 +5753,10 @@ public final class RemoteDebug {
       "\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coor" +
       "ds\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022",
       "#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold\022\037\n\t" +
-      "threshold\030\005 \003(\0132\014.RDThresholdb\006proto3"
+      "threshold\030\005 \003(\0132\014.RDThreshold\"^\n\nRDMsgFr" +
+      "ame\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007comma" +
+      "nd\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage\030" +
+      "\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4942,6 +5800,12 @@ public final class RemoteDebug {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugCommand_descriptor,
         new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "Threshold", });
+    internal_static_RDMsgFrame_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_RDMsgFrame_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_RDMsgFrame_descriptor,
+        new java.lang.String[] { "Frame", "Command", "WhichMessage", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

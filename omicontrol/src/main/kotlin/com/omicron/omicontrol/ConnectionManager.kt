@@ -1,7 +1,7 @@
 package com.omicron.omicontrol
 
 import RemoteDebug
-import com.google.protobuf.InvalidProtocolBufferException
+import org.tinylog.kotlin.Logger
 import tornadofx.runLater
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -12,54 +12,65 @@ class ConnectionManager {
     private var socket = Socket()
     private var requestShutdown = false
     private var tcpThread = thread(start=false){}
+    /** threads can wait() on this to be notified when a debug command is likely to have been received **/
+    private var cmdReceivedToken = Object()
+    /** the last command received **/
+    private var receivedCmd: RemoteDebug.DebugCommand? = null
 
     // code run by tcpThread, separated so it can be restarted
     private fun tcpThreadFun(){
-        val stream = socket.getInputStream()
-        println("TCP thread started")
+        val sockInputStream = socket.getInputStream()
+        Logger.debug("TCP thread started")
 
         while (true){
             if (Thread.interrupted() || requestShutdown){
-                println("TCP thread interrupted, closing socket")
+                Logger.debug("TCP thread interrupted, closing socket")
                 socket.close()
                 requestShutdown = false
                 return
             }
 
-            // FIXME this sucks
             var caughtException = false
-            var msgNull = false
+            var msg: RemoteDebug.RDMsgFrame? = null
+
             try {
-                val msg = RemoteDebug.DebugFrame.parseDelimitedFrom(stream)
-                if (msg == null){
-                    msgNull = true
-                } else {
-                    EVENT_BUS.post(msg)
-                }
+                msg = RemoteDebug.RDMsgFrame.parseDelimitedFrom(sockInputStream)
             } catch (e: SocketException){
-                caughtException = true
+                Logger.warn("Caught exception decoding Protobuf message: $e")
                 e.printStackTrace()
-            } catch (e: InvalidProtocolBufferException){
-                // was probably meant for remote debug so just ignore it
+                caughtException = true
             }
 
-            if (msgNull || caughtException){
-                println("Remote has likely disconnected")
+            if (caughtException || msg == null){
+                Logger.info("Remote has most likely disconnected (exception or null message)")
                 EVENT_BUS.post(RemoteShutdownEvent())
                 Thread.currentThread().interrupt()
+            } else {
+                when (msg.whichMessage) {
+                    1 -> {
+                        EVENT_BUS.post(msg.frame!!)
+                    }
+                    2 -> {
+                        receivedCmd = msg.command
+                        synchronized (cmdReceivedToken) { cmdReceivedToken.notifyAll() }
+                    }
+                    else -> {
+                        Logger.error("Unknown wrapper message id: ${msg.whichMessage}")
+                    }
+                }
             }
         }
     }
 
     init {
         Runtime.getRuntime().addShutdownHook(thread(start=false){
-            println("Shutdown hook running for ConnectionManager")
+            Logger.trace("Shutdown hook running for ConnectionManager")
             disconnect()
         })
     }
 
     fun connect(ip: String = REMOTE_IP, port: Int = REMOTE_PORT){
-        println("Connecting to remote at $ip:$port")
+        Logger.info("Connecting to remote at $ip:$port")
 
         // re-create thread and socket (to support reconnecting)
         requestShutdown = false
@@ -67,7 +78,7 @@ class ConnectionManager {
         socket = Socket()
         socket.connect(InetSocketAddress(REMOTE_IP, REMOTE_PORT))
         tcpThread = thread(name="TCPThread"){ tcpThreadFun() }
-        println("Connected successfully")
+        Logger.info("Connected successfully")
     }
 
     /**
@@ -75,36 +86,25 @@ class ConnectionManager {
      * @param onSuccess callback to run if command was successfully received, executed in JavaFX application thread
      * @param onError callback to run if an error occurred, optional, executed in JavaFX application thread
      */
-    fun encodeAndSend(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit, onError: () -> Unit = {}){
-        // TODO could we get into a situation where we accidentally receive the frame message as a response instead of the command?
-        // TODO yo yo yo why don't we use a different socket address? like 42709 is the remote debug socket???
-        // could also just not be a moron and frame the messages in a header
-        // this is because Omicam checks for messages _AFTER_ dispatching the frame thread! maybe we need to read first!
+    fun encodeAndSend(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit, onError: (String) -> Unit = {}){
         thread {
-            println("Dispatching command to Omicam")
+            Logger.trace("Dispatching command to Omicam")
             val outStream = socket.getOutputStream()
             command.writeDelimitedTo(outStream)
             outStream.flush()
-            println("Dispatched, awaiting response")
+            Logger.trace("Dispatched, awaiting response")
 
-            for (i in 0..25) { // HACK HACK HACK
-                try {
-                    val response = RemoteDebug.DebugCommand.parseDelimitedFrom(socket.getInputStream())
-                    if (response != null) {
-                        println("Command response is OK!")
-                        runLater { onSuccess(response) }
-                        break
-                    } else {
-                        println("Command response is null!")
-                        runLater { onError() }
-                        break
-                    }
-                } catch (e: InvalidProtocolBufferException){
-                    println("ignoring exception")
-                }
+            synchronized(cmdReceivedToken) { cmdReceivedToken.wait(5000) }
 
-                // unable to get a good message
-                runLater { onError() }
+            if (receivedCmd == null){
+                Logger.warn("Received null/invalid response from Omicontrol")
+                runLater { onError("Received null/invalid response from Omicontrol") }
+            } else {
+                Logger.trace("Received OK response from Omicontrol!")
+                // yeah this is a stupid hack but for some reason there's no fuckin clone function
+                val copy = RemoteDebug.DebugCommand.parseFrom(receivedCmd!!.toByteArray())
+                receivedCmd = null
+                runLater { onSuccess(copy) }
             }
         }
     }

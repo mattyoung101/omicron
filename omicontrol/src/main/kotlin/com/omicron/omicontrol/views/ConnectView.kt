@@ -8,6 +8,7 @@ import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 import javafx.scene.control.TextField
 import javafx.scene.layout.Region
+import org.tinylog.kotlin.Logger
 import tornadofx.*
 import kotlin.system.exitProcess
 
@@ -60,7 +61,7 @@ class ConnectView : View() {
             if (DEBUG_CAMERA_VIEW){
                 button("Force camera view"){
                     setOnAction {
-                        println("Forcing transition to camera view")
+                        Logger.debug("Forcing transition to camera view")
                         Utils.transitionMetro(this@ConnectView, CameraView())
                     }
                 }

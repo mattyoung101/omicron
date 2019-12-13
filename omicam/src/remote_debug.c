@@ -21,6 +21,7 @@
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include "nanopb/pb_decode.h"
+#include "protobuf/RemoteDebug.pb.h"
 
 // Manages encoding camera frames to JPG images (with turbo-jpeg) or PNG images (with lodepng) and sending them over a
 // TCP socket to the eventual Kotlin remote debugging application
@@ -55,7 +56,11 @@ static void send_response(DebugCommand command){
     uint8_t buf[512] = {0};
     pb_ostream_t stream = pb_ostream_from_buffer(buf, 512);
 
-    if (!pb_encode_delimited(&stream, DebugCommand_fields, &command)){
+    RDMsgFrame wrapper = RDMsgFrame_init_zero;
+    wrapper.command = command;
+    wrapper.whichMessage = 2;
+
+    if (!pb_encode_delimited(&stream, RDMsgFrame_fields, &wrapper)){
         log_error("Failed to encode Omicontrol response: %s", PB_GET_ERROR(&stream));
     } else {
         // NOLINTNEXTLINE we're ignoring the response code here for now, TODO implement better error handling
@@ -71,10 +76,14 @@ static void read_remote_messages(){
     ioctl(connfd, FIONREAD, &availableBytes);
 
     if (availableBytes > 0) {
-        uint8_t *buf = malloc(availableBytes + 1);
-        ssize_t readBytes = read(connfd, buf, availableBytes);
+        uint8_t *buf = malloc(512);
+        ssize_t readBytes = read(connfd, buf, 512);
+        if (readBytes == -1){
+            log_warn("Failed to read remote message: %s", strerror(readBytes));
+            return;
+        }
 
-        pb_istream_t inputStream = pb_istream_from_buffer(buf, readBytes);
+        pb_istream_t inputStream = pb_istream_from_buffer(buf, 512);
         DebugCommand message = DebugCommand_init_zero;
 
         if (!pb_decode_delimited(&inputStream, DebugCommand_fields, &message)){
@@ -128,7 +137,11 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.ballCentroid = entry->ballCentroid;
     msg.ballRect = entry->ballRect;
 
-    if (!pb_encode_delimited(&stream, DebugFrame_fields, &msg)){
+    RDMsgFrame wrapper = RDMsgFrame_init_zero;
+    wrapper.frame = msg;
+    wrapper.whichMessage = 1;
+
+    if (!pb_encode_delimited(&stream, RDMsgFrame_fields, &wrapper)){
         log_error("Protobuf encode failed: %s", PB_GET_ERROR(&stream));
     }
 

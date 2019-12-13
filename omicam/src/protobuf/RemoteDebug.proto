@@ -56,3 +56,12 @@ message DebugCommand {
     // may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
     repeated RDThreshold threshold = 5;
 }
+
+// Container for messages, contains exactly one sub message
+message RDMsgFrame {
+    DebugFrame frame = 1;
+    DebugCommand command = 2;
+
+    // hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+    int32 whichMessage = 3;
+}

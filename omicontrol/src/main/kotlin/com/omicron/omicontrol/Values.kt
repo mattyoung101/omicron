@@ -8,7 +8,7 @@ import com.google.common.eventbus.EventBus
  * 0.1.0a: works with new OpenCV stuff
  * 1.1.0a: (WORK IN PROGRESS) UI implemented and threshold sliders/debug commands work properly
  */
-const val VERSION = "0.1a"
+const val OMICONTROL_VERSION = "0.1a"
 const val REMOTE_IP = "127.0.0.1"
 const val REMOTE_PORT = 42708
 val CONNECTION_MANAGER = ConnectionManager()
