@@ -81,12 +81,26 @@ static void *cv_thread(void *arg){
             snprintf(buf, 128, "Frame %d (Omicam v%s)", frames, OMICAM_VERSION);
             putText(frameRGB, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.5,
                     Scalar(255, 0, 0), 1, FILLED, false);
-
             memcpy(frameData, frameRGB.getMat(ACCESS_READ).data, frame.rows * frame.cols * 3);
 
             // ballThresh is just a 1-bit mask so it has only one channel
-            auto *ballThreshData = (uint8_t*) malloc(ballThresh.rows * ballThresh.cols);
-            memcpy(ballThreshData, ballThresh.getMat(ACCESS_READ).data, ballThresh.rows * ballThresh.cols);
+            auto *ballThreshData = (uint8_t*) calloc(ballThresh.rows * ballThresh.cols, sizeof(uint8_t));
+            switch (selectedFieldObject){
+                case OBJ_NONE: {
+                    // just send the empty buffer
+                    break;
+                }
+
+                case OBJ_BALL: {
+                    memcpy(ballThreshData, ballThresh.getMat(ACCESS_READ).data, ballThresh.rows * ballThresh.cols);
+                    break;
+                }
+
+                default: {
+                    log_warn("Unsupported field object selected: %d", selectedFieldObject);
+                    break;
+                }
+            }
 
             // get coords of ball centroid and ball rect to dispatch
             RDPoint ballCentroid = {largestCentroid.x, largestCentroid.y};

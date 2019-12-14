@@ -37,6 +37,7 @@ class CameraView : View() {
     private var hideCameraFrame = false
     /** mapping between each field object and its threshold **/
     private val objectThresholds = hashMapOf<FieldObjects, RemoteDebug.RDThreshold>()
+    private val selectedObject = FieldObjects.OBJ_NONE
 
     init {
         reloadStylesheetsOnFocus()
@@ -48,7 +49,7 @@ class CameraView : View() {
             .newBuilder()
             .setMessageId(DebugCommands.CMD_THRESHOLDS_GET_ALL.ordinal)
             .build()
-        CONNECTION_MANAGER.encodeAndSend(command, {
+        CONNECTION_MANAGER.dispatchCommand(command, {
             for ((i, thresh) in it.allThresholdsList.withIndex()){
                 println("Object ${FieldObjects.values()[i]} min: ${thresh.minList}, max: ${thresh.maxList}")
                 objectThresholds[FieldObjects.values()[i]] = thresh
@@ -106,7 +107,7 @@ class CameraView : View() {
                     message.ballRect.width.toDouble(), message.ballRect.height.toDouble())
             }
 
-            // TODO this method is apparently incredibly inefficient, so I reckon we remove it and go back to what we had before
+            // FIXME this method is apparently incredibly inefficient, so I reckon we remove it and go back to what we had before
             val fbo = threshDisplay.canvas.snapshot(null, null)
             threshDisplayScaled.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
             threshDisplayScaled.drawImage(fbo, 0.0, 0.0, IMAGE_WIDTH * IMAGE_SIZE_SCALAR, IMAGE_HEIGHT * IMAGE_SIZE_SCALAR)
@@ -199,7 +200,7 @@ class CameraView : View() {
                         val msg = RemoteDebug.DebugCommand.newBuilder()
                             .setMessageId(DebugCommands.CMD_THRESHOLDS_WRITE_DISK.ordinal)
                             .build()
-                        CONNECTION_MANAGER.encodeAndSend(msg, {
+                        CONNECTION_MANAGER.dispatchCommand(msg, {
                             Utils.showGenericAlert(
                             Alert.AlertType.INFORMATION, "Your settings have been saved to the remote host.",
                             "Config saved successfully"
@@ -285,6 +286,21 @@ class CameraView : View() {
                             combobox<String> {
                                 items = FXCollections.observableArrayList(FieldObjects.values().map { it.toString() })
                                 selectionModel.selectFirst()
+
+                                valueProperty().addListener { _, _, _ ->
+                                    val newObj = FieldObjects.values()[selectionModel.selectedIndex]
+                                    Logger.debug("Selecting new field object: $newObj")
+
+                                    // dispatch message to Omicam about changed object
+                                    val msg = RemoteDebug.DebugCommand.newBuilder()
+                                        .setMessageId(DebugCommands.CMD_THRESHOLDS_SELECT.ordinal)
+                                        .setThresholdId(newObj.ordinal)
+                                        .build()
+                                    CONNECTION_MANAGER.dispatchCommand(command=msg, onError = { errMsg ->
+                                        Utils.showGenericAlert(Alert.AlertType.ERROR, "Error: $errMsg",
+                                            "Failed to select new field object")
+                                    })
+                                }
                             }
                         }
                     }

@@ -42,7 +42,7 @@ class ConnectionManager {
             }
 
             if (caughtException || msg == null){
-                Logger.info("Remote has most likely disconnected (exception or null message)")
+                Logger.warn("Remote has most likely disconnected (exception or null message)")
                 EVENT_BUS.post(RemoteShutdownEvent())
                 Thread.currentThread().interrupt()
             } else {
@@ -86,7 +86,7 @@ class ConnectionManager {
      * @param onSuccess callback to run if command was successfully received, executed in JavaFX application thread
      * @param onError callback to run if an error occurred, optional, executed in JavaFX application thread
      */
-    fun encodeAndSend(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit, onError: (String) -> Unit = {}){
+    fun dispatchCommand(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit = {}, onError: (String) -> Unit = {}){
         thread {
             Logger.trace("Dispatching command to Omicam")
             val outStream = socket.getOutputStream()

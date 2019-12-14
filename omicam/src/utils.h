@@ -46,3 +46,6 @@ void utils_cv_transmit_data(BallData ballData);
         log_error("SDL function failed in %s:%d: %s", __FILE__, __LINE__, SDL_GetError()); \
     } \
 } while (0);
+#define RD_SEND_OK_RESPONSE do { DebugCommand response = DebugCommand_init_zero; \
+    response.messageId = CMD_OK; \
+    send_response(response); } while (0)

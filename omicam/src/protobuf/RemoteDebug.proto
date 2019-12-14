@@ -40,6 +40,7 @@ message DebugCommand {
     // CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
     // CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
     // CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+    // CMD_THRESHOLDS_SELECT: select the particular threshold to stream
     // CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
     // CMD_MOVE_RESET: move to starting position
     // CMD_MOVE_HALT: stops the robot in place, braking
@@ -53,8 +54,10 @@ message DebugCommand {
     float orientation = 3;
     // may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
     repeated RDThreshold allThresholds = 4;
-    // may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-    repeated RDThreshold threshold = 5;
+    // may be sent if CMD_THRESHOLD_SET is the messageId
+    RDThreshold threshold = 5;
+    // may be set if CMD_THRESHOLDS_SELECT is the messageId
+    int32 thresholdId = 6;
 }
 
 // Container for messages, contains exactly one sub message

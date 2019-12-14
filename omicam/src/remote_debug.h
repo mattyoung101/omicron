@@ -5,6 +5,17 @@
 #include "protobuf/RemoteDebug.pb.h"
 #include "nanopb/pb_encode.h"
 #include "pb.h"
+#include "defines.h"
+
+extern field_objects_t selectedFieldObject;
+
+/** Used as an easier way to pass two pointers to the thread queue (since it only takes a void*) */
+typedef struct {
+    uint8_t *camFrame;
+    uint8_t *threshFrame;
+    RDRect ballRect;
+    RDPoint ballCentroid;
+} frame_entry_t;
 
 #ifdef __cplusplus
 extern "C" {

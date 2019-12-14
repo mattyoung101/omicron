@@ -3056,6 +3056,7 @@ public final class RemoteDebug {
      * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
      * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
      * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+     * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
      * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
      * CMD_MOVE_RESET: move to starting position
      * CMD_MOVE_HALT: stops the robot in place, braking
@@ -3147,47 +3148,37 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+     * may be sent if CMD_THRESHOLD_SET is the messageId
      * </pre>
      *
-     * <code>repeated .RDThreshold threshold = 5;</code>
+     * <code>optional .RDThreshold threshold = 5;</code>
      */
-    java.util.List<RemoteDebug.RDThreshold> 
-        getThresholdList();
+    boolean hasThreshold();
     /**
      * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+     * may be sent if CMD_THRESHOLD_SET is the messageId
      * </pre>
      *
-     * <code>repeated .RDThreshold threshold = 5;</code>
+     * <code>optional .RDThreshold threshold = 5;</code>
      */
-    RemoteDebug.RDThreshold getThreshold(int index);
+    RemoteDebug.RDThreshold getThreshold();
     /**
      * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+     * may be sent if CMD_THRESHOLD_SET is the messageId
      * </pre>
      *
-     * <code>repeated .RDThreshold threshold = 5;</code>
+     * <code>optional .RDThreshold threshold = 5;</code>
      */
-    int getThresholdCount();
+    RemoteDebug.RDThresholdOrBuilder getThresholdOrBuilder();
+
     /**
      * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
      * </pre>
      *
-     * <code>repeated .RDThreshold threshold = 5;</code>
+     * <code>optional int32 thresholdId = 6;</code>
      */
-    java.util.List<? extends RemoteDebug.RDThresholdOrBuilder> 
-        getThresholdOrBuilderList();
-    /**
-     * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-     * </pre>
-     *
-     * <code>repeated .RDThreshold threshold = 5;</code>
-     */
-    RemoteDebug.RDThresholdOrBuilder getThresholdOrBuilder(
-        int index);
+    int getThresholdId();
   }
   /**
    * <pre>
@@ -3208,7 +3199,7 @@ public final class RemoteDebug {
       messageId_ = 0;
       orientation_ = 0F;
       allThresholds_ = java.util.Collections.emptyList();
-      threshold_ = java.util.Collections.emptyList();
+      thresholdId_ = 0;
     }
 
     @java.lang.Override
@@ -3269,12 +3260,21 @@ public final class RemoteDebug {
               break;
             }
             case 42: {
-              if (!((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-                threshold_ = new java.util.ArrayList<RemoteDebug.RDThreshold>();
-                mutable_bitField0_ |= 0x00000010;
+              RemoteDebug.RDThreshold.Builder subBuilder = null;
+              if (threshold_ != null) {
+                subBuilder = threshold_.toBuilder();
               }
-              threshold_.add(
-                  input.readMessage(RemoteDebug.RDThreshold.parser(), extensionRegistry));
+              threshold_ = input.readMessage(RemoteDebug.RDThreshold.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(threshold_);
+                threshold_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 48: {
+
+              thresholdId_ = input.readInt32();
               break;
             }
           }
@@ -3287,9 +3287,6 @@ public final class RemoteDebug {
       } finally {
         if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
           allThresholds_ = java.util.Collections.unmodifiableList(allThresholds_);
-        }
-        if (((mutable_bitField0_ & 0x00000010) == 0x00000010)) {
-          threshold_ = java.util.Collections.unmodifiableList(threshold_);
         }
         makeExtensionsImmutable();
       }
@@ -3318,6 +3315,7 @@ public final class RemoteDebug {
      * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
      * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
      * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+     * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
      * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
      * CMD_MOVE_RESET: move to starting position
      * CMD_MOVE_HALT: stops the robot in place, braking
@@ -3433,58 +3431,49 @@ public final class RemoteDebug {
     }
 
     public static final int THRESHOLD_FIELD_NUMBER = 5;
-    private java.util.List<RemoteDebug.RDThreshold> threshold_;
+    private RemoteDebug.RDThreshold threshold_;
     /**
      * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+     * may be sent if CMD_THRESHOLD_SET is the messageId
      * </pre>
      *
-     * <code>repeated .RDThreshold threshold = 5;</code>
+     * <code>optional .RDThreshold threshold = 5;</code>
      */
-    public java.util.List<RemoteDebug.RDThreshold> getThresholdList() {
-      return threshold_;
+    public boolean hasThreshold() {
+      return threshold_ != null;
     }
     /**
      * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+     * may be sent if CMD_THRESHOLD_SET is the messageId
      * </pre>
      *
-     * <code>repeated .RDThreshold threshold = 5;</code>
+     * <code>optional .RDThreshold threshold = 5;</code>
      */
-    public java.util.List<? extends RemoteDebug.RDThresholdOrBuilder> 
-        getThresholdOrBuilderList() {
-      return threshold_;
+    public RemoteDebug.RDThreshold getThreshold() {
+      return threshold_ == null ? RemoteDebug.RDThreshold.getDefaultInstance() : threshold_;
     }
     /**
      * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+     * may be sent if CMD_THRESHOLD_SET is the messageId
      * </pre>
      *
-     * <code>repeated .RDThreshold threshold = 5;</code>
+     * <code>optional .RDThreshold threshold = 5;</code>
      */
-    public int getThresholdCount() {
-      return threshold_.size();
+    public RemoteDebug.RDThresholdOrBuilder getThresholdOrBuilder() {
+      return getThreshold();
     }
+
+    public static final int THRESHOLDID_FIELD_NUMBER = 6;
+    private int thresholdId_;
     /**
      * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
      * </pre>
      *
-     * <code>repeated .RDThreshold threshold = 5;</code>
+     * <code>optional int32 thresholdId = 6;</code>
      */
-    public RemoteDebug.RDThreshold getThreshold(int index) {
-      return threshold_.get(index);
-    }
-    /**
-     * <pre>
-     * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-     * </pre>
-     *
-     * <code>repeated .RDThreshold threshold = 5;</code>
-     */
-    public RemoteDebug.RDThresholdOrBuilder getThresholdOrBuilder(
-        int index) {
-      return threshold_.get(index);
+    public int getThresholdId() {
+      return thresholdId_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -3511,8 +3500,11 @@ public final class RemoteDebug {
       for (int i = 0; i < allThresholds_.size(); i++) {
         output.writeMessage(4, allThresholds_.get(i));
       }
-      for (int i = 0; i < threshold_.size(); i++) {
-        output.writeMessage(5, threshold_.get(i));
+      if (threshold_ != null) {
+        output.writeMessage(5, getThreshold());
+      }
+      if (thresholdId_ != 0) {
+        output.writeInt32(6, thresholdId_);
       }
     }
 
@@ -3537,9 +3529,13 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, allThresholds_.get(i));
       }
-      for (int i = 0; i < threshold_.size(); i++) {
+      if (threshold_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(5, threshold_.get(i));
+          .computeMessageSize(5, getThreshold());
+      }
+      if (thresholdId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(6, thresholdId_);
       }
       memoizedSize = size;
       return size;
@@ -3570,8 +3566,13 @@ public final class RemoteDebug {
               other.getOrientation()));
       result = result && getAllThresholdsList()
           .equals(other.getAllThresholdsList());
-      result = result && getThresholdList()
-          .equals(other.getThresholdList());
+      result = result && (hasThreshold() == other.hasThreshold());
+      if (hasThreshold()) {
+        result = result && getThreshold()
+            .equals(other.getThreshold());
+      }
+      result = result && (getThresholdId()
+          == other.getThresholdId());
       return result;
     }
 
@@ -3595,10 +3596,12 @@ public final class RemoteDebug {
         hash = (37 * hash) + ALLTHRESHOLDS_FIELD_NUMBER;
         hash = (53 * hash) + getAllThresholdsList().hashCode();
       }
-      if (getThresholdCount() > 0) {
+      if (hasThreshold()) {
         hash = (37 * hash) + THRESHOLD_FIELD_NUMBER;
-        hash = (53 * hash) + getThresholdList().hashCode();
+        hash = (53 * hash) + getThreshold().hashCode();
       }
+      hash = (37 * hash) + THRESHOLDID_FIELD_NUMBER;
+      hash = (53 * hash) + getThresholdId();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -3718,7 +3721,6 @@ public final class RemoteDebug {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getAllThresholdsFieldBuilder();
-          getThresholdFieldBuilder();
         }
       }
       public Builder clear() {
@@ -3740,11 +3742,13 @@ public final class RemoteDebug {
           allThresholdsBuilder_.clear();
         }
         if (thresholdBuilder_ == null) {
-          threshold_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000010);
+          threshold_ = null;
         } else {
-          thresholdBuilder_.clear();
+          threshold_ = null;
+          thresholdBuilder_ = null;
         }
+        thresholdId_ = 0;
+
         return this;
       }
 
@@ -3786,14 +3790,11 @@ public final class RemoteDebug {
           result.allThresholds_ = allThresholdsBuilder_.build();
         }
         if (thresholdBuilder_ == null) {
-          if (((bitField0_ & 0x00000010) == 0x00000010)) {
-            threshold_ = java.util.Collections.unmodifiableList(threshold_);
-            bitField0_ = (bitField0_ & ~0x00000010);
-          }
           result.threshold_ = threshold_;
         } else {
           result.threshold_ = thresholdBuilder_.build();
         }
+        result.thresholdId_ = thresholdId_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3871,31 +3872,11 @@ public final class RemoteDebug {
             }
           }
         }
-        if (thresholdBuilder_ == null) {
-          if (!other.threshold_.isEmpty()) {
-            if (threshold_.isEmpty()) {
-              threshold_ = other.threshold_;
-              bitField0_ = (bitField0_ & ~0x00000010);
-            } else {
-              ensureThresholdIsMutable();
-              threshold_.addAll(other.threshold_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.threshold_.isEmpty()) {
-            if (thresholdBuilder_.isEmpty()) {
-              thresholdBuilder_.dispose();
-              thresholdBuilder_ = null;
-              threshold_ = other.threshold_;
-              bitField0_ = (bitField0_ & ~0x00000010);
-              thresholdBuilder_ = 
-                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getThresholdFieldBuilder() : null;
-            } else {
-              thresholdBuilder_.addAllMessages(other.threshold_);
-            }
-          }
+        if (other.hasThreshold()) {
+          mergeThreshold(other.getThreshold());
+        }
+        if (other.getThresholdId() != 0) {
+          setThresholdId(other.getThresholdId());
         }
         onChanged();
         return this;
@@ -3934,6 +3915,7 @@ public final class RemoteDebug {
        * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
        * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
        * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+       * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
        * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
        * CMD_MOVE_RESET: move to starting position
        * CMD_MOVE_HALT: stops the robot in place, braking
@@ -3955,6 +3937,7 @@ public final class RemoteDebug {
        * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
        * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
        * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+       * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
        * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
        * CMD_MOVE_RESET: move to starting position
        * CMD_MOVE_HALT: stops the robot in place, braking
@@ -3979,6 +3962,7 @@ public final class RemoteDebug {
        * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
        * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
        * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+       * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
        * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
        * CMD_MOVE_RESET: move to starting position
        * CMD_MOVE_HALT: stops the robot in place, braking
@@ -4498,316 +4482,195 @@ public final class RemoteDebug {
         return allThresholdsBuilder_;
       }
 
-      private java.util.List<RemoteDebug.RDThreshold> threshold_ =
-        java.util.Collections.emptyList();
-      private void ensureThresholdIsMutable() {
-        if (!((bitField0_ & 0x00000010) == 0x00000010)) {
-          threshold_ = new java.util.ArrayList<RemoteDebug.RDThreshold>(threshold_);
-          bitField0_ |= 0x00000010;
-         }
-      }
-
-      private com.google.protobuf.RepeatedFieldBuilderV3<
+      private RemoteDebug.RDThreshold threshold_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           RemoteDebug.RDThreshold, RemoteDebug.RDThreshold.Builder, RemoteDebug.RDThresholdOrBuilder> thresholdBuilder_;
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLD_SET is the messageId
+       * </pre>
+       *
+       * <code>optional .RDThreshold threshold = 5;</code>
+       */
+      public boolean hasThreshold() {
+        return thresholdBuilder_ != null || threshold_ != null;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLD_SET is the messageId
+       * </pre>
+       *
+       * <code>optional .RDThreshold threshold = 5;</code>
+       */
+      public RemoteDebug.RDThreshold getThreshold() {
+        if (thresholdBuilder_ == null) {
+          return threshold_ == null ? RemoteDebug.RDThreshold.getDefaultInstance() : threshold_;
+        } else {
+          return thresholdBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLD_SET is the messageId
+       * </pre>
+       *
+       * <code>optional .RDThreshold threshold = 5;</code>
+       */
+      public Builder setThreshold(RemoteDebug.RDThreshold value) {
+        if (thresholdBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          threshold_ = value;
+          onChanged();
+        } else {
+          thresholdBuilder_.setMessage(value);
+        }
 
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public java.util.List<RemoteDebug.RDThreshold> getThresholdList() {
-        if (thresholdBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(threshold_);
-        } else {
-          return thresholdBuilder_.getMessageList();
-        }
+        return this;
       }
       /**
        * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+       * may be sent if CMD_THRESHOLD_SET is the messageId
        * </pre>
        *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public int getThresholdCount() {
-        if (thresholdBuilder_ == null) {
-          return threshold_.size();
-        } else {
-          return thresholdBuilder_.getCount();
-        }
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public RemoteDebug.RDThreshold getThreshold(int index) {
-        if (thresholdBuilder_ == null) {
-          return threshold_.get(index);
-        } else {
-          return thresholdBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
+       * <code>optional .RDThreshold threshold = 5;</code>
        */
       public Builder setThreshold(
-          int index, RemoteDebug.RDThreshold value) {
-        if (thresholdBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureThresholdIsMutable();
-          threshold_.set(index, value);
-          onChanged();
-        } else {
-          thresholdBuilder_.setMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public Builder setThreshold(
-          int index, RemoteDebug.RDThreshold.Builder builderForValue) {
-        if (thresholdBuilder_ == null) {
-          ensureThresholdIsMutable();
-          threshold_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          thresholdBuilder_.setMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public Builder addThreshold(RemoteDebug.RDThreshold value) {
-        if (thresholdBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureThresholdIsMutable();
-          threshold_.add(value);
-          onChanged();
-        } else {
-          thresholdBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public Builder addThreshold(
-          int index, RemoteDebug.RDThreshold value) {
-        if (thresholdBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureThresholdIsMutable();
-          threshold_.add(index, value);
-          onChanged();
-        } else {
-          thresholdBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public Builder addThreshold(
           RemoteDebug.RDThreshold.Builder builderForValue) {
         if (thresholdBuilder_ == null) {
-          ensureThresholdIsMutable();
-          threshold_.add(builderForValue.build());
+          threshold_ = builderForValue.build();
           onChanged();
         } else {
-          thresholdBuilder_.addMessage(builderForValue.build());
+          thresholdBuilder_.setMessage(builderForValue.build());
         }
+
         return this;
       }
       /**
        * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+       * may be sent if CMD_THRESHOLD_SET is the messageId
        * </pre>
        *
-       * <code>repeated .RDThreshold threshold = 5;</code>
+       * <code>optional .RDThreshold threshold = 5;</code>
        */
-      public Builder addThreshold(
-          int index, RemoteDebug.RDThreshold.Builder builderForValue) {
+      public Builder mergeThreshold(RemoteDebug.RDThreshold value) {
         if (thresholdBuilder_ == null) {
-          ensureThresholdIsMutable();
-          threshold_.add(index, builderForValue.build());
+          if (threshold_ != null) {
+            threshold_ =
+              RemoteDebug.RDThreshold.newBuilder(threshold_).mergeFrom(value).buildPartial();
+          } else {
+            threshold_ = value;
+          }
           onChanged();
         } else {
-          thresholdBuilder_.addMessage(index, builderForValue.build());
+          thresholdBuilder_.mergeFrom(value);
         }
+
         return this;
       }
       /**
        * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+       * may be sent if CMD_THRESHOLD_SET is the messageId
        * </pre>
        *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public Builder addAllThreshold(
-          java.lang.Iterable<? extends RemoteDebug.RDThreshold> values) {
-        if (thresholdBuilder_ == null) {
-          ensureThresholdIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, threshold_);
-          onChanged();
-        } else {
-          thresholdBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
+       * <code>optional .RDThreshold threshold = 5;</code>
        */
       public Builder clearThreshold() {
         if (thresholdBuilder_ == null) {
-          threshold_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000010);
+          threshold_ = null;
           onChanged();
         } else {
-          thresholdBuilder_.clear();
+          threshold_ = null;
+          thresholdBuilder_ = null;
         }
+
         return this;
       }
       /**
        * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+       * may be sent if CMD_THRESHOLD_SET is the messageId
        * </pre>
        *
-       * <code>repeated .RDThreshold threshold = 5;</code>
+       * <code>optional .RDThreshold threshold = 5;</code>
        */
-      public Builder removeThreshold(int index) {
-        if (thresholdBuilder_ == null) {
-          ensureThresholdIsMutable();
-          threshold_.remove(index);
-          onChanged();
-        } else {
-          thresholdBuilder_.remove(index);
-        }
-        return this;
+      public RemoteDebug.RDThreshold.Builder getThresholdBuilder() {
+        
+        onChanged();
+        return getThresholdFieldBuilder().getBuilder();
       }
       /**
        * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+       * may be sent if CMD_THRESHOLD_SET is the messageId
        * </pre>
        *
-       * <code>repeated .RDThreshold threshold = 5;</code>
+       * <code>optional .RDThreshold threshold = 5;</code>
        */
-      public RemoteDebug.RDThreshold.Builder getThresholdBuilder(
-          int index) {
-        return getThresholdFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public RemoteDebug.RDThresholdOrBuilder getThresholdOrBuilder(
-          int index) {
-        if (thresholdBuilder_ == null) {
-          return threshold_.get(index);  } else {
-          return thresholdBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public java.util.List<? extends RemoteDebug.RDThresholdOrBuilder> 
-           getThresholdOrBuilderList() {
+      public RemoteDebug.RDThresholdOrBuilder getThresholdOrBuilder() {
         if (thresholdBuilder_ != null) {
-          return thresholdBuilder_.getMessageOrBuilderList();
+          return thresholdBuilder_.getMessageOrBuilder();
         } else {
-          return java.util.Collections.unmodifiableList(threshold_);
+          return threshold_ == null ?
+              RemoteDebug.RDThreshold.getDefaultInstance() : threshold_;
         }
       }
       /**
        * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
+       * may be sent if CMD_THRESHOLD_SET is the messageId
        * </pre>
        *
-       * <code>repeated .RDThreshold threshold = 5;</code>
+       * <code>optional .RDThreshold threshold = 5;</code>
        */
-      public RemoteDebug.RDThreshold.Builder addThresholdBuilder() {
-        return getThresholdFieldBuilder().addBuilder(
-            RemoteDebug.RDThreshold.getDefaultInstance());
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public RemoteDebug.RDThreshold.Builder addThresholdBuilder(
-          int index) {
-        return getThresholdFieldBuilder().addBuilder(
-            index, RemoteDebug.RDThreshold.getDefaultInstance());
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_GET or CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>repeated .RDThreshold threshold = 5;</code>
-       */
-      public java.util.List<RemoteDebug.RDThreshold.Builder> 
-           getThresholdBuilderList() {
-        return getThresholdFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilderV3<
+      private com.google.protobuf.SingleFieldBuilderV3<
           RemoteDebug.RDThreshold, RemoteDebug.RDThreshold.Builder, RemoteDebug.RDThresholdOrBuilder> 
           getThresholdFieldBuilder() {
         if (thresholdBuilder_ == null) {
-          thresholdBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+          thresholdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               RemoteDebug.RDThreshold, RemoteDebug.RDThreshold.Builder, RemoteDebug.RDThresholdOrBuilder>(
-                  threshold_,
-                  ((bitField0_ & 0x00000010) == 0x00000010),
+                  getThreshold(),
                   getParentForChildren(),
                   isClean());
           threshold_ = null;
         }
         return thresholdBuilder_;
+      }
+
+      private int thresholdId_ ;
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * </pre>
+       *
+       * <code>optional int32 thresholdId = 6;</code>
+       */
+      public int getThresholdId() {
+        return thresholdId_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * </pre>
+       *
+       * <code>optional int32 thresholdId = 6;</code>
+       */
+      public Builder setThresholdId(int value) {
+        
+        thresholdId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * </pre>
+       *
+       * <code>optional int32 thresholdId = 6;</code>
+       */
+      public Builder clearThresholdId() {
+        
+        thresholdId_ = 0;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -5749,14 +5612,14 @@ public final class RemoteDebug {
       "\005\022\013\n\003max\030\003 \003(\005\"\213\001\n\nDebugFrame\022\024\n\014default" +
       "Image\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013" +
       "temperature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RD" +
-      "Rect\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\"\226\001\n" +
+      "Rect\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\"\253\001\n" +
       "\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coor" +
       "ds\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022",
       "#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold\022\037\n\t" +
-      "threshold\030\005 \003(\0132\014.RDThreshold\"^\n\nRDMsgFr" +
-      "ame\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007comma" +
-      "nd\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage\030" +
-      "\003 \001(\005b\006proto3"
+      "threshold\030\005 \001(\0132\014.RDThreshold\022\023\n\013thresho" +
+      "ldId\030\006 \001(\005\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132" +
+      "\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCom" +
+      "mand\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -5799,7 +5662,7 @@ public final class RemoteDebug {
     internal_static_DebugCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugCommand_descriptor,
-        new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "Threshold", });
+        new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "Threshold", "ThresholdId", });
     internal_static_RDMsgFrame_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_RDMsgFrame_fieldAccessorTable = new

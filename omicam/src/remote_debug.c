@@ -1,5 +1,4 @@
 #include "remote_debug.h"
-#include "defines.h"
 #include <turbojpeg.h>
 #include <log/log.h>
 #include <stdlib.h>
@@ -37,15 +36,9 @@ static _Atomic int sockfd = -1;
 /** the file descriptor of the connection to the client **/
 static _Atomic int connfd = -1;
 static _Atomic float temperature = 0.0f;
+/** true if the device is likely to be thermal throttling **/
 static bool thermalThrottling = false;
-
-/** Used as an easier way to pass two pointers to the thread queue (since it only takes a void*) */
-typedef struct {
-    uint8_t *camFrame;
-    uint8_t *threshFrame;
-    RDRect ballRect;
-    RDPoint ballCentroid;
-} frame_entry_t;
+field_objects_t selectedFieldObject = OBJ_NONE;
 
 static void init_tcp_socket(void);
 
@@ -63,12 +56,14 @@ static void send_response(DebugCommand command){
     if (!pb_encode_delimited(&stream, RDMsgFrame_fields, &wrapper)){
         log_error("Failed to encode Omicontrol response: %s", PB_GET_ERROR(&stream));
     } else {
-        // NOLINTNEXTLINE we're ignoring the response code here for now, TODO implement better error handling
-        write(connfd, buf, stream.bytes_written);
+        ssize_t bytesWritten = write(connfd, buf, stream.bytes_written);
+        if (bytesWritten == -1){
+            log_warn("Failed to send response to Omicontrol: %s", strerror(errno));
+        }
     }
 }
 
-/** reads and procesess Omicontrol messages **/
+/** reads and processes Omicontrol messages **/
 static void read_remote_messages(){
     // read potential protobuf command from Omicontrol socket, recycling buffer
     // https://stackoverflow.com/a/3054519/5007892
@@ -101,10 +96,8 @@ static void read_remote_messages(){
                 for (int obj = 1; obj <= 4; obj++) {
                     int32_t *min = thresholds[i++];
                     int32_t *max = thresholds[i++];
-                    printf("obj id %d, min (%d, %d, %d), max (%d, %d, %d)\n", obj, min[0], min[1], min[2], max[0],
-                           max[1], max[2]);
-
-                    // memcpy won't work with this so we have to do it semi-manually
+                    log_trace("obj id %d, min (%d,%d,%d), max (%d,%d,%d)", obj, min[0], min[1], min[2], max[0], max[1], max[2]);
+                    // memcpy apparently doesn't work with this so we have to do it semi-manually
                     for (int j = 0; j < 3; j++) {
                         response.allThresholds[obj].min[j] = min[j];
                     }
@@ -116,16 +109,22 @@ static void read_remote_messages(){
                 break;
             }
 
+            case CMD_THRESHOLDS_SELECT: {
+                selectedFieldObject = message.thresholdId;
+                log_debug("Received CMD_THRESHOLDS_SELECT, new field object id is %d", selectedFieldObject);
+                RD_SEND_OK_RESPONSE;
+                break;
+            }
+
             case CMD_THRESHOLDS_SET: {
+                RD_SEND_OK_RESPONSE;
                 break;
             }
 
             case CMD_THRESHOLDS_WRITE_DISK: {
                 log_debug("Received CMD_THRESHOLDS_WRITE_DISK");
-                // ... you would do it here ...
-                DebugCommand response = DebugCommand_init_zero;
-                response.messageId = CMD_OK;
-                send_response(response);
+                // TODO you would do it here, check the utils function
+                RD_SEND_OK_RESPONSE;
                 break;
             }
 
