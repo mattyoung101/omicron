@@ -2,6 +2,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include "Arduino.h"
+
 // --- Code Activation Defines --- //
 #define ESP_I2C_ON false
 #define MPU_I2C_ON false
@@ -111,6 +113,16 @@
 #define ACC_FULL_SCALE_4_G 0x08
 #define ACC_FULL_SCALE_8_G 0x10
 #define ACC_FULL_SCALE_16_G 0x18
+
+// --- LRFs --- //
+
+#define LRF_DATA_LENGTH 8
+#define LRF_START_BYTE 0x5A
+
+#define LRF1_SERIAL Serial1
+#define LRF2_SERIAL Serial2
+#define LRF3_SERIAL Serial3
+#define LRF4_SERIAL Serial4
 
 // --- Battery Monitor --- //
 
