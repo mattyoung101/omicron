@@ -29,6 +29,7 @@
 #include "button.h"
 #include "movavg.h"
 #include "goap.h"
+#include "path_following.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -149,6 +150,7 @@ static void master_task(void *pvParameter){
         cam_calc();
         bno055_convert_float_euler_h_deg(&yawRaw);
         yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
+        printf("yaw: %.2f\n", yaw);
 
         // for camera debug
         // esp_task_wdt_reset();
