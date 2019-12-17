@@ -53,8 +53,10 @@ class ConnectionManager {
                         EVENT_BUS.post(msg.frame!!)
                     }
                     2 -> {
-                        receivedCmd = msg.command
-                        synchronized (cmdReceivedToken) { cmdReceivedToken.notifyAll() }
+                        synchronized (cmdReceivedToken) {
+                            receivedCmd = msg.command
+                            cmdReceivedToken.notifyAll()
+                        }
                     }
                     else -> {
                         Logger.error("Unknown wrapper message id: ${msg.whichMessage}")
@@ -105,12 +107,15 @@ class ConnectionManager {
                 progressIndicator?.isVisible = false
             } else {
                 Logger.trace("Received OK response from Omicontrol!")
-                // yeah this is a stupid hack but for some reason there's no fuckin clone function
-                val copy = RemoteDebug.DebugCommand.parseFrom(receivedCmd!!.toByteArray())
-                receivedCmd = null
-                runLater {
-                    onSuccess(copy)
-                    progressIndicator?.isVisible = false
+                synchronized (cmdReceivedToken){
+                    // yeah this is a stupid hack but for some reason there's no fuckin clone function
+                    val assertedReceivedCmd = receivedCmd ?: return@synchronized
+                    val copy = RemoteDebug.DebugCommand.parseFrom(assertedReceivedCmd.toByteArray())
+                    receivedCmd = null
+                    runLater {
+                        onSuccess(copy)
+                        progressIndicator?.isVisible = false
+                    }
                 }
             }
         }
