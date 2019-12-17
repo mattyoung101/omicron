@@ -89,7 +89,7 @@ class ConnectionManager {
      * @param onError callback to run if an error occurred, optional, executed in JavaFX application thread
      */
     fun dispatchCommand(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit = {}, onError: (String) -> Unit = {}){
-        thread {
+        thread(name="Omicontrol Dispatch Await") {
             progressIndicator?.isVisible = true
             Logger.trace("Dispatching command to Omicam")
             val outStream = socket.getOutputStream()

@@ -17,11 +17,13 @@ import java.util.zip.Inflater
 import RemoteDebug
 import javafx.collections.FXCollections
 import javafx.scene.Cursor
+import javafx.scene.Node
 import javafx.scene.control.Label
 import javafx.scene.control.Slider
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
 import org.tinylog.kotlin.Logger
+import kotlin.concurrent.thread
 import kotlin.math.floor
 
 class CameraView : View() {
@@ -37,23 +39,13 @@ class CameraView : View() {
     /** mapping between a name, eg "RMin" and an associated JavaFX slider. Stored in insertion order. **/
     private val sliders = linkedMapOf<String, Slider>()
     private var selectedObject = FieldObjects.OBJ_NONE
+    /** token for threads to wait on until updateThresholdValues() completes **/
+    private val newThreshReceivedToken = Object()
 
     init {
         reloadStylesheetsOnFocus()
         title = "Camera View | Omicontrol"
         EVENT_BUS.register(this)
-
-        // get threshold slider values
-        val command = RemoteDebug.DebugCommand
-            .newBuilder()
-            .setMessageId(DebugCommands.CMD_THRESHOLDS_GET_ALL.ordinal)
-            .build()
-        CONNECTION_MANAGER.dispatchCommand(command, {
-            for ((i, thresh) in it.allThresholdsList.withIndex()){
-                println("Object ${FieldObjects.values()[i]} min: ${thresh.minList}, max: ${thresh.maxList}")
-                objectThresholds[FieldObjects.values()[i]] = thresh
-            }
-        })
     }
 
     @ExperimentalUnsignedTypes
@@ -119,6 +111,70 @@ class CameraView : View() {
         }
     }
 
+    private fun updateThresholdValues(){
+        val command = RemoteDebug.DebugCommand
+            .newBuilder()
+            .setMessageId(DebugCommands.CMD_THRESHOLDS_GET_ALL.ordinal)
+            .build()
+
+        CONNECTION_MANAGER.dispatchCommand(command, {
+            for ((i, thresh) in it.allThresholdsList.withIndex()){
+                println("Object ${FieldObjects.values()[i]} min: ${thresh.minList}, max: ${thresh.maxList}")
+                objectThresholds[FieldObjects.values()[i]] = thresh
+            }
+            synchronized(newThreshReceivedToken) { newThreshReceivedToken.notifyAll() }
+        }, { errMsg ->
+            Logger.warn("Failed to update threshold values: $errMsg")
+            Utils.showGenericAlert(Alert.AlertType.ERROR, "An error occurred updating the latest threshold values." +
+                    "\nIf this error continues to happen, Omicontrol will no longer function properly." +
+                    "\nPlease restart Omicam and Omicontrol and try again.", "Error updating threshold values")
+            synchronized(newThreshReceivedToken) { newThreshReceivedToken.notifyAll() }
+        })
+    }
+
+    private fun selectNewObject(newId: Int){
+        val newObj = FieldObjects.values()[newId]
+        Logger.debug("Selecting new field object: $newObj")
+
+        thread(name="selectNewObject() Waiter") {
+            // update the current threshold values before switching to the new object
+            // the reason for this crazy threading setup is to prevent race conditions and stuff which we had previously
+            updateThresholdValues()
+            Logger.trace("Invoked updateThresholdValues(), awaiting...")
+            synchronized (newThreshReceivedToken) { newThreshReceivedToken.wait(2500) }
+            Logger.trace("Finalised new thresholds!")
+
+            val newObjThresh = objectThresholds[newObj] ?: run {
+                Logger.error("No threshold for $newObj?")
+                return@thread
+            }
+
+            // tell Omicam to switch objects
+            val msg = RemoteDebug.DebugCommand.newBuilder()
+                .setMessageId(DebugCommands.CMD_THRESHOLDS_SELECT.ordinal)
+                .setThresholdId(newObj.ordinal)
+                .build()
+            val colours = listOf("R", "G", "B")
+            Logger.trace("Telling Omicam to switch to selected object...")
+
+            CONNECTION_MANAGER.dispatchCommand(msg, {
+                selectedObject = newObj
+                // re-enable sliders if the object selected is not OBJ_NONE
+                for (slider in sliders) {
+                    slider.value.isDisable = selectedObject == FieldObjects.OBJ_NONE
+                }
+
+                // set min then max slider values
+                for ((i, colour) in colours.withIndex()) {
+                    sliders["${colour}Min"]?.value = newObjThresh.minList[i].toDouble()
+                }
+                for ((i, colour) in colours.withIndex()) {
+                    sliders["${colour}Max"]?.value = newObjThresh.maxList[i].toDouble()
+                }
+            })
+        }
+    }
+
     /**
      * Generates a JavaFX field containing a slider and label for the given colour channel in the threshold
      * @param colour the name of the colour channel, eg "R"
@@ -131,6 +187,7 @@ class CameraView : View() {
                 majorTickUnit = 1.0
                 minorTickCount = 0
                 isSnapToTicks = true
+                isDisable = true // since we start out in OBJ_NONE and you can't edit it
             }
             sliders["$colour$type"] = colourSlider
 
@@ -142,6 +199,9 @@ class CameraView : View() {
 
                 // allow the user to manually input the threshold value
                 setOnMouseClicked {
+                    // you can't edit the none object threshold
+                    if (selectedObject == FieldObjects.OBJ_NONE) return@setOnMouseClicked
+
                     val result = Utils.showTextInputDialog("Enter new value (0-255):", "Manual threshold input",
                         default = colourSlider.value.toInt().toString())
                     if (result.isBlank()) return@setOnMouseClicked
@@ -238,7 +298,7 @@ class CameraView : View() {
                         display = graphicsContext2D
                     }
 
-                    val indicator = progressindicator{
+                    val indicator = progressindicator {
                         scaleX = 3.0
                         scaleY = 3.0
                         isVisible = false
@@ -288,21 +348,7 @@ class CameraView : View() {
 
                                 // listen for changes to the slider
                                 valueProperty().addListener { _, _, _ ->
-                                    val newObj = FieldObjects.values()[selectionModel.selectedIndex]
-                                    Logger.debug("Selecting new field object: $newObj")
-
-                                    // dispatch message to Omicam about changed object
-                                    val msg = RemoteDebug.DebugCommand.newBuilder()
-                                        .setMessageId(DebugCommands.CMD_THRESHOLDS_SELECT.ordinal)
-                                        .setThresholdId(newObj.ordinal)
-                                        .build()
-
-                                    CONNECTION_MANAGER.dispatchCommand(msg, {
-                                       selectedObject = newObj
-                                    }, { errMsg ->
-                                        Utils.showGenericAlert(Alert.AlertType.ERROR, "Error: $errMsg",
-                                            "Failed to select new field object")
-                                    })
+                                    selectNewObject(selectionModel.selectedIndex)
                                 }
                             }
                         }

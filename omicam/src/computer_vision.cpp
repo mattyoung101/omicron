@@ -90,12 +90,10 @@ static void *cv_thread(void *arg){
                     // just send the empty buffer
                     break;
                 }
-
                 case OBJ_BALL: {
                     memcpy(ballThreshData, ballThresh.getMat(ACCESS_READ).data, ballThresh.rows * ballThresh.cols);
                     break;
                 }
-
                 default: {
                     log_warn("Unsupported field object selected: %d", selectedFieldObject);
                     break;
