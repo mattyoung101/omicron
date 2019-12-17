@@ -1,5 +1,0 @@
-ESP32 gpio_set_level: 1.84 MHz (543 nanoseconds)
-ESP32 register access: 10.02 MHz (99 nanoseconds)
-Teensy 3.5 digitalWrite: 294.12 KHz (3399 nanoseconds)
-Teensy 3.5 digitalWriteFast: test failed, scope wouldn't show frequency
-Nano digitalWrite: 109 kHZ (9174 nanoseconds)
