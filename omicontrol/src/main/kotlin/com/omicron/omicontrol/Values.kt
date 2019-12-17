@@ -13,7 +13,6 @@ const val REMOTE_IP = "127.0.0.1"
 const val REMOTE_PORT = 42708
 val CONNECTION_MANAGER = ConnectionManager()
 val EVENT_BUS = EventBus()
-const val IMAGE_SIZE_SCALAR = 1.0
 const val IMAGE_WIDTH = 1280.0
 const val IMAGE_HEIGHT = 720.0
 const val DEBUG_CAMERA_VIEW = false

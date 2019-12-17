@@ -1,6 +1,7 @@
 package com.omicron.omicontrol
 
 import RemoteDebug
+import javafx.scene.control.ProgressIndicator
 import org.tinylog.kotlin.Logger
 import tornadofx.runLater
 import java.net.InetSocketAddress
@@ -16,6 +17,7 @@ class ConnectionManager {
     private var cmdReceivedToken = Object()
     /** the last command received **/
     private var receivedCmd: RemoteDebug.DebugCommand? = null
+    var progressIndicator: ProgressIndicator? = null
 
     // code run by tcpThread, separated so it can be restarted
     private fun tcpThreadFun(){
@@ -88,6 +90,7 @@ class ConnectionManager {
      */
     fun dispatchCommand(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit = {}, onError: (String) -> Unit = {}){
         thread {
+            progressIndicator?.isVisible = true
             Logger.trace("Dispatching command to Omicam")
             val outStream = socket.getOutputStream()
             command.writeDelimitedTo(outStream)
@@ -99,12 +102,16 @@ class ConnectionManager {
             if (receivedCmd == null){
                 Logger.warn("Received null/invalid response from Omicontrol")
                 runLater { onError("Received null/invalid response from Omicontrol") }
+                progressIndicator?.isVisible = false
             } else {
                 Logger.trace("Received OK response from Omicontrol!")
                 // yeah this is a stupid hack but for some reason there's no fuckin clone function
                 val copy = RemoteDebug.DebugCommand.parseFrom(receivedCmd!!.toByteArray())
                 receivedCmd = null
-                runLater { onSuccess(copy) }
+                runLater {
+                    onSuccess(copy)
+                    progressIndicator?.isVisible = false
+                }
             }
         }
     }

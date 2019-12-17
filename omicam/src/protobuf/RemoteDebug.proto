@@ -49,15 +49,20 @@ message DebugCommand {
     int32 messageId = 1;
 
     // may be set if CMD_MOVE_TO_XY is the messageId
+    // contains the field coordinates that the robot should move to
     RDPoint coords = 2;
     // may be set if CMD_MOVE_ORIENT is the messageId
+    // contains the 0-360 degree orientation the robot should turn to
     float orientation = 3;
     // may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+    // contains an array of all the thresholds values in the camera currently
     repeated RDThreshold allThresholds = 4;
-    // may be sent if CMD_THRESHOLD_SET is the messageId
-    RDThreshold threshold = 5;
-    // may be set if CMD_THRESHOLDS_SELECT is the messageId
-    int32 thresholdId = 6;
+    // may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
+    // also doubles as "field object id" used to indicate which field object to view/edit
+    int32 thresholdId = 5;
+    // may be set if CMD_THRESHOLD_SET is the messageId
+    // would be the value of the threshold
+    int32 value = 7;
 }
 
 // Container for messages, contains exactly one sub message

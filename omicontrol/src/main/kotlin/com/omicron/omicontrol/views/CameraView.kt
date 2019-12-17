@@ -17,7 +17,6 @@ import java.util.zip.Inflater
 import RemoteDebug
 import javafx.collections.FXCollections
 import javafx.scene.Cursor
-import javafx.scene.canvas.Canvas
 import javafx.scene.control.Label
 import javafx.scene.control.Slider
 import javafx.scene.layout.Priority
@@ -29,15 +28,15 @@ class CameraView : View() {
     /** displays the normal image **/
     private lateinit var defaultImage: ImageView
     /** displays the thresh image(s) **/
-    private lateinit var threshDisplay: GraphicsContext
-    private lateinit var threshDisplayScaled: GraphicsContext
+    private lateinit var display: GraphicsContext
     private lateinit var temperatureLabel: Label
     private val compressor = Inflater()
-    private var renderThresholds = true
     private var hideCameraFrame = false
-    /** mapping between each field object and its threshold **/
+    /** mapping between each field object and its threshold as received from Omicam **/
     private val objectThresholds = hashMapOf<FieldObjects, RemoteDebug.RDThreshold>()
-    private val selectedObject = FieldObjects.OBJ_NONE
+    /** mapping between a name, eg "RMin" and an associated JavaFX slider. Stored in insertion order. **/
+    private val sliders = linkedMapOf<String, Slider>()
+    private var selectedObject = FieldObjects.OBJ_NONE
 
     init {
         reloadStylesheetsOnFocus()
@@ -60,11 +59,12 @@ class CameraView : View() {
     @ExperimentalUnsignedTypes
     @Subscribe
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
-        // decompress the threshold image
         compressor.reset()
         compressor.setInput(message.ballThreshImage.toByteArray())
         val outBuf = ByteArray(1024 * 1024) // 1 megabyte (in binary bytes)
         val bytes = compressor.inflate(outBuf)
+
+        val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
 
         runLater {
             val begin = System.currentTimeMillis()
@@ -76,43 +76,35 @@ class CameraView : View() {
                 temperatureLabel.textFill = Color.WHITE
             }
 
-            val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
+            // clear the canvas and display the normal camera frame
+            display.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+            if (!hideCameraFrame) display.drawImage(img, 0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
 
-            // write the received image data to the canvas, skipping black pixels (this fakes blend mode which won't work
-            // for some reason)
-            if (renderThresholds) {
-                threshDisplay.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
-                if (!hideCameraFrame) threshDisplay.drawImage(img, 0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
-
-                // FIXME this is very slow in the order of 10-30 ms, find some way to speed it up
+            // TODO add support for each object (not just the ball)
+            if (selectedObject != FieldObjects.OBJ_NONE) {
+                // write the received image data to the canvas, skipping black pixels (this fakes blend mode which won't work
+                // for some reason)
                 for (i in 0 until bytes) {
                     val byte = outBuf[i].toUByte().toInt()
                     if (byte == 0) continue
 
                     val x = i % IMAGE_WIDTH.toInt()
                     val y = floor(i / IMAGE_WIDTH).toInt()
-                    threshDisplay.pixelWriter.setColor(x, y, Color.ORANGE)
+                    display.pixelWriter.setColor(x, y, Color.ORANGE)
                 }
 
                 // draw ball centre
-                threshDisplay.fill = Color.RED
+                display.fill = Color.RED
                 val ballX = message.ballCentroid.x.toDouble()
                 val ballY = message.ballCentroid.y.toDouble()
-                threshDisplay.fillOval(ballX, ballY, 10.0, 10.0)
+                display.fillOval(ballX, ballY, 10.0, 10.0)
 
                 // draw ball bounding box
-                threshDisplay.stroke = Color.RED
-                threshDisplay.lineWidth = 4.0
-                threshDisplay.strokeRect(message.ballRect.x.toDouble(), message.ballRect.y.toDouble(),
+                display.stroke = Color.RED
+                display.lineWidth = 4.0
+                display.strokeRect(message.ballRect.x.toDouble(), message.ballRect.y.toDouble(),
                     message.ballRect.width.toDouble(), message.ballRect.height.toDouble())
             }
-
-            // FIXME this method is apparently incredibly inefficient, so I reckon we remove it and go back to what we had before
-            val fbo = threshDisplay.canvas.snapshot(null, null)
-            threshDisplayScaled.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
-            threshDisplayScaled.drawImage(fbo, 0.0, 0.0, IMAGE_WIDTH * IMAGE_SIZE_SCALAR, IMAGE_HEIGHT * IMAGE_SIZE_SCALAR)
-
-            // Logger.trace("Frame update took: ${System.currentTimeMillis() - begin} ms")
         }
     }
 
@@ -127,20 +119,20 @@ class CameraView : View() {
         }
     }
 
-    private fun applyColourSliderProperties(slider: Slider){
-        slider.apply {
-            blockIncrement = 1.0
-            majorTickUnit = 1.0
-            minorTickCount = 0
-            isSnapToTicks = true
-        }
-    }
-
+    /**
+     * Generates a JavaFX field containing a slider and label for the given colour channel in the threshold
+     * @param colour the name of the colour channel, eg "R"
+     * @param type "min" or "max"
+     **/
     private fun generateSlider(colour: String, type: String): Field {
         return field("$colour $type") {
             val colourSlider = slider(min=0, max=255){
-                applyColourSliderProperties(this)
+                blockIncrement = 1.0
+                majorTickUnit = 1.0
+                minorTickCount = 0
+                isSnapToTicks = true
             }
+            sliders["$colour$type"] = colourSlider
 
             label("000"){
                 colourSlider.valueProperty().addListener { _, _, newValue ->
@@ -152,10 +144,11 @@ class CameraView : View() {
                 setOnMouseClicked {
                     val result = Utils.showTextInputDialog("Enter new value (0-255):", "Manual threshold input",
                         default = colourSlider.value.toInt().toString())
-                    val newValue = result.toIntOrNull() ?: return@setOnMouseClicked
+                    if (result.isBlank()) return@setOnMouseClicked
 
-                    if (newValue > 255 || newValue < 0){
-                        Utils.showGenericAlert(Alert.AlertType.ERROR, "\"$result\" is out of range (required range: 0-255).",
+                    val newValue = result.toIntOrNull()
+                    if (newValue == null || newValue > 255 || newValue < 0){
+                        Utils.showGenericAlert(Alert.AlertType.ERROR, "\"$result\" is not a valid threshold.",
                             "Invalid input")
                     } else {
                         colourSlider.valueProperty().set(newValue.toDouble())
@@ -188,11 +181,15 @@ class CameraView : View() {
                 }
             }
             menu("Actions") {
-                item("Reboot camera").setOnAction {
-                    // send reboot command id
+                item("Reboot camera"){
+                    setOnAction {
+                        // TODO send reboot command
+                    }
                 }
-                item("Shutdown camera").setOnAction {
-                    // send shutdown command id
+                item("Shutdown camera"){
+                    setOnAction {
+                        // TODO send shutdown command
+                    }
                 }
                 item("Save config"){
                     accelerator = KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN)
@@ -236,15 +233,17 @@ class CameraView : View() {
                 stackpane {
                     defaultImage = imageview()
 
-                    // hidden canvas which is actually rendered to of original size
-                    Canvas(IMAGE_WIDTH, IMAGE_HEIGHT).apply {
-                        threshDisplay = graphicsContext2D
+                    // real canvas which the frame buffer is copied to and downscaled
+                    canvas(IMAGE_WIDTH, IMAGE_HEIGHT){
+                        display = graphicsContext2D
                     }
 
-                    // real canvas which the frame buffer is copied to and downscaled
-                    canvas(IMAGE_WIDTH * IMAGE_SIZE_SCALAR, IMAGE_HEIGHT * IMAGE_SIZE_SCALAR){
-                        threshDisplayScaled = graphicsContext2D
+                    val indicator = progressindicator{
+                        scaleX = 3.0
+                        scaleY = 3.0
+                        isVisible = false
                     }
+                    CONNECTION_MANAGER.progressIndicator = indicator
                 }
                 alignment = Pos.TOP_RIGHT
             }
@@ -287,6 +286,7 @@ class CameraView : View() {
                                 items = FXCollections.observableArrayList(FieldObjects.values().map { it.toString() })
                                 selectionModel.selectFirst()
 
+                                // listen for changes to the slider
                                 valueProperty().addListener { _, _, _ ->
                                     val newObj = FieldObjects.values()[selectionModel.selectedIndex]
                                     Logger.debug("Selecting new field object: $newObj")
@@ -296,7 +296,10 @@ class CameraView : View() {
                                         .setMessageId(DebugCommands.CMD_THRESHOLDS_SELECT.ordinal)
                                         .setThresholdId(newObj.ordinal)
                                         .build()
-                                    CONNECTION_MANAGER.dispatchCommand(command=msg, onError = { errMsg ->
+
+                                    CONNECTION_MANAGER.dispatchCommand(msg, {
+                                       selectedObject = newObj
+                                    }, { errMsg ->
                                         Utils.showGenericAlert(Alert.AlertType.ERROR, "Error: $errMsg",
                                             "Failed to select new field object")
                                     })
@@ -331,8 +334,8 @@ class CameraView : View() {
         }
 
         if (DEBUG_CAMERA_VIEW){
-            threshDisplayScaled.fill = Color.WHITE
-            threshDisplayScaled.fillRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+            display.fill = Color.WHITE
+            display.fillRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
         }
     }
 }
