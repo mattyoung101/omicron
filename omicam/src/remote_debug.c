@@ -82,7 +82,7 @@ static void read_remote_messages(){
         DebugCommand message = DebugCommand_init_zero;
 
         if (!pb_decode_delimited(&inputStream, DebugCommand_fields, &message)){
-            log_error("Failed to decode Omicontrol Protobuf message: %s", PB_GET_ERROR(&inputStream));
+            log_error("Failed to decode Omicontrol Protobuf command: %s", PB_GET_ERROR(&inputStream));
             return;
         }
 
@@ -323,6 +323,8 @@ static void *tcp_thread(void *arg){
         return NULL;
     } else {
         log_info("Accepted client connection from %s:%d, streaming will now begin", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+        // reset selected object to OBJ_NONE to match what Omicontrol will be set to now
+        selectedFieldObject = OBJ_NONE;
     }
     return NULL;
 }

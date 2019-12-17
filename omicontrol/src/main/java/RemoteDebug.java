@@ -3071,6 +3071,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
      * </pre>
      *
      * <code>optional .RDPoint coords = 2;</code>
@@ -3079,6 +3080,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
      * </pre>
      *
      * <code>optional .RDPoint coords = 2;</code>
@@ -3087,6 +3089,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
      * </pre>
      *
      * <code>optional .RDPoint coords = 2;</code>
@@ -3096,6 +3099,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be set if CMD_MOVE_ORIENT is the messageId
+     * contains the 0-360 degree orientation the robot should turn to
      * </pre>
      *
      * <code>optional float orientation = 3;</code>
@@ -3105,6 +3109,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3114,6 +3119,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3122,6 +3128,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3130,6 +3137,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3139,6 +3147,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3148,37 +3157,23 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * may be sent if CMD_THRESHOLD_SET is the messageId
+     * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
+     * also doubles as "field object id" used to indicate which field object to view/edit
      * </pre>
      *
-     * <code>optional .RDThreshold threshold = 5;</code>
+     * <code>optional int32 thresholdId = 5;</code>
      */
-    boolean hasThreshold();
-    /**
-     * <pre>
-     * may be sent if CMD_THRESHOLD_SET is the messageId
-     * </pre>
-     *
-     * <code>optional .RDThreshold threshold = 5;</code>
-     */
-    RemoteDebug.RDThreshold getThreshold();
-    /**
-     * <pre>
-     * may be sent if CMD_THRESHOLD_SET is the messageId
-     * </pre>
-     *
-     * <code>optional .RDThreshold threshold = 5;</code>
-     */
-    RemoteDebug.RDThresholdOrBuilder getThresholdOrBuilder();
+    int getThresholdId();
 
     /**
      * <pre>
-     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * may be set if CMD_THRESHOLD_SET is the messageId
+     * would be the value of the threshold
      * </pre>
      *
-     * <code>optional int32 thresholdId = 6;</code>
+     * <code>optional int32 value = 7;</code>
      */
-    int getThresholdId();
+    int getValue();
   }
   /**
    * <pre>
@@ -3200,6 +3195,7 @@ public final class RemoteDebug {
       orientation_ = 0F;
       allThresholds_ = java.util.Collections.emptyList();
       thresholdId_ = 0;
+      value_ = 0;
     }
 
     @java.lang.Override
@@ -3259,22 +3255,14 @@ public final class RemoteDebug {
                   input.readMessage(RemoteDebug.RDThreshold.parser(), extensionRegistry));
               break;
             }
-            case 42: {
-              RemoteDebug.RDThreshold.Builder subBuilder = null;
-              if (threshold_ != null) {
-                subBuilder = threshold_.toBuilder();
-              }
-              threshold_ = input.readMessage(RemoteDebug.RDThreshold.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(threshold_);
-                threshold_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-            case 48: {
+            case 40: {
 
               thresholdId_ = input.readInt32();
+              break;
+            }
+            case 56: {
+
+              value_ = input.readInt32();
               break;
             }
           }
@@ -3334,6 +3322,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
      * </pre>
      *
      * <code>optional .RDPoint coords = 2;</code>
@@ -3344,6 +3333,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
      * </pre>
      *
      * <code>optional .RDPoint coords = 2;</code>
@@ -3354,6 +3344,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
      * </pre>
      *
      * <code>optional .RDPoint coords = 2;</code>
@@ -3367,6 +3358,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be set if CMD_MOVE_ORIENT is the messageId
+     * contains the 0-360 degree orientation the robot should turn to
      * </pre>
      *
      * <code>optional float orientation = 3;</code>
@@ -3380,6 +3372,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3390,6 +3383,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3401,6 +3395,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3411,6 +3406,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3421,6 +3417,7 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
      * </pre>
      *
      * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -3430,50 +3427,32 @@ public final class RemoteDebug {
       return allThresholds_.get(index);
     }
 
-    public static final int THRESHOLD_FIELD_NUMBER = 5;
-    private RemoteDebug.RDThreshold threshold_;
-    /**
-     * <pre>
-     * may be sent if CMD_THRESHOLD_SET is the messageId
-     * </pre>
-     *
-     * <code>optional .RDThreshold threshold = 5;</code>
-     */
-    public boolean hasThreshold() {
-      return threshold_ != null;
-    }
-    /**
-     * <pre>
-     * may be sent if CMD_THRESHOLD_SET is the messageId
-     * </pre>
-     *
-     * <code>optional .RDThreshold threshold = 5;</code>
-     */
-    public RemoteDebug.RDThreshold getThreshold() {
-      return threshold_ == null ? RemoteDebug.RDThreshold.getDefaultInstance() : threshold_;
-    }
-    /**
-     * <pre>
-     * may be sent if CMD_THRESHOLD_SET is the messageId
-     * </pre>
-     *
-     * <code>optional .RDThreshold threshold = 5;</code>
-     */
-    public RemoteDebug.RDThresholdOrBuilder getThresholdOrBuilder() {
-      return getThreshold();
-    }
-
-    public static final int THRESHOLDID_FIELD_NUMBER = 6;
+    public static final int THRESHOLDID_FIELD_NUMBER = 5;
     private int thresholdId_;
     /**
      * <pre>
-     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
+     * also doubles as "field object id" used to indicate which field object to view/edit
      * </pre>
      *
-     * <code>optional int32 thresholdId = 6;</code>
+     * <code>optional int32 thresholdId = 5;</code>
      */
     public int getThresholdId() {
       return thresholdId_;
+    }
+
+    public static final int VALUE_FIELD_NUMBER = 7;
+    private int value_;
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLD_SET is the messageId
+     * would be the value of the threshold
+     * </pre>
+     *
+     * <code>optional int32 value = 7;</code>
+     */
+    public int getValue() {
+      return value_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -3500,11 +3479,11 @@ public final class RemoteDebug {
       for (int i = 0; i < allThresholds_.size(); i++) {
         output.writeMessage(4, allThresholds_.get(i));
       }
-      if (threshold_ != null) {
-        output.writeMessage(5, getThreshold());
-      }
       if (thresholdId_ != 0) {
-        output.writeInt32(6, thresholdId_);
+        output.writeInt32(5, thresholdId_);
+      }
+      if (value_ != 0) {
+        output.writeInt32(7, value_);
       }
     }
 
@@ -3529,13 +3508,13 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, allThresholds_.get(i));
       }
-      if (threshold_ != null) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(5, getThreshold());
-      }
       if (thresholdId_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(6, thresholdId_);
+          .computeInt32Size(5, thresholdId_);
+      }
+      if (value_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(7, value_);
       }
       memoizedSize = size;
       return size;
@@ -3566,13 +3545,10 @@ public final class RemoteDebug {
               other.getOrientation()));
       result = result && getAllThresholdsList()
           .equals(other.getAllThresholdsList());
-      result = result && (hasThreshold() == other.hasThreshold());
-      if (hasThreshold()) {
-        result = result && getThreshold()
-            .equals(other.getThreshold());
-      }
       result = result && (getThresholdId()
           == other.getThresholdId());
+      result = result && (getValue()
+          == other.getValue());
       return result;
     }
 
@@ -3596,12 +3572,10 @@ public final class RemoteDebug {
         hash = (37 * hash) + ALLTHRESHOLDS_FIELD_NUMBER;
         hash = (53 * hash) + getAllThresholdsList().hashCode();
       }
-      if (hasThreshold()) {
-        hash = (37 * hash) + THRESHOLD_FIELD_NUMBER;
-        hash = (53 * hash) + getThreshold().hashCode();
-      }
       hash = (37 * hash) + THRESHOLDID_FIELD_NUMBER;
       hash = (53 * hash) + getThresholdId();
+      hash = (37 * hash) + VALUE_FIELD_NUMBER;
+      hash = (53 * hash) + getValue();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -3741,13 +3715,9 @@ public final class RemoteDebug {
         } else {
           allThresholdsBuilder_.clear();
         }
-        if (thresholdBuilder_ == null) {
-          threshold_ = null;
-        } else {
-          threshold_ = null;
-          thresholdBuilder_ = null;
-        }
         thresholdId_ = 0;
+
+        value_ = 0;
 
         return this;
       }
@@ -3789,12 +3759,8 @@ public final class RemoteDebug {
         } else {
           result.allThresholds_ = allThresholdsBuilder_.build();
         }
-        if (thresholdBuilder_ == null) {
-          result.threshold_ = threshold_;
-        } else {
-          result.threshold_ = thresholdBuilder_.build();
-        }
         result.thresholdId_ = thresholdId_;
+        result.value_ = value_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3872,11 +3838,11 @@ public final class RemoteDebug {
             }
           }
         }
-        if (other.hasThreshold()) {
-          mergeThreshold(other.getThreshold());
-        }
         if (other.getThresholdId() != 0) {
           setThresholdId(other.getThresholdId());
+        }
+        if (other.getValue() != 0) {
+          setValue(other.getValue());
         }
         onChanged();
         return this;
@@ -3985,6 +3951,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
        * <code>optional .RDPoint coords = 2;</code>
@@ -3995,6 +3962,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
        * <code>optional .RDPoint coords = 2;</code>
@@ -4009,6 +3977,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
        * <code>optional .RDPoint coords = 2;</code>
@@ -4029,6 +3998,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
        * <code>optional .RDPoint coords = 2;</code>
@@ -4047,6 +4017,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
        * <code>optional .RDPoint coords = 2;</code>
@@ -4069,6 +4040,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
        * <code>optional .RDPoint coords = 2;</code>
@@ -4087,6 +4059,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
        * <code>optional .RDPoint coords = 2;</code>
@@ -4099,6 +4072,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
        * <code>optional .RDPoint coords = 2;</code>
@@ -4114,6 +4088,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
        * <code>optional .RDPoint coords = 2;</code>
@@ -4136,6 +4111,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_ORIENT is the messageId
+       * contains the 0-360 degree orientation the robot should turn to
        * </pre>
        *
        * <code>optional float orientation = 3;</code>
@@ -4146,6 +4122,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_ORIENT is the messageId
+       * contains the 0-360 degree orientation the robot should turn to
        * </pre>
        *
        * <code>optional float orientation = 3;</code>
@@ -4159,6 +4136,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be set if CMD_MOVE_ORIENT is the messageId
+       * contains the 0-360 degree orientation the robot should turn to
        * </pre>
        *
        * <code>optional float orientation = 3;</code>
@@ -4185,6 +4163,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4199,6 +4178,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4213,6 +4193,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4227,6 +4208,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4248,6 +4230,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4266,6 +4249,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4286,6 +4270,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4307,6 +4292,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4325,6 +4311,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4343,6 +4330,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4362,6 +4350,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4379,6 +4368,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4396,6 +4386,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4407,6 +4398,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4421,6 +4413,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4436,6 +4429,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4447,6 +4441,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4459,6 +4454,7 @@ public final class RemoteDebug {
       /**
        * <pre>
        * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
        * </pre>
        *
        * <code>repeated .RDThreshold allThresholds = 4;</code>
@@ -4482,176 +4478,25 @@ public final class RemoteDebug {
         return allThresholdsBuilder_;
       }
 
-      private RemoteDebug.RDThreshold threshold_ = null;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          RemoteDebug.RDThreshold, RemoteDebug.RDThreshold.Builder, RemoteDebug.RDThresholdOrBuilder> thresholdBuilder_;
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>optional .RDThreshold threshold = 5;</code>
-       */
-      public boolean hasThreshold() {
-        return thresholdBuilder_ != null || threshold_ != null;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>optional .RDThreshold threshold = 5;</code>
-       */
-      public RemoteDebug.RDThreshold getThreshold() {
-        if (thresholdBuilder_ == null) {
-          return threshold_ == null ? RemoteDebug.RDThreshold.getDefaultInstance() : threshold_;
-        } else {
-          return thresholdBuilder_.getMessage();
-        }
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>optional .RDThreshold threshold = 5;</code>
-       */
-      public Builder setThreshold(RemoteDebug.RDThreshold value) {
-        if (thresholdBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          threshold_ = value;
-          onChanged();
-        } else {
-          thresholdBuilder_.setMessage(value);
-        }
-
-        return this;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>optional .RDThreshold threshold = 5;</code>
-       */
-      public Builder setThreshold(
-          RemoteDebug.RDThreshold.Builder builderForValue) {
-        if (thresholdBuilder_ == null) {
-          threshold_ = builderForValue.build();
-          onChanged();
-        } else {
-          thresholdBuilder_.setMessage(builderForValue.build());
-        }
-
-        return this;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>optional .RDThreshold threshold = 5;</code>
-       */
-      public Builder mergeThreshold(RemoteDebug.RDThreshold value) {
-        if (thresholdBuilder_ == null) {
-          if (threshold_ != null) {
-            threshold_ =
-              RemoteDebug.RDThreshold.newBuilder(threshold_).mergeFrom(value).buildPartial();
-          } else {
-            threshold_ = value;
-          }
-          onChanged();
-        } else {
-          thresholdBuilder_.mergeFrom(value);
-        }
-
-        return this;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>optional .RDThreshold threshold = 5;</code>
-       */
-      public Builder clearThreshold() {
-        if (thresholdBuilder_ == null) {
-          threshold_ = null;
-          onChanged();
-        } else {
-          threshold_ = null;
-          thresholdBuilder_ = null;
-        }
-
-        return this;
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>optional .RDThreshold threshold = 5;</code>
-       */
-      public RemoteDebug.RDThreshold.Builder getThresholdBuilder() {
-        
-        onChanged();
-        return getThresholdFieldBuilder().getBuilder();
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>optional .RDThreshold threshold = 5;</code>
-       */
-      public RemoteDebug.RDThresholdOrBuilder getThresholdOrBuilder() {
-        if (thresholdBuilder_ != null) {
-          return thresholdBuilder_.getMessageOrBuilder();
-        } else {
-          return threshold_ == null ?
-              RemoteDebug.RDThreshold.getDefaultInstance() : threshold_;
-        }
-      }
-      /**
-       * <pre>
-       * may be sent if CMD_THRESHOLD_SET is the messageId
-       * </pre>
-       *
-       * <code>optional .RDThreshold threshold = 5;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          RemoteDebug.RDThreshold, RemoteDebug.RDThreshold.Builder, RemoteDebug.RDThresholdOrBuilder> 
-          getThresholdFieldBuilder() {
-        if (thresholdBuilder_ == null) {
-          thresholdBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              RemoteDebug.RDThreshold, RemoteDebug.RDThreshold.Builder, RemoteDebug.RDThresholdOrBuilder>(
-                  getThreshold(),
-                  getParentForChildren(),
-                  isClean());
-          threshold_ = null;
-        }
-        return thresholdBuilder_;
-      }
-
       private int thresholdId_ ;
       /**
        * <pre>
-       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
+       * also doubles as "field object id" used to indicate which field object to view/edit
        * </pre>
        *
-       * <code>optional int32 thresholdId = 6;</code>
+       * <code>optional int32 thresholdId = 5;</code>
        */
       public int getThresholdId() {
         return thresholdId_;
       }
       /**
        * <pre>
-       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
+       * also doubles as "field object id" used to indicate which field object to view/edit
        * </pre>
        *
-       * <code>optional int32 thresholdId = 6;</code>
+       * <code>optional int32 thresholdId = 5;</code>
        */
       public Builder setThresholdId(int value) {
         
@@ -4661,14 +4506,56 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
+       * also doubles as "field object id" used to indicate which field object to view/edit
        * </pre>
        *
-       * <code>optional int32 thresholdId = 6;</code>
+       * <code>optional int32 thresholdId = 5;</code>
        */
       public Builder clearThresholdId() {
         
         thresholdId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int value_ ;
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLD_SET is the messageId
+       * would be the value of the threshold
+       * </pre>
+       *
+       * <code>optional int32 value = 7;</code>
+       */
+      public int getValue() {
+        return value_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLD_SET is the messageId
+       * would be the value of the threshold
+       * </pre>
+       *
+       * <code>optional int32 value = 7;</code>
+       */
+      public Builder setValue(int value) {
+        
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLD_SET is the messageId
+       * would be the value of the threshold
+       * </pre>
+       *
+       * <code>optional int32 value = 7;</code>
+       */
+      public Builder clearValue() {
+        
+        value_ = 0;
         onChanged();
         return this;
       }
@@ -5612,14 +5499,14 @@ public final class RemoteDebug {
       "\005\022\013\n\003max\030\003 \003(\005\"\213\001\n\nDebugFrame\022\024\n\014default" +
       "Image\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013" +
       "temperature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RD" +
-      "Rect\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\"\253\001\n" +
+      "Rect\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\"\231\001\n" +
       "\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coor" +
       "ds\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022",
-      "#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold\022\037\n\t" +
-      "threshold\030\005 \001(\0132\014.RDThreshold\022\023\n\013thresho" +
-      "ldId\030\006 \001(\005\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132" +
-      "\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCom" +
-      "mand\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
+      "#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold\022\023\n\013" +
+      "thresholdId\030\005 \001(\005\022\r\n\005value\030\007 \001(\005\"^\n\nRDMs" +
+      "gFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007co" +
+      "mmand\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessa" +
+      "ge\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -5662,7 +5549,7 @@ public final class RemoteDebug {
     internal_static_DebugCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugCommand_descriptor,
-        new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "Threshold", "ThresholdId", });
+        new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "ThresholdId", "Value", });
     internal_static_RDMsgFrame_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_RDMsgFrame_fieldAccessorTable = new
