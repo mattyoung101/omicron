@@ -1,1 +1,0 @@
-protoc --nanopb_out=. myprotocol.proto
