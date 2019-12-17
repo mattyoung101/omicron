@@ -21,6 +21,7 @@
 #include <sys/ioctl.h>
 #include "nanopb/pb_decode.h"
 #include "protobuf/RemoteDebug.pb.h"
+#include <sys/reboot.h>
 
 // Manages encoding camera frames to JPG images (with turbo-jpeg) or PNG images (with lodepng) and sending them over a
 // TCP socket to the eventual Kotlin remote debugging application
@@ -83,6 +84,8 @@ static void read_remote_messages(){
 
         if (!pb_decode_delimited(&inputStream, DebugCommand_fields, &message)){
             log_error("Failed to decode Omicontrol Protobuf command: %s", PB_GET_ERROR(&inputStream));
+            log_debug("Diagnostic information. readBytes: %d, availableBytes: %d", readBytes, availableBytes);
+            free(buf);
             return;
         }
 
@@ -108,26 +111,51 @@ static void read_remote_messages(){
                 send_response(response);
                 break;
             }
-
             case CMD_THRESHOLDS_SELECT: {
-                selectedFieldObject = message.thresholdId;
+                selectedFieldObject = message.objectId;
                 log_debug("Received CMD_THRESHOLDS_SELECT, new field object id is %d", selectedFieldObject);
                 RD_SEND_OK_RESPONSE;
                 break;
             }
-
             case CMD_THRESHOLDS_SET: {
+                log_debug("Received CMD_THRESHOLDS_SET, type=%s, colour channel=%d, value=%d", message.minMax ? "min" : "max",
+                        message.colourChannel, message.value);
+                // do some magic maths to figure out where in the thresholds array we need to access (NOLINTNEXTLINE)
+                int index = (selectedFieldObject - 1) * 2 + (message.minMax ^ 1);
+                thresholds[index][message.colourChannel] = message.value;
                 RD_SEND_OK_RESPONSE;
                 break;
             }
-
             case CMD_THRESHOLDS_WRITE_DISK: {
                 log_debug("Received CMD_THRESHOLDS_WRITE_DISK");
                 // TODO you would do it here, check the utils function
                 RD_SEND_OK_RESPONSE;
                 break;
             }
-
+            case CMD_POWER_OFF: {
+                log_info("Received CMD_POWER_OFF");
+#if BUILD_TARGET == BUILD_TARGET_PC
+                log_warn("Not shutting down as this is a PC build.");
+#else
+                // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
+                log_info("Shutting down Jetson now...");
+                sync();
+                reboot(RB_POWER_OFF);
+#endif
+                break;
+            }
+            case CMD_POWER_REBOOT: {
+                log_info("Received CMD_POWER_REBOOT");
+#if BUILD_TARGET == BUILD_TARGET_PC
+                log_warn("Not rebooting as this is a PC build.");
+#else
+                // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
+                log_info("Reeobting Jetson now...");
+                sync();
+                reboot(RB_AUTOBOOT);
+#endif
+                break;
+            }
             default: {
                 log_warn("Unhandled debug message id: %d", message.messageId);
                 break;
@@ -294,7 +322,7 @@ static void *tcp_thread(void *arg){
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in serverAddr = {0};
     struct sockaddr_in clientAddr = {0};
-    socklen_t clientAddrLen = 69;
+    socklen_t clientAddrLen;
 
     if (sockfd == -1){
         log_error("Failed to create TCP socket: %s", strerror(errno));
@@ -303,6 +331,9 @@ static void *tcp_thread(void *arg){
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serverAddr.sin_port = htons(DEBUG_PORT);
+    // https://stackoverflow.com/a/24194999/5007892
+    int enable = 1;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
 
     if (bind(sockfd, &serverAddr, sizeof(serverAddr)) != 0){
         log_error("Failed to bind TCP socket: %s", strerror(errno));

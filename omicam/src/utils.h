@@ -28,7 +28,7 @@ void utils_ini_update_key(FILE *file, char *key, char *value);
  * Utility function to encode the vision data into a protobuf packet and sent it over UART, using the
  * comms_uart module.
  */
-void utils_cv_transmit_data(BallData ballData);
+void utils_cv_transmit_data(ObjectData ballData);
 
 #ifdef __cplusplus
 }

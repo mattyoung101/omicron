@@ -16,6 +16,7 @@ val EVENT_BUS = EventBus()
 const val IMAGE_WIDTH = 1280.0
 const val IMAGE_HEIGHT = 720.0
 const val DEBUG_CAMERA_VIEW = false
+val COLOURS = listOf("R", "G", "B")
 
 enum class DebugCommands {
     CMD_OK, // the last command completed successfully

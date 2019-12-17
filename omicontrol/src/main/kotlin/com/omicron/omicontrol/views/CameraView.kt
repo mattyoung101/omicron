@@ -18,6 +18,7 @@ import RemoteDebug
 import javafx.collections.FXCollections
 import javafx.scene.Cursor
 import javafx.scene.Node
+import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.Slider
 import javafx.scene.layout.Priority
@@ -27,11 +28,10 @@ import kotlin.concurrent.thread
 import kotlin.math.floor
 
 class CameraView : View() {
-    /** displays the normal image **/
-    private lateinit var defaultImage: ImageView
     /** displays the thresh image(s) **/
     private lateinit var display: GraphicsContext
     private lateinit var temperatureLabel: Label
+    private lateinit var selectBox: ComboBox<String>
     private val compressor = Inflater()
     private var hideCameraFrame = false
     /** mapping between each field object and its threshold as received from Omicam **/
@@ -59,7 +59,6 @@ class CameraView : View() {
         val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
 
         runLater {
-            val begin = System.currentTimeMillis()
             val temp = message.temperature
             temperatureLabel.text = "${String.format("%.2f", temp)}°C"
             if (temp >= 75.0){
@@ -72,7 +71,6 @@ class CameraView : View() {
             display.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
             if (!hideCameraFrame) display.drawImage(img, 0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
 
-            // TODO add support for each object (not just the ball)
             if (selectedObject != FieldObjects.OBJ_NONE) {
                 // write the received image data to the canvas, skipping black pixels (this fakes blend mode which won't work
                 // for some reason)
@@ -85,16 +83,21 @@ class CameraView : View() {
                     display.pixelWriter.setColor(x, y, Color.ORANGE)
                 }
 
+                // TODO add support for each object (not just the ball) - maybe rename "ballCentroid" to "objectCentroid"
                 // draw ball centre
                 display.fill = Color.RED
                 val ballX = message.ballCentroid.x.toDouble()
                 val ballY = message.ballCentroid.y.toDouble()
-                display.fillOval(ballX, ballY, 10.0, 10.0)
+                // hack alert: in Omicam, if the ball centroid doesn't exist we set it to 0.0 so don't draw it if it's 0 here
+                // in future we should add a field called "exists" to the ball and the rect so we only render them if they exist
+                // in case the ball centroid is actually at (0, 0) for some reason
+                if (ballX != 0.0 && ballY != 0.0) display.fillOval(ballX, ballY, 10.0, 10.0)
 
                 // draw ball bounding box
                 display.stroke = Color.RED
                 display.lineWidth = 4.0
-                display.strokeRect(message.ballRect.x.toDouble(), message.ballRect.y.toDouble(),
+                if (message.ballRect.x != 0 && message.ballRect.y != 0)
+                    display.strokeRect(message.ballRect.x.toDouble(), message.ballRect.y.toDouble(),
                     message.ballRect.width.toDouble(), message.ballRect.height.toDouble())
             }
         }
@@ -111,6 +114,7 @@ class CameraView : View() {
         }
     }
 
+    /** Pulls the latest set of thresholds from Omicam. Unlocks the thresh received token when done. **/
     private fun updateThresholdValues(){
         val command = RemoteDebug.DebugCommand
             .newBuilder()
@@ -119,9 +123,11 @@ class CameraView : View() {
 
         CONNECTION_MANAGER.dispatchCommand(command, {
             for ((i, thresh) in it.allThresholdsList.withIndex()){
-                println("Object ${FieldObjects.values()[i]} min: ${thresh.minList}, max: ${thresh.maxList}")
+                Logger.trace("Object ${FieldObjects.values()[i]} min: ${thresh.minList}, max: ${thresh.maxList}")
                 objectThresholds[FieldObjects.values()[i]] = thresh
             }
+
+            // notify awaiting threads that the new data has been received
             synchronized(newThreshReceivedToken) { newThreshReceivedToken.notifyAll() }
         }, { errMsg ->
             Logger.warn("Failed to update threshold values: $errMsg")
@@ -132,8 +138,10 @@ class CameraView : View() {
         })
     }
 
+    /** Method which handles the logic for selecting a new field object including waiting, threading, etc **/
     private fun selectNewObject(newId: Int){
         val newObj = FieldObjects.values()[newId]
+        selectBox.isDisable = true
         Logger.debug("Selecting new field object: $newObj")
 
         thread(name="selectNewObject() Waiter") {
@@ -145,6 +153,7 @@ class CameraView : View() {
             Logger.trace("Finalised new thresholds!")
 
             val newObjThresh = objectThresholds[newObj] ?: run {
+                // this would be weird and shouldn't happen, but let's log it just in case
                 Logger.error("No threshold for $newObj?")
                 return@thread
             }
@@ -152,9 +161,8 @@ class CameraView : View() {
             // tell Omicam to switch objects
             val msg = RemoteDebug.DebugCommand.newBuilder()
                 .setMessageId(DebugCommands.CMD_THRESHOLDS_SELECT.ordinal)
-                .setThresholdId(newObj.ordinal)
+                .setObjectId(newObj.ordinal)
                 .build()
-            val colours = listOf("R", "G", "B")
             Logger.trace("Telling Omicam to switch to selected object...")
 
             CONNECTION_MANAGER.dispatchCommand(msg, {
@@ -165,14 +173,30 @@ class CameraView : View() {
                 }
 
                 // set min then max slider values
-                for ((i, colour) in colours.withIndex()) {
+                for ((i, colour) in COLOURS.withIndex()) {
                     sliders["${colour}Min"]?.value = newObjThresh.minList[i].toDouble()
                 }
-                for ((i, colour) in colours.withIndex()) {
+                for ((i, colour) in COLOURS.withIndex()) {
                     sliders["${colour}Max"]?.value = newObjThresh.maxList[i].toDouble()
                 }
+
+                selectBox.isDisable = false
+            }, {
+                selectBox.isDisable = false
             })
         }
+    }
+
+    /** sends threshold slider value change to Omicontrol **/
+    private fun publishSliderValueChange(colour: String, type: String, value: Int){
+        Logger.trace("Slider $colour$type changed to new value: $value")
+        val msg = RemoteDebug.DebugCommand.newBuilder().apply {
+            messageId = DebugCommands.CMD_THRESHOLDS_SET.ordinal
+            minMax = type.toLowerCase() == "min"
+            colourChannel = COLOURS.indexOf(colour.toUpperCase())
+            this.value = value
+        }.build()
+        CONNECTION_MANAGER.dispatchCommand(msg)
     }
 
     /**
@@ -188,6 +212,15 @@ class CameraView : View() {
                 minorTickCount = 0
                 isSnapToTicks = true
                 isDisable = true // since we start out in OBJ_NONE and you can't edit it
+
+                // value listener to dispatch update request to Omicam when the slider is finished being moved
+                setOnMouseReleased {
+                    publishSliderValueChange(colour, type, value.toInt())
+                }
+                // left and right arrow keys
+                setOnKeyReleased {
+                    publishSliderValueChange(colour, type, value.toInt())
+                }
             }
             sliders["$colour$type"] = colourSlider
 
@@ -211,7 +244,8 @@ class CameraView : View() {
                         Utils.showGenericAlert(Alert.AlertType.ERROR, "\"$result\" is not a valid threshold.",
                             "Invalid input")
                     } else {
-                        colourSlider.valueProperty().set(newValue.toDouble())
+                        colourSlider.value = newValue.toDouble()
+                        publishSliderValueChange(colour, type, newValue)
                     }
                 }
             }
@@ -291,13 +325,9 @@ class CameraView : View() {
         hbox {
             vbox {
                 stackpane {
-                    defaultImage = imageview()
-
-                    // real canvas which the frame buffer is copied to and downscaled
                     canvas(IMAGE_WIDTH, IMAGE_HEIGHT){
                         display = graphicsContext2D
                     }
-
                     val indicator = progressindicator {
                         scaleX = 3.0
                         scaleY = 3.0
@@ -318,13 +348,9 @@ class CameraView : View() {
                     alignment = Pos.TOP_CENTER
                 }
 
-                // TODO we're gonna need to get the initial values from the remote to populate the sliders with
-                // TODO make all the sliders text fields so you can type in values if required (or maybe if you click on the label it lets you do that)
-
-                val colours = listOf("R", "G", "B")
                 form {
                     // RGB colour sliders
-                    for (colour in colours){
+                    for (colour in COLOURS){
                         fieldset {
                             add(generateSlider(colour, "Min"))
                             add(generateSlider(colour, "Max"))
@@ -339,10 +365,11 @@ class CameraView : View() {
                         }
                     }
 
+                    // object selection dropdown
                     fieldset {
                         field {
                             label("Select object: ")
-                            combobox<String> {
+                            selectBox = combobox<String> {
                                 items = FXCollections.observableArrayList(FieldObjects.values().map { it.toString() })
                                 selectionModel.selectFirst()
 
@@ -354,7 +381,7 @@ class CameraView : View() {
                         }
                     }
 
-                    fieldset{
+                    fieldset {
                         field {
                             label("Hide camera frame: ")
                             checkbox {

@@ -1127,11 +1127,6 @@ public final class RemoteDebug {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional int32 objectId = 1;</code>
-     */
-    int getObjectId();
-
-    /**
      * <code>repeated int32 min = 2;</code>
      */
     java.util.List<java.lang.Integer> getMinList();
@@ -1158,6 +1153,10 @@ public final class RemoteDebug {
     int getMax(int index);
   }
   /**
+   * <pre>
+   * Contains the colour channel values for the min and max of a particular threshold
+   * </pre>
+   *
    * Protobuf type {@code RDThreshold}
    */
   public  static final class RDThreshold extends
@@ -1169,7 +1168,6 @@ public final class RemoteDebug {
       super(builder);
     }
     private RDThreshold() {
-      objectId_ = 0;
       min_ = java.util.Collections.emptyList();
       max_ = java.util.Collections.emptyList();
     }
@@ -1199,15 +1197,10 @@ public final class RemoteDebug {
               }
               break;
             }
-            case 8: {
-
-              objectId_ = input.readInt32();
-              break;
-            }
             case 16: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
                 min_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000001;
               }
               min_.add(input.readInt32());
               break;
@@ -1215,9 +1208,9 @@ public final class RemoteDebug {
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
                 min_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
                 min_.add(input.readInt32());
@@ -1226,9 +1219,9 @@ public final class RemoteDebug {
               break;
             }
             case 24: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
                 max_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000002;
               }
               max_.add(input.readInt32());
               break;
@@ -1236,9 +1229,9 @@ public final class RemoteDebug {
             case 26: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
                 max_ = new java.util.ArrayList<java.lang.Integer>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
                 max_.add(input.readInt32());
@@ -1254,10 +1247,10 @@ public final class RemoteDebug {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
           min_ = java.util.Collections.unmodifiableList(min_);
         }
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
           max_ = java.util.Collections.unmodifiableList(max_);
         }
         makeExtensionsImmutable();
@@ -1273,16 +1266,6 @@ public final class RemoteDebug {
       return RemoteDebug.internal_static_RDThreshold_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               RemoteDebug.RDThreshold.class, RemoteDebug.RDThreshold.Builder.class);
-    }
-
-    private int bitField0_;
-    public static final int OBJECTID_FIELD_NUMBER = 1;
-    private int objectId_;
-    /**
-     * <code>optional int32 objectId = 1;</code>
-     */
-    public int getObjectId() {
-      return objectId_;
     }
 
     public static final int MIN_FIELD_NUMBER = 2;
@@ -1344,9 +1327,6 @@ public final class RemoteDebug {
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
-      if (objectId_ != 0) {
-        output.writeInt32(1, objectId_);
-      }
       if (getMinList().size() > 0) {
         output.writeUInt32NoTag(18);
         output.writeUInt32NoTag(minMemoizedSerializedSize);
@@ -1368,10 +1348,6 @@ public final class RemoteDebug {
       if (size != -1) return size;
 
       size = 0;
-      if (objectId_ != 0) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(1, objectId_);
-      }
       {
         int dataSize = 0;
         for (int i = 0; i < min_.size(); i++) {
@@ -1416,8 +1392,6 @@ public final class RemoteDebug {
       RemoteDebug.RDThreshold other = (RemoteDebug.RDThreshold) obj;
 
       boolean result = true;
-      result = result && (getObjectId()
-          == other.getObjectId());
       result = result && getMinList()
           .equals(other.getMinList());
       result = result && getMaxList()
@@ -1432,8 +1406,6 @@ public final class RemoteDebug {
       }
       int hash = 41;
       hash = (19 * hash) + getDescriptorForType().hashCode();
-      hash = (37 * hash) + OBJECTID_FIELD_NUMBER;
-      hash = (53 * hash) + getObjectId();
       if (getMinCount() > 0) {
         hash = (37 * hash) + MIN_FIELD_NUMBER;
         hash = (53 * hash) + getMinList().hashCode();
@@ -1525,6 +1497,10 @@ public final class RemoteDebug {
       return builder;
     }
     /**
+     * <pre>
+     * Contains the colour channel values for the min and max of a particular threshold
+     * </pre>
+     *
      * Protobuf type {@code RDThreshold}
      */
     public static final class Builder extends
@@ -1560,12 +1536,10 @@ public final class RemoteDebug {
       }
       public Builder clear() {
         super.clear();
-        objectId_ = 0;
-
         min_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         max_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         return this;
       }
 
@@ -1589,19 +1563,16 @@ public final class RemoteDebug {
       public RemoteDebug.RDThreshold buildPartial() {
         RemoteDebug.RDThreshold result = new RemoteDebug.RDThreshold(this);
         int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
-        result.objectId_ = objectId_;
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
           min_ = java.util.Collections.unmodifiableList(min_);
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.min_ = min_;
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
           max_ = java.util.Collections.unmodifiableList(max_);
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.max_ = max_;
-        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -1643,13 +1614,10 @@ public final class RemoteDebug {
 
       public Builder mergeFrom(RemoteDebug.RDThreshold other) {
         if (other == RemoteDebug.RDThreshold.getDefaultInstance()) return this;
-        if (other.getObjectId() != 0) {
-          setObjectId(other.getObjectId());
-        }
         if (!other.min_.isEmpty()) {
           if (min_.isEmpty()) {
             min_ = other.min_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
             ensureMinIsMutable();
             min_.addAll(other.min_);
@@ -1659,7 +1627,7 @@ public final class RemoteDebug {
         if (!other.max_.isEmpty()) {
           if (max_.isEmpty()) {
             max_ = other.max_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureMaxIsMutable();
             max_.addAll(other.max_);
@@ -1693,37 +1661,11 @@ public final class RemoteDebug {
       }
       private int bitField0_;
 
-      private int objectId_ ;
-      /**
-       * <code>optional int32 objectId = 1;</code>
-       */
-      public int getObjectId() {
-        return objectId_;
-      }
-      /**
-       * <code>optional int32 objectId = 1;</code>
-       */
-      public Builder setObjectId(int value) {
-        
-        objectId_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>optional int32 objectId = 1;</code>
-       */
-      public Builder clearObjectId() {
-        
-        objectId_ = 0;
-        onChanged();
-        return this;
-      }
-
       private java.util.List<java.lang.Integer> min_ = java.util.Collections.emptyList();
       private void ensureMinIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
           min_ = new java.util.ArrayList<java.lang.Integer>(min_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000001;
          }
       }
       /**
@@ -1780,16 +1722,16 @@ public final class RemoteDebug {
        */
       public Builder clearMin() {
         min_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
 
       private java.util.List<java.lang.Integer> max_ = java.util.Collections.emptyList();
       private void ensureMaxIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
           max_ = new java.util.ArrayList<java.lang.Integer>(max_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000002;
          }
       }
       /**
@@ -1846,7 +1788,7 @@ public final class RemoteDebug {
        */
       public Builder clearMax() {
         max_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
@@ -3157,13 +3099,33 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
-     * also doubles as "field object id" used to indicate which field object to view/edit
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
      * </pre>
      *
-     * <code>optional int32 thresholdId = 5;</code>
+     * <code>optional int32 objectId = 5;</code>
      */
-    int getThresholdId();
+    int getObjectId();
+
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+     * </pre>
+     *
+     * <code>optional bool minMax = 6;</code>
+     */
+    boolean getMinMax();
+
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+     * </pre>
+     *
+     * <code>optional int32 colourChannel = 7;</code>
+     */
+    int getColourChannel();
 
     /**
      * <pre>
@@ -3171,7 +3133,7 @@ public final class RemoteDebug {
      * would be the value of the threshold
      * </pre>
      *
-     * <code>optional int32 value = 7;</code>
+     * <code>optional int32 value = 8;</code>
      */
     int getValue();
   }
@@ -3194,7 +3156,9 @@ public final class RemoteDebug {
       messageId_ = 0;
       orientation_ = 0F;
       allThresholds_ = java.util.Collections.emptyList();
-      thresholdId_ = 0;
+      objectId_ = 0;
+      minMax_ = false;
+      colourChannel_ = 0;
       value_ = 0;
     }
 
@@ -3257,10 +3221,20 @@ public final class RemoteDebug {
             }
             case 40: {
 
-              thresholdId_ = input.readInt32();
+              objectId_ = input.readInt32();
+              break;
+            }
+            case 48: {
+
+              minMax_ = input.readBool();
               break;
             }
             case 56: {
+
+              colourChannel_ = input.readInt32();
+              break;
+            }
+            case 64: {
 
               value_ = input.readInt32();
               break;
@@ -3427,21 +3401,49 @@ public final class RemoteDebug {
       return allThresholds_.get(index);
     }
 
-    public static final int THRESHOLDID_FIELD_NUMBER = 5;
-    private int thresholdId_;
+    public static final int OBJECTID_FIELD_NUMBER = 5;
+    private int objectId_;
     /**
      * <pre>
-     * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
-     * also doubles as "field object id" used to indicate which field object to view/edit
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
      * </pre>
      *
-     * <code>optional int32 thresholdId = 5;</code>
+     * <code>optional int32 objectId = 5;</code>
      */
-    public int getThresholdId() {
-      return thresholdId_;
+    public int getObjectId() {
+      return objectId_;
     }
 
-    public static final int VALUE_FIELD_NUMBER = 7;
+    public static final int MINMAX_FIELD_NUMBER = 6;
+    private boolean minMax_;
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+     * </pre>
+     *
+     * <code>optional bool minMax = 6;</code>
+     */
+    public boolean getMinMax() {
+      return minMax_;
+    }
+
+    public static final int COLOURCHANNEL_FIELD_NUMBER = 7;
+    private int colourChannel_;
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+     * </pre>
+     *
+     * <code>optional int32 colourChannel = 7;</code>
+     */
+    public int getColourChannel() {
+      return colourChannel_;
+    }
+
+    public static final int VALUE_FIELD_NUMBER = 8;
     private int value_;
     /**
      * <pre>
@@ -3449,7 +3451,7 @@ public final class RemoteDebug {
      * would be the value of the threshold
      * </pre>
      *
-     * <code>optional int32 value = 7;</code>
+     * <code>optional int32 value = 8;</code>
      */
     public int getValue() {
       return value_;
@@ -3479,11 +3481,17 @@ public final class RemoteDebug {
       for (int i = 0; i < allThresholds_.size(); i++) {
         output.writeMessage(4, allThresholds_.get(i));
       }
-      if (thresholdId_ != 0) {
-        output.writeInt32(5, thresholdId_);
+      if (objectId_ != 0) {
+        output.writeInt32(5, objectId_);
+      }
+      if (minMax_ != false) {
+        output.writeBool(6, minMax_);
+      }
+      if (colourChannel_ != 0) {
+        output.writeInt32(7, colourChannel_);
       }
       if (value_ != 0) {
-        output.writeInt32(7, value_);
+        output.writeInt32(8, value_);
       }
     }
 
@@ -3508,13 +3516,21 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(4, allThresholds_.get(i));
       }
-      if (thresholdId_ != 0) {
+      if (objectId_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(5, thresholdId_);
+          .computeInt32Size(5, objectId_);
+      }
+      if (minMax_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(6, minMax_);
+      }
+      if (colourChannel_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(7, colourChannel_);
       }
       if (value_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(7, value_);
+          .computeInt32Size(8, value_);
       }
       memoizedSize = size;
       return size;
@@ -3545,8 +3561,12 @@ public final class RemoteDebug {
               other.getOrientation()));
       result = result && getAllThresholdsList()
           .equals(other.getAllThresholdsList());
-      result = result && (getThresholdId()
-          == other.getThresholdId());
+      result = result && (getObjectId()
+          == other.getObjectId());
+      result = result && (getMinMax()
+          == other.getMinMax());
+      result = result && (getColourChannel()
+          == other.getColourChannel());
       result = result && (getValue()
           == other.getValue());
       return result;
@@ -3572,8 +3592,13 @@ public final class RemoteDebug {
         hash = (37 * hash) + ALLTHRESHOLDS_FIELD_NUMBER;
         hash = (53 * hash) + getAllThresholdsList().hashCode();
       }
-      hash = (37 * hash) + THRESHOLDID_FIELD_NUMBER;
-      hash = (53 * hash) + getThresholdId();
+      hash = (37 * hash) + OBJECTID_FIELD_NUMBER;
+      hash = (53 * hash) + getObjectId();
+      hash = (37 * hash) + MINMAX_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getMinMax());
+      hash = (37 * hash) + COLOURCHANNEL_FIELD_NUMBER;
+      hash = (53 * hash) + getColourChannel();
       hash = (37 * hash) + VALUE_FIELD_NUMBER;
       hash = (53 * hash) + getValue();
       hash = (29 * hash) + unknownFields.hashCode();
@@ -3715,7 +3740,11 @@ public final class RemoteDebug {
         } else {
           allThresholdsBuilder_.clear();
         }
-        thresholdId_ = 0;
+        objectId_ = 0;
+
+        minMax_ = false;
+
+        colourChannel_ = 0;
 
         value_ = 0;
 
@@ -3759,7 +3788,9 @@ public final class RemoteDebug {
         } else {
           result.allThresholds_ = allThresholdsBuilder_.build();
         }
-        result.thresholdId_ = thresholdId_;
+        result.objectId_ = objectId_;
+        result.minMax_ = minMax_;
+        result.colourChannel_ = colourChannel_;
         result.value_ = value_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -3838,8 +3869,14 @@ public final class RemoteDebug {
             }
           }
         }
-        if (other.getThresholdId() != 0) {
-          setThresholdId(other.getThresholdId());
+        if (other.getObjectId() != 0) {
+          setObjectId(other.getObjectId());
+        }
+        if (other.getMinMax() != false) {
+          setMinMax(other.getMinMax());
+        }
+        if (other.getColourChannel() != 0) {
+          setColourChannel(other.getColourChannel());
         }
         if (other.getValue() != 0) {
           setValue(other.getValue());
@@ -4478,43 +4515,125 @@ public final class RemoteDebug {
         return allThresholdsBuilder_;
       }
 
-      private int thresholdId_ ;
+      private int objectId_ ;
       /**
        * <pre>
-       * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
-       * also doubles as "field object id" used to indicate which field object to view/edit
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
        * </pre>
        *
-       * <code>optional int32 thresholdId = 5;</code>
+       * <code>optional int32 objectId = 5;</code>
        */
-      public int getThresholdId() {
-        return thresholdId_;
+      public int getObjectId() {
+        return objectId_;
       }
       /**
        * <pre>
-       * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
-       * also doubles as "field object id" used to indicate which field object to view/edit
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
        * </pre>
        *
-       * <code>optional int32 thresholdId = 5;</code>
+       * <code>optional int32 objectId = 5;</code>
        */
-      public Builder setThresholdId(int value) {
+      public Builder setObjectId(int value) {
         
-        thresholdId_ = value;
+        objectId_ = value;
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
-       * also doubles as "field object id" used to indicate which field object to view/edit
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
        * </pre>
        *
-       * <code>optional int32 thresholdId = 5;</code>
+       * <code>optional int32 objectId = 5;</code>
        */
-      public Builder clearThresholdId() {
+      public Builder clearObjectId() {
         
-        thresholdId_ = 0;
+        objectId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private boolean minMax_ ;
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+       * </pre>
+       *
+       * <code>optional bool minMax = 6;</code>
+       */
+      public boolean getMinMax() {
+        return minMax_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+       * </pre>
+       *
+       * <code>optional bool minMax = 6;</code>
+       */
+      public Builder setMinMax(boolean value) {
+        
+        minMax_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+       * </pre>
+       *
+       * <code>optional bool minMax = 6;</code>
+       */
+      public Builder clearMinMax() {
+        
+        minMax_ = false;
+        onChanged();
+        return this;
+      }
+
+      private int colourChannel_ ;
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+       * </pre>
+       *
+       * <code>optional int32 colourChannel = 7;</code>
+       */
+      public int getColourChannel() {
+        return colourChannel_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+       * </pre>
+       *
+       * <code>optional int32 colourChannel = 7;</code>
+       */
+      public Builder setColourChannel(int value) {
+        
+        colourChannel_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+       * </pre>
+       *
+       * <code>optional int32 colourChannel = 7;</code>
+       */
+      public Builder clearColourChannel() {
+        
+        colourChannel_ = 0;
         onChanged();
         return this;
       }
@@ -4526,7 +4645,7 @@ public final class RemoteDebug {
        * would be the value of the threshold
        * </pre>
        *
-       * <code>optional int32 value = 7;</code>
+       * <code>optional int32 value = 8;</code>
        */
       public int getValue() {
         return value_;
@@ -4537,7 +4656,7 @@ public final class RemoteDebug {
        * would be the value of the threshold
        * </pre>
        *
-       * <code>optional int32 value = 7;</code>
+       * <code>optional int32 value = 8;</code>
        */
       public Builder setValue(int value) {
         
@@ -4551,7 +4670,7 @@ public final class RemoteDebug {
        * would be the value of the threshold
        * </pre>
        *
-       * <code>optional int32 value = 7;</code>
+       * <code>optional int32 value = 8;</code>
        */
       public Builder clearValue() {
         
@@ -5494,19 +5613,19 @@ public final class RemoteDebug {
     java.lang.String[] descriptorData = {
       "\n\021RemoteDebug.proto\"=\n\006RDRect\022\t\n\001x\030\001 \001(\005" +
       "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
-      "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"9\n\013R" +
-      "DThreshold\022\020\n\010objectId\030\001 \001(\005\022\013\n\003min\030\002 \003(" +
-      "\005\022\013\n\003max\030\003 \003(\005\"\213\001\n\nDebugFrame\022\024\n\014default" +
-      "Image\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013" +
-      "temperature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RD" +
-      "Rect\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\"\231\001\n" +
-      "\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coor" +
-      "ds\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022",
-      "#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold\022\023\n\013" +
-      "thresholdId\030\005 \001(\005\022\r\n\005value\030\007 \001(\005\"^\n\nRDMs" +
-      "gFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007co" +
-      "mmand\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessa" +
-      "ge\030\003 \001(\005b\006proto3"
+      "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\'\n\013R" +
+      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\213\001\n" +
+      "\nDebugFrame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017bal" +
+      "lThreshImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022" +
+      "\031\n\010ballRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentro" +
+      "id\030\005 \001(\0132\010.RDPoint\"\275\001\n\014DebugCommand\022\021\n\tm" +
+      "essageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint" +
+      "\022\023\n\013orientation\030\003 \001(\002\022#\n\rallThresholds\030\004",
+      " \003(\0132\014.RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006" +
+      "minMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005v" +
+      "alue\030\010 \001(\005\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132" +
+      "\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCom" +
+      "mand\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -5537,7 +5656,7 @@ public final class RemoteDebug {
     internal_static_RDThreshold_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RDThreshold_descriptor,
-        new java.lang.String[] { "ObjectId", "Min", "Max", });
+        new java.lang.String[] { "Min", "Max", });
     internal_static_DebugFrame_descriptor =
       getDescriptor().getMessageTypes().get(3);
     internal_static_DebugFrame_fieldAccessorTable = new
@@ -5549,7 +5668,7 @@ public final class RemoteDebug {
     internal_static_DebugCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugCommand_descriptor,
-        new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "ThresholdId", "Value", });
+        new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "ObjectId", "MinMax", "ColourChannel", "Value", });
     internal_static_RDMsgFrame_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_RDMsgFrame_fieldAccessorTable = new

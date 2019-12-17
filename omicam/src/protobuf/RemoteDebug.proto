@@ -14,8 +14,8 @@ message RDPoint {
     int32 y = 2;
 }
 
+// Contains the colour channel values for the min and max of a particular threshold
 message RDThreshold {
-    int32 objectId = 1;
     repeated int32 min = 2;
     repeated int32 max = 3;
 }
@@ -57,12 +57,18 @@ message DebugCommand {
     // may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
     // contains an array of all the thresholds values in the camera currently
     repeated RDThreshold allThresholds = 4;
-    // may be set if CMD_THRESHOLDS_SELECT or CMD_THRESHOLDS_SET is the messageId
-    // also doubles as "field object id" used to indicate which field object to view/edit
-    int32 thresholdId = 5;
+    // may be set if CMD_THRESHOLDS_SELECT is the messageId
+    // contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
+    int32 objectId = 5;
+    // may be set if CMD_THRESHOLDS_SELECT is the messageId
+    // contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+    bool minMax = 6;
+    // may be set if CMD_THRESHOLDS_SELECT is the messageId
+    // contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+    int32 colourChannel = 7;
     // may be set if CMD_THRESHOLD_SET is the messageId
     // would be the value of the threshold
-    int32 value = 7;
+    int32 value = 8;
 }
 
 // Container for messages, contains exactly one sub message
