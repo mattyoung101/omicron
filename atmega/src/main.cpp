@@ -1,9 +1,19 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include "Timer.h"
 
 void setup() {
-  // put your setup code here, to run once:
+    #if I2C_ON
+        Wire.begin(0x12);
+        Wire.onRequest(requestEvent);
+        Wire.onReceive(receiveEvent);
+    #endif
+
+    Serial.begin(115200);
+
+    // TODO: mouse sensor code
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+    
 }
