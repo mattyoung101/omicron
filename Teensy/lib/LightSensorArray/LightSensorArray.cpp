@@ -32,16 +32,10 @@ void LightSensorArray::changeMUXChannel(uint8_t channel) {
 }
 
 void LightSensorArray::calibrate() {
-    // Average a number of reads of each sensor, and add a buffer
-
-    for (int i = 0; i < LS_NUM; i++) {
-        int defaultValue = 0;
-
-        for (int j = 0; j < LS_CALIBRATION_COUNT; j++) {
-            defaultValue += readSensor(i);
-        }
-
-        thresholds[i] = round(((double)defaultValue / LS_CALIBRATION_COUNT) + LS_CALIBRATION_BUFFER);
+    for (int i = 0; i < LS_RING_NUM; i++) {
+        lsThresholds[i] = EEPROM.read(FIRST_CALIB_REGISTER + i * 2) + (EEPROM.read(FIRST_CALIB_REGISTER + i * 2 + 1) << 8);
+        ringThresholds[i] = lsThresholds[i];
+        lsRing[i].setThresh(lsThresholds[i]);
     }
 }
 

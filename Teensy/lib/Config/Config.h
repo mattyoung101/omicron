@@ -31,6 +31,8 @@
 #define LINE_SMALL_SIZE 0
 #define LINE_BIG_SIZE 0
 
+#define FIRST_CALIB_REGISTER 500
+
 // --- LRFs --- //
 #define LRF_DATA_LENGTH 8
 #define LRF_START_BYTE 0x5A
