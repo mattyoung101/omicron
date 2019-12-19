@@ -43,17 +43,17 @@ static void *cv_thread(void *arg){
 #if BUILD_TARGET == BUILD_TARGET_JETSON
         // get a frame from the capture stream and call it "frame" to match up with the other stuff
 #endif
-        UMat ballThresh, frameScaled, ;
+        UMat ballThresh, frameScaled, frameRGB;
         Mat ballLabels, ballStats, ballCentroids;
         Scalar minBallScalar = Scalar(minBallData[0], minBallData[1], minBallData[2]);
         Scalar maxBallScalar = Scalar(maxBallData[0], maxBallData[1], maxBallData[2]);
 
         // TODO dispatch frame to localiser here (as it runs in parallel so give it a head start)
 
-        // all the image processing is done in these two functions, threshold then find connected components!
-        resize(frame, frameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
-        // FIXME need to convert from shitty BGR to RGB
-        inRange(frame, minBallScalar, maxBallScalar, ballThresh);
+        // all the image processing is done here
+        cvtColor(frame, frameRGB, COLOR_BGR2RGB);
+        resize(frameRGB, frameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
+        inRange(frameRGB, minBallScalar, maxBallScalar, ballThresh);
         int nLabels = connectedComponentsWithStats(ballThresh, ballLabels, ballStats, ballCentroids);
 
         // find the biggest blob, skipping id 0 which is the background
@@ -78,8 +78,6 @@ static void *cv_thread(void *arg){
         if (frames++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()) {
             // frame is a 3 channel BGR image (hence the "* 3") which must be converted to RGB
             auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
-            UMat frameRGB;
-            cvtColor(frame, frameRGB, COLOR_BGR2RGB);
 
             char buf[128] = {0};
             snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %d", frames, OMICAM_VERSION, selectedFieldObject);

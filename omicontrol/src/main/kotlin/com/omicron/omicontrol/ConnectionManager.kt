@@ -4,6 +4,7 @@ import RemoteDebug
 import javafx.scene.control.ProgressIndicator
 import org.tinylog.kotlin.Logger
 import tornadofx.runLater
+import java.io.ByteArrayOutputStream
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketException
@@ -94,9 +95,10 @@ class ConnectionManager {
         thread(name="Omicontrol Dispatch Await") {
             progressIndicator?.isVisible = true
             Logger.trace("Dispatching command to Omicam")
-            val outStream = socket.getOutputStream()
+            val outStream = ByteArrayOutputStream()
             command.writeDelimitedTo(outStream)
-            outStream.flush()
+            outStream.writeTo(socket.getOutputStream())
+            socket.getOutputStream().flush()
             Logger.trace("Dispatched, awaiting response")
 
             synchronized(cmdReceivedToken) { cmdReceivedToken.wait(5000) }

@@ -30,7 +30,7 @@
 static tjhandle compressor;
 static _Atomic uint16_t width = 0;
 static _Atomic uint16_t height = 0;
-static pthread_t frameThread, tcpThread, thermalThread;
+static pthread_t frameThread, tcpThread, thermalThread, receiveThread;
 static rpa_queue_t *frameQueue = NULL;
 /** the file descriptor of the server socket **/
 static _Atomic int sockfd = -1;
@@ -72,12 +72,13 @@ static void read_remote_messages(){
     ioctl(connfd, FIONREAD, &availableBytes);
 
     if (availableBytes > 0) {
-        uint8_t *buf = malloc(512);
-        ssize_t readBytes = read(connfd, buf, 512);
+        uint8_t *buf = malloc(availableBytes + 1);
+        ssize_t readBytes = recv(connfd, buf, availableBytes, MSG_WAITALL);
         if (readBytes == -1){
             log_warn("Failed to read remote message: %s", strerror(readBytes));
             return;
         }
+        // printf("recv() return code: %d\n", readBytes);
 
         pb_istream_t inputStream = pb_istream_from_buffer(buf, 512);
         DebugCommand message = DebugCommand_init_zero;
@@ -87,11 +88,13 @@ static void read_remote_messages(){
             log_debug("Diagnostic information. readBytes: %d, availableBytes: %d", readBytes, availableBytes);
             free(buf);
             return;
+        } else {
+            // printf("Successful decode of %d availableBytes, %d readBytes\n", availableBytes, readBytes);
         }
 
         switch (message.messageId){
             case CMD_THRESHOLDS_GET_ALL: {
-                log_debug("Received CMD_THREHSOLD_GET_ALL");
+                log_debug("Received CMD_THRESHOLD_GET_ALL");
 
                 DebugCommand response = DebugCommand_init_zero;
                 response.messageId = CMD_OK;
@@ -166,6 +169,16 @@ static void read_remote_messages(){
     }
 }
 
+/** called to handle when Omicontrol disconnects **/
+static void client_disconnected(void){
+    log_info("Client has disconnected. Restarting socket server...");
+    // pthread_cancel(receiveThread);
+    close(sockfd);
+    close(connfd);
+    connfd = -1;
+    init_tcp_socket();
+}
+
 /**
  * Encodes the given JPEG images into a Protocl Buffer and disaptches it over the TCP socket, if connected.
  */
@@ -200,11 +213,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
             log_warn("Failed to write to TCP socket: %s", strerror(errno));
 
             if (errno == EPIPE || errno == ECONNRESET){
-                log_info("This error indicates the client disconnected. Restarting socket server...");
-                close(sockfd);
-                close(connfd);
-                connfd = -1;
-                init_tcp_socket();
+                client_disconnected();
             }
         }
     }
@@ -277,6 +286,22 @@ static void *frame_thread(void *param){
         free(threshFrame); // this is malloc'd and copied from the OpenCV threshold frame in computer_vision.cpp
         free(entry); // this is malloc'd in this file when we push to the queue
         pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    }
+    return NULL;
+}
+
+/** thread to receive and process messages from Omicontrol **/
+static void *receive_thread(void *arg){
+    log_trace("Receive thread started");
+    while (true){
+        // what we'll do is read the socket one byte at a time, blocking, and try protobuf decode each time
+        // alternatively check if there's some data available then read it and then read one byte at a time
+
+
+        uint8_t buf[64] = {0};
+        while (true){
+            uint8_t nextByte = 0;
+        }
     }
     return NULL;
 }
