@@ -3,14 +3,16 @@
 
 // Datasheet thingo (it barely passes as one): http://img.banggood.com/file/products/20180830020532SKU645408.pdf
 
-void setLRF(HardwareSerial serial){
+void LRF::setLRF(HardwareSerial serial){
     // Set command buffer
     sendBuf[0] = LRF_START_BYTE;
     sendBuf[1] = 0xAF;
     sendBuf[2] = 0x54;
 
     serial.begin(9600);
-    serial.write(sendBuf);
+    for(int i : sendBuf) {
+        serial.write(i);
+    }
     serial.begin(115200);
 }
 
