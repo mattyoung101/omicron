@@ -4,6 +4,10 @@
 #define I2C_ON true
 #define MOUSE_ON true
 
+#define I2C_ADDRESS 0x12
+#define I2C_START_BYTE 0xB
+#define I2C_PACKET_SIZE 5
+
 // I put pins here cos there's not much
 #define MOTOR_FR_INA 14
 #define MOTOR_FR_INB 15

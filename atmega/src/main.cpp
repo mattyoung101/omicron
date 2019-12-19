@@ -2,14 +2,25 @@
 #include <Wire.h>
 #include "Timer.h"
 #include "Mouse.h"
+#include "Motor.h"
+#include "Config.h"
 
 PMW3360 mouse;
+Motor motor;
 
-void setup() {
+int frMotor = 0;
+int brMotor = 0;
+int blMotor = 0;
+int flMotor = 0;
+
+int dx;
+int dy;
+
+void setup(){
     Serial.begin(115200);
-    
+
     #if I2C_ON
-        Wire.begin(0x12);
+        Wire.begin(I2C_ADDRESS);
         Wire.onRequest(requestEvent);
         Wire.onReceive(receiveEvent);
     #endif
@@ -18,13 +29,30 @@ void setup() {
         Serial.println(mouse.begin(10));
     #endif
 
-
-    // TODO: mouse sensor code
+    motor.init();
 }
 
-void loop() {
+void loop(){
     PMW3360_DATA data = mouse.readBurst();
-    Serial.print(data.dx);
-    Serial.print(", ");
-    Serial.println(data.dy);
+    dx = data.dx;
+    dy = data.dy;
+
+    motor.move(frMotor, brMotor, blMotor, flMotor);
+}
+
+void requestEvent(){
+    Wire.write(I2C_BEGIN_BYTE);
+    Wire.write(highByte((uint16_t) dx));
+    Wire.write(lowByte((uint16_t) dx));
+    Wire.write(highByte((uint16_t) dy));
+    Wire.write(lowByte((uint16_t) dy));
+}
+
+void receiveEvent(int bytes){
+    if(Wire.available() >= I2C_PACKET_SIZE && Wire.read() == I2C_START_BYTE){
+        frMotor = Wire.read();
+        brMotor = Wire.read();
+        blMotor = Wire.read();
+        flMotor = Wire.read();
+    }
 }
