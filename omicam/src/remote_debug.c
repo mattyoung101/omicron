@@ -30,7 +30,7 @@
 static tjhandle compressor;
 static _Atomic uint16_t width = 0;
 static _Atomic uint16_t height = 0;
-static pthread_t frameThread, tcpThread, thermalThread, receiveThread;
+static pthread_t frameThread, tcpThread, thermalThread;
 static rpa_queue_t *frameQueue = NULL;
 /** the file descriptor of the server socket **/
 static _Atomic int sockfd = -1;
@@ -43,9 +43,7 @@ field_objects_t selectedFieldObject = OBJ_NONE;
 
 static void init_tcp_socket(void);
 
-/**
- * Quickly encodes and sends the given DebugCommand back to Omicontrol as a response
- */
+/** Quickly encodes and sends the given DebugCommand back to Omicontrol as a response **/
 static void send_response(DebugCommand command){
     uint8_t buf[512] = {0};
     pb_ostream_t stream = pb_ostream_from_buffer(buf, 512);
@@ -64,8 +62,8 @@ static void send_response(DebugCommand command){
     }
 }
 
-/** reads and processes Omicontrol messages **/
-static void read_remote_messages(){
+/** reads and processes Omicontrol messages. (mostly) non-blocking. **/
+static void read_remote_messages(void){
     // read potential protobuf command from Omicontrol socket, recycling buffer
     // https://stackoverflow.com/a/3054519/5007892
     int availableBytes = 0;
@@ -172,7 +170,6 @@ static void read_remote_messages(){
 /** called to handle when Omicontrol disconnects **/
 static void client_disconnected(void){
     log_info("Client has disconnected. Restarting socket server...");
-    // pthread_cancel(receiveThread);
     close(sockfd);
     close(connfd);
     connfd = -1;
@@ -255,14 +252,21 @@ static uint8_t *compress_thresh_image(uint8_t *inBuffer, unsigned long *outputSi
 }
 
 // TODO set frame thread priority!
+/**
+ * The frame thread is the main thread in the remote debugger which waits for a frame to be posted, then encodes
+ * and sends it. It also handles receiving commands from Omicontrol.
+ */
 static void *frame_thread(void *param){
     log_trace("Frame encode thread started");
 
     while (true){
         void *queueData = NULL;
-        if (!rpa_queue_pop(frameQueue, &queueData)){
-            log_error("Frame queue pop failed");
-            free(queueData); // worst that can happen is this resolves to free(NULL) which is fine
+        // to speed up processing of Omicontrol commands, we wait 5 ms for a frame and if no frame has come
+        // in, then quickly process Omicam messages (since this is non blocking) then continue waiting.
+        // this way we received a balance between not spamming loops but also processing stuff fast.
+        // if there is no connection, then delay indefinitely to save CPU rather than looping
+        if (!rpa_queue_timedpop(frameQueue, &queueData, remote_debug_is_connected() ? 5 : RPA_WAIT_FOREVER)){
+            read_remote_messages();
             continue;
         }
         frame_entry_t *entry = (frame_entry_t*) queueData;
@@ -286,22 +290,6 @@ static void *frame_thread(void *param){
         free(threshFrame); // this is malloc'd and copied from the OpenCV threshold frame in computer_vision.cpp
         free(entry); // this is malloc'd in this file when we push to the queue
         pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-    }
-    return NULL;
-}
-
-/** thread to receive and process messages from Omicontrol **/
-static void *receive_thread(void *arg){
-    log_trace("Receive thread started");
-    while (true){
-        // what we'll do is read the socket one byte at a time, blocking, and try protobuf decode each time
-        // alternatively check if there's some data available then read it and then read one byte at a time
-
-
-        uint8_t buf[64] = {0};
-        while (true){
-            uint8_t nextByte = 0;
-        }
     }
     return NULL;
 }

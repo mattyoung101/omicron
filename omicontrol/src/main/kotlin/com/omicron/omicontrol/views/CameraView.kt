@@ -391,6 +391,12 @@ class CameraView : View() {
                             }
                         }
                     }
+
+                    fieldset {
+                        field {
+                            lastPingLabel = label("Last ping: None recorded")
+                        }
+                    }
                 }
 
                 hgrow = Priority.ALWAYS

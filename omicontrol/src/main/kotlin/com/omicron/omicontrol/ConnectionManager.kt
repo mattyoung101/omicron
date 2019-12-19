@@ -93,6 +93,8 @@ class ConnectionManager {
      */
     fun dispatchCommand(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit = {}, onError: (String) -> Unit = {}){
         thread(name="Omicontrol Dispatch Await") {
+            val begin = System.currentTimeMillis()
+
             progressIndicator?.isVisible = true
             Logger.trace("Dispatching command to Omicam")
             val outStream = ByteArrayOutputStream()
@@ -113,10 +115,12 @@ class ConnectionManager {
                     // yeah this is a stupid hack but for some reason there's no fuckin clone function
                     val assertedReceivedCmd = receivedCmd ?: return@synchronized
                     val copy = RemoteDebug.DebugCommand.parseFrom(assertedReceivedCmd.toByteArray())
+                    val end = System.currentTimeMillis() - begin
                     receivedCmd = null
                     runLater {
                         onSuccess(copy)
                         progressIndicator?.isVisible = false
+                        lastPingLabel?.text = "Last ping: $end ms"
                     }
                 }
             }

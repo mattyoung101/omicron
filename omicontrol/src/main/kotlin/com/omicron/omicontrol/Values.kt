@@ -1,6 +1,7 @@
 package com.omicron.omicontrol
 
 import com.google.common.eventbus.EventBus
+import javafx.scene.control.Label
 
 /**
  * Version history:
@@ -17,6 +18,9 @@ const val IMAGE_WIDTH = 1280.0
 const val IMAGE_HEIGHT = 720.0
 const val DEBUG_CAMERA_VIEW = false
 val COLOURS = listOf("R", "G", "B")
+/** last ping (round trip time) in ms, only updated when sending a command **/
+var LAST_PING = 0L
+var lastPingLabel: Label? = null
 
 enum class DebugCommands {
     CMD_OK, // the last command completed successfully
