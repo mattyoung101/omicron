@@ -21,11 +21,6 @@ message I2CSlaveProvide {
 
 // Transmits values from the ESP32 to the Teensy
 message I2CMasterProvide {
-    // Motors
-    float direction = 1;
-    float orientation = 2;
-    float speed = 3;
-
     // IMU
-    float heading = 4;
+    float heading = 1;
 }
