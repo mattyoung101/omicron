@@ -15,7 +15,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "mouse.h"
+#include "Mouse.h"
 
 #define BEGIN_COM digitalWrite(_ss, LOW); delayMicroseconds(1)
 #define END_COM   delayMicroseconds(1); digitalWrite(_ss, HIGH)

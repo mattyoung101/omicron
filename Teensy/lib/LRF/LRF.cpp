@@ -14,7 +14,7 @@ void setLRF(HardwareSerial serial){
     serial.begin(115200);
 }
 
-void LRF::setLRFs(){
+void LRF::init(){
     setLRF(LRF1_SERIAL);
     setLRF(LRF2_SERIAL);
     setLRF(LRF3_SERIAL);
@@ -36,7 +36,7 @@ uint16_t LRF::pollLRF(HardwareSerial serial){
     }
 }
 
-void LRF::readLRFs(){
+void LRF::read(){
     frontLRF = pollLRF(LRF1_SERIAL);
     rightLRF = pollLRF(LRF2_SERIAL);
     backLRF = pollLRF(LRF3_SERIAL);

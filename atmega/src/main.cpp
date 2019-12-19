@@ -6,13 +6,13 @@
 PMW3360 mouse;
 
 void setup() {
+    Serial.begin(115200);
+    
     #if I2C_ON
         Wire.begin(0x12);
         Wire.onRequest(requestEvent);
         Wire.onReceive(receiveEvent);
     #endif
-
-    Serial.begin(115200);
     
     #if MOUSE_ON
         Serial.println(mouse.begin(10));

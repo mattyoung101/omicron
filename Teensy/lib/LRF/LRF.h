@@ -11,8 +11,8 @@ class LRF {
         uint16_t backLRF;
         uint16_t leftLRF;
 
-        void setLRFs();
-        void readLRFs();
+        void init();
+        void read();
     private:
         int receiveBuf[LRF_DATA_LENGTH];
         int sendBuf[3];

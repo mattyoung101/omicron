@@ -99,7 +99,7 @@ void setup() {
 
     #if LRFS_ON
         // Init LRFs
-        lrfs.setLRFs();
+        lrfs.init();
     #endif    
 
     pinMode(LED_BUILTIN, OUTPUT);
