@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+// Transmits values from the Teensy to the ESP32
+message I2CSlaveProvide {
+    // Processed light sensor values
+    float lineAngle = 1;
+    float lineSize = 2;
+    bool onLine = 3;
+    bool lineOver = 4;
+    float lastAngle = 5;
+
+    // Raw LRF values
+    uint16_t frontLRF;
+    uint16_t rightLRF;
+    uint16_t backLRF;
+    uint16_t leftLRF;
+
+    // In case we need to use the MPU9250 mounted to the Teensy
+    float heading = 6;
+}
+
+// Transmits values from the ESP32 to the Teensy
+message I2CMasterProvide {
+    // IMU
+    float heading = 1;
+}

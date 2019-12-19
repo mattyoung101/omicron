@@ -115,14 +115,11 @@ void loop() {
         ls.read();
         ls.fillInSensors();
         ls.calculateLine();
-
-        playmode.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
-        playmode.calculateLineAvoidance(heading);
     #endif
 
     #if LRFS_ON
         // Update LRFs
-        lrfs.readLRFs();
+        lrfs.read();
     #endif
 
     #if LED_ON
