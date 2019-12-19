@@ -12,11 +12,12 @@ void setup() {
         Wire.onReceive(receiveEvent);
     #endif
 
+    Serial.begin(115200);
+    
     #if MOUSE_ON
         Serial.println(mouse.begin(10));
     #endif
 
-    Serial.begin(115200);
 
     // TODO: mouse sensor code
 }
