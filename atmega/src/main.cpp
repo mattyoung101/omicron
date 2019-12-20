@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <Wire.h>
-#include "Timer.h"
 #include "Mouse.h"
 #include "Motor.h"
 #include "Config.h"
@@ -43,7 +42,7 @@ void setup(){
     #endif
     
     #if MOUSE_ON
-        Serial.println(mouse.begin(10));
+        Serial.println(mouse.begin(10)); // I think 10 is the SS (CS) pin
     #endif
 
     motor.init();

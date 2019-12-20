@@ -9,6 +9,8 @@
 #include "pb_encode.h"
 #include "i2c.pb.h"
 
+// IMPORTANT: WE ARE USING UART FOR PROTOBUF NOT I2C, WE ARE JUST TOO LAZY TO RENAME STUFF
+
 typedef enum {
     MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
     MSG_PUSH_I2C_MASTER, // as the I2C master, I'm providing data to the I2C slave
