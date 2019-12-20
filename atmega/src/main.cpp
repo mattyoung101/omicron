@@ -16,6 +16,23 @@ int flMotor = 0;
 int dx;
 int dy;
 
+void requestEvent(){
+    Wire.write(I2C_START_BYTE);
+    Wire.write(highByte((uint16_t) dx));
+    Wire.write(lowByte((uint16_t) dx));
+    Wire.write(highByte((uint16_t) dy));
+    Wire.write(lowByte((uint16_t) dy));
+}
+
+void receiveEvent(int bytes){
+    if(Wire.available() >= I2C_PACKET_SIZE && Wire.read() == I2C_START_BYTE){
+        frMotor = Wire.read();
+        brMotor = Wire.read();
+        blMotor = Wire.read();
+        flMotor = Wire.read();
+    }
+}
+
 void setup(){
     Serial.begin(115200);
 
@@ -38,21 +55,4 @@ void loop(){
     dy = data.dy;
 
     motor.move(frMotor, brMotor, blMotor, flMotor);
-}
-
-void requestEvent(){
-    Wire.write(I2C_BEGIN_BYTE);
-    Wire.write(highByte((uint16_t) dx));
-    Wire.write(lowByte((uint16_t) dx));
-    Wire.write(highByte((uint16_t) dy));
-    Wire.write(lowByte((uint16_t) dy));
-}
-
-void receiveEvent(int bytes){
-    if(Wire.available() >= I2C_PACKET_SIZE && Wire.read() == I2C_START_BYTE){
-        frMotor = Wire.read();
-        brMotor = Wire.read();
-        blMotor = Wire.read();
-        flMotor = Wire.read();
-    }
 }
