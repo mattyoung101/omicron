@@ -20,6 +20,7 @@ int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueD
  * OBJ_LINES,
  */
 int32_t *thresholds[] = {minBallData, maxBallData, minYellowData, maxYellowData, minBlueData, maxBlueData, minLineData, maxLineData};
+char *fieldObjToString[] = {"OBJ_NONE", "OBJ_BALL", "OBJ_GOAL_YELLOW", "OBJ_GOAL_BLUE", "OBJ_LINES"};
 
 // https://stackoverflow.com/a/1726321/5007892
 static void remove_spaces(char* s) {

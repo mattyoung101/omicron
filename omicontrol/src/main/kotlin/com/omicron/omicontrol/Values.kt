@@ -7,7 +7,7 @@ import javafx.scene.control.Label
  * Version history:
  * 0.0.0a: basic application and communication implemented
  * 0.1.0a: works with new OpenCV stuff
- * 1.1.0a: (WORK IN PROGRESS) UI implemented and threshold sliders/debug commands work properly
+ * 1.1.0a: UI implemented and threshold sliders/debug commands work properly
  */
 const val OMICONTROL_VERSION = "1.1.0a"
 const val REMOTE_IP = "127.0.0.1"
@@ -18,8 +18,6 @@ const val IMAGE_WIDTH = 1280.0
 const val IMAGE_HEIGHT = 720.0
 const val DEBUG_CAMERA_VIEW = false
 val COLOURS = listOf("R", "G", "B")
-/** last ping (round trip time) in ms, only updated when sending a command **/
-var LAST_PING = 0L
 var lastPingLabel: Label? = null
 
 enum class DebugCommands {

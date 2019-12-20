@@ -80,7 +80,8 @@ static void *cv_thread(void *arg){
             auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
 
             char buf[128] = {0};
-            snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %d", frames, OMICAM_VERSION, selectedFieldObject);
+            snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", frames, OMICAM_VERSION,
+                    fieldObjToString[selectedFieldObject]);
             putText(frameRGB, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.5,
                     Scalar(255, 0, 0), 1, FILLED, false);
             memcpy(frameData, frameRGB.getMat(ACCESS_READ).data, frame.rows * frame.cols * 3);

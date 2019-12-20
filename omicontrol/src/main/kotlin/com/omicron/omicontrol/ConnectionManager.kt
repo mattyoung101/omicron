@@ -18,7 +18,6 @@ class ConnectionManager {
     private var cmdReceivedToken = Object()
     /** the last command received **/
     private var receivedCmd: RemoteDebug.DebugCommand? = null
-    var progressIndicator: ProgressIndicator? = null
 
     // code run by tcpThread, separated so it can be restarted
     private fun tcpThreadFun(){
@@ -91,26 +90,24 @@ class ConnectionManager {
      * @param onSuccess callback to run if command was successfully received, executed in JavaFX application thread
      * @param onError callback to run if an error occurred, optional, executed in JavaFX application thread
      */
-    fun dispatchCommand(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit = {}, onError: (String) -> Unit = {}){
+    fun dispatchCommand(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit = {}, onError: () -> Unit = {}){
         thread(name="Omicontrol Dispatch Await") {
             val begin = System.currentTimeMillis()
 
-            progressIndicator?.isVisible = true
-            Logger.trace("Dispatching command to Omicam")
+            // Logger.trace("Dispatching command to Omicam")
             val outStream = ByteArrayOutputStream()
             command.writeDelimitedTo(outStream)
             outStream.writeTo(socket.getOutputStream())
             socket.getOutputStream().flush()
-            Logger.trace("Dispatched, awaiting response")
+            // Logger.trace("Dispatched, awaiting response")
 
             synchronized(cmdReceivedToken) { cmdReceivedToken.wait(5000) }
 
             if (receivedCmd == null){
                 Logger.warn("Received null/invalid response from Omicontrol")
-                runLater { onError("Received null/invalid response from Omicontrol") }
-                progressIndicator?.isVisible = false
+                runLater { onError() }
             } else {
-                Logger.trace("Received OK response from Omicontrol!")
+                // Logger.trace("Received OK response from Omicontrol!")
                 synchronized (cmdReceivedToken){
                     // yeah this is a stupid hack but for some reason there's no fuckin clone function
                     val assertedReceivedCmd = receivedCmd ?: return@synchronized
@@ -119,7 +116,6 @@ class ConnectionManager {
                     receivedCmd = null
                     runLater {
                         onSuccess(copy)
-                        progressIndicator?.isVisible = false
                         lastPingLabel?.text = "Last ping: $end ms"
                     }
                 }

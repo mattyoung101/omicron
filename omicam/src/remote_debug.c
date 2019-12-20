@@ -70,7 +70,7 @@ static void read_remote_messages(void){
     ioctl(connfd, FIONREAD, &availableBytes);
 
     if (availableBytes > 0) {
-        uint8_t *buf = malloc(availableBytes + 1);
+        uint8_t *buf = malloc(availableBytes + 64);
         ssize_t readBytes = recv(connfd, buf, availableBytes, MSG_WAITALL);
         if (readBytes == -1){
             log_warn("Failed to read remote message: %s", strerror(readBytes));
@@ -78,7 +78,7 @@ static void read_remote_messages(void){
         }
         // printf("recv() return code: %d\n", readBytes);
 
-        pb_istream_t inputStream = pb_istream_from_buffer(buf, 512);
+        pb_istream_t inputStream = pb_istream_from_buffer(buf, availableBytes + 64);
         DebugCommand message = DebugCommand_init_zero;
 
         if (!pb_decode_delimited(&inputStream, DebugCommand_fields, &message)){
@@ -100,7 +100,7 @@ static void read_remote_messages(void){
                 for (int obj = 1; obj <= 4; obj++) {
                     int32_t *min = thresholds[i++];
                     int32_t *max = thresholds[i++];
-                    log_trace("obj id %d, min (%d,%d,%d), max (%d,%d,%d)", obj, min[0], min[1], min[2], max[0], max[1], max[2]);
+                    log_trace("object %s, min (%d,%d,%d), max (%d,%d,%d)", fieldObjToString[obj], min[0], min[1], min[2], max[0], max[1], max[2]);
                     // memcpy apparently doesn't work with this so we have to do it semi-manually
                     for (int j = 0; j < 3; j++) {
                         response.allThresholds[obj].min[j] = min[j];
@@ -114,13 +114,13 @@ static void read_remote_messages(void){
             }
             case CMD_THRESHOLDS_SELECT: {
                 selectedFieldObject = message.objectId;
-                log_debug("Received CMD_THRESHOLDS_SELECT, new field object id is %d", selectedFieldObject);
+                log_debug("Received CMD_THRESHOLDS_SELECT, new field object is %s", fieldObjToString[selectedFieldObject]);
                 RD_SEND_OK_RESPONSE;
                 break;
             }
             case CMD_THRESHOLDS_SET: {
-                log_debug("Received CMD_THRESHOLDS_SET, type=%s, colour channel=%d, value=%d", message.minMax ? "min" : "max",
-                        message.colourChannel, message.value);
+                //log_debug("Received CMD_THRESHOLDS_SET, type=%s, colour channel=%d, value=%d", message.minMax ? "min" : "max",
+                //        message.colourChannel, message.value);
                 // do some magic maths to figure out where in the thresholds array we need to access (NOLINTNEXTLINE)
                 int index = (selectedFieldObject - 1) * 2 + (message.minMax ^ 1);
                 thresholds[index][message.colourChannel] = message.value;

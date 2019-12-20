@@ -1,3 +1,4 @@
+#include <termios.h>
 #include "comms_uart.h"
 
 // TODO: implement these methods

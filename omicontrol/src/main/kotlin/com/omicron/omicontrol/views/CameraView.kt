@@ -24,7 +24,11 @@ import javafx.scene.control.Slider
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
 import org.tinylog.kotlin.Logger
+import java.util.*
+import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
+import kotlin.concurrent.timer
+import kotlin.concurrent.timerTask
 import kotlin.math.floor
 
 class CameraView : View() {
@@ -41,6 +45,7 @@ class CameraView : View() {
     private var selectedObject = FieldObjects.OBJ_NONE
     /** token for threads to wait on until updateThresholdValues() completes **/
     private val newThreshReceivedToken = Object()
+    private var grabSendTimer: Timer? = null
 
     init {
         reloadStylesheetsOnFocus()
@@ -129,8 +134,8 @@ class CameraView : View() {
 
             // notify awaiting threads that the new data has been received
             synchronized(newThreshReceivedToken) { newThreshReceivedToken.notifyAll() }
-        }, { errMsg ->
-            Logger.warn("Failed to update threshold values: $errMsg")
+        }, {
+            Logger.warn("Failed to update threshold values")
             Utils.showGenericAlert(Alert.AlertType.ERROR, "An error occurred updating the latest threshold values." +
                     "\nIf this error continues to happen, Omicontrol will no longer function properly." +
                     "\nPlease restart Omicam and Omicontrol and try again.", "Error updating threshold values")
@@ -189,7 +194,7 @@ class CameraView : View() {
 
     /** sends threshold slider value change to Omicontrol **/
     private fun publishSliderValueChange(colour: String, type: String, value: Int){
-        Logger.trace("Slider $colour$type changed to new value: $value")
+        // Logger.trace("Slider $colour$type changed to new value: $value")
         val msg = RemoteDebug.DebugCommand.newBuilder().apply {
             messageId = DebugCommands.CMD_THRESHOLDS_SET.ordinal
             minMax = type.toLowerCase() == "min"
@@ -213,13 +218,22 @@ class CameraView : View() {
                 isSnapToTicks = true
                 isDisable = true // since we start out in OBJ_NONE and you can't edit it
 
-                // value listener to dispatch update request to Omicam when the slider is finished being moved
+                // when the mouse is pressed start the drag timer
+                setOnMousePressed {
+                    grabSendTimer = fixedRateTimer(name="GrabSendTimer", period=100, action = {
+                        publishSliderValueChange(colour, type, value.toInt())
+                    })
+                }
+                // when the mouse is finished being moved, cancel the grab timer and send the request to Omicam
                 setOnMouseReleased {
+                    grabSendTimer?.cancel()
+                    grabSendTimer?.purge()
                     publishSliderValueChange(colour, type, value.toInt())
                 }
                 // left and right arrow keys
                 setOnKeyReleased {
-                    publishSliderValueChange(colour, type, value.toInt())
+                    if (it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
+                        publishSliderValueChange(colour, type, value.toInt())
                 }
             }
             sliders["$colour$type"] = colourSlider
@@ -269,6 +283,9 @@ class CameraView : View() {
                     setOnAction {
                         CONNECTION_MANAGER.disconnect()
                         EVENT_BUS.unregister(this)
+                        // if the user is stupid enough to press CTRL+D WHILE dragging the slider, stop them
+                        grabSendTimer?.cancel()
+                        grabSendTimer?.purge()
                         Utils.transitionMetro(this@CameraView, ConnectView())
                     }
                     accelerator = KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)
@@ -324,16 +341,8 @@ class CameraView : View() {
 
         hbox {
             vbox {
-                stackpane {
-                    canvas(IMAGE_WIDTH, IMAGE_HEIGHT){
-                        display = graphicsContext2D
-                    }
-                    val indicator = progressindicator {
-                        scaleX = 3.0
-                        scaleY = 3.0
-                        isVisible = false
-                    }
-                    CONNECTION_MANAGER.progressIndicator = indicator
+                canvas(IMAGE_WIDTH, IMAGE_HEIGHT){
+                    display = graphicsContext2D
                 }
                 alignment = Pos.TOP_RIGHT
             }

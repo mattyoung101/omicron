@@ -3,7 +3,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "PATH_TO_ESP_TOOLS_DIRECTORY\\tools\\lib\\gcc\\xtensa-esp32-elf\\5.2.0\\include\\**"
             ],
             "defines": [
                 "_DEBUG",
@@ -12,6 +13,7 @@
             ],
             "intelliSenseMode": "gcc-x64",
             "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "compilerPath": "PATH_TO_ESP_TOOLS_DIRECTORY\\tools\\bin\\xtensa-esp32-elf-gcc.exe",
             "cStandard": "c11",
             "cppStandard": "c++11"
         }
