@@ -454,6 +454,31 @@ void bno055_delay_ms(u32 msec){
     vTaskDelay(pdMS_TO_TICKS(msec));
 }
 
+uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data, robot_state_t *robotState) {
+    static const char *TAG = "NanoRead";
+    uint8_t sendBytes[] = {0xB, HIGH_BYTE_16(robotState->outFRMotor), LOW_BYTE_16(robotState->outFRMotor), HIGH_BYTE_16(robotState->outBRMotor), LOW_BYTE_16(robotState->outBRMotor), 
+    HIGH_BYTE_16(robotState->outBLMotor), LOW_BYTE_16(robotState->outBLMotor), HIGH_BYTE_16(robotState->outFLMotor), LOW_BYTE_16(robotState->outFLMotor)};
+    
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (addr << 1), I2C_ACK_MODE);
+    i2c_master_write(cmd, sendBytes, 9, I2C_ACK_MODE);
+    // Send repeated start
+    i2c_master_start(cmd);
+    // now send device address (indicating read) & read data
+    i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_READ, I2C_ACK_MODE);
+    if (size > 1) {
+        i2c_master_read(cmd, data, size - 1, 0x0);
+    }
+    i2c_master_read_byte(cmd, data + size - 1, 0x1);
+    i2c_master_stop(cmd);
+    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, portMAX_DELAY);
+    i2c_cmd_link_delete(cmd);
+
+    I2C_ERR_CHECK(ret);
+    return ESP_OK;
+}
+
 static hmm_vec2 current = {0};
 hmm_vec2 calc_acceleration(float speed, float direction){
     // 1. Calculate target vector

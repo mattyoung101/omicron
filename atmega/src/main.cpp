@@ -17,18 +17,18 @@ int dy;
 
 void requestEvent(){
     Wire.write(I2C_START_BYTE);
-    Wire.write(highByte((uint16_t) dx));
-    Wire.write(lowByte((uint16_t) dx));
-    Wire.write(highByte((uint16_t) dy));
-    Wire.write(lowByte((uint16_t) dy));
+    Wire.write(highByte((int16_t) dx));
+    Wire.write(lowByte((int16_t) dx));
+    Wire.write(highByte((int16_t) dy));
+    Wire.write(lowByte((int16_t) dy));
 }
 
 void receiveEvent(int bytes){
     if(Wire.available() >= I2C_PACKET_SIZE && Wire.read() == I2C_START_BYTE){
-        frMotor = Wire.read();
-        brMotor = Wire.read();
-        blMotor = Wire.read();
-        flMotor = Wire.read();
+        frMotor = word(Wire.read(), Wire.read());
+        brMotor = word(Wire.read(), Wire.read());
+        blMotor = word(Wire.read(), Wire.read());
+        flMotor = word(Wire.read(), Wire.read());
     }
 }
 

@@ -3,13 +3,6 @@
 static const char *TAG = "CommsUART";
 uart_data_t receivedData = {0};
 
-/*
-Teensy uses Serial3
-
-RX goes to SCL on ESP pin 22
-TX goes to SDA on ESP pin 21
-*/
-
 static void uart_receive_task(void *pvParameter){
     ESP_LOGI(TAG, "UART receive task init OK!");
 
@@ -30,7 +23,7 @@ void comms_uart_init(void){
 
     // Configure UART parameters
     ESP_ERROR_CHECK(uart_param_config(UART_NUM_1, &uart_config));
-    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_1, 22, 21, -1, -1));
+    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_1, 18, 18, -1, -1));
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM_1, 256, 256, 8, NULL, 0));
 
     xTaskCreate(uart_receive_task, "UARTReceiveTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);

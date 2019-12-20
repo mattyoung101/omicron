@@ -102,8 +102,9 @@ static void master_task(void *pvParameter){
 
     // Initialise comms and hardware
     comms_uart_init();
-    comms_i2c_init(I2C_NUM_1);
-    i2c_scanner(I2C_NUM_1);
+    comms_i2c_init_bno(I2C_NUM_1);
+    comms_i2c_init_nano(I2C_NUM_0);
+    // i2c_scanner(I2C_NUM_1);
     cam_init();
     init_bno055(&bno055);
     bno055_convert_float_euler_h_deg(&yawRaw);
