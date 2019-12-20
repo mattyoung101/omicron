@@ -48,6 +48,10 @@ typedef struct {
     bool outIsAttack;
     bool outSwitchOk;
     bool outLineBallWaiting;
+    int16_t outFRMotor;
+    int16_t outBRMotor;
+    int16_t outBLMotor;
+    int16_t outFLMotor;
 } robot_state_t;
 
 typedef struct {

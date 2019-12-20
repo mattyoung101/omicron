@@ -1,19 +1,20 @@
 #include "Motor.h"
 #include "Config.h"
+#include "Arduino.h"
 
 void Motor::init(){
     pinMode(MOTOR_FL_PWM, OUTPUT);
-    pinMode(MOTOR_FL_IN1, OUTPUT);
-    pinMode(MOTOR_FL_IN2, OUTPUT);
+    pinMode(MOTOR_FL_INA, OUTPUT);
+    pinMode(MOTOR_FL_INB, OUTPUT);
     pinMode(MOTOR_FR_PWM, OUTPUT);
-    pinMode(MOTOR_FR_IN1, OUTPUT);
-    pinMode(MOTOR_FR_IN2, OUTPUT);
+    pinMode(MOTOR_FR_INA, OUTPUT);
+    pinMode(MOTOR_FR_INB, OUTPUT);
     pinMode(MOTOR_BL_PWM, OUTPUT);
-    pinMode(MOTOR_BL_IN1, OUTPUT);
-    pinMode(MOTOR_BL_IN2, OUTPUT);
+    pinMode(MOTOR_BL_INA, OUTPUT);
+    pinMode(MOTOR_BL_INB, OUTPUT);
     pinMode(MOTOR_BR_PWM, OUTPUT);
-    pinMode(MOTOR_BR_IN1, OUTPUT);
-    pinMode(MOTOR_BR_IN2, OUTPUT);
+    pinMode(MOTOR_BR_INA, OUTPUT);
+    pinMode(MOTOR_BR_INB, OUTPUT);
 }
 
 void Motor::run(int PWM, int inA, int inB, int pwmPin){

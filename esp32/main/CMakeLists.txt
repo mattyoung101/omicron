@@ -15,7 +15,6 @@ set(COMPONENT_SRCS "defines.c"
                    "movavg.c"
                    "comms_bluetooth.c"
                    "bluetooth_manager.c"
-                   "lrf.c"
                    "comms_uart.c"
                    "path_following.c"
                    )

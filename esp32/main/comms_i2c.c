@@ -8,6 +8,8 @@
 // i2c_data_t receivedData = {0};
 nano_data_t nanoData = {0};
 
+SemaphoreHandle_t nanoDataSem = NULL;
+
 static const char *TAG = "CommsI2C";
 
 /*
@@ -17,7 +19,9 @@ static const char *TAG = "CommsI2C";
  * All I2C runs on the main thread because it doesn't take much time and is simpler to do it that way.
  */
 
-void comms_i2c_init(i2c_port_t port){
+// NOTE: THE ABOVE IS OUTDATED AND I AM TOO LAZY TO FIX IT
+
+void comms_i2c_init_bno(i2c_port_t port){
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = (port == I2C_NUM_0 ? 21 : 25),
@@ -34,6 +38,56 @@ void comms_i2c_init(i2c_port_t port){
     ESP_ERROR_CHECK(i2c_set_timeout(port, 0xFFFF));
 
     ESP_LOGI("CommsI2C_M", "I2C init OK on bus %d", port);
+}
+
+/** sends/receives data from the atmega slave **/
+static void nano_comms_task(void *pvParameters){
+    static const char *TAG = "NanoCommsTask";
+    uint8_t buf[NANO_PACKET_SIZE] = {0};
+    nanoDataSem = xSemaphoreCreateMutex();
+    xSemaphoreGive(nanoDataSem);
+
+    esp_task_wdt_add(NULL);
+    ESP_LOGI(TAG, "Nano comms task init OK");
+
+    while (true){
+        memset(buf, 0, NANO_PACKET_SIZE);
+        nano_read(I2C_NANO_SLAVE_ADDR, NANO_PACKET_SIZE, buf, &robotState);
+
+        if (buf[0] == I2C_BEGIN_DEFAULT){
+            if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+                nanoData.mouseDX = UNPACK_16(buf[1], buf[2]);
+                nanoData.mouseDY = UNPACK_16(buf[3], buf[4]);
+                xSemaphoreGive(nanoDataSem);
+            } else {
+                ESP_LOGE(TAG, "Failed to unlock nano data semaphore!");
+            }
+        } else {
+            ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+        }
+
+        esp_task_wdt_reset();
+    }
+}
+
+void comms_i2c_init_nano(i2c_port_t port){
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = 21,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_io_num = 22,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        // 0.8 MHz, max is 1 MHz, unit is Hz
+        // NOTE: 1MHz tends to break the i2c packets - use with caution!!
+        .master.clk_speed = 800000,
+    };
+    ESP_ERROR_CHECK(i2c_param_config(port, &conf));
+    ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
+    // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
+    ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFF));
+
+    xTaskCreate(nano_comms_task, "NanoCommsTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
+    ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
 
 esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){

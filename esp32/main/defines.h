@@ -45,6 +45,10 @@
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
 #define I2C_SLAVE_DEV_BUS I2C_NUM_0 // which bus the Teensy slave is on (I2C_NUM_0 or I2C_NUM_1)
 
+// Atmega (nano) comms
+#define NANO_PACKET_SIZE 5
+#define I2C_NANO_SLAVE_ADDR 0x12
+
 // Goals
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1

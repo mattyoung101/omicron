@@ -104,6 +104,8 @@ float lerp(float fromValue, float toValue, float progress);
 uint32_t str_hash(char *str);
 
 void i2c_scanner(i2c_port_t port);
+uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data, robot_state_t *robotState);
+
 /** Returns true if target is between angle1 and angle2. **/
 bool is_angle_between(float target, float angle1, float angle2);
 /** Runs IMU correction **/
