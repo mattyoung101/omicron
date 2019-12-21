@@ -2,14 +2,13 @@
 
 // Misc constants and settings
 
-/*
+/**
  * Version history:
  * 0.0.0a: basic CPU blob detection, remote debugger implemented
  * 1.0.0a: switch to OpenCV blob detection and have it working
- * 1.1.0a: (WORK IN PROGRESS) Omicontrol integration works*
- *
+ * 1.1.0a: Omicontrol integration works
  */
-#define OMICAM_VERSION "1.0.0a"
+#define OMICAM_VERSION "1.1.0a"
 
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define ENABLE_DIAGNOSTICS 0 // enable or disable performance (i.e. FPS) diagnostics
@@ -18,7 +17,7 @@
 
 #define DEBUG_JPEG_QUALITY 30 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define DEBUG_COMPRESSION_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
-#define DEBUG_FRAME_EVERY 5 // send a debug frame every N real frames
+#define DEBUG_FRAME_EVERY 1 // send a debug frame every N real frames
 #define DEBUG_PORT 42708 // which port the remote debug TCP server runs on
 #define DEBUG_ENABLED 1 // whether or not remote debug is enabled
 #define DEBUG_ALWAYS_SEND 0 // if true, ignore whether or not a connection exists and always send debug frames

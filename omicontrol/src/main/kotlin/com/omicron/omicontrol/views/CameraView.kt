@@ -73,7 +73,8 @@ class CameraView : View() {
             }
 
             // clear the canvas and display the normal camera frame
-            display.clearRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+            display.fill = Color.BLACK
+            display.fillRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
             if (!hideCameraFrame) display.drawImage(img, 0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
 
             if (selectedObject != FieldObjects.OBJ_NONE) {
@@ -85,7 +86,7 @@ class CameraView : View() {
 
                     val x = i % IMAGE_WIDTH.toInt()
                     val y = floor(i / IMAGE_WIDTH).toInt()
-                    display.pixelWriter.setColor(x, y, Color.ORANGE)
+                    display.pixelWriter.setColor(x, y, Color.MAGENTA)
                 }
 
                 // TODO add support for each object (not just the ball) - maybe rename "ballCentroid" to "objectCentroid"

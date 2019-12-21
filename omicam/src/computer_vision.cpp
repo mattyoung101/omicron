@@ -10,6 +10,7 @@
 #include <opencv2/core/ocl.hpp>
 #include <opencv2/core/cuda.hpp>
 #include <map>
+#include <unistd.h>
 #include "defines.h"
 #include "utils.h"
 #include "remote_debug.h"
@@ -28,11 +29,16 @@ static void *cv_thread(void *arg){
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-    UMat frame = imread("../omicam_thresh_test2.png", IMREAD_COLOR).getUMat(ACCESS_READ);
-    if (frame.empty()){
-        log_error("Unable to load OpenCV test image");
+//    UMat frame = imread("../omicam_thresh_test2.png", IMREAD_COLOR).getUMat(ACCESS_READ);
+//    if (frame.empty()){
+//        log_error("Unable to load OpenCV test image");
+//    }
+    VideoCapture cap("../orange_ball.m4v");
+    if (!cap.isOpened()) {
+        log_error("Failed to load OpenCV test video");
     }
-//    namedWindow("Omicam (ESC to exit)", WINDOW_AUTOSIZE);
+    double fps = cap.get(CAP_PROP_FPS);
+    log_debug("Video file FPS: %f", fps);
 #else
     log_trace("Build target is Jetson, initialising VideoCapture");
     // TODO ... gstreamer and shit ...
@@ -40,13 +46,22 @@ static void *cv_thread(void *arg){
 #endif
 
     while (true){
-#if BUILD_TARGET == BUILD_TARGET_JETSON
-        // get a frame from the capture stream and call it "frame" to match up with the other stuff
-#endif
-        UMat ballThresh, frameScaled, frameRGB;
+        UMat frame, ballThresh, frameScaled, frameRGB;
         Mat ballLabels, ballStats, ballCentroids;
         Scalar minBallScalar = Scalar(minBallData[0], minBallData[1], minBallData[2]);
         Scalar maxBallScalar = Scalar(maxBallData[0], maxBallData[1], maxBallData[2]);
+
+        cap.read(frame);
+        if (frame.empty()){
+#if BUILD_TARGET == BUILD_TARGET_PC
+            cap.set(CAP_PROP_FRAME_COUNT, 0);
+            cap.set(CAP_PROP_POS_FRAMES, 0);
+            cap.set(CAP_PROP_POS_AVI_RATIO, 0);
+#else
+            log_warn("Blank frame received!");
+#endif
+            continue;
+        }
 
         // TODO dispatch frame to localiser here (as it runs in parallel so give it a head start)
 
@@ -147,18 +162,16 @@ static void *cv_thread(void *arg){
 //        }
 //        imshow("Omicam (ESC to exit)", labelDisplay);
 
-        // wait unless the escape key is pressed
-        if (waitKey(15) == 27){
-            log_info("Escape key pressed, quitting program");
-            break;
-        }
+//        // wait unless the escape key is pressed
+//        if (waitKey(15) == 27){
+//            log_info("Escape key pressed, quitting program");
+//            break;
+//        }
+        waitKey(1000 / fps);
 #endif
     }
 
     destroyAllWindows();
-#if BUILD_TARGET == BUILD_TARGET_JETSON
-    // TODO close video capture
-#endif
     return nullptr;
 }
 
