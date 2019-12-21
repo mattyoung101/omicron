@@ -174,7 +174,7 @@ extern float ORBIT_CONST;
 extern uint16_t DRIBBLE_BALL_TOO_FAR; // if less than this, switch out of dribble
 extern uint16_t ORBIT_DIST;  // switch from orbit to pursue if value is more than this
 extern uint16_t IN_FRONT_MIN_ANGLE; // angle range in which the ball is considered to be in front of the robot
-extern uint16_t  IN_FRONT_MAX_ANGLE;
+extern uint16_t IN_FRONT_MAX_ANGLE;
 #define IN_FRONT_ANGLE_BUFFER 0
 #define IN_FRONT_STRENGTH_BUFFER 5
 #define IDLE_TIMEOUT 500 // if ball is not visible for this length of time in ms or more, switch to idle state
@@ -186,6 +186,8 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot
+#define FORWARD_ORBIT_MIN_ANGLE 120 // the range where the robot will orbit forward
+#define FORWARD_ORBIT_MAX_ANGLE 240
 
 // Defence FSM defines
 extern uint8_t DEFEND_DISTANCE;

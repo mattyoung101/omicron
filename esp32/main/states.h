@@ -29,12 +29,17 @@ typedef struct {
     // Ball Inputs
     float inBallAngle;
     float inBallStrength;
+    int16_t inBallX;
+    int16_t inBallY;
     // Line Inputs
     float inLineAngle;
     float inLineSize;
     bool inOnLine;
     bool inLineOver;
     float inLastAngle;
+    // Lightgate Inputs
+    bool inFrontGate;
+    bool inBackGate;
     // Other stuff
     float inBatteryVoltage;
     uint8_t inRobotId;
@@ -86,35 +91,37 @@ void state_nothing_exit(state_machine_t *fsm);
 void state_nothing_update(state_machine_t *fsm);
 
 /////////// ATTACK FSM /////////
-// Centre state: moves the robot to the centre of the field. Only update.
-void state_attack_idle_enter(state_machine_t *fsm);
-void state_attack_idle_update(state_machine_t *fsm);
-extern fsm_state_t stateAttackIdle;
-
 // Pursue ball state: moves directly towards the ball
 void state_attack_pursue_enter(state_machine_t *fsm);
 void state_attack_pursue_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackPursue;
 
-// Orbit ball state: orbits the ball
-void state_attack_orbit_enter(state_machine_t *fsm);
-void state_attack_orbit_update(state_machine_t *fsm);
-extern fsm_state_t stateAttackOrbit;
+// Front orbit state: orbits behind the ball
+void state_attack_frontorbit_enter(state_machine_t *fsm);
+void state_attack_frontorbit_update(state_machine_t *fsm);
+extern fsm_state_t stateAttackFrontOrbit;
 
-// Dribble state: rushes towards goal and dribbles if we had a dribbler
-void state_attack_dribble_enter(state_machine_t *fsm);
-void state_attack_dribble_update(state_machine_t *fsm);
-extern fsm_state_t stateAttackDribble;
+// Reverse orbit state: orbits in front of the ball
+void state_attack_reverseorbit_enter(state_machine_t *fsm);
+void state_attack_reverseorbit_update(state_machine_t *fsm);
+extern fsm_state_t stateAttackReverseOrbit;
 
-// Avoid double defence state: Does not move into the goalie box to avoid double defence
-void state_attack_doubledefence_update(state_machine_t *fsm);
-extern fsm_state_t stateAttackDoubleDefence;
+// Yeet state: yeets forward at the ball to score
+void state_attack_yeet_enter(state_machine_t *fsm);
+void state_attack_yeet_update(state_machine_t *fsm);
+extern fsm_state_t stateAttackYeet;
+
+// Turtle state: approaches the goal with the ball behind it
+void state_attack_turtle_enter(state_machine_t *fsm);
+void state_attack_turtle_update(state_machine_t *fsm);
+extern fsm_state_t stateAttackTurtle;
+
+// Linerun state: runs up the side line with the ball behind it
+void state_attack_linerun_enter(state_machine_t *fsm);
+void state_attack_linerun_update(state_machine_t *fsm);
+extern fsm_state_t stateAttackLinerun;
 
 /////////// DEFENCE FSM /////////
-// Reverse state: reverse to the back wall when goal is not visible
-void state_defence_reverse_update(state_machine_t *fsm);
-extern fsm_state_t stateDefenceReverse;
-
 // Idle state: centres on own goal
 void state_defence_idle_update(state_machine_t *fsm);
 extern fsm_state_t stateDefenceIdle;
@@ -129,10 +136,20 @@ void state_defence_surge_update(state_machine_t *fsm);
 void state_defence_surge_exit(state_machine_t *fsm);
 extern fsm_state_t stateDefenceSurge;
 
-/////////// GENERAL FSM /////////
+/////////// GENERAL FSM ///////////
 extern fsm_state_t stateGeneralNothing;
+
+// Find ball state: yeets around the field to find the ball
+void state_general_findball_enter(state_machine_t *fsm);
+void state_general_findball_update(state_machine_t *fsm);
+extern fsm_state_t stateGeneralFindball;
 
 // Shoot state: kicks the ball, then reverts to previous state
 void state_general_shoot_enter(state_machine_t *fsm);
 void state_general_shoot_update(state_machine_t *fsm);
 extern fsm_state_t stateGeneralShoot;
+
+// Throw state: spins quickly to throw the ball out from behind the robot
+void state_general_throw_enter(state_machine_t *fsm);
+void state_general_throw_update(state_machine_t *fsm);
+extern fsm_state_t stateGeneralThrow;
