@@ -210,7 +210,8 @@ extern uint8_t SURGE_STRENGTH;
 extern uint8_t ROBOT_MODE;
 
 // Kicker
-#define KICKER_PIN 33
+#define KICKER_PIN1 33
+#define KICKER_PIN2 34 // TODO: FIX
 #define KICKER_DELAY 10 // ms to wait between solenoid activation and deactivation
 #define SHOOT_TIMEOUT 1000 // ms until we are allowed to kick again
 // #define HAS_KICKER // if defined, the robot has a kicker and will be allowed to enter shoot state
