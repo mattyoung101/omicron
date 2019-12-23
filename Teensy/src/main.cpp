@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "Utils.h"
 #include "Config.h"
-#include "LightSensorArray.h"
+#include "LightSensorController.h"
 #include "LRF.h"
 #include "Timer.h"
 #include "pb_common.h"
@@ -20,7 +20,9 @@ typedef enum {
 static I2CMasterProvide lastMasterProvide = I2CMasterProvide_init_zero;
 
 LRF lrfs;
-LightSensorArray ls;
+LightSensorController ls;
+
+Vector lineAvoid = Vector(0, 0);
 
 // LED Stuff
 Timer idleLedTimer(1000000); // LED timer when idling
@@ -95,8 +97,9 @@ void setup() {
 
     #if LS_ON
         // Init light sensors
-        ls.init();
-        ls.calibrate();
+        ls.setup();
+        //ls.calibrate if request here
+        ls.setThresholds();
     #endif
 
     #if LRFS_ON
@@ -111,12 +114,11 @@ void setup() {
 void loop() {
     // Poll UART and decode incoming protobuf message
     decodeProtobuf();
+    
 
     #if LS_ON
         // Update line data
-        ls.read();
-        ls.fillInSensors();
-        ls.calculateLine();
+        lineAvoid = ls.update(heading);
     #endif
 
     #if LRFS_ON
