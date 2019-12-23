@@ -35,5 +35,17 @@ So just use the shell scripts "b" for "build", "fm" for "flash & monitor", "f" f
 compile and monitor. Remember the golden rule: if VSCode complains, try restarting it and rebuilding the IntelliSense
 cache. At worst, ignore it because it's almost always wrong in these cases.
 
+## Developer notes
+### IDF version
+Due to the fact that we sync the file `sdkconfig`, it's important that you use the exact same IDF version that we do, to avoid merge conflicts.
+This project currently uses the **[v3.3 release branch](https://github.com/espressif/esp-idf/tree/release/v3.3) version** (i.e. the latest commit on origin/release/v3.3).
+
+Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/versions.html) for more information about IDF versions.
+
 ## Libraries and licenses
-**TODO ADD THESE**
+- [ESP-IDF](https://github.com/espressif/esp-idf/): Apache 2 license
+- [DG_dynarr](https://github.com/DanielGibson/Snippets/blob/master/DG_dynarr.h): Public domain
+- [HandmadeMath](https://github.com/HandmadeMath/Handmade-Math): Public domain
+- [Nanopb](https://github.com/nanopb/nanopb/): zlib license
+- [BNO055_driver](https://github.com/BoschSensortec/BNO055_driver): BSD 3-Clause license
+- [esp32-button](https://github.com/craftmetrics/esp32-button): MIT license

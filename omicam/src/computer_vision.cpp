@@ -167,7 +167,7 @@ static void *cv_thread(void *arg){
 //            log_info("Escape key pressed, quitting program");
 //            break;
 //        }
-        waitKey(1000 / fps);
+        waitKey(static_cast<int>(1000 / fps));
 #endif
     }
 

@@ -2,27 +2,32 @@
 
 _This design document is currently confidential property of Team Omicron and should not be redistributed outside our team._
 
+Written by Matt Young in collaboration with Ethan Lo.
+
+This document describes in detail how all the systems (pipelines) in Omicam function.
+
+## Pipelines
+The camera system is made up of several interconnected pipelines. The vision pipeline is used to get the frame from the 
+camera and detect different field objects, such as the ball, the goals and the lines. Some of this information is then 
+passed onto the localisation pipeline, whose job it is to estimate the 2D position of the robot on the field. 
+The final pipeline is the remote debug pipeline which sends information to Omicontrol.
+
 ## Vision pipeline
-This section covers the entire process of how the vision pipeline will work.
+The vision pipeline relies heavily on OpenCV to do the heavy lifting.
 
-### Video decoding and pre-processing
-1. Decode frames from raspi camera using Omxcam. When a frame comes in, it will be decoded as RGB and stored in a buffer.
-2. Generate an OpenGL texture from the Omxcam RGB buffer and send it off to the GPU to run a fragment shader.
-3. The fragment shader will threshold the image and spit out greyscale masks for white (lines) and orange (ball). We could
-try using YUV colour space (convert in shader) as well for thresholds.
-4. The framebuffer is copied back from the GPU into a byte array.
+1. Read in the camera frame using gstreamer using OpenCV video capture
+2. Pre-process image (downscale, convert to RGB, etc)
+2. Apply all the thresholds to generate 1-bit greyscale masks of each field object
+3. Detect the largest ball "blob", find the centroid and send this to the ESP32.
+4. Send the mask of the lines to the localiser.
+5. Send threshold mask, largest blob bounding box and centroid to remote debug pipeline.
 
-### Blob detection
-Originally, since we were tracking orange, blue, yellow and white, I was going to implement the algorithm described
-by Acevedo-Avila, Gonzalez-Mendoza and Garcia-Garcia (2016) appearing in the Sensors journal, but because we're only
-tracking orange (the localisation doesn't use blobs), I am going to implement a custom algorithm instead.
+The reason why we send the ball data separately to the localisation data is that the localiser is much slower, and we
+can work without a localisation position temporarily but we cannot work without a ball position.
 
-1. Use a stack-based scanline flood fill to segment blobs in an image (this might be able to be parallelised)
-2. As we scan through the image, record the lowest and highest diagonal point in the blob (lowest x+y, highest x+y)
-3. Optionally merge rectangles together (only if they're small).
-4. Select the biggest blob and return it's centre, this is the ball's relative position to the robot.
+## Localisation pipeline
+**THIS IS OUT OF DATE**
 
-### Localisation
 1. Using the MSL approach found by Ethan, rays are cast from the centre of the image detecting all points it hits the line. 
 We will use Bresenham's line drawing algorithm to check each pixel.
 2. Record and linearize all line intersection points.
@@ -36,32 +41,37 @@ initial one. We could also just use the last point that we used.
 Optimisation is terminated after the simplex doesn't move far enough or a certain estimated accuracy (how?) is achieved
 or after a certain number of max steps.
 
+## Remote debug pipeline
+The remote debug pipeline is a highly asynchronous pipeline which handles encoding information from the camera into
+Protocol Buffers which can be read and displayed by Omicontrol. The connection is handled over TCP. The debug pipeline
+consists of the following threads:
+- Frame encode thread: the main remote debug thread, listens for incoming information as well as encoding and sending
+the data into Protobufs.
+- Thermal thread: reads the CPU's temperature periodically.
+- TCP thread: awaits the Omicontrol connection (in its own thread so it doesn't block the main)
+
+This is how the pipeline looks:
+1. On `remote_debug_post()`, package and send data to work queue to later be read by frame encode thread.
+2. The frame thread periodically checks for data in its work queue, and if there is some processes it. Otherwise,
+it checks for incoming messages from Omicontrol and if there are any, decodes them, processes them and sends a response.
+3. If there is data in the work queue: compress the RGB frame image using libjpeg-turbo, compress the threshold mask
+using zlib, add extra information to Protobuf and send.
+
+The socket and thermal threads aren't described here as they're trivial.
+
+Some information about zlib encoding for the threshold frame: I observed that this data is a great target for compression
+with something like zlib, rather than an image encoding library, due to the huge amount of repeated data which is a
+great target for run length encoding. Zlib has more advanced compression than RLE, and we can compress a 921KB image
+to only about 1-2KB.
+
+## Other information
 ### Transmission
-Using nanopb, the biggest orange blob (ball) and localisation data will be encoded into a Protocol Buffer and sent
-over UART to the ESP32.
+Protocol Buffers are extensively used to transmit information to and from the ESP32 and Omicontrol. Nanopb is the
+library used for this.
 
-We will send localisation as a separate Protobuf message to ball detection, because both run in parallel. Otherwise,
-we'd have to wait for both to finish before sending them meaning the fastest is only as fast as the slowest.
-
-## Live tuning & analysis
-We might develop a Kotlin desktop app or webapp that delivers a low quality, low framerate (eg 5 fps) image stream so that
-the camera be analysed. You will be able to edit camera settings and threshold values in real time and see their result.
-
-To implement this, we'll save every few frame of RGB video output and encode it using libjpeg-turbo and send it off.
-In the Kotlin app we'd use TCP sockets and maybe Protobuf and on the webapp just use JS to refresh an image.
-
-## Performance notes
-- Obviously, we use OpenMAX IL (via omxcam) to use the GPU to accelerate camera frame acquisition and decoding. Past experience
-has shown that the default V4L2 driver is obnoxiously slow (~1 FPS).
-- Thresholding is done on GPU as its pixel processing rate is faster than the CPU.
-- The fragment shader should record the location of the first thresholded pixel, so that the flood filler can just jump to that 
-position instead of scanning over the whole image.
-- We might be able to parallelise scanline flood fill, or run it on the GPU (this would be extremely difficult and not
-really worth the cost imo)
-- We have 4 cores to work with, since we run localisation and blob detection at the same time (they are independent processes),
-we can safely use two CPU cores per task. We could simply halve the image and run both bits in parallel then.
-- For threading, we use an event queue much like the FreeRTOS queues because spamming pthreads seems to segfault
-
-Biggest bottlenecks are going to likely be:
-1. CPU flood filler, especially if many blobs in image
-2. Copying data to and from GPU (in theory we have shared RAM so it shouldn't matter too much?)
+### Performance notes
+- OpenCV will handle most operations on the GPU through the OpenCL transparent API (T-API)
+- The localiser will run the line-casting on the GPU as well, also using OpenCL (we're avoiding CUDA because it's 
+proprietary and not cross-platform).
+- We make make many call to `malloc` and `free` which in theory could cause memory fragmentation, but I haven't
+observed that yet
