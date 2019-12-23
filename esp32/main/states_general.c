@@ -3,6 +3,8 @@
 
 fsm_state_t stateGeneralNothing = {&state_nothing_enter, &state_nothing_exit, &state_nothing_update, "GeneralNothing"};
 fsm_state_t stateGeneralShoot = {&state_general_shoot_enter, &state_nothing_exit, &state_general_shoot_update, "GeneralShoot"};
+fsm_state_t stateGeneralThrow = {&state_general_throw_enter, &state_nothing_exit, &state_general_throw_update, "GeneralThrow"};
+fsm_state_t stateGeneralFindball = {&state_nothing_enter, &state_nothing_exit, &state_general_findball_update, "GeneralFindball"};
 static om_timer_t shootTimer = {NULL, false};
 
 // shortcut cos i hate typing
@@ -54,14 +56,48 @@ void state_general_shoot_enter(state_machine_t *fsm){
     om_timer_start(&shootTimer);
     
     ESP_LOGW(TAG, "Activating kicker");
-    gpio_set_level(KICKER_PIN, 1);
+    gpio_set_level(KICKER_PIN1, 1);
     vTaskDelay(pdMS_TO_TICKS(KICKER_DELAY));
-    gpio_set_level(KICKER_PIN, 0);
+    gpio_set_level(KICKER_PIN1, 0);
 }
 
 void state_general_shoot_update(state_machine_t *fsm){
     // we revert here as reverting in enter seems to cause problems
     FSM_REVERT;
+}
+
+void state_general_throw_enter(state_machine_t *fsm){
+    static const char *TAG = "ThrowState";
+    if (!canShoot){
+        ESP_LOGE(TAG, "Kicker not ready, shoot not permitted, fix your code");
+        return;
+    }
+
+    canShoot = false;
+    om_timer_check_create(&shootTimer, "ShootTimer", SHOOT_TIMEOUT, NULL, shoot_timer_callback);
+    om_timer_start(&shootTimer);
+    
+    // TODO, implement rotation for throwing mechanism
+    ESP_LOGW(TAG, "Activating kicker");
+    gpio_set_level(KICKER_PIN2, 1);
+    vTaskDelay(pdMS_TO_TICKS(KICKER_DELAY));
+    gpio_set_level(KICKER_PIN2, 0);
+}
+
+void state_general_throw_update(state_machine_t *fsm){
+    FSM_REVERT;
+}
+
+void state_general_findball_update(state_machine_t *fsm){
+    static const char *TAG = "FindballState";
+
+    // Check criteria
+    if (orangeBall.exists){
+        LOG_ONCE(TAG, "Ball is visible, reverting");
+        FSM_REVERT;
+    }
+
+    // TODO: Implement movement code
 }
 
 // Nothing. Empty states for when no state function is declared.

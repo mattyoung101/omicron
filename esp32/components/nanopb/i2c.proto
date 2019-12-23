@@ -10,13 +10,13 @@ message I2CSlaveProvide {
     float lastAngle = 5;
 
     // Raw LRF values
-    uint16_t frontLRF;
-    uint16_t rightLRF;
-    uint16_t backLRF;
-    uint16_t leftLRF;
+    int32 frontLRF = 6;
+    int32 rightLRF = 7;
+    int32 backLRF = 8;
+    int32 leftLRF = 9;
 
     // In case we need to use the MPU9250 mounted to the Teensy
-    float heading = 6;
+    float heading = 10;
 }
 
 // Transmits values from the ESP32 to the Teensy
