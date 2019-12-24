@@ -30,7 +30,10 @@
 #define LINE_SMALL_SIZE 0
 #define LINE_BIG_SIZE 0
 
+// and new versions:
+
 #define FIRST_CALIB_REGISTER 500
+#define LS_RING_NUM 32
 
 // --- LRFs --- //
 #define LRF_DATA_LENGTH 8

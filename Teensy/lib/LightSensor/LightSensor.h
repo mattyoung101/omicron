@@ -2,10 +2,9 @@
 #define LIGHT_SENSOR_H_
 
 #include <Arduino.h>
-#include <Common.h>
-#include <Defines.h>
-#include <Pins.h>
-#include <MuxPins.h>
+#include <utils.h>
+#include <Config.h>
+#include <Pinlist.h>
 
 class LightSensor{
 	public:

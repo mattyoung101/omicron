@@ -2,14 +2,12 @@
 #define LIGHT_SENSOR_CONTROLLER_H
 
 #include <LightSensor.h>
-// #include <Lidar.h>
-#include <Common.h>
+#include <utils.h>
 #include <Vector.h>
-#include <Defines.h>
-#include <MuxPins.h>
-#include <Debug.h>
+#include <Config.h>
 #include <EEPROM.h>
-#include <Marker.h>
+#include <Timer.h>
+#include <Pinlist.h>
 
 
 class LightSensorController{
@@ -46,8 +44,6 @@ class LightSensorController{
 		bool isOnLine[LS_RING_NUM] = {false};
 
 		Vector lsPointSet[LS_RING_NUM];
-
-		Marker angleChange;
 
 		Vector lineVector;
 
@@ -87,7 +83,7 @@ class LightSensorController{
 		Vector line = Vector(0, 0, true);
 		bool firstFrame = true;
 		float prevDepth;
-		Timer calibTimer = Timer(1000, true);
+		Timer calibTimer = Timer(1000000);
 		int readNum = 0;
 };
 

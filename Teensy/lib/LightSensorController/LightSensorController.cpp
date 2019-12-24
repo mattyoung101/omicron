@@ -11,12 +11,12 @@ LightSensorController::LightSensorController() {
 void LightSensorController::setup(){
 	// Sets up light sensors and calibrates
 	Serial.print("yeeting");
-	pinMode(MUX1_A0, OUTPUT);
-	pinMode(MUX1_A1, OUTPUT);
-	pinMode(MUX1_A2, OUTPUT);
-	pinMode(MUX1_A3, OUTPUT);
-	pinMode(MUX1_A4, OUTPUT);
-	pinMode(LS_MUX1_AOUT, INPUT);
+	pinMode(MUX_A0, OUTPUT);
+	pinMode(MUX_A1, OUTPUT);
+	pinMode(MUX_A2, OUTPUT);
+	pinMode(MUX_A3, OUTPUT);
+	pinMode(MUX_A4, OUTPUT);
+	pinMode(MUX_OUT, INPUT);
 
 	for(int i = 0; i < LS_RING_NUM; i++){
 		lsRing[i].setup(lsRingPins[i]);
