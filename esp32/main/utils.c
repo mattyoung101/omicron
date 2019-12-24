@@ -7,7 +7,6 @@ pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION, 0.0f};
 pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION, 0.0f};
 pid_config_t idlePID = {IDLE_KP, IDLE_KI, IDLE_KD, IDLE_MAX_CORRECTION, 0.0f};
 pid_config_t goaliePID = {GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX, 0.0f};
-pid_config_t lineavoidPID = {LINEAVOID_KP, LINEAVOID_KI, LINEAVOID_KD, LINEAVOID_MAX, 0.0f};
 
 // Movement PIDs
 pid_config_t coordPID = {COORD_KP, COORD_KI, COORD_KP, COORD_MAX, 0.0f};
@@ -249,32 +248,42 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
     }
 }
 
-void update_line(robot_state_t *robotState) {
-    if (robotState->inOnLine || robotState->inLineOver){
-        // imu_correction(robotState);
-        if (robotState->inGoalVisible){
-            if (robotState->inGoalLength <= robotState->inOtherGoalLength){
-                positionFast(robotState, 40.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
-                // printf("Case 1\n");
-            } else {
-                positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
-                // printf("Case 2\n");
+void update_line(robot_state_t *robotState) { // TODO: FIX THIS
+    robotState->inOnLine = robotState->inLineAngle != NO_LINE_ANGLE;
+
+    if (robotState->inOnField) {
+        if (robotState->inOnLine) {
+            robotState->inOnField = false;
+            robotState->inTrueLineAngle = robotState->inLineAngle;
+            robotState->inTrueLineSize = robotState->inLineSize;
+        }
+    } else {
+        if (robotState->inTrueLineAngle == 3) {
+            if (robotState->inOnLine) {
+                robotState->inTrueLineAngle = modf(robotState->inLineAngle + 180.0f, 360.0f);
+                robotState->inTrueLineSize = 2 - robotState->inLineSize;
             }
-        } else if (robotState->inOtherGoalVisible){
-            // if (robotState->inGoalLength <= 35.0f){
-                positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
-                // printf("Case 3\n");
-            // } else {
-            //     positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
-            //     // printf("Case 4\n");
-            // }
         } else {
-            robotState->outSpeed = constrain(robotState->outSpeed, 20.0f, 100.0f);
-            robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f, 360.0f);
-            // printf("Case 5\n");
+            if (!robotState->inOnLine) {
+                if (robotState->inTrueLineSize <= 1) {
+                    robotState->inOnField = true;
+                    robotState->inTrueLineSize = -1;
+                    robotState->inTrueLineAngle = NO_LINE_ANGLE;
+                } else {
+                    robotState->inTrueLineSize = 3;
+                }
+            } else {
+                if (smallestAngleBetween(robotState->inLineAngle, robotState->inTrueLineAngle) <= LS_LINEOVER_BUFFER) {
+                    robotState->inTrueLineAngle = robotState->inLineAngle;
+                    robotState->inTrueLineSize = robotState->inLineSize;
+                } else {
+                    robotState->inTrueLineAngle = modf(robotState->inLineAngle + 180.0f, 360.0f);
+                    robotState->inLineSize = 2 - robotState->inLineSize;
+                }
+            }
         }
     }
-}
+} // I won't even use this what am I doing
 
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec){
     // r cos theta, r sin theta

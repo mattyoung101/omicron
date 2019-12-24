@@ -81,11 +81,6 @@ typedef enum {
 #define HEADING_KD 0.1
 #define HEADING_MAX_CORRECTION 100
 
-#define LINEAVOID_KP 100
-#define LINEAVOID_KI 0
-#define LINEAVOID_KD 0
-#define LINEAVOID_MAX 60
-
 // --- Idle Correction --- //
 #define IDLE_KP 0.8
 #define IDLE_KI 0
@@ -142,6 +137,10 @@ typedef enum {
 #define E 2.71828182845904523536
 #define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
 #define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
+
+// Line avoidance
+#define NO_LINE_ANGLE 400
+#define LS_LINEOVER_BUFFER 90
 
 // Camera
 #define CAM_DATA_LEN 8

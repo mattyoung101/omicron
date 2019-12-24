@@ -35,8 +35,9 @@ typedef struct {
     float inLineAngle;
     float inLineSize;
     bool inOnLine;
-    bool inLineOver;
-    float inLastAngle;
+    bool inOnField;
+    float inTrueLineAngle;
+    float inTrueLineSize;
     // Lightgate Inputs
     bool inFrontGate;
     bool inBackGate;
