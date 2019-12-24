@@ -28,7 +28,8 @@ void remote_debug_init(uint16_t w, uint16_t h);
 void remote_debug_dispose(void);
 
 /**
- * Encodes a frame with libjpeg-turbo and then posts it over the TCP socket
+ * Sends the specified data to the work queue (to be processed asynchronously), where it is encoded (with libjpeg-turbo
+ * for JPEGs and zlib for threshold masks) and sent to Omicontrol. This function returns immediately.
  * @param camFrame copy of original camera frame buffer, must be freed
  * @param threshFrame copy of GPU processed (thresholded) frame buffer, must be freed
  * @param ballRect the bounding box of the ball

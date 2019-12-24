@@ -69,6 +69,11 @@ void utils_cv_transmit_data(ObjectData ballData){
     comms_uart_send(buf, stream.bytes_written);
 }
 
+void utils_ini_update_key(FILE *file, char *key, char *value){
+    // so... here we are! string processing in C. this is going to be fun.
+
+}
+
 // source: https://stackoverflow.com/a/3756954/5007892
 double utils_get_millis(){
     struct timeval tv;

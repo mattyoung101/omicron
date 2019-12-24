@@ -18,6 +18,7 @@
 #include "utils.h"
 #include "alloc_pool.h"
 #include "computer_vision.h"
+#include "localisation.h"
 
 static FILE *logFile = NULL;
 static pthread_mutex_t logLock;
@@ -27,6 +28,7 @@ static void disposeResources(){
     log_trace("Disposing resources");
     vision_dispose();
     remote_debug_dispose();
+    localiser_dispose();
     log_trace("Closing log file, goodbye!");
     fflush(logFile);
     fclose(logFile);
@@ -107,9 +109,12 @@ int main() {
     uint16_t width = iniparser_getint(config, "VideoSettings:width", 1280);
     uint16_t height = iniparser_getint(config, "VideoSettings:height", 720);
     uint16_t framerate = iniparser_getint(config, "VideoSettings:framerate", 60);
+    char *fieldFile = iniparser_getstring(config, "Localiser:fieldFile", "CONFIG_ERROR");
 
     // start OpenCV frame grabbing, which blocks the main thread until it's done
     remote_debug_init(width, height);
+    localiser_init(fieldFile);
+
     fflush(stdout);
     fflush(logFile);
     vision_init();
