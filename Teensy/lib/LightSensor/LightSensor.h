@@ -2,7 +2,7 @@
 #define LIGHT_SENSOR_H_
 
 #include <Arduino.h>
-#include <utils.h>
+#include <Utils.h>
 #include <Config.h>
 #include <Pinlist.h>
 

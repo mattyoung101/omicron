@@ -1,4 +1,5 @@
 #include "LightSensorController.h"
+#include "Pinlist.h"
 
 //TODO: Check LS Avoidance Functionality
 
@@ -39,7 +40,7 @@ void LightSensorController::calibrate(){
 	
     readNum = 0;
 	calibTimer.update();
-	while(!calibTimer.hasTimePassedNoUpdate() || digitalRead(BUTTON1) == 0) {
+	while(!calibTimer.timeHasPassedNoUpdate() || digitalRead(BUTTON1) == 0) {
 		for(int i = 0; i < LS_RING_NUM; i++) {
 			curRead = lsRing[i].read();
 			// Serial.print(i);
@@ -85,7 +86,7 @@ Vector LightSensorController::update(double heading){
 	if(!wasOnLine && line.mag != 0 && !isOut) {
 		initialAngle = line.arg;
 	}
-	if(line.mag != 0 && wasOnLine && !isAngleBetween(line.arg, mod(prevAngle - 90, 360), mod(prevAngle + 90, 360))) {
+	if(line.mag != 0 && wasOnLine && !angleIsInside(line.arg, mod(prevAngle - 90, 360), mod(prevAngle + 90, 360))) {
 		if(isOut) {
 			isOut = false;
 		} else {
@@ -238,7 +239,7 @@ Vector LightSensorController::calcLine(){
 
         if (numClusters == 1){
             angle = cluster1Angle;
-            size = 1 - cos(toRadians(angleBetween(starts[0] * lsMultiplier, ends[0] * lsMultiplier) / 2.0));
+            size = 1 - cos(DEG_RAD * angleBetween(starts[0] * lsMultiplier, ends[0] * lsMultiplier) / 2.0);
 
         } else if (numClusters ==2){
 			// Serial.print("The angle between is ");
@@ -248,7 +249,7 @@ Vector LightSensorController::calcLine(){
 			// Serial.print(" and ");
 			// Serial.println(cluster2Angle);
             angle = angleBetween(cluster1Angle, cluster2Angle) <= 180 ? midAngleBetween(cluster1Angle, cluster2Angle) : midAngleBetween(cluster2Angle, cluster1Angle);
-            size = 1 - cos(toRadians(angleBetween(cluster1Angle, cluster2Angle) <= 180 ? angleBetween(cluster1Angle, cluster2Angle) / 2.0 : angleBetween(cluster2Angle, cluster1Angle) / 2.0));
+            size = 1 - cos(DEG_RAD * angleBetween(cluster1Angle, cluster2Angle) <= 180 ? angleBetween(cluster1Angle, cluster2Angle) / 2.0 : angleBetween(cluster2Angle, cluster1Angle) / 2.0);
 
         } else {
             double angleDiff12 = angleBetween(cluster1Angle, cluster2Angle);
@@ -257,13 +258,13 @@ Vector LightSensorController::calcLine(){
             double biggestAngle = max(angleDiff12, max(angleDiff23, angleDiff31));
             if (biggestAngle == angleDiff12){
                 angle = midAngleBetween(cluster2Angle, cluster1Angle);
-                size = angleBetween(cluster2Angle, cluster1Angle) <= 180 ? 1 - cos(toRadians(angleBetween(cluster2Angle, cluster1Angle) / 2.0)) : 1;
+                size = angleBetween(cluster2Angle, cluster1Angle) <= 180 ? 1 - cos(DEG_RAD * (angleBetween(cluster2Angle, cluster1Angle) / 2.0)) : 1;
             } else if (biggestAngle == angleDiff23){
                 angle = midAngleBetween(cluster3Angle, cluster2Angle);
-                size = angleBetween(cluster3Angle, cluster2Angle) <= 180 ? 1 - cos(toRadians(angleBetween(cluster3Angle, cluster2Angle) / 2.0)) : 1;
+                size = angleBetween(cluster3Angle, cluster2Angle) <= 180 ? 1 - cos(DEG_RAD * (angleBetween(cluster3Angle, cluster2Angle) / 2.0)) : 1;
             } else {
                 angle = midAngleBetween(cluster1Angle, cluster3Angle);
-                size = angleBetween(cluster1Angle, cluster3Angle) <= 180 ? 1 - cos(toRadians(angleBetween(cluster1Angle, cluster3Angle) / 2.0)) : 1;
+                size = angleBetween(cluster1Angle, cluster3Angle) <= 180 ? 1 - cos(DEG_RAD * (angleBetween(cluster1Angle, cluster3Angle) / 2.0)) : 1;
             }
         }
     } else {

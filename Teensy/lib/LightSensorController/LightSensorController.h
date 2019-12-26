@@ -2,7 +2,7 @@
 #define LIGHT_SENSOR_CONTROLLER_H
 
 #include <LightSensor.h>
-#include <utils.h>
+#include <Utils.h>
 #include <Vector.h>
 #include <Config.h>
 #include <EEPROM.h>
