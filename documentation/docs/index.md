@@ -1,5 +1,12 @@
-# BBC Robotics - Omicron
+# BBC Robotics - Team Omicron
 
-Welcome to team Omicron's documentation website, which details various different aspects in the development of our robot built for the RoboCup Junior Open Soccer competition. For more information, feel free to contact us at: <randomemail@notreal.com>
+Welcome to the official documentation website for Team Omicron, a robotics team from Brisbane Boys' College from Queensland, 
+Australia, competing in RoboCup Junior Open Soccer at the Bordeaux 2020 Internationals.
 
-Testing
+This website contains all the information about our robot's hardware, electrical and software design. Please feel
+free to browse at your own pleasure, and don't hesitate to contact us by visiting the About page. We're more than happy
+to answer any questions you may have about any aspect of our robots!
+
+Towards the end of 2020, our entire codebase including mechanical designs, electrical designs and all software
+will become open source for everyone to learn from and study. We hope you'll enjoy this opportunity, so please stay
+tuned.

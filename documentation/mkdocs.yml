@@ -1,4 +1,5 @@
-site_name: BBC Robotics - Omicron
+site_name: BBC Robotics - Team Omicron
+theme: windmill
 
 nav:
     - Home: index.md

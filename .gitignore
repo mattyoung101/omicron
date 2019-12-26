@@ -85,3 +85,6 @@ fabric.properties
 
 # vscode workspace
 *.code-workspace
+
+# mkdocs stuff
+teamomicron.github.io/
