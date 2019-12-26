@@ -1,0 +1,5 @@
+site_name: BBC Robotics - Omicron
+
+nav:
+    - Home: index.md
+    - About: about.md
