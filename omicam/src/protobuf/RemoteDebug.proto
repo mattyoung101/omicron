@@ -29,6 +29,7 @@ message DebugFrame {
     float temperature = 3; // the temperature of the CPU on the Pi
     RDRect ballRect = 4; // the bounding box of the ball
     RDPoint ballCentroid = 5; // the centroid of the ball
+    int32 fps = 6; // the current FPS of the camera
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

@@ -25,9 +25,9 @@ Hardware wise, you'll need a Jetson Nano and a Raspberry Pi Camera v2 (or v1 if 
 Flash your Jetson's SD card as per NVIDIA's instructions, boot and update it, then install the following packages:
 - CMake: `sudo apt install cmake`
 - Clang and lldb: `sudo apt install clang lldb`
-- NLopt: follow the instructions linked [here](https://NLopt.readthedocs.io/en/latest/)
-- libjpeg-turbo: `sudo apt install libturbojpeg0 libturbojpeg0-dev`
-- SDL2: `sudo apt install libsdl2-2.0.0 libsdl2-2.0-0-dbgsym libsdl2-dev libsdl2-doc`
+- NLopt: `sudo apt install libnlopt-dev libnlopt0`
+- libjpeg-turbo: `sudo apt install libturbojpeg libturbojpeg0-dev`
+- SDL2: `sudo apt install libsdl2-2.0.0 libsdl2-dev libsdl2-doc`
 - OpenCV: follow the instructions linked [here](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html)
 
 **Note:** A lot of these packages can also be compiled from source if you're experiencing issues.

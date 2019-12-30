@@ -193,6 +193,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.temperature = temperature;
     msg.ballCentroid = entry->ballCentroid;
     msg.ballRect = entry->ballRect;
+    msg.fps = entry->fps;
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.frame = msg;
@@ -299,8 +300,8 @@ static void *thermal_thread(void *arg){
     log_trace("Thermal thread started");
 
     while (true){
-        // FIXME update this to work with jetson
         // general idea from https://www.raspberrypi.org/forums/viewtopic.php?t=170112#p1091895
+        // this also works on the jetson :)
         FILE *tempFile = fopen("/sys/class/thermal/thermal_zone0/temp", "r");
         char buf[32];
         if (tempFile == NULL){
@@ -409,7 +410,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
     log_debug("Remote debugger initialised successfully");
 }
 
-void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPoint ballCentroid){
+void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPoint ballCentroid, int32_t fps){
 #if !DEBUG_ALWAYS_SEND
     // we're not connected so free this data
     if (connfd == -1){
@@ -423,6 +424,7 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
     entry->threshFrame = threshFrame;
     entry->ballRect = ballRect;
     entry->ballCentroid = ballCentroid;
+    entry->fps = fps;
 
     if (!rpa_queue_trypush(frameQueue, entry)){
         log_warn("Failed to push new frame to queue (perhaps it's full or network is busy)");

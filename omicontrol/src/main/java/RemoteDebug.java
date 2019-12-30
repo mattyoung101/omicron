@@ -1921,6 +1921,15 @@ public final class RemoteDebug {
      * <code>optional .RDPoint ballCentroid = 5;</code>
      */
     RemoteDebug.RDPointOrBuilder getBallCentroidOrBuilder();
+
+    /**
+     * <pre>
+     * the current FPS of the camera
+     * </pre>
+     *
+     * <code>optional int32 fps = 6;</code>
+     */
+    int getFps();
   }
   /**
    * <pre>
@@ -1943,6 +1952,7 @@ public final class RemoteDebug {
       defaultImage_ = com.google.protobuf.ByteString.EMPTY;
       ballThreshImage_ = com.google.protobuf.ByteString.EMPTY;
       temperature_ = 0F;
+      fps_ = 0;
     }
 
     @java.lang.Override
@@ -2009,6 +2019,11 @@ public final class RemoteDebug {
                 ballCentroid_ = subBuilder.buildPartial();
               }
 
+              break;
+            }
+            case 48: {
+
+              fps_ = input.readInt32();
               break;
             }
           }
@@ -2139,6 +2154,19 @@ public final class RemoteDebug {
       return getBallCentroid();
     }
 
+    public static final int FPS_FIELD_NUMBER = 6;
+    private int fps_;
+    /**
+     * <pre>
+     * the current FPS of the camera
+     * </pre>
+     *
+     * <code>optional int32 fps = 6;</code>
+     */
+    public int getFps() {
+      return fps_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2166,6 +2194,9 @@ public final class RemoteDebug {
       if (ballCentroid_ != null) {
         output.writeMessage(5, getBallCentroid());
       }
+      if (fps_ != 0) {
+        output.writeInt32(6, fps_);
+      }
     }
 
     public int getSerializedSize() {
@@ -2192,6 +2223,10 @@ public final class RemoteDebug {
       if (ballCentroid_ != null) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(5, getBallCentroid());
+      }
+      if (fps_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(6, fps_);
       }
       memoizedSize = size;
       return size;
@@ -2227,6 +2262,8 @@ public final class RemoteDebug {
         result = result && getBallCentroid()
             .equals(other.getBallCentroid());
       }
+      result = result && (getFps()
+          == other.getFps());
       return result;
     }
 
@@ -2252,6 +2289,8 @@ public final class RemoteDebug {
         hash = (37 * hash) + BALLCENTROID_FIELD_NUMBER;
         hash = (53 * hash) + getBallCentroid().hashCode();
       }
+      hash = (37 * hash) + FPS_FIELD_NUMBER;
+      hash = (53 * hash) + getFps();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2394,6 +2433,8 @@ public final class RemoteDebug {
           ballCentroid_ = null;
           ballCentroidBuilder_ = null;
         }
+        fps_ = 0;
+
         return this;
       }
 
@@ -2429,6 +2470,7 @@ public final class RemoteDebug {
         } else {
           result.ballCentroid_ = ballCentroidBuilder_.build();
         }
+        result.fps_ = fps_;
         onBuilt();
         return result;
       }
@@ -2484,6 +2526,9 @@ public final class RemoteDebug {
         }
         if (other.hasBallCentroid()) {
           mergeBallCentroid(other.getBallCentroid());
+        }
+        if (other.getFps() != 0) {
+          setFps(other.getFps());
         }
         onChanged();
         return this;
@@ -2935,6 +2980,44 @@ public final class RemoteDebug {
           ballCentroid_ = null;
         }
         return ballCentroidBuilder_;
+      }
+
+      private int fps_ ;
+      /**
+       * <pre>
+       * the current FPS of the camera
+       * </pre>
+       *
+       * <code>optional int32 fps = 6;</code>
+       */
+      public int getFps() {
+        return fps_;
+      }
+      /**
+       * <pre>
+       * the current FPS of the camera
+       * </pre>
+       *
+       * <code>optional int32 fps = 6;</code>
+       */
+      public Builder setFps(int value) {
+        
+        fps_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * the current FPS of the camera
+       * </pre>
+       *
+       * <code>optional int32 fps = 6;</code>
+       */
+      public Builder clearFps() {
+        
+        fps_ = 0;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -5614,18 +5697,19 @@ public final class RemoteDebug {
       "\n\021RemoteDebug.proto\"=\n\006RDRect\022\t\n\001x\030\001 \001(\005" +
       "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
       "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\'\n\013R" +
-      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\213\001\n" +
+      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\230\001\n" +
       "\nDebugFrame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017bal" +
       "lThreshImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022" +
       "\031\n\010ballRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentro" +
-      "id\030\005 \001(\0132\010.RDPoint\"\275\001\n\014DebugCommand\022\021\n\tm" +
-      "essageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint" +
-      "\022\023\n\013orientation\030\003 \001(\002\022#\n\rallThresholds\030\004",
-      " \003(\0132\014.RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006" +
-      "minMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005v" +
-      "alue\030\010 \001(\005\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132" +
-      "\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCom" +
-      "mand\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
+      "id\030\005 \001(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\"\275\001\n\014Debu" +
+      "gCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords\030\002 " +
+      "\001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n\ral",
+      "lThresholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010objec" +
+      "tId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourChann" +
+      "el\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\"^\n\nRDMsgFrame\022\032\n" +
+      "\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001" +
+      "(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 \001(\005b" +
+      "\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -5662,7 +5746,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_DebugCommand_fieldAccessorTable = new

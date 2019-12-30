@@ -1,24 +1,29 @@
-cmake_minimum_required(VERSION 3.13)
+# Important note: CLion ships with CMake 3.12 which supports parallel builds using the "j" option. Ubuntu only has
+# CMake 3.10 as a package and given that I'm too lazy to build from source, on the Jetson for now we will have to cop
+# slower builds. As soon as I'm not lazy or CMake 3.12 is released, use that instead.
+cmake_minimum_required(VERSION 3.10)
 project(omicam)
 
 # set variables
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CPP_STANDARD 17)
-add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -D__ARM_NEON)
+add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2)
 
 # enable ASan and stack protection
 set (SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -static-libsan")
-# enable NEON (fast math is required due to a hardware bug), the march stuff may not be required but doesn't really matter
+# these flags are used to enable the FPU and tune to the architecture of the jetson nano (this will break PC builds!)
 # if anything related to NLopt or math in general breaks, use -mfpu=vfp and disable ffast-math
-set (NEON_FLAGS "-ffast-math -march=native -mtune=native") # TODO add back when on Jetson: -mfpu=neon -mfloat-abi=hard
+# source of gcc arguments for jetson: https://devtalk.nvidia.com/default/topic/1055706/jetson-nano/gcc-options-for-nano/
+# note: using -flto to enable link time optimisations breaks using "-Og" and "-Ofast"
+set (PERFORMANCE_FLAGS "-ffast-math -ffast-math -march=armv8-a+crypto -mcpu=cortex-a57+crypto")
 # (we generate debug info in all modes since it adds no performance penalty and is good for debug)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -g3 -pthread")
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -g3 -pthread")
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Og ${SAFETY_FLAGS} ${NEON_FLAGS}") # safety features and debug optimiastion
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Og ${SAFETY_FLAGS} ${NEON_FLAGS}")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${NEON_FLAGS}") # full optimisation and no safety features
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${NEON_FLAGS}")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Og ${SAFETY_FLAGS} ${PERFORMANCE_FLAGS}") # safety features and debug optimisation
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Og ${SAFETY_FLAGS} ${PERFORMANCE_FLAGS}")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${PERFORMANCE_FLAGS}") # full optimisation and no safety features
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${PERFORMANCE_FLAGS}")
 
 # find packages
 find_package(OpenMP)

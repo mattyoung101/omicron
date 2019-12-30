@@ -73,6 +73,8 @@ int main() {
         log_set_fp(logFile);
     } else {
         fprintf(stderr, "Failed to open log file: %s\n", strerror(errno));
+        fprintf(stderr, "ATTENTION: Due to a current bug, you need to make the file ~/Documents/TeamOmicron/Omicam/omicam.log manually"
+                        " for logging to work properly.");
     }
     log_info("Omicam v%s - Copyright (c) 2019 Team Omicron. All rights reserved.", OMICAM_VERSION);
     log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);

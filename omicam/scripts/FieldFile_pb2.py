@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='FieldFile.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n\x0f\x46ieldFile.proto\"/\n\tFieldFile\x12\x14\n\x0cunitDistance\x18\x01 \x01(\x05\x12\x0c\n\x04\x64\x61ta\x18\x02 \x03(\x02\x62\x06proto3')
+  serialized_pb=_b('\n\x0f\x46ieldFile.proto\"k\n\tFieldFile\x12\x14\n\x0cunitDistance\x18\x01 \x01(\x02\x12\x11\n\tcellCount\x18\x02 \x01(\x02\x12\x12\n\nfieldWidth\x18\x03 \x01(\x02\x12\x13\n\x0b\x66ieldHeight\x18\x04 \x01(\x02\x12\x0c\n\x04\x64\x61ta\x18\x05 \x03(\x02\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -35,14 +35,35 @@ _FIELDFILE = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='unitDistance', full_name='FieldFile.unitDistance', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      number=1, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='data', full_name='FieldFile.data', index=1,
-      number=2, type=2, cpp_type=6, label=3,
+      name='cellCount', full_name='FieldFile.cellCount', index=1,
+      number=2, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='fieldWidth', full_name='FieldFile.fieldWidth', index=2,
+      number=3, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='fieldHeight', full_name='FieldFile.fieldHeight', index=3,
+      number=4, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=float(0),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='data', full_name='FieldFile.data', index=4,
+      number=5, type=2, cpp_type=6, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -60,7 +81,7 @@ _FIELDFILE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=19,
-  serialized_end=66,
+  serialized_end=126,
 )
 
 DESCRIPTOR.message_types_by_name['FieldFile'] = _FIELDFILE

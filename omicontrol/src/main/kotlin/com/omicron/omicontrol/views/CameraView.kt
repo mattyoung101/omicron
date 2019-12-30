@@ -36,6 +36,7 @@ class CameraView : View() {
     private lateinit var display: GraphicsContext
     private lateinit var temperatureLabel: Label
     private lateinit var selectBox: ComboBox<String>
+    private lateinit var lastFpsLabel: Label
     private val compressor = Inflater()
     private var hideCameraFrame = false
     /** mapping between each field object and its threshold as received from Omicam **/
@@ -71,6 +72,7 @@ class CameraView : View() {
             } else {
                 temperatureLabel.textFill = Color.WHITE
             }
+            lastFpsLabel.text = "Last FPS: ${message.fps}"
 
             // clear the canvas and display the normal camera frame
             display.fill = Color.BLACK
@@ -221,7 +223,7 @@ class CameraView : View() {
 
                 // when the mouse is pressed start the drag timer
                 setOnMousePressed {
-                    grabSendTimer = fixedRateTimer(name="GrabSendTimer", period=100, action = {
+                    grabSendTimer = fixedRateTimer(name="GrabSendTimer", period=GRAB_SEND_TIMER_PERIOD, action = {
                         publishSliderValueChange(colour, type, value.toInt())
                     })
                 }
@@ -399,6 +401,12 @@ class CameraView : View() {
                                     hideCameraFrame = newValue
                                 }
                             }
+                        }
+                    }
+
+                    fieldset {
+                        field {
+                            lastFpsLabel = label("Last FPS: None recorded")
                         }
                     }
 

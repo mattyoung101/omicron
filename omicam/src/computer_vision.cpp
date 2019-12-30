@@ -22,17 +22,30 @@ using namespace std;
 // Essentially it's just a wrapper for OpenCV
 
 static pthread_t cvThread = {0};
+static pthread_t fpsCounterThread = {0};
+static _Atomic int32_t fpsCounter = 0;
+static _Atomic int32_t lastFpsMeasurement = 0;
 
-/** this task runs all the computer vision for Omicam, using OpenCV **/
-static void *cv_thread(void *arg){
-    uint32_t frames = 0;
+/**
+ * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
+ * This is in a separate function so
+ */
+static void process_object_vision(int32_t *min, int32_t *max, UMat frame){
+    UMat thresholded;
+    Mat labels, stats, centroids;
+    Scalar minScalar = Scalar(min[0], min[1], min[2]);
+    Scalar maxScalar = Scalar(max[0], max[1], max[2]);
+
+    inRange(frame, minScalar, maxScalar, thresholded);
+    int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
+}
+
+/** this task runs all the computer vision for Omicam, using OpenCV */
+static auto cv_thread(void *arg) -> void *{
+    uint32_t rdFrameCounter = 0;
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-//    UMat frame = imread("../omicam_thresh_test2.png", IMREAD_COLOR).getUMat(ACCESS_READ);
-//    if (frame.empty()){
-//        log_error("Unable to load OpenCV test image");
-//    }
     VideoCapture cap("../orange_ball.m4v");
     if (!cap.isOpened()) {
         log_error("Failed to load OpenCV test video");
@@ -63,13 +76,13 @@ static void *cv_thread(void *arg){
             continue;
         }
 
-        // TODO dispatch frame to localiser here (as it runs in parallel so give it a head start)
-
         // all the image processing is done here
         cvtColor(frame, frameRGB, COLOR_BGR2RGB);
         resize(frameRGB, frameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
         inRange(frameRGB, minBallScalar, maxBallScalar, ballThresh);
         int nLabels = connectedComponentsWithStats(ballThresh, ballLabels, ballStats, ballCentroids);
+
+        // TODO dispatch frame to localiser here once we threshold the item
 
         // find the biggest blob, skipping id 0 which is the background
         vector<int> sortedLabels;
@@ -90,13 +103,13 @@ static void *cv_thread(void *arg){
 
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
-        if (frames++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()) {
+        if (rdFrameCounter++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()) {
             // frame is a 3 channel BGR image (hence the "* 3") which must be converted to RGB
             auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
 
             char buf[128] = {0};
-            snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", frames, OMICAM_VERSION,
-                    fieldObjToString[selectedFieldObject]);
+            snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", rdFrameCounter, OMICAM_VERSION,
+                     fieldObjToString[selectedFieldObject]);
             putText(frameRGB, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.5,
                     Scalar(255, 0, 0), 1, FILLED, false);
             memcpy(frameData, frameRGB.getMat(ACCESS_READ).data, frame.rows * frame.cols * 3);
@@ -126,15 +139,14 @@ static void *cv_thread(void *arg){
                 int rectW = ballStats.at<int>(largestId, CC_STAT_WIDTH);
                 int rectH = ballStats.at<int>(largestId, CC_STAT_HEIGHT);
                 RDRect ballRect = {rectX, rectY, rectW, rectH};
-                remote_debug_post(frameData, ballThreshData, ballRect, ballCentroid);
+                remote_debug_post(frameData, ballThreshData, ballRect, ballCentroid, lastFpsMeasurement);
             } else {
                 RDRect ballRect = {0, 0, 0, 0};
                 RDPoint ballCentroid = {0, 0};
-                remote_debug_post(frameData, ballThreshData, ballRect, ballCentroid);
+                remote_debug_post(frameData, ballThreshData, ballRect, ballCentroid, lastFpsMeasurement);
             }
         }
 #endif
-
         // encode protocol buffer to send to ESP over UART
         ObjectData data = ObjectData_init_zero;
         data.ballExists = blobExists;
@@ -142,37 +154,23 @@ static void *cv_thread(void *arg){
         data.ballY = largestCentroid.y;
         utils_cv_transmit_data(data);
 
-#if BUILD_TARGET == BUILD_TARGET_PC
-//        // if the target is PC then render some debug info
-//        UMat labelDisplay;
-//        cvtColor(ballThresh, labelDisplay, COLOR_GRAY2RGB);
-//
-//        // it appears that label 0 is always the background so we skip it (may want to confirm this)
-//        for (int label = 1; label < nLabels; label++){
-//            auto centre = Point(ballCentroids.at<double>(label, 0), ballCentroids.at<double>(label, 1));
-//            int rectX = ballStats.at<int>(label, CC_STAT_LEFT);
-//            int rectY = ballStats.at<int>(label, CC_STAT_TOP);
-//            int rectW = ballStats.at<int>(label, CC_STAT_WIDTH);
-//            int rectH = ballStats.at<int>(label, CC_STAT_HEIGHT);
-//            auto rect = Rect(rectX, rectY, rectW, rectH);
-//
-//            Scalar colour = label == largestId ? Scalar(0, 255, 0) : Scalar(0, 0, 255);
-//            rectangle(labelDisplay, rect, colour, 4);
-//            circle(labelDisplay, centre, 8, Scalar(0, 0, 255), FILLED);
-//        }
-//        imshow("Omicam (ESC to exit)", labelDisplay);
+        fpsCounter++;
 
-//        // wait unless the escape key is pressed
-//        if (waitKey(15) == 27){
-//            log_info("Escape key pressed, quitting program");
-//            break;
-//        }
+#if BUILD_TARGET == BUILD_TARGET_PC
         waitKey(static_cast<int>(1000 / fps));
 #endif
     }
-
     destroyAllWindows();
-    return nullptr;
+}
+
+/** monitors the FPS of the vision thread **/
+static auto fps_counter_thread(void *arg) -> void *{
+    while (true){
+        sleep(1);
+        lastFpsMeasurement = fpsCounter;
+        fpsCounter = 0;
+        // log_trace("FPS: %d", lastFpsMeasurement);
+    }
 }
 
 void vision_init(void){
@@ -192,6 +190,13 @@ void vision_init(void){
         log_error("Failed to create OpenCV thread: %s", strerror(err));
     } else {
         pthread_setname_np(cvThread, "CV Thread");
+    }
+
+    err = pthread_create(&fpsCounterThread, nullptr, fps_counter_thread, nullptr);
+    if (err != 0){
+        log_error("Failed to create FPS counter thread: %s", strerror(err));
+    } else {
+        pthread_setname_np(fpsCounterThread, "FPS Counter");
     }
     // cout << getBuildInformation();
 
