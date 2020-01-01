@@ -369,14 +369,6 @@ class CameraView : View() {
                         }
                     }
 
-                    // temperature display
-                    fieldset {
-                        field {
-                            label("Temperature: ")
-                            temperatureLabel = label("Unknown")
-                        }
-                    }
-
                     // object selection dropdown
                     fieldset {
                         field {
@@ -401,6 +393,14 @@ class CameraView : View() {
                                     hideCameraFrame = newValue
                                 }
                             }
+                        }
+                    }
+
+                    // temperature display
+                    fieldset {
+                        field {
+                            label("Temperature: ")
+                            temperatureLabel = label("Unknown")
                         }
                     }
 

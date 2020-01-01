@@ -17,7 +17,7 @@
 #include "remote_debug.h"
 #include "utils.h"
 #include "alloc_pool.h"
-#include "computer_vision.h"
+#include "computer_vision.hpp"
 #include "localisation.h"
 
 static FILE *logFile = NULL;
@@ -39,7 +39,7 @@ static void disposeResources(){
 static void signal_handler(int sig){
     log_info("Received signal %s, terminating capture", strsignal(sig));
     disposeResources();
-    exit(EXIT_SUCCESS);
+    // exit(EXIT_SUCCESS);
 }
 
 /** lock the logger to prevent malformed prints across threads **/
@@ -120,10 +120,11 @@ int main() {
     fflush(stdout);
     fflush(logFile);
     vision_init();
-    log_warn("Vision terminated unexpectedly!");
+    log_debug("Omicam terminating normally");
 
     // this dictionary may be needed by the vision module to initialise some things, so we free it after
     // the application is done
     iniparser_freedict(config);
-    disposeResources();
+    // hopefully by now disposeResources() will have already been called, unless we terminated unexpectedly
+    // TODO add a variable and check if we already disposed, and if not, do so here
 }

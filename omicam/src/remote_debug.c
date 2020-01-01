@@ -427,7 +427,7 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
     entry->fps = fps;
 
     if (!rpa_queue_trypush(frameQueue, entry)){
-        log_warn("Failed to push new frame to queue (perhaps it's full or network is busy)");
+        log_warn("Failed to push new frame to queue. This likely indicates a hang, performance issue or a busy network.");
         free(camFrame);
         free(entry);
         free(threshFrame);

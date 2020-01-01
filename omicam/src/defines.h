@@ -6,9 +6,10 @@
  * Version history:
  * 0.0.0a: basic CPU blob detection, remote debugger implemented
  * 1.0.0a: switch to OpenCV blob detection and have it working
- * 1.1.0a: Omicontrol integration works
+ * 1.1.0a: Integration with Omicontrol completed
+ * 1.2.0a: (WIP) works on Jetson with GPU acceleration and thresholding for all objects
  */
-#define OMICAM_VERSION "1.1.0a"
+#define OMICAM_VERSION "1.2.0a"
 
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define ENABLE_DIAGNOSTICS 0 // enable or disable performance (i.e. FPS) diagnostics
@@ -17,7 +18,7 @@
 
 #define DEBUG_JPEG_QUALITY 30 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define DEBUG_COMPRESSION_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
-#define DEBUG_FRAME_EVERY 1 // send a debug frame every N real frames
+#define DEBUG_FRAME_EVERY 3 // send a debug frame every N real frames
 #define DEBUG_PORT 42708 // which port the remote debug TCP server runs on
 #define DEBUG_ENABLED 1 // whether or not remote debug is enabled
 #define DEBUG_ALWAYS_SEND 0 // if true, ignore whether or not a connection exists and always send debug frames
@@ -48,6 +49,8 @@ typedef enum {
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC (assumes no camera available and uses test imagery)
 #define BUILD_TARGET BUILD_TARGET_PC // which platform Omicam will be running on
 
-#define LOCALISE_NUM_THREADS 4 // number of worker threads used by localisation raycaster (probably will be OpenCL)
+#define LOCALISER_ERROR_TOLERANCE 2 // stop optimisation when a coordinate with this error in centimetres is found
+#define LOCALISER_STEP_TOLERANCE 0.1 // stop optimisation if the last step size was smaller than this in centimetres
+#define LOCALISER_MAX_EVAL_TIME 0.1 // max evaluation time for the optimiser in seconds
 
 // error checking and other misc stuff

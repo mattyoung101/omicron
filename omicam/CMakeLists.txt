@@ -52,7 +52,7 @@ add_executable(omicam src/main.c
         lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
         src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h src/alloc_pool.c src/alloc_pool.h lib/map.c lib/map.h
         src/protobuf/UART.pb.c src/protobuf/UART.pb.h lib/kdtree.c lib/kdtree.h
-        lib/stb_image.h src/computer_vision.cpp src/computer_vision.h src/comms_uart.c src/comms_uart.h)
+        lib/stb_image.h src/computer_vision.cpp src/computer_vision.hpp src/comms_uart.c src/comms_uart.h)
 
 # link libraries
-target_link_libraries(omicam pthread dl rt m SDL2 z turbojpeg ${OpenCV_LIBS})
+target_link_libraries(omicam pthread dl rt m SDL2 z turbojpeg nlopt ${OpenCV_LIBS})
