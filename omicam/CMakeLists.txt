@@ -2,7 +2,7 @@
 # CMake 3.10 as a package and given that I'm too lazy to build from source, on the Jetson for now we will have to cop
 # slower builds. As soon as I'm not lazy or CMake 3.12 is released, use that instead.
 cmake_minimum_required(VERSION 3.10)
-project(omicam)
+project(omicam LANGUAGES C CXX CUDA)
 
 # set variables
 set(CMAKE_C_STANDARD 11)
@@ -52,7 +52,11 @@ add_executable(omicam src/main.c
         lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
         src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h src/alloc_pool.c src/alloc_pool.h lib/map.c lib/map.h
         src/protobuf/UART.pb.c src/protobuf/UART.pb.h lib/kdtree.c lib/kdtree.h
+        src/cuda/in_range.cu src/cuda/in_range.cuh
         lib/stb_image.h src/computer_vision.cpp src/computer_vision.hpp src/comms_uart.c src/comms_uart.h)
+
+set_target_properties(omicam PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(omicam PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # link libraries
 target_link_libraries(omicam pthread dl rt m SDL2 z turbojpeg nlopt ${OpenCV_LIBS})

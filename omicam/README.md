@@ -23,7 +23,8 @@ Omicam is built and maintained by Matt Young, so if you have any questions, plea
 Hardware wise, you'll need a Jetson Nano and a Raspberry Pi Camera v2 (or v1 if that's unavailable).
 
 Flash your Jetson's SD card as per NVIDIA's instructions, boot and update it, then install the following packages:
-- CMake: `sudo apt install cmake`
+- CMake: You need to build the latest CMake from source, instructions are [here](https://cmake.org/install/).
+- Ninja: `sudo apt install ninja-build`
 - Clang & LLVM: `sudo apt install clang lldb llvm libasan5 libasan5-dbg`
 - NLopt: `sudo apt install libnlopt-dev libnlopt0`
 - libjpeg-turbo: `sudo apt install libturbojpeg libturbojpeg0-dev`
@@ -35,6 +36,8 @@ Flash your Jetson's SD card as per NVIDIA's instructions, boot and update it, th
 **FIXME: talk about how to add optimisations to the NLopt build (adding O3 and hard FPU, etc)**
 
 **FIXME: cover running on PC (test target) instead of Jetson. Also include specific Jetson setup instructions.**
+
+**FIXME: cover setting up the toolchain as Ninja**
 
 We exclusively use CLion to develop Omicam. Import the project into CLion on your host computer and follow the 
 [instructions provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to configure a 

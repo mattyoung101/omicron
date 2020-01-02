@@ -17,6 +17,7 @@
 #include "defines.h"
 #include "utils.h"
 #include "remote_debug.h"
+#include "cuda/in_range.cuh"
 
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
@@ -24,11 +25,6 @@ using namespace std;
 
 // This file handles all the OpenCV tasks in C++ code, which is then called by the C code in the rest of the project.
 // Essentially it's just a wrapper for OpenCV
-
-// This is your resident "FUCK YOU" to NVIDIA who couldn't be arsed to implement OpenCL on Tegra chips such as the Jetson Nano.
-// Was it really that difficult guys? Now I'm stuck with your shitty, proprietary, non-cross-platform CUDA bullshit that no-one wants.
-// Seriously, your fuckin terrible-ass Linux desktop driver even supports it, is it really that difficult to put on a Tegra?
-// Also, hardly unexpectedly, the bloody CUDA APIs in OpenCV absolutely suck compared to the awesome OpenCL T-API ughhh
 
 static pthread_t cvThread = {0};
 static pthread_t fpsCounterThread = {0};
@@ -52,14 +48,17 @@ typedef struct {
  * @param max an array containing the 3 maximum RGB values
  * @param objectId what the object is
  */
-static object_result_t process_object(Mat frame, int32_t *min, int32_t *max, field_objects_t objectId){
+static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t *max, field_objects_t objectId){
+    cuda::GpuMat thresholdedGPU(frame.rows, frame.cols, CV_8UC1);
+    thresholdedGPU.create(frame.rows, frame.cols, CV_8UC1);
+
     Mat thresholded, labels, stats, centroids;
     Scalar minScalar = Scalar(min[0], min[1], min[2]);
     Scalar maxScalar = Scalar(max[0], max[1], max[2]);
 
     // run computer vision tasks
-    // TODO run inRange on GPU using cuda shit eventually
-    inRange(frame, minScalar, maxScalar, thresholded);
+    inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU);
+    thresholdedGPU.download(thresholded);
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
     // find the biggest blob, skipping id 0 which is the background
@@ -77,7 +76,6 @@ static object_result_t process_object(Mat frame, int32_t *min, int32_t *max, fie
     auto largestId = !blobExists ? -1 : sortedLabels.back();
     auto largestCentroid = !blobExists ? Point(0, 0) : Point(centroids.at<double>(largestId, 0),
                                                              centroids.at<double>(largestId, 1));
-
     RDRect objRect = {0};
     if (blobExists) {
         int rectX = stats.at<int>(largestId, CC_STAT_LEFT);
@@ -115,7 +113,8 @@ static auto cv_thread(void *arg) -> void *{
 #endif
 
     while (true){
-        Mat frame, frameRGB, frameScaled;
+        Mat frame, frameRGB;
+        cuda::GpuMat gpuFrame, gpuFrameRGB, gpuFrameScaled;
 
         // FIXME for some reason when using GpuMat the frame is always null? - we know why now, have to upload it
         cap.read(frame);
@@ -137,20 +136,22 @@ static auto cv_thread(void *arg) -> void *{
         // 4. sort, filter, draw, etc is all on CPU
 
         // do image pre-processing such as resizing, colour conversions etc
-        cvtColor(frame, frameRGB, COLOR_BGR2RGB);
-        resize(frameRGB, frameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
+        gpuFrame.upload(frame);
+        cuda::cvtColor(gpuFrame, gpuFrameRGB, COLOR_BGR2RGB);
+        cuda::resize(gpuFrameRGB, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
-        auto ball = process_object(frameRGB, minBallData, maxBallData, OBJ_BALL);
-        // TODO use scaled frame for yellow and blue goal (will require resizing)
+        // process all our field objects
+        auto ball = process_object(gpuFrameRGB, minBallData, maxBallData, OBJ_BALL);
+        // TODO use scaled frame for yellow and blue goal (will require scaling coords and stuff)
         // auto yellowGoal = process_object(frameRGB, minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
         // auto blueGoal = process_object(frameRGB, minBlueData, maxBlueData, OBJ_GOAL_BLUE);
-        auto lines = process_object(frameRGB, minLineData, maxLineData, OBJ_LINES);
+        auto lines = process_object(gpuFrameRGB, minLineData, maxLineData, OBJ_LINES);
 
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
         if (rdFrameCounter++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()) {
-            // frame is a 3 channel BGR image (hence the "* 3") which must be converted to RGB
-            auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
+            // download frame off GPU
+            gpuFrameRGB.download(frameRGB);
 
             char buf[128] = {0};
             snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", rdFrameCounter, OMICAM_VERSION,
@@ -159,6 +160,8 @@ static auto cv_thread(void *arg) -> void *{
                     Scalar(255, 0, 0), 1, FILLED, false);
 
             // copy the frame off the Mat into some raw data that can be processed by the remote debugger code
+            // frame is a 3 channel RGB image (hence the times 3)
+            auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
             memcpy(frameData, frameRGB.data, frame.rows * frame.cols * 3);
 
             // ballThresh is just a 1-bit mask so it has only one channel
@@ -250,3 +253,9 @@ void vision_dispose(void){
     log_trace("Stopping vision thread");
     pthread_cancel(cvThread);
 }
+
+// and now...
+// This is your resident "FUCK YOU" to NVIDIA who couldn't be arsed to implement OpenCL on Tegra chips such as the Jetson Nano.
+// Was it really that difficult guys? Now I'm stuck with your shitty, proprietary, non-cross-platform CUDA bullshit that no-one wants.
+// Seriously, your fuckin terrible-ass Linux desktop driver even supports it, is it really that difficult to put on a Tegra?
+// Also, hardly unexpectedly, the bloody CUDA APIs in OpenCV absolutely suck shit compared to the OpenCL T-API ughhh
