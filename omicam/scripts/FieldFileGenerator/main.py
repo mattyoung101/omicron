@@ -10,7 +10,20 @@ fieldLength = 243 # cm
 fieldWidth = 182
 output = [[None for x in range(fieldWidth)] for y in range(fieldLength)] # Note: notation is output[y][x]
 whiteLines = [
-    linearFunction(-66, 96.5, -66, -96.5)
+    linearFunction(-66, 96.5, -66, -96.5),
+    linearFunction(-66, 96.5, 66, 96.5),
+    linearFunction(66, 96.5, 66, -96.5),
+    linearFunction(66, -96.5, -66, -96.5),
+    linearFunction(35, 96.5, 35, 86.5),
+    linearFunction(-35, 96.5, -35, 86.5),
+    linearFunction(35, -96.5, 35, -86.5),
+    linearFunction(-35, -96.5, -35, -86.5),
+    linearFunction(20, 71.5, -20, 71.5),
+    linearFunction(20, -71.5, -20, -71.5),
+    circularFunction(0, radians(90), 15, 20, -86.5),
+    circularFunction(radians(90), radians(180), 15, -20, -86.5),
+    circularFunction(radians(180), radians(270), 15, -20, 86.5),
+    circularFunction(radians(270), radians(360), 15, 20, 86.5)
 ]
 
 for rownum, row in enumerate(output):

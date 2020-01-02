@@ -9,7 +9,7 @@ General Notes:
 * Units are cm
 """
 
-from math import sqrt, pow, atan2, cos, sin
+from math import sqrt, pow, atan2, cos, sin, pi
 
 def euclideanDist(startX, startY, endX, endY): # just pythag
     return sqrt(pow(startX - endX, 2) + pow(startY - endY, 2))
@@ -97,14 +97,14 @@ class circularFunction:
         self.radius = radius
         self.centreX = centreX
         self.centreY = centreY
-        self.startX = cos(startAngle) + centreX
-        self.startY = sin(startAngle) + centreY
-        self.endX = cos(endAngle) + centreX
-        self.endY = sin(endAngle) + centreY
+        self.startX = self.radius * cos(startAngle) + centreX
+        self.startY = self.radius * sin(startAngle) + centreY
+        self.endX = self.radius * cos(endAngle) + centreX
+        self.endY = self.radius * sin(endAngle) + centreY
 
     def smallestDist(self, pointX, pointY):
         distToCentre = euclideanDist(self.centreX, self.centreY, pointX, pointY)
-        interceptAngle = (atan2(pointY - self.centreY, pointX - self.centreX) + 360) % 360
+        interceptAngle = (atan2(pointY - self.centreY, pointX - self.centreX) + 2 * pi) % (2 * pi)
 
         if isAngleBetween(interceptAngle, self.startAngle, self.endAngle):
             return abs(distToCentre - self.radius)
