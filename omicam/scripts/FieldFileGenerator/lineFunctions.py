@@ -9,7 +9,7 @@ General Notes:
 * Units are cm
 """
 
-from math import sqrt, atan2, cos, sin
+from math import sqrt, pow, atan2, cos, sin
 
 def euclideanDist(startX, startY, endX, endY): # just pythag
     return sqrt(pow(startX - endX, 2) + pow(startY - endY, 2))
