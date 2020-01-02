@@ -45,8 +45,8 @@ typedef enum {
     OBJ_LINES,
 } field_objects_t;
 
-#define BUILD_TARGET_JETSON 0 // Omicam will be running on an NVIDIA Jetson Nano
-#define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC (assumes no camera available and uses test imagery)
+#define BUILD_TARGET_JETSON 0 // Omicam will be running on an NVIDIA Jetson Nano. All features enabled as normal.
+#define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
 #define BUILD_TARGET BUILD_TARGET_PC // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 2 // stop optimisation when a coordinate with this error in centimetres is found

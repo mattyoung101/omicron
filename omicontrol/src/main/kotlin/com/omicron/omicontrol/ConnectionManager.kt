@@ -90,7 +90,8 @@ class ConnectionManager {
      * @param onSuccess callback to run if command was successfully received, executed in JavaFX application thread
      * @param onError callback to run if an error occurred, optional, executed in JavaFX application thread
      */
-    fun dispatchCommand(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit = {}, onError: () -> Unit = {}){
+    fun dispatchCommand(command: RemoteDebug.DebugCommand, onSuccess: (RemoteDebug.DebugCommand) -> Unit = {}, onError: () -> Unit = {},
+                        ignoreErrors: Boolean = false){
         thread(name="Omicontrol Dispatch Await") {
             val begin = System.currentTimeMillis()
 
@@ -104,7 +105,7 @@ class ConnectionManager {
             synchronized(cmdReceivedToken) { cmdReceivedToken.wait(5000) }
 
             if (receivedCmd == null){
-                Logger.warn("Received null/invalid response from Omicontrol")
+                if (!ignoreErrors) Logger.warn("Received null/invalid response from Omicontrol")
                 runLater { onError() }
             } else {
                 // Logger.trace("Received OK response from Omicontrol!")

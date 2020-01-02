@@ -38,25 +38,27 @@ static _Atomic int32_t lastFpsMeasurement = 0;
 /** A detected field object and its associated information */
 typedef struct {
     bool exists;
-    cv::Point centroid;
-    cv::Rect boundingBox;
+    RDPoint centroid;
+    RDRect boundingBox;
+    Mat threshMask;
 } object_result_t;
 
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
  * This is in a separate function so that we can just invoke it for each object, likes "ball", "lines", etc.
  * TODO make frame a GpuMat
+ * @param frame the GPU accelerated Mat containing the current frame being processed
  * @param min an array containing the 3 minimum RGB values
  * @param max an array containing the 3 maximum RGB values
- * @param frame the GPU accelerated Mat containing the current frame being processed
+ * @param objectId what the object is
  */
-static object_result_t process_object(int32_t *min, int32_t *max, Mat frame){
-    Mat thresholded;
-    Mat labels, stats, centroids;
+static object_result_t process_object(Mat frame, int32_t *min, int32_t *max, field_objects_t objectId){
+    Mat thresholded, labels, stats, centroids;
     Scalar minScalar = Scalar(min[0], min[1], min[2]);
     Scalar maxScalar = Scalar(max[0], max[1], max[2]);
 
     // run computer vision tasks
+    // TODO run inRange on GPU using cuda shit eventually
     inRange(frame, minScalar, maxScalar, thresholded);
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
@@ -70,16 +72,26 @@ static object_result_t process_object(int32_t *min, int32_t *max, Mat frame){
         int bSize = stats.at<int>(b, CC_STAT_AREA);
         return aSize < bSize;
     });
-    reverse(sortedLabels.begin(), sortedLabels.end());
 
     auto blobExists = !sortedLabels.empty();
-    auto largestId = !blobExists ? -1 : sortedLabels[0];
+    auto largestId = !blobExists ? -1 : sortedLabels.back();
     auto largestCentroid = !blobExists ? Point(0, 0) : Point(centroids.at<double>(largestId, 0),
                                                              centroids.at<double>(largestId, 1));
+
+    RDRect objRect = {0};
+    if (blobExists) {
+        int rectX = stats.at<int>(largestId, CC_STAT_LEFT);
+        int rectY = stats.at<int>(largestId, CC_STAT_TOP);
+        int rectW = stats.at<int>(largestId, CC_STAT_WIDTH);
+        int rectH = stats.at<int>(largestId, CC_STAT_HEIGHT);
+        objRect = {rectX, rectY, rectW, rectH};
+    }
+
     object_result_t result = {0}; // NOLINT
     result.exists = blobExists;
-    result.centroid = largestCentroid;
-    // TODO calculate bounding box if connected via remote debug, we want to be efficient though so only do it if it's selected
+    result.centroid = {largestCentroid.x, largestCentroid.y};
+    result.boundingBox = objRect;
+    result.threshMask = thresholded;
     return result;
 }
 
@@ -103,10 +115,7 @@ static auto cv_thread(void *arg) -> void *{
 #endif
 
     while (true){
-        Mat frame, ballThresh, frameScaled, frameRGB;
-        Mat ballLabels, ballStats, ballCentroids;
-        Scalar minBallScalar = Scalar(minBallData[0], minBallData[1], minBallData[2]);
-        Scalar maxBallScalar = Scalar(maxBallData[0], maxBallData[1], maxBallData[2]);
+        Mat frame, frameRGB, frameScaled;
 
         // FIXME for some reason when using GpuMat the frame is always null? - we know why now, have to upload it
         cap.read(frame);
@@ -127,30 +136,15 @@ static auto cv_thread(void *arg) -> void *{
         // 3. post back to CPU to run CCL (this doesn't seem to use OpenCL either, and CUDA's CCL sucks so use the CPU one)
         // 4. sort, filter, draw, etc is all on CPU
 
-        // all the image processing is done here
+        // do image pre-processing such as resizing, colour conversions etc
         cvtColor(frame, frameRGB, COLOR_BGR2RGB);
         resize(frameRGB, frameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
-        inRange(frameRGB, minBallScalar, maxBallScalar, ballThresh);
-        int nLabels = connectedComponentsWithStats(ballThresh, ballLabels, ballStats, ballCentroids);
 
-        // TODO dispatch frame to localiser here once we threshold the line
-
-        // find the biggest blob, skipping id 0 which is the background
-        vector<int> sortedLabels;
-        for (int label = 1; label < nLabels; label++){
-            sortedLabels.push_back(label);
-        }
-        sort(sortedLabels.begin(), sortedLabels.end(), [=](const int &a, const int &b){
-            int aSize = ballStats.at<int>(a, CC_STAT_AREA);
-            int bSize = ballStats.at<int>(b, CC_STAT_AREA);
-            return aSize < bSize;
-        });
-        reverse(sortedLabels.begin(), sortedLabels.end());
-
-        auto blobExists = !sortedLabels.empty();
-        auto largestId = !blobExists ? -1 : sortedLabels[0];
-        auto largestCentroid = !blobExists ? Point(0, 0) : Point(ballCentroids.at<double>(largestId, 0),
-                ballCentroids.at<double>(largestId, 1));
+        auto ball = process_object(frameRGB, minBallData, maxBallData, OBJ_BALL);
+        // TODO use scaled frame for yellow and blue goal (will require resizing)
+        // auto yellowGoal = process_object(frameRGB, minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
+        // auto blueGoal = process_object(frameRGB, minBlueData, maxBlueData, OBJ_GOAL_BLUE);
+        auto lines = process_object(frameRGB, minLineData, maxLineData, OBJ_LINES);
 
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
@@ -164,18 +158,25 @@ static auto cv_thread(void *arg) -> void *{
             putText(frameRGB, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.5,
                     Scalar(255, 0, 0), 1, FILLED, false);
 
-            // copy the frame off the GPU for sending
+            // copy the frame off the Mat into some raw data that can be processed by the remote debugger code
             memcpy(frameData, frameRGB.data, frame.rows * frame.cols * 3);
 
             // ballThresh is just a 1-bit mask so it has only one channel
-            auto *ballThreshData = (uint8_t*) calloc(ballThresh.rows * ballThresh.cols, sizeof(uint8_t));
+            auto *threshData = (uint8_t*) calloc(ball.threshMask.rows * ball.threshMask.cols, sizeof(uint8_t));
             switch (selectedFieldObject){
                 case OBJ_NONE: {
                     // just send the empty buffer
+                    remote_debug_post(frameData, threshData, {0, 0, 0, 0}, {0, 0}, lastFpsMeasurement);
                     break;
                 }
                 case OBJ_BALL: {
-                    memcpy(ballThreshData, ballThresh.data, ballThresh.rows * ballThresh.cols);
+                    memcpy(threshData, ball.threshMask.data, ball.threshMask.rows * ball.threshMask.cols);
+                    remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement);
+                    break;
+                }
+                case OBJ_LINES: {
+                    memcpy(threshData, lines.threshMask.data, lines.threshMask.rows * lines.threshMask.cols);
+                    remote_debug_post(frameData, threshData, {0, 0, 0, 0}, {0, 0}, lastFpsMeasurement);
                     break;
                 }
                 default: {
@@ -184,27 +185,13 @@ static auto cv_thread(void *arg) -> void *{
                 }
             }
 
-            // get coords of ball centroid and ball rect to dispatch
-            if (blobExists) {
-                RDPoint ballCentroid = {largestCentroid.x, largestCentroid.y};
-                int rectX = ballStats.at<int>(largestId, CC_STAT_LEFT);
-                int rectY = ballStats.at<int>(largestId, CC_STAT_TOP);
-                int rectW = ballStats.at<int>(largestId, CC_STAT_WIDTH);
-                int rectH = ballStats.at<int>(largestId, CC_STAT_HEIGHT);
-                RDRect ballRect = {rectX, rectY, rectW, rectH};
-                remote_debug_post(frameData, ballThreshData, ballRect, ballCentroid, lastFpsMeasurement);
-            } else {
-                RDRect ballRect = {0, 0, 0, 0};
-                RDPoint ballCentroid = {0, 0};
-                remote_debug_post(frameData, ballThreshData, ballRect, ballCentroid, lastFpsMeasurement);
-            }
         }
 #endif
         // encode protocol buffer to send to ESP over UART
         ObjectData data = ObjectData_init_zero;
-        data.ballExists = blobExists;
-        data.ballX = largestCentroid.x;
-        data.ballY = largestCentroid.y;
+        data.ballExists = ball.exists;
+        data.ballX = ball.centroid.x;
+        data.ballY = ball.centroid.y;
         utils_cv_transmit_data(data);
 
         fpsCounter++;

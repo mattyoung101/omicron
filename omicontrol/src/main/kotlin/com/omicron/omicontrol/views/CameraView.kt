@@ -27,8 +27,6 @@ import org.tinylog.kotlin.Logger
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
-import kotlin.concurrent.timer
-import kotlin.concurrent.timerTask
 import kotlin.math.floor
 
 class CameraView : View() {
@@ -204,7 +202,7 @@ class CameraView : View() {
             colourChannel = COLOURS.indexOf(colour.toUpperCase())
             this.value = value
         }.build()
-        CONNECTION_MANAGER.dispatchCommand(msg)
+        CONNECTION_MANAGER.dispatchCommand(command=msg, ignoreErrors=true)
     }
 
     /**
@@ -313,7 +311,7 @@ class CameraView : View() {
                             .build()
                         CONNECTION_MANAGER.dispatchCommand(msg, {
                             Utils.showGenericAlert(
-                            Alert.AlertType.INFORMATION, "Your settings have been saved to the remote host.",
+                            Alert.AlertType.INFORMATION, "Your settings have been saved permanently to the remote host.",
                             "Config saved successfully"
                             )
                         })
