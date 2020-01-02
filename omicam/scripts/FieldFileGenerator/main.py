@@ -46,4 +46,4 @@ output = list(itertools.chain(*output))
 
 img = Image.new('L', (fieldWidth, fieldLength))
 img.putdata(output)
-img.show()
+img.save("Standard Field.bmp")
