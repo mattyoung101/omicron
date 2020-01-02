@@ -49,6 +49,7 @@ typedef struct {
  * @param objectId what the object is
  */
 static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t *max, field_objects_t objectId){
+    cuda::Stream queue;
     cuda::GpuMat thresholdedGPU(frame.rows, frame.cols, CV_8UC1);
     thresholdedGPU.create(frame.rows, frame.cols, CV_8UC1);
 
@@ -57,7 +58,7 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
     Scalar maxScalar = Scalar(max[0], max[1], max[2]);
 
     // run computer vision tasks
-    inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU);
+    inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU, queue);
     thresholdedGPU.download(thresholded);
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
@@ -116,7 +117,6 @@ static auto cv_thread(void *arg) -> void *{
         Mat frame, frameRGB;
         cuda::GpuMat gpuFrame, gpuFrameRGB, gpuFrameScaled;
 
-        // FIXME for some reason when using GpuMat the frame is always null? - we know why now, have to upload it
         cap.read(frame);
         if (frame.empty()){
             log_warn("Received empty frame from capture!");
@@ -127,18 +127,13 @@ static auto cv_thread(void *arg) -> void *{
 #endif
             continue;
         }
-
-        // so, now that we actually have to worry about uploading/downloading images, here's what I think we should do:
-        // 1. get the frame from the camera, upload it to the GPU (unfortunately due to bullshit we can't just put it directly
-        // into the GPU)
-        // 2. on the GPU: convert to RGB, downscale, threshold
-        // 3. post back to CPU to run CCL (this doesn't seem to use OpenCL either, and CUDA's CCL sucks so use the CPU one)
-        // 4. sort, filter, draw, etc is all on CPU
+        cuda::Stream resizeStream;
 
         // do image pre-processing such as resizing, colour conversions etc
         gpuFrame.upload(frame);
         cuda::cvtColor(gpuFrame, gpuFrameRGB, COLOR_BGR2RGB);
-        cuda::resize(gpuFrameRGB, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
+        cuda::resize(gpuFrameRGB, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR,
+                INTER_NEAREST, resizeStream);
 
         // process all our field objects
         auto ball = process_object(gpuFrameRGB, minBallData, maxBallData, OBJ_BALL);
@@ -214,6 +209,7 @@ static auto fps_counter_thread(void *arg) -> void *{
         fpsCounter = 0;
         if (!remote_debug_is_connected()){
             printf("Vision FPS: %d\n", lastFpsMeasurement);
+            fflush(stdout);
         }
     }
 }
@@ -229,6 +225,9 @@ void vision_init(void){
     log_info("OpenCV version: %d.%d.%d", CV_VERSION_MAJOR, CV_VERSION_MINOR, CV_VERSION_REVISION);
     log_info("System info: %d CPU core(s), %d CUDA device(s) available, %s", numCpus, numCudaDevices,
             openCLDevice ? "OpenCL available" : "OpenCL unavailable");
+    if (numCudaDevices > 0){
+        cuda::printShortCudaDeviceInfo(cuda::getDevice());
+    }
 
     int err = pthread_create(&cvThread, nullptr, cv_thread, nullptr);
     if (err != 0){

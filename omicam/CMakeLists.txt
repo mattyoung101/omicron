@@ -36,6 +36,7 @@ find_package(OpenCV REQUIRED)
 
 # set includes
 include_directories(lib)
+include_directories(/usr/local/cuda/include)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 # add source files

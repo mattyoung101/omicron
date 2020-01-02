@@ -4,6 +4,7 @@
 #include <memory>
 #include <iosfwd>
 #include <iostream>
+#include <opencv2/core/cuda_stream_accessor.hpp>
 #endif
 
 #include "opencv2/highgui/highgui.hpp"
@@ -18,4 +19,4 @@
 // Source for this: https://github.com/opencv/opencv/issues/6295#issuecomment-321727869
 
 void inRange_gpu(cv::cuda::GpuMat &src, cv::Scalar &lowerb, cv::Scalar &upperb,
-                 cv::cuda::GpuMat &dst);
+                 cv::cuda::GpuMat &dst, cv::cuda::Stream &stream);
