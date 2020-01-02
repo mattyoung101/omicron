@@ -6,9 +6,10 @@ The "main" directory contains the actual ESP32 firmware, "components" contains s
 linked in through the IDF's component system (which is just a wrapper around CMake), and "scripts" contains 
 various Python scripts for data generation and development assistance. 
 
-The ESP32 firmware is maintained by two groups of people: Lachlan Ellis and Ethan Lo for the control
-software (e.g. game strategies, tuning), and Matt Young for the low level software (e.g. UART comms, 
-FSM implementation).
+**Credits:**
+- Matt Young: low level software (UART/I2C/Bluetooth comms, FSM backend)
+- Ethan Lo: behaviour and movement code (FSM frontend), tuning
+- Lachlan Ellis: behaviour and movement code (FSM frontend, path following algorithm)
 
 ## Feature list
 - T.B.A.

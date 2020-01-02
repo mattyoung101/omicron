@@ -5,7 +5,7 @@ This is the custom wireless debugging and management app for Team Omicron, to be
 The app is written in Kotlin using JavaFX (via TornadoFX) for the UI. It enables developers to control the robot, view
 debug information, view the camera output and edit camera calibration values.
 
-Omicontrol is built and maintained by Matt Young, so if you have any questions, please contact: 25070@bbc.qld.edu.au
+Omicontrol is built and maintained by Matt Young.
 
 **Note:** The code quality in this project is kind of bad, because I'm not experienced with UI development (so you
 won't be seeing any proper design patterns like MVC). My apologies in advance!
