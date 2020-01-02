@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d9b83753-7bc8-4175-88d3-f0aa9a2e9340" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lineFunctions.py" beforeDir="false" afterPath="$PROJECT_DIR$/lineFunctions.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lineFunctions.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="833">
-              <caret line="65" column="4" selection-start-line="65" selection-start-column="4" selection-end-line="65" selection-end-column="4" />
+            <state relative-caret-position="559">
+              <caret line="90" column="41" selection-start-line="90" selection-start-column="41" selection-end-line="90" selection-end-column="41" />
             </state>
           </provider>
         </entry>
@@ -93,12 +94,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1577960331083</updated>
-      <workItem from="1577960333287" duration="1311000" />
+      <workItem from="1577960333287" duration="2909000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1311000" />
+    <option name="totallyTimeSpent" value="2909000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1920" y="23" width="1920" height="1057" extended-state="0" />
@@ -133,8 +134,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/lineFunctions.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="833">
-          <caret line="65" column="4" selection-start-line="65" selection-start-column="4" selection-end-line="65" selection-end-column="4" />
+        <state relative-caret-position="559">
+          <caret line="90" column="41" selection-start-line="90" selection-start-column="41" selection-end-line="90" selection-end-column="41" />
         </state>
       </provider>
     </entry>
