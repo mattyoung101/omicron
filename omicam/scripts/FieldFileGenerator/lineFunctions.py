@@ -107,6 +107,7 @@ class circularFunction:
         interceptAngle = (atan2(pointY - self.centreY, pointX - self.centreX) + 2 * pi) % (2 * pi)
 
         if isAngleBetween(interceptAngle, self.startAngle, self.endAngle):
+
             return abs(distToCentre - self.radius)
         else:
             distToStart = euclideanDist(self.startX, self.startY, pointX, pointY)
