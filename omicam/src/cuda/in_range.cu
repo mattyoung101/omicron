@@ -1,4 +1,7 @@
+#include <NvInferRuntimeCommon.h>
 #include "in_range.cuh"
+
+// Source for this: https://github.com/opencv/opencv/issues/6295#issuecomment-321727869
 
 __global__ void inRange_kernel(const cv::cuda::PtrStepSz<uchar3> src, cv::cuda::PtrStepSzb dst,
                                int lbc0, int ubc0, int lbc1, int ubc1, int lbc2, int ubc2) {
@@ -15,7 +18,7 @@ __global__ void inRange_kernel(const cv::cuda::PtrStepSz<uchar3> src, cv::cuda::
 }
 
 void inRange_gpu(cv::cuda::GpuMat &src, cv::Scalar &lowerb, cv::Scalar &upperb,
-                 cv::cuda::GpuMat &dst) {
+                 cv::cuda::GpuMat &dst, cv::cuda::Stream &stream) {
     const int m = 32;
     int numRows = src.rows, numCols = src.cols;
     if (numRows == 0 || numCols == 0) return;
@@ -23,6 +26,8 @@ void inRange_gpu(cv::cuda::GpuMat &src, cv::Scalar &lowerb, cv::Scalar &upperb,
     const dim3 gridSize(ceil((float)numCols / m), ceil((float)numRows / m), 1);
     const dim3 blockSize(m, m, 1);
 
-    inRange_kernel<<<gridSize, blockSize>>>(src, dst, lowerb[0], upperb[0], lowerb[1], upperb[1],
+    cudaStream_t cudaStream = cv::cuda::StreamAccessor::getStream(stream);
+
+    inRange_kernel<<<gridSize, blockSize, 0, cudaStream>>>(src, dst, lowerb[0], upperb[0], lowerb[1], upperb[1],
             lowerb[2], upperb[2]);
 }
