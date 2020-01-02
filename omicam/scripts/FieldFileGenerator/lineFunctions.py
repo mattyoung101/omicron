@@ -4,15 +4,20 @@ Python script which contains functions for defining and calculating the shortest
 Written by Ethan Lo, so don't expect this to work too well :)
 """
 
-class linnearFunction:
-    """
-    Note: These docstrings are not here cos i know good code practice, it's cos i forget which thing is what
+from math import sqrt
 
+def euclideanDist(startX, startY, endX, endY): # just pythag
+    return sqrt(pow(startX - endX, 2) + pow(startY - endY, 2))
+
+class linearFunction:
+    """
     grad: the gradient of the input function
     int: the y-intercept of the input function
     perp: the perpendicular gradient of the input function
     domainLower: lower bound of the X coordinate
     domainUpper: upper bound of the X coordinate
+    rangeLower: lower bound of the Y coordinate
+    rangeUpper: upper bound of the Y coordinate
     """
     def __init__(self, startX, startY, endX, endY):
         if startX == endX: # Line is vertical
@@ -29,9 +34,33 @@ class linnearFunction:
 
         self.domainLower = min(startX, endX)
         self.domainUpper = max(startX, endX)
+        self.rangeLower = min(startY, endY)
+        self.rangeUpper = max(startY, endY)
 
     def smallestDist(self, pointX, pointY):
         if self.grad == None: # Check if line is vertical
-            return abs(pointX - self.domainLower)
+            if pointY > self.rangeUpper:
+                return euclideanDist(self.domainLower, self.rangeUpper, pointX, pointY)
+            elif pointY < self.rangeLower:
+                return euclideanDist(self.domainLower, self.rangeLower, pointX, pointY)
+            else:
+                return abs(pointX - self.domainLower)
         elif self.perp == None: # Check if line horizontal
-            return abs(pointY - self.int)
+            if pointX > self.domainUpper:
+                return euclideanDist(self.domainUpper, self.rangeLower, pointX, pointY)
+            elif pointX < self.domainLower:
+                return euclideanDist(self.domainLower, self.rangeLower, pointX, pointY)
+            else:
+                return abs(pointY - self.int)
+        else: # https://www.desmos.com/calculator/lbp0ttkhg1
+            closestX = -((self.grad * self.int - self.grad * pointY - pointX) / (1 + pow(self.grad, 2)))
+            closestY = self.grad * closestX + self.int
+
+            return euclideanDist(closestX, closestY, pointX, pointY)
+
+class circularFunction:
+    """
+    Now before anyone tells me that a circle is not a function, you're right, it's not. However, there is nothing more
+    than a quarter circle, therefore we will treat it as a function. Also it just fits the naming convention better.
+    """
+    
