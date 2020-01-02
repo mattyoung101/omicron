@@ -30,6 +30,8 @@ void utils_ini_update_key(FILE *file, char *key, char *value);
  * comms_uart module.
  */
 void utils_cv_transmit_data(ObjectData ballData);
+/** Reads a binary file from disk. You must free() the returned buffer. **/
+uint8_t *utils_load_bin(char *path, long *size);
 
 #ifdef __cplusplus
 }

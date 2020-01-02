@@ -52,10 +52,11 @@ output = list(itertools.chain(*output))
 
 message = pb.FieldFile()
 message.unitDistance = 1
-message.cellCount = fieldLength * fieldWidth
-message.fieldWidth = fieldWidth
-message.fieldHeight = fieldLength
+message.cellCount = int(fieldLength * fieldWidth)
+message.fieldWidth = int(fieldWidth)
+message.fieldHeight = int(fieldLength)
 message.data.extend(output)
 
-with open("Ints_StandardField.ff", "wb") as file:
-    file.write(message.SerializeToString())
+with open("../../fields/Ints_StandardField.ff", "wb") as file:
+    serialised = message.SerializeToString()
+    file.write(serialised)

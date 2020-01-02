@@ -5,7 +5,7 @@
 
 /**
  * Initialises the localiser using the provided field file
- * @param fieldFile the name of the field file (no path, just the name with extension)
+ * @param fieldFile the full path including extension to the field file
  **/
 void localiser_init(char *fieldFile);
 /**

@@ -10,6 +10,7 @@
 #include "pb.h"
 #include "nanopb/pb_encode.h"
 #include "comms_uart.h"
+#include <errno.h>
 
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 
@@ -72,6 +73,26 @@ void utils_cv_transmit_data(ObjectData ballData){
 void utils_ini_update_key(FILE *file, char *key, char *value){
     // so... here we are! string processing in C. this is going to be fun.
 
+}
+
+uint8_t *utils_load_bin(char *path, long *size){
+    uint8_t *buf = NULL;
+    long length;
+    FILE *f = fopen(path, "rb");
+    if (!f){
+        log_error("Failed to open file \"%s\": %s", path, strerror(errno));
+        *size = 0;
+        return NULL;
+    }
+
+    fseek(f, 0, SEEK_END);
+    length = ftell(f);
+    *size = length;
+    fseek(f, 0, SEEK_SET);
+    buf = malloc(length);
+    fread(buf, 1, length, f);
+    fclose(f);
+    return buf;
 }
 
 // source: https://stackoverflow.com/a/3756954/5007892

@@ -1,12 +1,18 @@
+#include "localisation.h"
 #include <log/log.h>
 #include <nlopt.h>
 #include <stdbool.h>
-#include "localisation.h"
+#include <nanopb/pb_decode.h>
 #include "defines.h"
+#include "utils.h"
+#include "protobuf/FieldFile.pb.h"
+#include <pthread.h>
+#include <unistd.h>
 
 float estimatedX = 0.0f;
 float estimatedY = 0.0f;
 static nlopt_opt optimiser;
+static pthread_t workThread;
 
 static double objective_function(unsigned n, const double* x, double* grad, void* f_data){
     // this will likely be ethan's implementation of the objective function where we look up the value in the
@@ -14,16 +20,28 @@ static double objective_function(unsigned n, const double* x, double* grad, void
     return 0.0;
 }
 
-static void *localisation_work_thread(void *arg){
+static void *work_thread(void *arg){
+    log_trace("Localiser work thread started");
     while (true){
-
+        sleep(0xF0F0FEFE);
     }
     return NULL;
 }
 
 void localiser_init(char *fieldFile){
     log_info("Initialising localiser with field file: %s", fieldFile);
-    // load file, parse protobuf, init cuda program, creat NLopt instance
+    long fileSize = 0;
+    uint8_t *data = utils_load_bin(fieldFile, &fileSize);
+    log_trace("Field file is %ld KiB", fileSize / 1024);
+
+    pb_istream_t stream = pb_istream_from_buffer(data, fileSize);
+    FieldFile field = FieldFile_init_zero;
+    if (!pb_decode(&stream, FieldFile_fields, &field)){
+        log_error("Failed to decode field file: %s", PB_GET_ERROR(&stream));
+    }
+    free(data);
+    log_info("Field information: grid size is %d cm, contains %d cells, dimensions are %dx%d cm",
+            field.unitDistance, field.cellCount, field.fieldWidth, field.fieldHeight);
 
     // create a two dimensional subplex optimiser. subplex is an algorithm similar to Nelder-Mead simplex but it's
     // faster and more stable.
@@ -31,6 +49,14 @@ void localiser_init(char *fieldFile){
     nlopt_set_stopval(optimiser, LOCALISER_ERROR_TOLERANCE); // stop if we're close enough to a solution
     nlopt_set_ftol_abs(optimiser, LOCALISER_STEP_TOLERANCE); // stop if the last step was too small (we must be going nowhere/solved)
     nlopt_set_maxtime(optimiser, LOCALISER_MAX_EVAL_TIME); // stop if it's taking too long
+
+    // create work thread
+    int err = pthread_create(&workThread, NULL, work_thread, NULL);
+    if (err != 0){
+        log_error("Failed to create localiser thread: %s", strerror(err));
+    } else {
+        pthread_setname_np(workThread, "Localiser Thrd");
+    }
 }
 
 void localiser_post(uint8_t *frame, uint16_t width, uint16_t height){
@@ -44,4 +70,5 @@ void localiser_dispose(void){
     // delete cuda, destroy NLopt, free any other resources
     log_trace("Disposing localiser");
     nlopt_destroy(optimiser);
+    pthread_cancel(workThread);
 }
