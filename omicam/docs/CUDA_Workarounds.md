@@ -15,3 +15,7 @@ So for my own implementation, of option 1, here's what we could do:
 1. Split up the RGB image into the 3 channels
 2. Call `threshold` on each channel to get the binary masks
 3. `bitwise_and` R&G channels, then `bitwise_and` that with the `B` channel to do a 3-way bitwise and
+
+**We ended up going with option 2 and it seems to work pretty well.**
+
+## Performance issues

@@ -3,9 +3,13 @@
 This is the custom vision system for Team Omicron, to be deployed in the 2020 Internationals. 
 The production setup uses a NVIDIA Jetson Nano with a Pi Camera v2.
 
-**For the full technical writeup on our custom vision pipeline, please see docs/DESCRIPTION.md.**
+For the full technical writeup on our custom vision pipeline, please see docs/DESCRIPTION.md or our website.
 
-Omicam is built and maintained by Matt Young, so if you have any questions, please contact: 25070@bbc.qld.edu.au
+**Credits:**
+- Matt Young: main developer of C/C++ code, Markdown docs
+- Ethan Lo: field file generator, localisation research
+- Lachlan Ellis: localisation geometry maths
+- Tom Fraser: assistance with OpenCV CUDA performance
 
 ## Features list
 - Efficient camera decoding using V4L2 via gstreamer
@@ -20,20 +24,27 @@ Omicam is built and maintained by Matt Young, so if you have any questions, plea
 
 ## Building and running
 ### Instructions
-Hardware wise, you'll need a Jetson Nano and a Raspberry Pi Camera v2 (or v1 if that's unavailable).
+Hardware wise, you'll need a Jetson Nano and a supported CSI camera, probably the Raspberry Pi Camera v2 (or v1 if that's unavailable).
 
-Flash your Jetson's SD card as per NVIDIA's instructions, boot and update it, then install the following packages:
-- CMake: You need to build the latest CMake from source, instructions are [here](https://cmake.org/install/).
+Flash your Jetson's SD card as per NVIDIA's instructions, boot and update it, then install the following additional packages:
+
+- CMake: To work around various issues (see below), you need to [build the latest CMake from source](https://cmake.org/install/) rather
+than getting it from the repos.
+You will need to `sudo apt install libssl-dev` beforehand, otherwise it will complain. To bootstrap the fastest, I'd recommend using this: 
+`./bootstrap --parallel=4 -- -DCMAKE_BUILD_TYPE:STRING=Release`
 - Ninja: `sudo apt install ninja-build`
 - Clang & LLVM: `sudo apt install clang lldb llvm libasan5 libasan5-dbg`
 - NLopt: `sudo apt install libnlopt-dev libnlopt0`
 - libjpeg-turbo: `sudo apt install libturbojpeg libturbojpeg0-dev`
 - SDL2: `sudo apt install libsdl2-2.0.0 libsdl2-dev libsdl2-doc`
-- OpenCV: follow the instructions linked [here](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html)
+- OpenCV: You will also have to build from source, [see here](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html)
 
 **Note:** A lot of these packages can also be compiled from source if you're experiencing issues.
 
-**FIXME: talk about how to add optimisations to the NLopt build (adding O3 and hard FPU, etc)**
+It may be advisable to remove a bunch of the useless packages Ubuntu installs by default such as LibreOffice. You can do
+so with `sudo apt remove <PACKAGE_NAME>`.
+
+**FIXME: talk about how to add optimisations to the NLopt build (adding O3 and hard FPU, etc) if we still build by source.**
 
 **FIXME: cover running on PC (test target) instead of Jetson. Also include specific Jetson setup instructions.**
 
@@ -50,10 +61,18 @@ To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion 
 - **Clang is the only supported compiler** as it appears that gcc's implementation 
 of Google's Sanitizers doesn't work. You can do this by changing the compiler path from the default gcc 
 to /usr/bin/clang in CLion's toolchain settings.
+- CLion runs the wrong executable due to a long-standing bug with CUDA. Due to this, and also the fact we have elected
+to use the Ninja build tool, you have to build CMake from source, because the latest version in the repos is 3.10 which
+is quite outdated. Specifiying Ninja as the build generator fixes the wrong executable issue.
 - If lldb is broken, try using gdb instead (it doesn't matter that you're compiling with Clang, both will work fine).
 - You will need to disable the visual Address Sanitizer output in CLion as that is also broken.
 - If you install a new library on the Jetson, you will need run Tools->"Resync with remote hosts" to get the new headers.
 - CLion's remote upload occasionally (a few times per full day of work) fails temporarily, just ignore it and try again.
+
+### Final notes
+I sincerely apologise for how complex this build process is, but a lot of it is out of my control as I have to do certain
+steps to work around unfixed bugs and other issues. If you have any questions, don't hesitate to contact me (see above
+for details).
 
 ## License
 Omicam is available under the license of the whole Team Omicron repo, see LICENSE.txt in the root directory. 
