@@ -17,6 +17,27 @@ static pthread_t workThread;
 static double objective_function(unsigned n, const double* x, double* grad, void* f_data){
     // this will likely be ethan's implementation of the objective function where we look up the value in the
     // field map
+
+    /** ALGORITHM OUTLINE
+     * Get the relative coordinates of the points at which the rays intersect the white line (let's call these line points)
+     * Rotate all line points around the centre of the robot based on the current heading
+     * Translate all line points to the current estimated position of the robot (wherever the algorithm is testing)
+     * Round the coordinates of each line point to the nearest cm
+     * Lookup the smallest distance for each line point to the closest line in the massive field file array
+     * Sum all the distances together
+     * 
+     * A potential micro-optimisation here is to arrange the algorithm as such:
+     * 
+     * FOR EACH LINE POINT
+     *     Rotate
+     *     Translate
+     *     Round
+     *     Lookup
+     *     Add to current working total
+     * 
+     * This gives us a value for which the optimiser will aim to minimise. The closer the value is to 0, the better the line points align with the white line
+    **/ 
+
     return 0.0;
 }
 
