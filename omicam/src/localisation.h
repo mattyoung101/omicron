@@ -3,6 +3,13 @@
 #include <stdint.h>
 #include <string.h>
 
+/** An entry submitted to the localisation work queue **/
+typedef struct {
+    uint8_t *frame;
+    uint16_t width;
+    uint16_t height;
+} localiser_entry_t;
+
 /**
  * Initialises the localiser using the provided field file
  * @param fieldFile the full path including extension to the field file

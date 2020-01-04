@@ -39,7 +39,8 @@ static void disposeResources(){
 static void signal_handler(int sig){
     log_info("Received signal %s, terminating capture", strsignal(sig));
     disposeResources();
-    // exit(EXIT_SUCCESS);
+    // FIXME due to threading fuckery this is still required
+    exit(EXIT_SUCCESS);
 }
 
 /** lock the logger to prevent malformed prints across threads **/

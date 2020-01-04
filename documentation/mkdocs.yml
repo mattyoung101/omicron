@@ -1,6 +1,11 @@
-site_name: BBC Robotics - Team Omicron
+site_name: Team Omicron
 theme: windmill
+site_description: "Documentation website for Team Omicron from BBC Robotics, competing in the RoboCup Jr 2020 Internationals."
 
 nav:
     - Home: index.md
     - About: about.md
+    - Hardware:
+        - Structural design: structural_design.md
+    - Software:
+        - Omicam (custom vision system): omicam.md

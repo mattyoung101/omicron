@@ -43,6 +43,11 @@
  */
 typedef struct rpa_queue_t rpa_queue_t;
 
+// [Matt's note: unfortunately due to OpenCV we have to make this an extern C as well sigh]
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * create a FIFO queue
  * @param queue The new queue
@@ -152,5 +157,9 @@ bool rpa_queue_term(rpa_queue_t *queue);
  * @return     always true
  */
 void rpa_queue_destroy(rpa_queue_t * queue);
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif /* RPAQUEUE_H */

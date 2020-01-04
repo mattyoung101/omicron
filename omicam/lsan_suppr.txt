@@ -1,2 +1,3 @@
 # put leak sanitizer things here
 leak:nvidia
+leak:cudart

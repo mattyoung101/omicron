@@ -18,18 +18,15 @@
 #include "utils.h"
 #include "remote_debug.h"
 #include "cuda/in_range.cuh"
-
+#include "rpa_queue.h"
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
 using namespace std;
 
-// This file handles all the OpenCV tasks in C++ code, which is then called by the C code in the rest of the project.
-// Essentially it's just a wrapper for OpenCV
-
-static pthread_t cvThread = {0};
-static pthread_t fpsCounterThread = {0};
-static _Atomic int32_t fpsCounter = 0;
-static _Atomic int32_t lastFpsMeasurement = 0;
+// This file handles all the OpenCV tasks in C++ code, which is then called by the C code in the rest of the project,
+// as OpenCV dropped support for the legacy C API.
+// I also sincerely apologise in advance for the somewhat hideous mix of C-style code and modern C++-style code, I didn't have
+// the time or energy to learn proper modern C++ for just this file in a majority C project.
 
 /** A detected field object and its associated information */
 typedef struct {
@@ -38,6 +35,22 @@ typedef struct {
     RDRect boundingBox;
     Mat threshMask;
 } object_result_t;
+
+/** An entry in a vision thread work queue */
+typedef struct {
+    int32_t *min;
+    int32_t *max;
+    field_objects_t objectId;
+} vision_entry_t;
+
+static pthread_t cvThread = {0};
+static pthread_t fpsCounterThread = {0};
+static _Atomic int32_t fpsCounter = 0;
+static _Atomic int32_t lastFpsMeasurement = 0;
+static pthread_t workThreads[4] = {0};
+static rpa_queue_t *workQueues[4] = {0}; // a queue that each worker has to receive new items to process from
+static cuda::GpuMat *currentFrame, *currentResizedFrame; // the current frame, converted to RGB on the GPU, that will be processed by the workers
+static object_result_t results[4] = {0}; // results of the vision processing goes into this array
 
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
@@ -59,7 +72,7 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
 
     // run computer vision tasks
     inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU, queue);
-    thresholdedGPU.download(thresholded);
+    thresholdedGPU.download(thresholded, queue);
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
     // find the biggest blob, skipping id 0 which is the background
@@ -94,9 +107,41 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
     return result;
 }
 
+/** work thread for GPU processing code **/
+static auto gpu_work_thread(void *arg) -> void * {
+    uint32_t id = *(uint32_t*) arg;
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
+    log_trace("GPU work thread #%d started", id);
+
+    while (true){
+        void *queueData = nullptr;
+        if (!rpa_queue_pop(workQueues[id], &queueData)){
+            log_warn("Worker %d failed to pop item from work queue", id);
+            break;
+        }
+
+        // printf("worker %d received some data\n", id);
+        auto *entry = (vision_entry_t*) queueData;
+        free(entry);
+    }
+    return nullptr;
+}
+
+static inline void schedule_worker(int32_t id, int32_t *min, int32_t *max, field_objects_t objectId){
+    auto *entry = (vision_entry_t*) malloc(sizeof(vision_entry_t));
+    entry->objectId = objectId;
+    entry->min = min;
+    entry->max = max;
+    if (!rpa_queue_trypush(workQueues[id], entry)){
+        log_warn("Failed to push item to GPU worker queue. This may indicate performance problems or a hang.");
+        free(entry);
+    }
+}
+
 /** this task runs all the computer vision for Omicam, using OpenCV */
 static auto cv_thread(void *arg) -> void *{
     uint32_t rdFrameCounter = 0;
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
@@ -127,13 +172,17 @@ static auto cv_thread(void *arg) -> void *{
 #endif
             continue;
         }
-        cuda::Stream resizeStream;
 
         // do image pre-processing such as resizing, colour conversions etc
         gpuFrame.upload(frame);
         cuda::cvtColor(gpuFrame, gpuFrameRGB, COLOR_BGR2RGB);
         cuda::resize(gpuFrameRGB, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR,
-                INTER_NEAREST, resizeStream);
+                INTER_NEAREST);
+
+        // prepare workers for new entry
+        memset(results, 0, sizeof(object_result_t) * 4);
+        currentFrame = &gpuFrameRGB;
+        currentResizedFrame = &gpuFrameScaled;
 
         // process all our field objects
         auto ball = process_object(gpuFrameRGB, minBallData, maxBallData, OBJ_BALL);
@@ -141,6 +190,9 @@ static auto cv_thread(void *arg) -> void *{
         // auto yellowGoal = process_object(frameRGB, minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
         // auto blueGoal = process_object(frameRGB, minBlueData, maxBlueData, OBJ_GOAL_BLUE);
         auto lines = process_object(gpuFrameRGB, minLineData, maxLineData, OBJ_LINES);
+
+        // schedule_worker(0, minBallData, maxBallData, OBJ_BALL);
+        // schedule_worker(1, minLineData, maxLineData, OBJ_LINES);
 
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
@@ -195,7 +247,7 @@ static auto cv_thread(void *arg) -> void *{
         fpsCounter++;
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-        // waitKey(static_cast<int>(1000 / fps));
+        waitKey(static_cast<int>(1000 / fps));
 #endif
     }
     destroyAllWindows();
@@ -229,6 +281,12 @@ void vision_init(void){
         cuda::printShortCudaDeviceInfo(cuda::getDevice());
     }
 
+    // create work queues
+    for (auto & workQueue : workQueues){
+        rpa_queue_create(&workQueue, 2);
+    }
+
+    // create threads
     int err = pthread_create(&cvThread, nullptr, cv_thread, nullptr);
     if (err != 0){
         log_error("Failed to create OpenCV thread: %s", strerror(err));
@@ -243,6 +301,12 @@ void vision_init(void){
         pthread_setname_np(fpsCounterThread, "FPS Counter");
     }
 
+    for (int i = 0; i < 4; i++){
+        auto *arg = new uint32_t;
+        *arg = i;
+        pthread_create(&workThreads[i], nullptr, gpu_work_thread, (void*) arg);
+    }
+
     log_info("Vision started");
     pthread_join(cvThread, nullptr);
     // this will block forever, or until the vision thread terminates for some reason
@@ -250,7 +314,14 @@ void vision_init(void){
 
 void vision_dispose(void){
     log_trace("Stopping vision thread");
+    // important note: for some fucking reason you have to cancel these shits first, or the app won't exit properly
+    for (auto & thread : workThreads){
+        pthread_cancel(thread);
+    }
     pthread_cancel(cvThread);
+    for (auto & workQueue : workQueues){
+        rpa_queue_destroy(workQueue);
+    }
 }
 
 // and now...
