@@ -25,6 +25,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Og ${SAFETY_FLAGS} ${PERFORMANCE_
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${PERFORMANCE_FLAGS}") # full optimisation and no safety features
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${PERFORMANCE_FLAGS}")
 
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -lineinfo -O3")
+
 # find packages
 find_package(OpenMP)
 if (OPENMP_FOUND)

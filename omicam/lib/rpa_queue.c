@@ -243,6 +243,7 @@ bool rpa_queue_trypush(rpa_queue_t *queue, void *data)
 
     if (rpa_queue_full(queue)) {
         rv = pthread_mutex_unlock(queue->one_big_mutex);
+        // puts("queue full?");
         return false; //EAGAIN;
     }
 

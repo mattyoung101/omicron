@@ -14,6 +14,7 @@
 #include <opencv2/cudaobjdetect.hpp>
 #include <map>
 #include <unistd.h>
+#include <atomic>
 #include "defines.h"
 #include "utils.h"
 #include "remote_debug.h"
@@ -33,7 +34,7 @@ typedef struct {
     bool exists;
     RDPoint centroid;
     RDRect boundingBox;
-    Mat threshMask;
+    Mat *threshMask;
 } object_result_t;
 
 /** An entry in a vision thread work queue */
@@ -49,31 +50,34 @@ static _Atomic int32_t fpsCounter = 0;
 static _Atomic int32_t lastFpsMeasurement = 0;
 static pthread_t workThreads[4] = {0};
 static rpa_queue_t *workQueues[4] = {0}; // a queue that each worker has to receive new items to process from
-static cuda::GpuMat *currentFrame, *currentResizedFrame; // the current frame, converted to RGB on the GPU, that will be processed by the workers
+// TODO does this need to be atomic? might make it slower
+static atomic<cuda::GpuMat*> currentFrame, currentResizedFrame; // the current frame, converted to RGB on the GPU, that will be processed by the workers
 static object_result_t results[4] = {0}; // results of the vision processing goes into this array
+static pthread_cond_t doneCond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t doneMutex = PTHREAD_MUTEX_INITIALIZER;
+static uint8_t doneThreads = 0; // number of completed threads
 
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
  * This is in a separate function so that we can just invoke it for each object, likes "ball", "lines", etc.
- * TODO make frame a GpuMat
  * @param frame the GPU accelerated Mat containing the current frame being processed
  * @param min an array containing the 3 minimum RGB values
  * @param max an array containing the 3 maximum RGB values
  * @param objectId what the object is
  */
 static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t *max, field_objects_t objectId){
-    cuda::Stream queue;
     cuda::GpuMat thresholdedGPU(frame.rows, frame.cols, CV_8UC1);
     thresholdedGPU.create(frame.rows, frame.cols, CV_8UC1);
 
-    Mat thresholded, labels, stats, centroids;
+    Mat *thresholded = new Mat;
+    Mat labels, stats, centroids;
     Scalar minScalar = Scalar(min[0], min[1], min[2]);
     Scalar maxScalar = Scalar(max[0], max[1], max[2]);
 
     // run computer vision tasks
-    inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU, queue);
-    thresholdedGPU.download(thresholded, queue);
-    int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
+    inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU);
+    thresholdedGPU.download(*thresholded);
+    int nLabels = connectedComponentsWithStats(*thresholded, labels, stats, centroids);
 
     // find the biggest blob, skipping id 0 which is the background
     vector<int> sortedLabels;
@@ -90,7 +94,7 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
     auto largestId = !blobExists ? -1 : sortedLabels.back();
     auto largestCentroid = !blobExists ? Point(0, 0) : Point(centroids.at<double>(largestId, 0),
                                                              centroids.at<double>(largestId, 1));
-    RDRect objRect = {0};
+    RDRect objRect;
     if (blobExists) {
         int rectX = stats.at<int>(largestId, CC_STAT_LEFT);
         int rectY = stats.at<int>(largestId, CC_STAT_TOP);
@@ -107,33 +111,47 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
     return result;
 }
 
-/** work thread for GPU processing code **/
+/**
+ * So basically what the GPU worker does is asynchronously run GPU IO. Uploading/downloading from the GPU is the main
+ * bottleneck on our program, so what this does is organise it so that in theory we can process all 4 objects at the
+ * same time instead of running them in serial.
+ */
 static auto gpu_work_thread(void *arg) -> void * {
     uint32_t id = *(uint32_t*) arg;
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
-    log_trace("GPU work thread #%d started", id);
+    log_trace("GPU work thread %d started", id);
 
     while (true){
         void *queueData = nullptr;
         if (!rpa_queue_pop(workQueues[id], &queueData)){
-            log_warn("Worker %d failed to pop item from work queue", id);
+            log_warn("GPU worker %d failed to pop item from work queue", id);
             break;
         }
 
-        // printf("worker %d received some data\n", id);
         auto *entry = (vision_entry_t*) queueData;
+        object_result_t result = process_object(*currentFrame, entry->min, entry->max, entry->objectId);
+        results[id] = result;
+
+        // notify the main thread we're done
+        pthread_mutex_lock(&doneMutex);
+        doneThreads++;
+        pthread_cond_signal(&doneCond);
+        pthread_mutex_unlock(&doneMutex);
         free(entry);
     }
     return nullptr;
 }
 
-static inline void schedule_worker(int32_t id, int32_t *min, int32_t *max, field_objects_t objectId){
+/** simple utility function to post to a GPU worker **/
+static inline void gpu_worker_post(int32_t id, int32_t *min, int32_t *max, field_objects_t objectId){
     auto *entry = (vision_entry_t*) malloc(sizeof(vision_entry_t));
     entry->objectId = objectId;
     entry->min = min;
     entry->max = max;
     if (!rpa_queue_trypush(workQueues[id], entry)){
-        log_warn("Failed to push item to GPU worker queue. This may indicate performance problems or a hang.");
+        // TODO ok so i think the reason why this is being called is because of the fact that ASan is running in the thread
+        // TODO as shown by the debugger
+        // log_warn("Failed to push item to GPU worker %d. This may indicate performance problems or a hang.", id);
         free(entry);
     }
 }
@@ -161,6 +179,7 @@ static auto cv_thread(void *arg) -> void *{
     while (true){
         Mat frame, frameRGB;
         cuda::GpuMat gpuFrame, gpuFrameRGB, gpuFrameScaled;
+        cuda::Stream resizeStream;
 
         cap.read(frame);
         if (frame.empty()){
@@ -177,7 +196,7 @@ static auto cv_thread(void *arg) -> void *{
         gpuFrame.upload(frame);
         cuda::cvtColor(gpuFrame, gpuFrameRGB, COLOR_BGR2RGB);
         cuda::resize(gpuFrameRGB, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR,
-                INTER_NEAREST);
+                INTER_NEAREST, resizeStream);
 
         // prepare workers for new entry
         memset(results, 0, sizeof(object_result_t) * 4);
@@ -185,14 +204,23 @@ static auto cv_thread(void *arg) -> void *{
         currentResizedFrame = &gpuFrameScaled;
 
         // process all our field objects
-        auto ball = process_object(gpuFrameRGB, minBallData, maxBallData, OBJ_BALL);
+        gpu_worker_post(0, minBallData, maxBallData, OBJ_BALL);
         // TODO use scaled frame for yellow and blue goal (will require scaling coords and stuff)
-        // auto yellowGoal = process_object(frameRGB, minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
-        // auto blueGoal = process_object(frameRGB, minBlueData, maxBlueData, OBJ_GOAL_BLUE);
-        auto lines = process_object(gpuFrameRGB, minLineData, maxLineData, OBJ_LINES);
+        // yellow goal = 1, blue goal = 2
+        gpu_worker_post(3, minLineData, maxLineData, OBJ_LINES);
 
-        // schedule_worker(0, minBallData, maxBallData, OBJ_BALL);
-        // schedule_worker(1, minLineData, maxLineData, OBJ_LINES);
+        // wait for threads to complete, each time a thread completes it will post the done condition
+        pthread_mutex_lock(&doneMutex);
+        // FIXME: currently only two threads in use, in future it will be 4!!
+        while (doneThreads < 2){
+            pthread_cond_wait(&doneCond, &doneMutex);
+        }
+        pthread_mutex_unlock(&doneMutex);
+
+        auto ball = results[0];
+        // auto yellowGoal = results[1];
+        // auto blueGoal = results[2];
+        auto lines = results[3];
 
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
@@ -212,7 +240,7 @@ static auto cv_thread(void *arg) -> void *{
             memcpy(frameData, frameRGB.data, frame.rows * frame.cols * 3);
 
             // ballThresh is just a 1-bit mask so it has only one channel
-            auto *threshData = (uint8_t*) calloc(ball.threshMask.rows * ball.threshMask.cols, sizeof(uint8_t));
+            auto *threshData = (uint8_t*) calloc(ball.threshMask->rows * ball.threshMask->cols, sizeof(uint8_t));
             switch (selectedFieldObject){
                 case OBJ_NONE: {
                     // just send the empty buffer
@@ -220,12 +248,12 @@ static auto cv_thread(void *arg) -> void *{
                     break;
                 }
                 case OBJ_BALL: {
-                    memcpy(threshData, ball.threshMask.data, ball.threshMask.rows * ball.threshMask.cols);
+                    memcpy(threshData, ball.threshMask->data, ball.threshMask->rows * ball.threshMask->cols);
                     remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement);
                     break;
                 }
                 case OBJ_LINES: {
-                    memcpy(threshData, lines.threshMask.data, lines.threshMask.rows * lines.threshMask.cols);
+                    memcpy(threshData, lines.threshMask->data, lines.threshMask->rows * lines.threshMask->cols);
                     remote_debug_post(frameData, threshData, {0, 0, 0, 0}, {0, 0}, lastFpsMeasurement);
                     break;
                 }
@@ -246,8 +274,12 @@ static auto cv_thread(void *arg) -> void *{
 
         fpsCounter++;
 
+        // TODO also delete other mats here as well, the goal ones, when added
+        delete ball.threshMask;
+        delete lines.threshMask;
+
 #if BUILD_TARGET == BUILD_TARGET_PC
-        waitKey(static_cast<int>(1000 / fps));
+        // waitKey(static_cast<int>(1000 / fps));
 #endif
     }
     destroyAllWindows();
@@ -281,10 +313,12 @@ void vision_init(void){
         cuda::printShortCudaDeviceInfo(cuda::getDevice());
     }
 
-    // create work queues
+    // create work queues and associated stuff
     for (auto & workQueue : workQueues){
         rpa_queue_create(&workQueue, 2);
     }
+    pthread_cond_init(&doneCond, nullptr);
+    pthread_mutex_init(&doneMutex, nullptr);
 
     // create threads
     int err = pthread_create(&cvThread, nullptr, cv_thread, nullptr);
@@ -305,6 +339,10 @@ void vision_init(void){
         auto *arg = new uint32_t;
         *arg = i;
         pthread_create(&workThreads[i], nullptr, gpu_work_thread, (void*) arg);
+
+        char buf[32];
+        sprintf(buf, "GPU Worker %d", i);
+        pthread_setname_np(workThreads[i], buf);
     }
 
     log_info("Vision started");
@@ -322,6 +360,8 @@ void vision_dispose(void){
     for (auto & workQueue : workQueues){
         rpa_queue_destroy(workQueue);
     }
+    pthread_cond_destroy(&doneCond);
+    pthread_mutex_destroy(&doneMutex);
 }
 
 // and now...
