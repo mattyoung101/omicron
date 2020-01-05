@@ -14,6 +14,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <pwd.h>
+#include <cuda_profiler_api.h>
 #include "remote_debug.h"
 #include "utils.h"
 #include "alloc_pool.h"
@@ -26,6 +27,8 @@ static pthread_mutex_t logLock;
 /** free resources allocated by the app **/
 static void disposeResources(){
     log_trace("Disposing resources");
+    cudaProfilerStop();
+
     vision_dispose();
     remote_debug_dispose();
     localiser_dispose();

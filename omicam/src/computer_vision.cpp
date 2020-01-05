@@ -47,10 +47,6 @@ static pthread_t cvThread = {0};
 static pthread_t fpsCounterThread = {0};
 static _Atomic int32_t fpsCounter = 0;
 static _Atomic int32_t lastFpsMeasurement = 0;
-static pthread_t workThreads[4] = {0};
-static rpa_queue_t *workQueues[4] = {0}; // a queue that each worker has to receive new items to process from
-static cuda::GpuMat *currentFrame, *currentResizedFrame; // the current frame, converted to RGB on the GPU, that will be processed by the workers
-static object_result_t results[4] = {0}; // results of the vision processing goes into this array
 
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
@@ -62,9 +58,11 @@ static object_result_t results[4] = {0}; // results of the vision processing goe
  * @param objectId what the object is
  */
 static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t *max, field_objects_t objectId){
-    cuda::HostMem thresholdedShared(frame.rows, frame.cols, CV_8UC1, cuda::HostMem::AllocType::SHARED);
-    auto thresholdedGPU = thresholdedShared.createGpuMatHeader();
-    thresholdedGPU.create(frame.rows, frame.cols, CV_8UC1);
+    void *sharedFrame;
+    cudaMallocManaged(&sharedFrame, frame.rows * frame.cols * 3);
+
+    cuda::GpuMat thresholdedGPU(frame.rows, frame.cols, CV_8UC1, sharedFrame);
+    Mat thresholded(frame.rows, frame.cols, CV_8UC1, sharedFrame);
 
     Mat labels, stats, centroids;
     Scalar minScalar = Scalar(min[0], min[1], min[2]);
@@ -72,7 +70,7 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
 
     // run computer vision tasks
     inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU);
-    Mat thresholded = thresholdedShared.createMatHeader();
+    cudaDeviceSynchronize();
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
     // find the biggest blob, skipping id 0 which is the background
@@ -90,7 +88,7 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
     auto largestId = !blobExists ? -1 : sortedLabels.back();
     auto largestCentroid = !blobExists ? Point(0, 0) : Point(centroids.at<double>(largestId, 0),
                                                              centroids.at<double>(largestId, 1));
-    RDRect objRect = {0};
+    RDRect objRect = {};
     if (blobExists) {
         int rectX = stats.at<int>(largestId, CC_STAT_LEFT);
         int rectY = stats.at<int>(largestId, CC_STAT_TOP);
@@ -103,62 +101,10 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
     result.exists = blobExists;
     result.centroid = {largestCentroid.x, largestCentroid.y};
     result.boundingBox = objRect;
-    result.threshMask = thresholded;
+    thresholded.copyTo(result.threshMask);
+
+    cudaFree(sharedFrame);
     return result;
-}
-
-/** work thread for GPU processing code **/
-static auto gpu_work_thread(void *arg) -> void * {
-    uint32_t id = *(uint32_t*) arg;
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
-    log_trace("GPU work thread #%d started", id);
-
-    while (true){
-        void *queueData = nullptr;
-        if (!rpa_queue_pop(workQueues[id], &queueData)){
-            log_warn("Worker %d failed to pop item from work queue", id);
-            break;
-        }
-
-        // printf("worker %d received some data\n", id);
-        auto *entry = (vision_entry_t*) queueData;
-        free(entry);
-    }
-    return nullptr;
-}
-
-static inline void schedule_worker(int32_t id, int32_t *min, int32_t *max, field_objects_t objectId){
-    auto *entry = (vision_entry_t*) malloc(sizeof(vision_entry_t));
-    entry->objectId = objectId;
-    entry->min = min;
-    entry->max = max;
-    if (!rpa_queue_trypush(workQueues[id], entry)){
-        log_warn("Failed to push item to GPU worker queue. This may indicate performance problems or a hang.");
-        free(entry);
-    }
-}
-
-static string type2str(int type) {
-    string r;
-
-    uchar depth = type & CV_MAT_DEPTH_MASK;
-    uchar chans = 1 + (type >> CV_CN_SHIFT);
-
-    switch ( depth ) {
-        case CV_8U:  r = "8U"; break;
-        case CV_8S:  r = "8S"; break;
-        case CV_16U: r = "16U"; break;
-        case CV_16S: r = "16S"; break;
-        case CV_32S: r = "32S"; break;
-        case CV_32F: r = "32F"; break;
-        case CV_64F: r = "64F"; break;
-        default:     r = "User"; break;
-    }
-
-    r += "C";
-    r += (chans+'0');
-
-    return r;
 }
 
 /** this task runs all the computer vision for Omicam, using OpenCV */
@@ -182,8 +128,12 @@ static auto cv_thread(void *arg) -> void *{
 #endif
 
     while (true){
-        Mat frame; // TODO make this host mem also to save a copy (possibly?)
-        cuda::GpuMat gpuFrameScaled;
+        void *frameShared, *scaledFrameShared;
+        cudaMallocManaged(&frameShared, 1280 * 720 * 3); // FIXME just for testing
+        cudaMallocManaged(&scaledFrameShared, 1280 * 720 * 3);
+
+        Mat frame(720, 1280, CV_8UC3, frameShared);
+        cuda::GpuMat gpuFrame(720, 1280, CV_8UC3, frameShared);
 
         cap.read(frame);
         if (frame.empty()){
@@ -196,33 +146,26 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
-        cuda::HostMem frameShared(frame, cuda::HostMem::AllocType::SHARED);
-        cuda::GpuMat gpuFrame = frameShared.createGpuMatHeader();
 
-        cuda::HostMem frameRGBShared(frameShared.rows, frameShared.cols, frameShared.type(), cuda::HostMem::AllocType::SHARED);
-        cuda::GpuMat gpuFrameRGB = frameRGBShared.createGpuMatHeader();
+        double begin = utils_get_millis();
 
         // do image pre-processing such as resizing, colour conversions etc
-        cuda::cvtColor(gpuFrame, gpuFrameRGB, COLOR_BGR2RGB);
-        cuda::resize(gpuFrameRGB, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR,
-                INTER_NEAREST);
-
-        // prepare workers for new entry
-        memset(results, 0, sizeof(object_result_t) * 4);
-        currentFrame = &gpuFrameRGB;
-        currentResizedFrame = &gpuFrameScaled;
+        // FIXME we can skip this by swapping the order of the thresholds in the processing step
+        cuda::cvtColor(gpuFrame, gpuFrame, COLOR_BGR2RGB);
+//        cuda::resize(gpuFrame, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR,
+//                INTER_NEAREST);
 
         // process all our field objects
-        auto ball = process_object(gpuFrameRGB, minBallData, maxBallData, OBJ_BALL);
+        auto ball = process_object(gpuFrame, minBallData, maxBallData, OBJ_BALL);
         // TODO use scaled frame for yellow and blue goal (will require scaling coords and stuff)
         // auto yellowGoal = process_object(frameRGB, minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
         // auto blueGoal = process_object(frameRGB, minBlueData, maxBlueData, OBJ_GOAL_BLUE);
-        auto lines = process_object(gpuFrameRGB, minLineData, maxLineData, OBJ_LINES);
+        auto lines = process_object(gpuFrame, minLineData, maxLineData, OBJ_LINES);
 
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
         if (rdFrameCounter++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()) {
-            Mat frameRGB = frameRGBShared.createMatHeader();
+            Mat frameRGB = frame;
 
             char buf[128] = {0};
             snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", rdFrameCounter, OMICAM_VERSION,
@@ -269,6 +212,10 @@ static auto cv_thread(void *arg) -> void *{
         utils_cv_transmit_data(data);
 
         fpsCounter++;
+        cudaFree(frameShared);
+        cudaFree(scaledFrameShared);
+        double end = utils_get_millis() - begin;
+        printf("last frame took: %.2f ms to process (%.2f fps) \n", end, 1000.0 / end);
 
 #if BUILD_TARGET == BUILD_TARGET_PC
         // waitKey(static_cast<int>(1000 / fps));
@@ -306,11 +253,6 @@ void vision_init(void){
     }
     cudaSetDeviceFlags(cudaDeviceMapHost);
 
-    // create work queues
-    for (auto & workQueue : workQueues){
-        rpa_queue_create(&workQueue, 2);
-    }
-
     // create threads
     int err = pthread_create(&cvThread, nullptr, cv_thread, nullptr);
     if (err != 0){
@@ -326,12 +268,6 @@ void vision_init(void){
         pthread_setname_np(fpsCounterThread, "FPS Counter");
     }
 
-    for (int i = 0; i < 4; i++){
-        auto *arg = new uint32_t;
-        *arg = i;
-        pthread_create(&workThreads[i], nullptr, gpu_work_thread, (void*) arg);
-    }
-
     log_info("Vision started");
     pthread_join(cvThread, nullptr);
     // this will block forever, or until the vision thread terminates for some reason
@@ -339,14 +275,7 @@ void vision_init(void){
 
 void vision_dispose(void){
     log_trace("Stopping vision thread");
-    // important note: for some fucking reason you have to cancel these shits first, or the app won't exit properly
-    for (auto & thread : workThreads){
-        pthread_cancel(thread);
-    }
     pthread_cancel(cvThread);
-    for (auto & workQueue : workQueues){
-        rpa_queue_destroy(workQueue);
-    }
 }
 
 // and now...
