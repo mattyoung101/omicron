@@ -101,7 +101,7 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
         objRect = {rectX, rectY, rectW, rectH};
     }
 
-    object_result_t result = {0}; // NOLINT
+    object_result_t result = {}; // NOLINT
     result.exists = blobExists;
     result.centroid = {largestCentroid.x, largestCentroid.y};
     result.boundingBox = objRect;
