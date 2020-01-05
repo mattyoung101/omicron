@@ -62,17 +62,17 @@ static object_result_t results[4] = {0}; // results of the vision processing goe
  * @param objectId what the object is
  */
 static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t *max, field_objects_t objectId){
-    cuda::Stream queue;
-    cuda::GpuMat thresholdedGPU(frame.rows, frame.cols, CV_8UC1);
+    cuda::HostMem thresholdedShared(frame.rows, frame.cols, CV_8UC1, cuda::HostMem::AllocType::SHARED);
+    auto thresholdedGPU = thresholdedShared.createGpuMatHeader();
     thresholdedGPU.create(frame.rows, frame.cols, CV_8UC1);
 
-    Mat thresholded, labels, stats, centroids;
+    Mat labels, stats, centroids;
     Scalar minScalar = Scalar(min[0], min[1], min[2]);
     Scalar maxScalar = Scalar(max[0], max[1], max[2]);
 
     // run computer vision tasks
-    inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU, queue);
-    thresholdedGPU.download(thresholded, queue);
+    inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU);
+    Mat thresholded = thresholdedShared.createMatHeader();
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
     // find the biggest blob, skipping id 0 which is the background
@@ -138,6 +138,29 @@ static inline void schedule_worker(int32_t id, int32_t *min, int32_t *max, field
     }
 }
 
+static string type2str(int type) {
+    string r;
+
+    uchar depth = type & CV_MAT_DEPTH_MASK;
+    uchar chans = 1 + (type >> CV_CN_SHIFT);
+
+    switch ( depth ) {
+        case CV_8U:  r = "8U"; break;
+        case CV_8S:  r = "8S"; break;
+        case CV_16U: r = "16U"; break;
+        case CV_16S: r = "16S"; break;
+        case CV_32S: r = "32S"; break;
+        case CV_32F: r = "32F"; break;
+        case CV_64F: r = "64F"; break;
+        default:     r = "User"; break;
+    }
+
+    r += "C";
+    r += (chans+'0');
+
+    return r;
+}
+
 /** this task runs all the computer vision for Omicam, using OpenCV */
 static auto cv_thread(void *arg) -> void *{
     uint32_t rdFrameCounter = 0;
@@ -159,8 +182,8 @@ static auto cv_thread(void *arg) -> void *{
 #endif
 
     while (true){
-        Mat frame, frameRGB;
-        cuda::GpuMat gpuFrame, gpuFrameRGB, gpuFrameScaled;
+        Mat frame; // TODO make this host mem also to save a copy (possibly?)
+        cuda::GpuMat gpuFrameScaled;
 
         cap.read(frame);
         if (frame.empty()){
@@ -173,8 +196,13 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
+        cuda::HostMem frameShared(frame, cuda::HostMem::AllocType::SHARED);
+        cuda::GpuMat gpuFrame = frameShared.createGpuMatHeader();
+
+        cuda::HostMem frameRGBShared(frameShared.rows, frameShared.cols, frameShared.type(), cuda::HostMem::AllocType::SHARED);
+        cuda::GpuMat gpuFrameRGB = frameRGBShared.createGpuMatHeader();
+
         // do image pre-processing such as resizing, colour conversions etc
-        gpuFrame.upload(frame);
         cuda::cvtColor(gpuFrame, gpuFrameRGB, COLOR_BGR2RGB);
         cuda::resize(gpuFrameRGB, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR,
                 INTER_NEAREST);
@@ -191,14 +219,10 @@ static auto cv_thread(void *arg) -> void *{
         // auto blueGoal = process_object(frameRGB, minBlueData, maxBlueData, OBJ_GOAL_BLUE);
         auto lines = process_object(gpuFrameRGB, minLineData, maxLineData, OBJ_LINES);
 
-        // schedule_worker(0, minBallData, maxBallData, OBJ_BALL);
-        // schedule_worker(1, minLineData, maxLineData, OBJ_LINES);
-
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
         if (rdFrameCounter++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()) {
-            // download frame off GPU
-            gpuFrameRGB.download(frameRGB);
+            Mat frameRGB = frameRGBShared.createMatHeader();
 
             char buf[128] = {0};
             snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", rdFrameCounter, OMICAM_VERSION,
@@ -247,7 +271,7 @@ static auto cv_thread(void *arg) -> void *{
         fpsCounter++;
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-        waitKey(static_cast<int>(1000 / fps));
+        // waitKey(static_cast<int>(1000 / fps));
 #endif
     }
     destroyAllWindows();

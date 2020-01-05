@@ -10,7 +10,7 @@ import javafx.scene.control.Label
  * 1.1.0a: UI implemented and threshold sliders/debug commands work properly
  */
 const val OMICONTROL_VERSION = "1.1.0a"
-const val REMOTE_IP = "192.168.1.11"
+const val REMOTE_IP = "192.168.1.9"
 const val REMOTE_PORT = 42708
 val CONNECTION_MANAGER = ConnectionManager()
 val EVENT_BUS = EventBus()
