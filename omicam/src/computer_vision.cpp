@@ -304,6 +304,7 @@ void vision_init(void){
     if (numCudaDevices > 0){
         cuda::printShortCudaDeviceInfo(cuda::getDevice());
     }
+    cudaSetDeviceFlags(cudaDeviceMapHost);
 
     // create work queues
     for (auto & workQueue : workQueues){
