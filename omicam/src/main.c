@@ -14,6 +14,7 @@
 #include <math.h>
 #include <pthread.h>
 #include <pwd.h>
+#include <cuda_profiler_api.h>
 #include "remote_debug.h"
 #include "utils.h"
 #include "alloc_pool.h"
@@ -26,6 +27,7 @@ static pthread_mutex_t logLock;
 /** free resources allocated by the app **/
 static void disposeResources(){
     log_trace("Disposing resources");
+    cudaProfilerStop();
     vision_dispose();
     remote_debug_dispose();
     localiser_dispose();
@@ -75,7 +77,7 @@ int main() {
     } else {
         fprintf(stderr, "Failed to open log file: %s\n", strerror(errno));
         fprintf(stderr, "ATTENTION: Due to a current bug, you need to make the file ~/Documents/TeamOmicron/Omicam/omicam.log manually"
-                        " for logging to work properly.");
+                        " for logging to work properly.\n");
     }
     log_info("Omicam v%s - Copyright (c) 2019 Team Omicron. All rights reserved.", OMICAM_VERSION);
     log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);

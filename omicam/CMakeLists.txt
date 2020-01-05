@@ -15,13 +15,13 @@ set (SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fsanitize=undefi
 # if anything related to NLopt or math in general breaks, use -mfpu=vfp and disable ffast-math
 # source of gcc arguments for jetson: https://devtalk.nvidia.com/default/topic/1055706/jetson-nano/gcc-options-for-nano/
 # note: using -flto to enable link time optimisations breaks using "-Og" and "-Ofast"
-set (PERFORMANCE_FLAGS "-ffast-math -ffast-math -march=armv8-a+crypto -mcpu=cortex-a57+crypto")
+set (PERFORMANCE_FLAGS "-ffast-math -march=armv8-a+crypto -mcpu=cortex-a57+crypto")
 # (we generate debug info in all modes since it adds no performance penalty and is good for debug)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -g3 -pthread")
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -g3 -pthread")
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -Og ${SAFETY_FLAGS} ${PERFORMANCE_FLAGS}") # safety features and debug optimisation
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Og ${SAFETY_FLAGS} ${PERFORMANCE_FLAGS}")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -O0 ${SAFETY_FLAGS} ${PERFORMANCE_FLAGS}") # safety features and debug optimisation
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 ${SAFETY_FLAGS} ${PERFORMANCE_FLAGS}")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${PERFORMANCE_FLAGS}") # full optimisation and no safety features
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${PERFORMANCE_FLAGS}")
 

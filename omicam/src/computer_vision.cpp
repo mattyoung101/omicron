@@ -49,10 +49,9 @@ static pthread_t fpsCounterThread = {0};
 static _Atomic int32_t fpsCounter = 0;
 static _Atomic int32_t lastFpsMeasurement = 0;
 static pthread_t workThreads[4] = {0};
-static rpa_queue_t *workQueues[4] = {0}; // a queue that each worker has to receive new items to process from
-// TODO does this need to be atomic? might make it slower
-static atomic<cuda::GpuMat*> currentFrame, currentResizedFrame; // the current frame, converted to RGB on the GPU, that will be processed by the workers
-static object_result_t results[4] = {0}; // results of the vision processing goes into this array
+static rpa_queue_t *workQueues[4] = {}; // a queue that each worker has to receive new items to process from
+static cuda::GpuMat *currentFrame, *currentResizedFrame; // the current frame, converted to RGB on the GPU, that will be processed by the workers
+static object_result_t results[4] = {}; // results of the vision processing goes into this array
 static pthread_cond_t doneCond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t doneMutex = PTHREAD_MUTEX_INITIALIZER;
 static uint8_t doneThreads = 0; // number of completed threads
@@ -67,7 +66,6 @@ static uint8_t doneThreads = 0; // number of completed threads
  */
 static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t *max, field_objects_t objectId){
     cuda::GpuMat thresholdedGPU(frame.rows, frame.cols, CV_8UC1);
-    thresholdedGPU.create(frame.rows, frame.cols, CV_8UC1);
 
     Mat *thresholded = new Mat;
     Mat labels, stats, centroids;
@@ -94,7 +92,7 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
     auto largestId = !blobExists ? -1 : sortedLabels.back();
     auto largestCentroid = !blobExists ? Point(0, 0) : Point(centroids.at<double>(largestId, 0),
                                                              centroids.at<double>(largestId, 1));
-    RDRect objRect;
+    RDRect objRect = {};
     if (blobExists) {
         int rectX = stats.at<int>(largestId, CC_STAT_LEFT);
         int rectY = stats.at<int>(largestId, CC_STAT_TOP);
@@ -149,9 +147,7 @@ static inline void gpu_worker_post(int32_t id, int32_t *min, int32_t *max, field
     entry->min = min;
     entry->max = max;
     if (!rpa_queue_trypush(workQueues[id], entry)){
-        // TODO ok so i think the reason why this is being called is because of the fact that ASan is running in the thread
-        // TODO as shown by the debugger
-        // log_warn("Failed to push item to GPU worker %d. This may indicate performance problems or a hang.", id);
+         log_warn("Failed to push item to GPU worker %d. This may indicate performance problems or a hang.", id);
         free(entry);
     }
 }
@@ -178,8 +174,6 @@ static auto cv_thread(void *arg) -> void *{
 
     while (true){
         Mat frame, frameRGB;
-        cuda::GpuMat gpuFrame, gpuFrameRGB, gpuFrameScaled;
-        cuda::Stream resizeStream;
 
         cap.read(frame);
         if (frame.empty()){
@@ -192,11 +186,13 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
+        cuda::GpuMat gpuFrame, gpuFrameRGB, gpuFrameScaled;
+
         // do image pre-processing such as resizing, colour conversions etc
         gpuFrame.upload(frame);
         cuda::cvtColor(gpuFrame, gpuFrameRGB, COLOR_BGR2RGB);
         cuda::resize(gpuFrameRGB, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR,
-                INTER_NEAREST, resizeStream);
+                INTER_NEAREST);
 
         // prepare workers for new entry
         memset(results, 0, sizeof(object_result_t) * 4);
@@ -214,8 +210,10 @@ static auto cv_thread(void *arg) -> void *{
         // FIXME: currently only two threads in use, in future it will be 4!!
         while (doneThreads < 2){
             pthread_cond_wait(&doneCond, &doneMutex);
+            fflush(stdout);
         }
         pthread_mutex_unlock(&doneMutex);
+        doneThreads = 0;
 
         auto ball = results[0];
         // auto yellowGoal = results[1];
@@ -312,10 +310,11 @@ void vision_init(void){
     if (numCudaDevices > 0){
         cuda::printShortCudaDeviceInfo(cuda::getDevice());
     }
+    cuda::setDevice(cuda::getDevice());
 
     // create work queues and associated stuff
     for (auto & workQueue : workQueues){
-        rpa_queue_create(&workQueue, 2);
+        rpa_queue_create(&workQueue, 1);
     }
     pthread_cond_init(&doneCond, nullptr);
     pthread_mutex_init(&doneMutex, nullptr);
