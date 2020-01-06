@@ -56,21 +56,14 @@ static _Atomic int32_t lastFpsMeasurement = 0;
  * @param max an array containing the 3 maximum RGB values
  * @param objectId what the object is
  */
-static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t *max, field_objects_t objectId){
-    void *sharedFrame;
-    cudaMallocManaged(&sharedFrame, frame.rows * frame.cols * 3);
-
-    cuda::GpuMat thresholdedGPU(frame.rows, frame.cols, CV_8UC1, sharedFrame);
-    Mat thresholded(frame.rows, frame.cols, CV_8UC1, sharedFrame);
-
-    Mat labels, stats, centroids;
+static object_result_t process_object(Mat frame, int32_t *min, int32_t *max, field_objects_t objectId){
+    Mat thresholded, labels, stats, centroids;
     // we re-arrange the orders of these to convert from RGB to BGR
     Scalar minScalar = Scalar(min[2], min[1], min[0]);
     Scalar maxScalar = Scalar(max[2], max[1], max[0]);
 
     // run computer vision tasks
-    inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU);
-    cudaDeviceSynchronize();
+    inRange(frame, minScalar, maxScalar, thresholded);
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
     // find the biggest blob, skipping id 0 which is the background
@@ -101,9 +94,8 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
     result.exists = blobExists;
     result.centroid = {largestCentroid.x, largestCentroid.y};
     result.boundingBox = objRect;
-    thresholded.copyTo(result.threshMask);
+    result.threshMask = thresholded;
 
-    cudaFree(sharedFrame);
     return result;
 }
 
@@ -129,12 +121,7 @@ static auto cv_thread(void *arg) -> void *{
 
     while (true){
         double begin = utils_get_millis();
-        void *frameShared, *scaledFrameShared;
-        cudaMallocManaged(&frameShared, 1280 * 720 * 3); // FIXME just for testing, use actual image size in future
-        cudaMallocManaged(&scaledFrameShared, 1280 * 720 * 3);
-
-        Mat frame(720, 1280, CV_8UC3, frameShared);
-        cuda::GpuMat gpuFrame(720, 1280, CV_8UC3, frameShared);
+        Mat frame;
 
         cap.read(frame);
         if (frame.empty()){
@@ -148,11 +135,11 @@ static auto cv_thread(void *arg) -> void *{
         }
 
         // process all our field objects
-        auto ball = process_object(gpuFrame, minBallData, maxBallData, OBJ_BALL);
+        auto ball = process_object(frame, minBallData, maxBallData, OBJ_BALL);
         // TODO use scaled frame for yellow and blue goal (will require scaling coords and stuff)
         // auto yellowGoal = process_object(frameRGB, minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
         // auto blueGoal = process_object(frameRGB, minBlueData, maxBlueData, OBJ_GOAL_BLUE);
-        auto lines = process_object(gpuFrame, minLineData, maxLineData, OBJ_LINES);
+        auto lines = process_object(frame, minLineData, maxLineData, OBJ_LINES);
 
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
@@ -207,8 +194,6 @@ static auto cv_thread(void *arg) -> void *{
         utils_cv_transmit_data(data);
 
         fpsCounter++;
-        cudaFree(frameShared);
-        cudaFree(scaledFrameShared);
 
         double end = utils_get_millis() - begin;
         // printf("last frame took: %.2f ms to process (%.2f fps) \n", end, 1000.0 / end);
@@ -234,6 +219,7 @@ static auto fps_counter_thread(void *arg) -> void *{
 }
 
 void vision_init(void){
+    setUseOptimized(true);
     int numCpus = getNumberOfCPUs();
     bool openCLDevice = false;
     ocl::setUseOpenCL(true);
