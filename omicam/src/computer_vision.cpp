@@ -51,7 +51,6 @@ static _Atomic int32_t lastFpsMeasurement = 0;
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
  * This is in a separate function so that we can just invoke it for each object, likes "ball", "lines", etc.
- * TODO make frame a GpuMat
  * @param frame the GPU accelerated Mat containing the current frame being processed
  * @param min an array containing the 3 minimum RGB values
  * @param max an array containing the 3 maximum RGB values
@@ -65,8 +64,9 @@ static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t 
     Mat thresholded(frame.rows, frame.cols, CV_8UC1, sharedFrame);
 
     Mat labels, stats, centroids;
-    Scalar minScalar = Scalar(min[0], min[1], min[2]);
-    Scalar maxScalar = Scalar(max[0], max[1], max[2]);
+    // we re-arrange the orders of these to convert from RGB to BGR
+    Scalar minScalar = Scalar(min[2], min[1], min[0]);
+    Scalar maxScalar = Scalar(max[2], max[1], max[0]);
 
     // run computer vision tasks
     inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU);
@@ -128,8 +128,9 @@ static auto cv_thread(void *arg) -> void *{
 #endif
 
     while (true){
+        double begin = utils_get_millis();
         void *frameShared, *scaledFrameShared;
-        cudaMallocManaged(&frameShared, 1280 * 720 * 3); // FIXME just for testing
+        cudaMallocManaged(&frameShared, 1280 * 720 * 3); // FIXME just for testing, use actual image size in future
         cudaMallocManaged(&scaledFrameShared, 1280 * 720 * 3);
 
         Mat frame(720, 1280, CV_8UC3, frameShared);
@@ -146,15 +147,6 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
-
-        double begin = utils_get_millis();
-
-        // do image pre-processing such as resizing, colour conversions etc
-        // FIXME we can skip this by swapping the order of the thresholds in the processing step
-        cuda::cvtColor(gpuFrame, gpuFrame, COLOR_BGR2RGB);
-//        cuda::resize(gpuFrame, gpuFrameScaled, Size(0, 0), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR,
-//                INTER_NEAREST);
-
         // process all our field objects
         auto ball = process_object(gpuFrame, minBallData, maxBallData, OBJ_BALL);
         // TODO use scaled frame for yellow and blue goal (will require scaling coords and stuff)
@@ -165,6 +157,9 @@ static auto cv_thread(void *arg) -> void *{
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
         if (rdFrameCounter++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()) {
+            // we optimised out the cvtColor in the main loop so we gotta do it here instead
+            // we can remove it by simply swapping the order of the threshold values to save calling BGR2RGB
+            cvtColor(frame, frame, COLOR_BGR2RGB);
             Mat frameRGB = frame;
 
             char buf[128] = {0};
@@ -214,8 +209,9 @@ static auto cv_thread(void *arg) -> void *{
         fpsCounter++;
         cudaFree(frameShared);
         cudaFree(scaledFrameShared);
+
         double end = utils_get_millis() - begin;
-        printf("last frame took: %.2f ms to process (%.2f fps) \n", end, 1000.0 / end);
+        // printf("last frame took: %.2f ms to process (%.2f fps) \n", end, 1000.0 / end);
 
 #if BUILD_TARGET == BUILD_TARGET_PC
         // waitKey(static_cast<int>(1000 / fps));
