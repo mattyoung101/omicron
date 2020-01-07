@@ -56,14 +56,10 @@ static _Atomic int32_t lastFpsMeasurement = 0;
  * @param max an array containing the 3 maximum RGB values
  * @param objectId what the object is
  */
-static object_result_t process_object(Mat frame, int32_t *min, int32_t *max, field_objects_t objectId){
-    Mat thresholded, labels, stats, centroids;
-    // we re-arrange the orders of these to convert from RGB to BGR so we can skip the call to cvtColor
-    Scalar minScalar = Scalar(min[2], min[1], min[0]);
-    Scalar maxScalar = Scalar(max[2], max[1], max[0]);
+static object_result_t process_object(const Mat& thresholded, int32_t *min, int32_t *max, field_objects_t objectId){
+    Mat labels, stats, centroids;
 
     // run computer vision tasks
-    inRange(frame, minScalar, maxScalar, thresholded);
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
     // find the biggest blob, skipping id 0 which is the background
@@ -134,18 +130,42 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
-        // pre-calculate thresholds in parallel
-//        parallel_for_(Range(0, 2), [&](const Range& range){
-//           printf("working on range: %d-%d\n", range.start, range.end);
-//        });
-//        puts("processing done");
+        Mat thresholded[5] = {};
+
+        // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
+        parallel_for_(Range(1, 5), [&](const Range& range){
+           auto object = (field_objects_t) range.start;
+           uint32_t *min, *max;
+
+           switch (object){
+               case OBJ_BALL:
+                   min = (uint32_t*) minBallData;
+                   max = (uint32_t*) maxBallData;
+                   break;
+               case OBJ_GOAL_YELLOW:
+                   return;
+               case OBJ_GOAL_BLUE:
+                   return;
+               case OBJ_LINES:
+                   min = (uint32_t*) minBallData;
+                   max = (uint32_t*) maxBallData;
+                   break;
+               default:
+                   return;
+           }
+
+            // we re-arrange the orders of these to convert from RGB to BGR so we can skip the call to cvtColor
+            Scalar minScalar = Scalar(min[2], min[1], min[0]);
+            Scalar maxScalar = Scalar(max[2], max[1], max[0]);
+            inRange(frame, minScalar, maxScalar, thresholded[object]);
+        }, 4);
 
         // process all our field objects
-        auto ball = process_object(frame, minBallData, maxBallData, OBJ_BALL);
+        auto ball = process_object(thresholded[OBJ_BALL], minBallData, maxBallData, OBJ_BALL);
         // TODO use scaled frame for yellow and blue goal (will require scaling coords and stuff)
         // auto yellowGoal = process_object(frameRGB, minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
         // auto blueGoal = process_object(frameRGB, minBlueData, maxBlueData, OBJ_GOAL_BLUE);
-        auto lines = process_object(frame, minLineData, maxLineData, OBJ_LINES);
+        auto lines = process_object(thresholded[OBJ_LINES], minLineData, maxLineData, OBJ_LINES);
 
         // dispatch frames to remote debugger
 #if DEBUG_ENABLED
