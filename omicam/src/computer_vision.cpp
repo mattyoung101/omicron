@@ -58,7 +58,7 @@ static _Atomic int32_t lastFpsMeasurement = 0;
  */
 static object_result_t process_object(Mat frame, int32_t *min, int32_t *max, field_objects_t objectId){
     Mat thresholded, labels, stats, centroids;
-    // we re-arrange the orders of these to convert from RGB to BGR
+    // we re-arrange the orders of these to convert from RGB to BGR so we can skip the call to cvtColor
     Scalar minScalar = Scalar(min[2], min[1], min[0]);
     Scalar maxScalar = Scalar(max[2], max[1], max[0]);
 
@@ -133,6 +133,12 @@ static auto cv_thread(void *arg) -> void *{
 #endif
             continue;
         }
+
+        // pre-calculate thresholds in parallel
+//        parallel_for_(Range(0, 2), [&](const Range& range){
+//           printf("working on range: %d-%d\n", range.start, range.end);
+//        });
+//        puts("processing done");
 
         // process all our field objects
         auto ball = process_object(frame, minBallData, maxBallData, OBJ_BALL);

@@ -9,6 +9,7 @@
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 extern int32_t *thresholds[];
 extern char *fieldObjToString[];
+extern uint16_t videoWidth, videoHeight, videoFramerate;
 
 #ifdef __cplusplus
 extern "C" {

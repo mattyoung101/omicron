@@ -117,6 +117,10 @@ int main() {
     uint16_t framerate = iniparser_getint(config, "VideoSettings:framerate", 60);
     char *fieldFile = iniparser_getstring(config, "Localiser:fieldFile", "CONFIG_ERROR");
 
+    videoWidth = width;
+    videoHeight = height;
+    videoFramerate = framerate;
+
     // start OpenCV frame grabbing, which blocks the main thread until it's done
     remote_debug_init(width, height);
     localiser_init(fieldFile);
