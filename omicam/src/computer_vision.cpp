@@ -22,6 +22,7 @@
 #include "yacclab/labels_solver.h"
 #include "yacclab/labeling_algorithms.h"
 #include "yacclab/labeling_CUDA_BUF.cuh"
+#include <climits>
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
 using namespace std;
@@ -52,6 +53,41 @@ static _Atomic int32_t fpsCounter = 0;
 static _Atomic int32_t lastFpsMeasurement = 0;
 static BUF_IC ccl;
 
+// source: https://github.com/opencv/opencv/issues/6295#issuecomment-536154197
+static cuda::GpuMat gpuInRange(const cuda::GpuMat& src_img_gpu, double *low, double *high){
+    //all the parts to keep low and high thresholds
+    cv::cuda::GpuMat mat_parts[3];
+    cv::cuda::GpuMat mat_parts_low[3];
+    cv::cuda::GpuMat mat_parts_high[3];
+
+    //split into 3 channels H, S and V
+    cv::cuda::split(src_img_gpu, mat_parts);
+
+    //Use the inverse binary of upper threshold with bitwise_and to remove above limit values from lower threshold.
+
+    //find range between high and low values of H
+    cv::cuda::threshold(mat_parts[0], mat_parts_low[0], low[0], UCHAR_MAX, cv::THRESH_BINARY);
+    cv::cuda::threshold(mat_parts[0], mat_parts_high[0],  high[0], UCHAR_MAX, cv::THRESH_BINARY_INV);
+    cv::cuda::bitwise_and(mat_parts_high[0], mat_parts_low[0], mat_parts[0]);
+
+    //find range between high and low values of S
+    cv::cuda::threshold(mat_parts[1], mat_parts_low[1], low[1], UCHAR_MAX, cv::THRESH_BINARY);
+    cv::cuda::threshold(mat_parts[1], mat_parts_high[1],  high[1], UCHAR_MAX, cv::THRESH_BINARY_INV);
+    cv::cuda::bitwise_and(mat_parts_high[1], mat_parts_low[1], mat_parts[1]);
+
+    //find range between high and low values of V
+    cv::cuda::threshold(mat_parts[2], mat_parts_low[2], low[2], UCHAR_MAX, cv::THRESH_BINARY);
+    cv::cuda::threshold(mat_parts[2], mat_parts_high[2],  high[2], UCHAR_MAX, cv::THRESH_BINARY_INV);
+    cv::cuda::bitwise_and(mat_parts_high[2], mat_parts_low[2], mat_parts[2]);
+
+    cv::cuda::GpuMat tmp1, final_result;
+
+    //bitwise AND all channels.
+    cv::cuda::bitwise_and(mat_parts[0], mat_parts[1], tmp1);
+    cv::cuda::bitwise_and(tmp1, mat_parts[2], final_result);
+    return final_result;
+}
+
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
  * This is in a separate function so that we can just invoke it for each object, likes "ball", "lines", etc.
@@ -61,53 +97,46 @@ static BUF_IC ccl;
  * @param objectId what the object is
  */
 static object_result_t process_object(cuda::GpuMat frame, int32_t *min, int32_t *max, field_objects_t objectId){
-    void *sharedFrame;
-    cudaMallocManaged(&sharedFrame, frame.rows * frame.cols * 3);
-
-    cuda::GpuMat thresholdedGPU(frame.rows, frame.cols, CV_8UC1, sharedFrame);
-    Mat thresholded(frame.rows, frame.cols, CV_8UC1, sharedFrame);
-
+    cuda::GpuMat thresholded(frame.rows, frame.cols, frame.type());
     Mat labels, stats, centroids;
     // we re-arrange the orders of these to convert from RGB to BGR
-    Scalar minScalar = Scalar(min[2], min[1], min[0]);
-    Scalar maxScalar = Scalar(max[2], max[1], max[0]);
+    double fixedLow[3] = {static_cast<double>(min[2]), static_cast<double>(min[1]), static_cast<double>(min[0])};
+    double fixedHigh[3] = {static_cast<double>(max[2]), static_cast<double>(max[1]), static_cast<double>(max[0])};
 
     // run computer vision tasks
-    inRange_gpu(frame, minScalar, maxScalar, thresholdedGPU);
-    cudaDeviceSynchronize();
-    int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
+    gpuInRange(frame, fixedLow, fixedHigh);
+    ccl.d_img_ = thresholded;
 
     // find the biggest blob, skipping id 0 which is the background
-    vector<int> sortedLabels;
-    for (int label = 1; label < nLabels; label++){
-        sortedLabels.push_back(label);
-    }
-    sort(sortedLabels.begin(), sortedLabels.end(), [=](const int &a, const int &b){
-        int aSize = stats.at<int>(a, CC_STAT_AREA);
-        int bSize = stats.at<int>(b, CC_STAT_AREA);
-        return aSize < bSize;
-    });
+//    vector<int> sortedLabels;
+//    for (int label = 1; label < nLabels; label++){
+//        sortedLabels.push_back(label);
+//    }
+//    sort(sortedLabels.begin(), sortedLabels.end(), [=](const int &a, const int &b){
+//        int aSize = stats.at<int>(a, CC_STAT_AREA);
+//        int bSize = stats.at<int>(b, CC_STAT_AREA);
+//        return aSize < bSize;
+//    });
 
-    auto blobExists = !sortedLabels.empty();
-    auto largestId = !blobExists ? -1 : sortedLabels.back();
-    auto largestCentroid = !blobExists ? Point(0, 0) : Point(centroids.at<double>(largestId, 0),
-                                                             centroids.at<double>(largestId, 1));
-    RDRect objRect = {};
-    if (blobExists) {
-        int rectX = stats.at<int>(largestId, CC_STAT_LEFT);
-        int rectY = stats.at<int>(largestId, CC_STAT_TOP);
-        int rectW = stats.at<int>(largestId, CC_STAT_WIDTH);
-        int rectH = stats.at<int>(largestId, CC_STAT_HEIGHT);
-        objRect = {rectX, rectY, rectW, rectH};
-    }
+//    auto blobExists = !sortedLabels.empty();
+//    auto largestId = !blobExists ? -1 : sortedLabels.back();
+//    auto largestCentroid = !blobExists ? Point(0, 0) : Point(centroids.at<double>(largestId, 0),
+//                                                             centroids.at<double>(largestId, 1));
+//    RDRect objRect = {};
+//    if (blobExists) {
+//        int rectX = stats.at<int>(largestId, CC_STAT_LEFT);
+//        int rectY = stats.at<int>(largestId, CC_STAT_TOP);
+//        int rectW = stats.at<int>(largestId, CC_STAT_WIDTH);
+//        int rectH = stats.at<int>(largestId, CC_STAT_HEIGHT);
+//        objRect = {rectX, rectY, rectW, rectH};
+//    }
 
     object_result_t result = {0}; // NOLINT
-    result.exists = blobExists;
-    result.centroid = {largestCentroid.x, largestCentroid.y};
-    result.boundingBox = objRect;
-    thresholded.copyTo(result.threshMask);
+//    result.exists = blobExists;
+//    result.centroid = {largestCentroid.x, largestCentroid.y};
+//    result.boundingBox = objRect;
+//    thresholded.copyTo(result.threshMask);
 
-    cudaFree(sharedFrame);
     return result;
 }
 
@@ -133,12 +162,8 @@ static auto cv_thread(void *arg) -> void *{
 
     while (true){
         double begin = utils_get_millis();
-        void *frameShared, *scaledFrameShared;
-        cudaMallocManaged(&frameShared, 1280 * 720 * 3); // FIXME just for testing, use actual image size in future
-        cudaMallocManaged(&scaledFrameShared, 1280 * 720 * 3);
-
-        Mat frame(720, 1280, CV_8UC3, frameShared);
-        cuda::GpuMat gpuFrame(720, 1280, CV_8UC3, frameShared);
+        Mat frame;
+        cuda::GpuMat gpuFrame;
 
         cap.read(frame);
         if (frame.empty()){
@@ -150,6 +175,8 @@ static auto cv_thread(void *arg) -> void *{
 #endif
             continue;
         }
+
+        gpuFrame.upload(frame);
 
         // process all our field objects
         auto ball = process_object(gpuFrame, minBallData, maxBallData, OBJ_BALL);
@@ -211,9 +238,6 @@ static auto cv_thread(void *arg) -> void *{
         utils_cv_transmit_data(data);
 
         fpsCounter++;
-        cudaFree(frameShared);
-        cudaFree(scaledFrameShared);
-
         double end = utils_get_millis() - begin;
         // printf("last frame took: %.2f ms to process (%.2f fps) \n", end, 1000.0 / end);
 

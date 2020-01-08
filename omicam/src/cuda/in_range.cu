@@ -19,7 +19,7 @@ __global__ void inRange_kernel(const cv::cuda::PtrStepSz<uchar3> src, cv::cuda::
 
 void inRange_gpu(cv::cuda::GpuMat &src, cv::Scalar &lowerb, cv::Scalar &upperb,
                  cv::cuda::GpuMat &dst) {
-    const int m = 32;
+    const int m = 4;
     int numRows = src.rows, numCols = src.cols;
     if (numRows == 0 || numCols == 0) return;
     // Attention! Cols Vs. Rows are reversed
