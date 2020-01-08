@@ -19,6 +19,9 @@
 #include "remote_debug.h"
 #include "cuda/in_range.cuh"
 #include "rpa_queue.h"
+#include "yacclab/labels_solver.h"
+#include "yacclab/labeling_algorithms.h"
+#include "yacclab/labeling_CUDA_BUF.cuh"
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
 using namespace std;
@@ -47,6 +50,7 @@ static pthread_t cvThread = {0};
 static pthread_t fpsCounterThread = {0};
 static _Atomic int32_t fpsCounter = 0;
 static _Atomic int32_t lastFpsMeasurement = 0;
+static BUF_IC ccl;
 
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.

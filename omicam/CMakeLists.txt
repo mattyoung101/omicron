@@ -7,7 +7,7 @@ project(omicam LANGUAGES C CXX CUDA)
 # set variables
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CPP_STANDARD 17)
-add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2)
+add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -DYACCLAB_WITH_CUDA)
 
 # enable ASan and stack protection
 set (SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -static-libsan")
@@ -55,6 +55,10 @@ add_executable(omicam src/main.c
         src/protobuf/FieldFile.pb.c src/protobuf/FieldFile.pb.h
         src/protobuf/UART.pb.c src/protobuf/UART.pb.h lib/kdtree.c lib/kdtree.h
         src/cuda/in_range.cu src/cuda/in_range.cuh
+        lib/yacclab/labeling_CUDA_BUF.cuh
+        lib/yacclab/labeling_algorithms.cc lib/yacclab/labeling_algorithms.h lib/yacclab/labeling_CUDA_BUF.cu
+        lib/yacclab/labels_solver.cc lib/yacclab/yacclab_tensor.cc lib/yacclab/gpu_mat3.cu lib/yacclab/file_manager.cc
+        lib/yacclab/volume_util.cc lib/yacclab/utilities.cc lib/yacclab/system_info.cc lib/yacclab/check_labeling.cc
         lib/stb_image.h src/computer_vision.cpp src/computer_vision.hpp src/comms_uart.c src/comms_uart.h)
 
 set_target_properties(omicam PROPERTIES POSITION_INDEPENDENT_CODE ON)
