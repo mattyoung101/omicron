@@ -18,5 +18,4 @@
 
 // Source for this: https://github.com/opencv/opencv/issues/6295#issuecomment-321727869
 
-void inRange_gpu(cv::cuda::GpuMat &src, cv::Scalar &lowerb, cv::Scalar &upperb,
-                 cv::cuda::GpuMat &dst);
+void inRange_gpu(cv::cuda::GpuMat &src, cv::Scalar &lowerb, cv::Scalar &upperb, cv::cuda::GpuMat &dst);

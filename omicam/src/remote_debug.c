@@ -440,6 +440,9 @@ void remote_debug_dispose(void){
     pthread_cancel(frameThread);
     pthread_cancel(tcpThread);
     pthread_cancel(thermalThread);
+    pthread_join(frameThread, NULL);
+    pthread_join(tcpThread, NULL);
+    pthread_join(thermalThread, NULL);
     rpa_queue_destroy(frameQueue);
     tjDestroy(compressor);
     close(sockfd);

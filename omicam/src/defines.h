@@ -14,7 +14,7 @@
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define ENABLE_DIAGNOSTICS 0 // enable or disable performance (i.e. FPS) diagnostics
 
-#define VISION_SCALE_FACTOR 0.4 // scale factor for goal detection frame between 0.0 and 1.0
+#define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0
 
 #define DEBUG_JPEG_QUALITY 30 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define DEBUG_COMPRESSION_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
