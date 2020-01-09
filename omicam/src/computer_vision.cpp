@@ -98,7 +98,7 @@ static object_result_t process_object(const Mat& thresholded, int32_t *min, int3
 /** this task runs all the computer vision for Omicam, using OpenCV */
 static auto cv_thread(void *arg) -> void *{
     uint32_t rdFrameCounter = 0;
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
+    //pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
@@ -117,7 +117,7 @@ static auto cv_thread(void *arg) -> void *{
 
     while (true){
         double begin = utils_get_millis();
-        Mat frame;
+        Mat frame, frameScaled;
 
         cap.read(frame);
         if (frame.empty()){
@@ -130,9 +130,10 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
-        Mat thresholded[5] = {};
+        resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
+        Mat thresholded[5] = {};
         parallel_for_(Range(1, 5), [&](const Range& range){
            auto object = (field_objects_t) range.start;
            uint32_t *min, *max;
@@ -147,8 +148,8 @@ static auto cv_thread(void *arg) -> void *{
                case OBJ_GOAL_BLUE:
                    return;
                case OBJ_LINES:
-                   min = (uint32_t*) minBallData;
-                   max = (uint32_t*) maxBallData;
+                   min = (uint32_t*) minLineData;
+                   max = (uint32_t*) maxLineData;
                    break;
                default:
                    return;
@@ -284,6 +285,8 @@ void vision_init(void){
 void vision_dispose(void){
     log_trace("Stopping vision thread");
     pthread_cancel(cvThread);
+    // TODO: we need some way to shutdown the CV threads too
+    pthread_join(cvThread, nullptr);
 }
 
 // and now...

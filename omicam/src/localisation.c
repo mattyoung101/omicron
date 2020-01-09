@@ -135,5 +135,6 @@ void localiser_dispose(void){
     log_trace("Disposing localiser");
     nlopt_destroy(optimiser);
     pthread_cancel(workThread);
+    pthread_join(workThread, NULL);
     rpa_queue_destroy(queue);
 }
