@@ -265,6 +265,31 @@ void state_attack_linerun_update(state_machine_t *fsm){
     // TODO: implement actual movement
 }
 
+void state_attack_zigzag_update(state_machine_t *fsm)
+{
+    static const char *TAG = "LinerunState";
+
+    RS_SEM_LOCK
+    rs.outIsAttack = true;
+    rs.outSwitchOk - false; // we're trying to score so piss off
+    RS_SEM_UNLOCK
+    goal_correction(&robotState);
+    timer_check();
+
+    // Check criteria:
+    if (!rs.inBackGate)
+    {
+        LOG_ONCE(TAG, "Ball not in capture zone, reverting");
+        FSM_REVERT;
+    }
+    else if (rs.inGoalLength <= GOAL_SHOOT_DIST && canShoot)
+    {
+        LOG_ONCE(TAG, "Goal in range, shooting");
+        FSM_CHANGE_STATE_GENERAL(Shoot); // Yet to implement throwing
+    }
+
+    // TODO: implement actual movement
+}
 
 // done with this macro
 #undef rs

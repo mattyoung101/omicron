@@ -118,9 +118,15 @@ void state_attack_turtle_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackTurtle;
 
 // Linerun state: runs up the side line with the ball behind it
+// NOTE: Add functionality for duo linerun
 void state_attack_linerun_enter(state_machine_t *fsm);
 void state_attack_linerun_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackLinerun;
+
+// Zigzag state: move in zigzags down the field so the opposition finds it hard to counter you reliably
+void state_attack_zigzag_enter(state_machine_t *fsm);
+void state_attack_zigzag_update(state_machine_t *fsm);
+extern fsm_state_t stateAttackZigzag
 
 /////////// DEFENCE FSM /////////
 // Idle state: centres on own goal
