@@ -17,7 +17,6 @@
 #include "defines.h"
 #include "utils.h"
 #include "remote_debug.h"
-#include "cuda/in_range.cuh"
 #include "rpa_queue.h"
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
@@ -35,13 +34,6 @@ typedef struct {
     RDRect boundingBox;
     Mat threshMask;
 } object_result_t;
-
-/** An entry in a vision thread work queue */
-typedef struct {
-    int32_t *min;
-    int32_t *max;
-    field_objects_t objectId;
-} vision_entry_t;
 
 static pthread_t cvThread = {0};
 static pthread_t fpsCounterThread = {0};
@@ -108,12 +100,17 @@ static auto cv_thread(void *arg) -> void *{
         log_error("Failed to load OpenCV test video");
     }
     double fps = cap.get(CAP_PROP_FPS);
-    log_debug("Video file FPS: %f", fps);
+    log_debug("Video file FPS: %f, Capture API: %s", fps, cap.getBackendName().c_str());
 #else
     log_trace("Build target is Jetson, initialising VideoCapture");
     // TODO ... gstreamer and shit ...
     log_trace("OpenCV capture initialised successfully");
 #endif
+
+    // this is a stupid way of calculating this
+    Mat junk(videoHeight, videoWidth, CV_8UC1);
+    resize(junk, junk, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR);
+    log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
     while (true){
         double begin = utils_get_millis();
@@ -130,6 +127,9 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
+#if VISION_CROP_ENABLED
+        frame = frame(Rect(VISION_CROP_RECT));
+#endif
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
@@ -144,9 +144,13 @@ static auto cv_thread(void *arg) -> void *{
                    max = (uint32_t*) maxBallData;
                    break;
                case OBJ_GOAL_YELLOW:
-                   return;
+                   min = (uint32_t*) minYellowData;
+                   max = (uint32_t*) maxYellowData;
+                   break;
                case OBJ_GOAL_BLUE:
-                   return;
+                   min = (uint32_t*) minBlueData;
+                   max = (uint32_t*) maxBlueData;
+                   break;
                case OBJ_LINES:
                    min = (uint32_t*) minLineData;
                    max = (uint32_t*) maxLineData;
@@ -158,19 +162,19 @@ static auto cv_thread(void *arg) -> void *{
             // we re-arrange the orders of these to convert from RGB to BGR so we can skip the call to cvtColor
             Scalar minScalar = Scalar(min[2], min[1], min[0]);
             Scalar maxScalar = Scalar(max[2], max[1], max[0]);
-            inRange(frame, minScalar, maxScalar, thresholded[object]);
+            inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar, thresholded[object]);
         }, 4);
 
         // process all our field objects
         auto ball = process_object(thresholded[OBJ_BALL], minBallData, maxBallData, OBJ_BALL);
-        // TODO use scaled frame for yellow and blue goal (will require scaling coords and stuff)
-        // auto yellowGoal = process_object(frameRGB, minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
-        // auto blueGoal = process_object(frameRGB, minBlueData, maxBlueData, OBJ_GOAL_BLUE);
+        auto yellowGoal = process_object(thresholded[OBJ_GOAL_YELLOW], minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
+        auto blueGoal = process_object(thresholded[OBJ_GOAL_BLUE], minBlueData, maxBlueData, OBJ_GOAL_BLUE);
         auto lines = process_object(thresholded[OBJ_LINES], minLineData, maxLineData, OBJ_LINES);
 
         // dispatch frames to remote debugger
-#if DEBUG_ENABLED
-        if (rdFrameCounter++ % DEBUG_FRAME_EVERY == 0 && remote_debug_is_connected()) {
+        // TODO add remote debug support for varying frame sizes (for goals)
+#if REMOTE_ENABLED
+        if (rdFrameCounter++ % REMOTE_FRAME_INTERVAL == 0 && remote_debug_is_connected()) {
             // we optimised out the cvtColor in the main loop so we gotta do it here instead
             // we can remove it by simply swapping the order of the threshold values to save calling BGR2RGB
             cvtColor(frame, frame, COLOR_BGR2RGB);
@@ -239,8 +243,10 @@ static auto fps_counter_thread(void *arg) -> void *{
         lastFpsMeasurement = fpsCounter;
         fpsCounter = 0;
         if (!remote_debug_is_connected()){
+#if VISION_DIAGNOSTICS
             printf("Vision FPS: %d\n", lastFpsMeasurement);
             fflush(stdout);
+#endif
         }
     }
 }
@@ -260,7 +266,6 @@ void vision_init(void){
     if (numCudaDevices > 0){
         cuda::printShortCudaDeviceInfo(cuda::getDevice());
     }
-    cudaSetDeviceFlags(cudaDeviceMapHost);
 
     // create threads
     int err = pthread_create(&cvThread, nullptr, cv_thread, nullptr);

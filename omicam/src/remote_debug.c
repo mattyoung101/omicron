@@ -139,7 +139,7 @@ static void read_remote_messages(void){
                 log_warn("Not shutting down as this is a PC build.");
 #else
                 // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
-                log_info("Shutting down Jetson now...");
+                log_info("Shutting down SBC now...");
                 sync();
                 reboot(RB_POWER_OFF);
 #endif
@@ -151,7 +151,7 @@ static void read_remote_messages(void){
                 log_warn("Not rebooting as this is a PC build.");
 #else
                 // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
-                log_info("Reeobting Jetson now...");
+                log_info("Reeobting SBC now...");
                 sync();
                 reboot(RB_AUTOBOOT);
 #endif
@@ -228,7 +228,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
 static uint8_t *compress_image(uint8_t *frameData, unsigned long *jpegSize){
     uint8_t *compressedImage = NULL;
     tjCompress2(compressor, frameData, width, 0, height, TJPF_RGB, &compressedImage, jpegSize,
-                TJSAMP_420, DEBUG_JPEG_QUALITY, TJFLAG_FASTDCT);
+                TJSAMP_420, REMOTE_JPEG_QUALITY, TJFLAG_FASTDCT);
     return compressedImage;
 }
 
@@ -242,7 +242,7 @@ static uint8_t *compress_thresh_image(uint8_t *inBuffer, unsigned long *outputSi
     unsigned long outSize = compressBound(width * height);
     uint8_t *outBuf = malloc(outSize);
 
-    int result = compress2(outBuf, &outSize, inBuffer, inSize, DEBUG_COMPRESSION_LEVEL);
+    int result = compress2(outBuf, &outSize, inBuffer, inSize, REMOTE_COMPRESS_LEVEL);
     if (result != Z_OK){
         log_error("Failed to zlib compress buffer, error: %d", result);
         return NULL;
@@ -295,7 +295,7 @@ static void *frame_thread(void *param){
     return NULL;
 }
 
-/** reads the CPU temperature every DEBUG_TEMP_REPORTING_INTERVAL seconds **/
+/** reads the CPU temperature every REMOTE_TEMP_REPORTING_INTERVAL seconds **/
 static void *thermal_thread(void *arg){
     log_trace("Thermal thread started");
 
@@ -327,7 +327,7 @@ static void *thermal_thread(void *arg){
             thermalThrottling = false;
         }
 
-        sleep(DEBUG_TEMP_REPORTING_INTERVAL);
+        sleep(REMOTE_TEMP_REPORTING_INTERVAL);
     }
 }
 
@@ -344,7 +344,7 @@ static void *tcp_thread(void *arg){
     }
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serverAddr.sin_port = htons(DEBUG_PORT);
+    serverAddr.sin_port = htons(REMOTE_PORT);
     // https://stackoverflow.com/a/24194999/5007892
     int enable = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int));
@@ -411,7 +411,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
 }
 
 void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPoint ballCentroid, int32_t fps){
-#if !DEBUG_ALWAYS_SEND
+#if !REMOTE_ALWAYS_SEND
     // we're not connected so free this data
     if (connfd == -1){
         free(camFrame);
@@ -451,7 +451,7 @@ void remote_debug_dispose(void){
 }
 
 bool remote_debug_is_connected(void){
-#if DEBUG_ALWAYS_SEND
+#if REMOTE_ALWAYS_SEND
     return true;
 #else
     return connfd != -1;

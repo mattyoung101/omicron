@@ -1,7 +1,9 @@
 # Teensy project
 This is the PlatformIO project that runs on our Teensy 4.0 slave device, which handles the light sensors and LRFs.
 
-The Teensy project is built and maintained by Ethan Lo.
+Credits:
+- Ethan Lo: I2C code, LRF code and main programmer
+- Lachlan Ellis: light sensor code
 
 ## Features list
 - Efficient and robust cluster-based light senor processing algorithm to detect the line

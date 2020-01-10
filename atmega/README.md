@@ -1,3 +1,3 @@
-# Hardware designs
+# ATMega Project
 
 ## TODO: add readme

@@ -6,7 +6,7 @@ The production setup uses a NVIDIA Jetson Nano with a Pi Camera v2.
 For the full technical writeup on our custom vision pipeline, please see docs/DESCRIPTION.md or our website.
 
 **Credits:**
-- Matt Young: main developer of C/C++ code, Markdown docs
+- Matt Young: main C/C++ programmer, Markdown docs
 - Ethan Lo: field file generator, localisation research
 - Lachlan Ellis: localisation geometry maths
 - Tom Fraser: assistance with OpenCV CUDA performance
