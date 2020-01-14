@@ -8,7 +8,6 @@ import javafx.scene.layout.Region
 import javafx.util.Duration
 import tornadofx.View
 import tornadofx.ViewTransition
-import java.util.*
 
 object Utils {
     fun transitionMetro(from: View, to: View) {
@@ -47,5 +46,23 @@ object Utils {
         alert.dialogPane.minHeight = Region.USE_PREF_SIZE
         val result = alert.showAndWait()
         return if (result.isPresent) result.get() else ""
+    }
+
+    fun showConfirmDialog(contentText: String, headerText: String, titleText: String = "Omicontrol"): Boolean {
+        val alert = Alert(Alert.AlertType.CONFIRMATION, contentText).apply {
+            this.headerText = headerText
+            title = titleText
+            isResizable = true
+            setOnShown {
+                Platform.runLater {
+                    isResizable = false
+                    dialogPane.scene.window.sizeToScene()
+                }
+            }
+        }
+        alert.dialogPane.minHeight = Region.USE_PREF_SIZE
+
+        val result = alert.showAndWait()
+        return if (result.isPresent) result.get() == ButtonType.OK else false
     }
 }

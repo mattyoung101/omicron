@@ -7,11 +7,6 @@
 #include "opencv2/core/mat.hpp"
 #include <opencv2/core/ocl.hpp>
 #include <opencv2/core/cuda.hpp>
-#include <opencv2/cudaarithm.hpp>
-#include <opencv2/cudaimgproc.hpp>
-#include <opencv2/cudafilters.hpp>
-#include <opencv2/cudawarping.hpp>
-#include <opencv2/cudaobjdetect.hpp>
 #include <map>
 #include <unistd.h>
 #include "defines.h"
@@ -177,8 +172,8 @@ static auto cv_thread(void *arg) -> void *{
         if (rdFrameCounter++ % REMOTE_FRAME_INTERVAL == 0 && remote_debug_is_connected()) {
             // we optimised out the cvtColor in the main loop so we gotta do it here instead
             // we can remove it by simply swapping the order of the threshold values to save calling BGR2RGB
-            cvtColor(frame, frame, COLOR_BGR2RGB);
-            Mat frameRGB = frame;
+            Mat frameRGB;
+            cvtColor(frame, frameRGB, COLOR_BGR2RGB);
 
             char buf[128] = {0};
             snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", rdFrameCounter, OMICAM_VERSION,

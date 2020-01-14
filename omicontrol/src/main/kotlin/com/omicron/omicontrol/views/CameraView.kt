@@ -267,6 +267,15 @@ class CameraView : View() {
         }
     }
 
+    private fun disconnect(){
+        CONNECTION_MANAGER.disconnect()
+        EVENT_BUS.unregister(this)
+        // if the user is stupid enough to press CTRL+D WHILE dragging the slider, stop them
+        grabSendTimer?.cancel()
+        grabSendTimer?.purge()
+        Utils.transitionMetro(this@CameraView, ConnectView())
+    }
+
     override val root = vbox {
         setPrefSize(1600.0, 900.0)
 
@@ -282,12 +291,7 @@ class CameraView : View() {
             menu("Connection") {
                 item("Disconnect"){
                     setOnAction {
-                        CONNECTION_MANAGER.disconnect()
-                        EVENT_BUS.unregister(this)
-                        // if the user is stupid enough to press CTRL+D WHILE dragging the slider, stop them
-                        grabSendTimer?.cancel()
-                        grabSendTimer?.purge()
-                        Utils.transitionMetro(this@CameraView, ConnectView())
+                        disconnect()
                     }
                     accelerator = KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)
                 }
@@ -295,12 +299,28 @@ class CameraView : View() {
             menu("Actions") {
                 item("Reboot camera"){
                     setOnAction {
-                        // TODO send reboot command
+                        if (Utils.showConfirmDialog("This may take some time.", "Reboot the SBC now?")){
+                            val msg = RemoteDebug.DebugCommand.newBuilder()
+                                .setMessageId(DebugCommands.CMD_POWER_REBOOT.ordinal)
+                                .build()
+                            CONNECTION_MANAGER.dispatchCommand(msg, {
+                                Logger.info("Reboot command sent successfully, disconnecting")
+                                disconnect()
+                            })
+                        }
                     }
                 }
                 item("Shutdown camera"){
                     setOnAction {
-                        // TODO send shutdown command
+                        if (Utils.showConfirmDialog("You will need to power it back on manually.", "Shutdown the SBC now?")){
+                            val msg = RemoteDebug.DebugCommand.newBuilder()
+                                .setMessageId(DebugCommands.CMD_POWER_OFF.ordinal)
+                                .build()
+                            CONNECTION_MANAGER.dispatchCommand(msg, {
+                                Logger.info("Shutdown command sent successfully, disconnecting")
+                                disconnect()
+                            })
+                        }
                     }
                 }
                 item("Save config"){

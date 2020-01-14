@@ -135,25 +135,31 @@ static void read_remote_messages(void){
             }
             case CMD_POWER_OFF: {
                 log_info("Received CMD_POWER_OFF");
+                RD_SEND_OK_RESPONSE;
 #if BUILD_TARGET == BUILD_TARGET_PC
                 log_warn("Not shutting down as this is a PC build.");
 #else
                 // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
                 log_info("Shutting down SBC now...");
                 sync();
-                reboot(RB_POWER_OFF);
+                if (reboot(RB_POWER_OFF) == -1){
+                    log_error("Failed to shutdown system: %s", strerror(errno));
+                }
 #endif
                 break;
             }
             case CMD_POWER_REBOOT: {
                 log_info("Received CMD_POWER_REBOOT");
+                RD_SEND_OK_RESPONSE;
 #if BUILD_TARGET == BUILD_TARGET_PC
                 log_warn("Not rebooting as this is a PC build.");
 #else
                 // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
                 log_info("Reeobting SBC now...");
                 sync();
-                reboot(RB_AUTOBOOT);
+                if (reboot(RB_AUTOBOOT) == -1){
+                    log_error("Failed to reboot system: %s", strerror(errno));
+                }
 #endif
                 break;
             }
