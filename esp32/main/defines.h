@@ -141,6 +141,7 @@ typedef enum {
 // Line avoidance
 #define NO_LINE_ANGLE 400
 #define LS_LINEOVER_BUFFER 90
+#define LINE_AVOID_SCALAR 50
 
 // Camera
 #define CAM_DATA_LEN 8
@@ -168,6 +169,9 @@ extern uint8_t ORBIT_SPEED_FAST;
 #define ORBIT_SLOW_SPEED_THING 20
 
 extern float ORBIT_CONST;
+
+// Path Follower
+#define LINE_RANGE_MIN 20
 
 // Attacker FSM defines
 extern uint16_t DRIBBLE_BALL_TOO_FAR; // if less than this, switch out of dribble
