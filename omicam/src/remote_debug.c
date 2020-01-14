@@ -12,7 +12,6 @@
 #include <unistd.h>
 #include "DG_dynarr.h"
 #include "utils.h"
-#include "alloc_pool.h"
 #include <unistd.h>
 #include <errno.h>
 #include <netinet/in.h>
@@ -28,8 +27,8 @@
 // source for libjpeg-turbo usage: https://stackoverflow.com/a/17671012/5007892
 
 static tjhandle compressor;
-static _Atomic uint16_t width = 0;
-static _Atomic uint16_t height = 0;
+static _Atomic int32_t width = 0;
+static _Atomic int32_t height = 0;
 static pthread_t frameThread, tcpThread, thermalThread;
 static rpa_queue_t *frameQueue = NULL;
 /** the file descriptor of the server socket **/
@@ -119,10 +118,8 @@ static void read_remote_messages(void){
                 break;
             }
             case CMD_THRESHOLDS_SET: {
-                //log_debug("Received CMD_THRESHOLDS_SET, type=%s, colour channel=%d, value=%d", message.minMax ? "min" : "max",
-                //        message.colourChannel, message.value);
                 // do some magic maths to figure out where in the thresholds array we need to access (NOLINTNEXTLINE)
-                int index = (selectedFieldObject - 1) * 2 + (message.minMax ^ 1);
+                int index = (selectedFieldObject - 1) * 2 + (!message.minMax);
                 thresholds[index][message.colourChannel] = message.value;
                 RD_SEND_OK_RESPONSE;
                 break;
@@ -200,6 +197,12 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.ballCentroid = entry->ballCentroid;
     msg.ballRect = entry->ballRect;
     msg.fps = entry->fps;
+    msg.frameWidth = width;
+    msg.frameHeight = height;
+#if VISION_CROP_ENABLED
+    RDRect cropRect = {VISION_CROP_RECT};
+    msg.cropRect = cropRect;
+#endif
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.frame = msg;
@@ -416,7 +419,8 @@ void remote_debug_init(uint16_t w, uint16_t h){
     log_debug("Remote debugger initialised successfully");
 }
 
-void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPoint ballCentroid, int32_t fps){
+void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPoint ballCentroid, int32_t fps,
+        int32_t w, int32_t h){
 #if !REMOTE_ALWAYS_SEND
     // we're not connected so free this data
     if (connfd == -1){
@@ -431,6 +435,10 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
     entry->ballRect = ballRect;
     entry->ballCentroid = ballCentroid;
     entry->fps = fps;
+
+    // will this work?
+    width = w;
+    height = h;
 
     if (!rpa_queue_trypush(frameQueue, entry)){
         log_warn("Failed to push new frame to queue. This likely indicates a hang, performance issue or a busy network.");

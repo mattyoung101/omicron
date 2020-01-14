@@ -10,12 +10,12 @@ import javafx.scene.control.Label
  * 1.1.0a: UI implemented and threshold sliders/debug commands work properly
  */
 const val OMICONTROL_VERSION = "1.1.0a"
-const val REMOTE_IP = "192.168.1.9"
+const val REMOTE_IP = "127.0.0.1"
 const val REMOTE_PORT = 42708
 val CONNECTION_MANAGER = ConnectionManager()
 val EVENT_BUS = EventBus()
-const val IMAGE_WIDTH = 1280.0
-const val IMAGE_HEIGHT = 720.0
+const val CANVAS_WIDTH = 1280.0
+const val CANVAS_HEIGHT = 720.0
 const val DEBUG_CAMERA_VIEW = false
 val COLOURS = listOf("R", "G", "B")
 var lastPingLabel: Label? = null
@@ -23,8 +23,8 @@ const val GRAB_SEND_TIMER_PERIOD = 100L // ms
 
 enum class DebugCommands {
     CMD_OK, // the last command completed successfully
-    CMD_POWER_OFF, // ask Omicam to shutdown the Jetson
-    CMD_POWER_REBOOT, // ask Omicam to reboot the Jetson
+    CMD_POWER_OFF, // ask Omicam to shutdown the SBC
+    CMD_POWER_REBOOT, // ask Omicam to reboot the SBC
     CMD_THRESHOLDS_GET_ALL, // return the current thresholds for all object
     CMD_THRESHOLDS_SET, // set the specified object's threshold to the given value
     CMD_THRESHOLDS_WRITE_DISK, // writes the current thresholds to the INI file and then to disk

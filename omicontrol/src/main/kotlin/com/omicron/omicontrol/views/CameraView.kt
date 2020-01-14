@@ -5,7 +5,6 @@ import com.omicron.omicontrol.*
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
 import javafx.scene.image.Image
-import javafx.scene.image.ImageView
 import tornadofx.*
 import java.io.ByteArrayInputStream
 import kotlin.system.exitProcess
@@ -17,17 +16,16 @@ import java.util.zip.Inflater
 import RemoteDebug
 import javafx.collections.FXCollections
 import javafx.scene.Cursor
-import javafx.scene.Node
 import javafx.scene.control.ComboBox
 import javafx.scene.control.Label
 import javafx.scene.control.Slider
+import javafx.scene.image.WritableImage
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
 import org.tinylog.kotlin.Logger
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
-import kotlin.math.floor
 
 class CameraView : View() {
     /** displays the thresh image(s) **/
@@ -35,6 +33,7 @@ class CameraView : View() {
     private lateinit var temperatureLabel: Label
     private lateinit var selectBox: ComboBox<String>
     private lateinit var lastFpsLabel: Label
+    private lateinit var sizeLabel: Label
     private val compressor = Inflater()
     private var hideCameraFrame = false
     /** mapping between each field object and its threshold as received from Omicam **/
@@ -70,41 +69,46 @@ class CameraView : View() {
             } else {
                 temperatureLabel.textFill = Color.WHITE
             }
-            lastFpsLabel.text = "Last FPS: ${message.fps}"
+            lastFpsLabel.text = "Frame rate: ${message.fps} FPS"
+            sizeLabel.text = "Packet size: ${message.serializedSize / 1024} KiB"
 
             // clear the canvas and display the normal camera frame
             display.fill = Color.BLACK
-            display.fillRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
-            if (!hideCameraFrame) display.drawImage(img, 0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+            display.fillRect(0.0, 0.0, CANVAS_WIDTH, CANVAS_HEIGHT)
+            if (!hideCameraFrame) display.drawImage(img, message.cropRect.x.toDouble(), message.cropRect.y.toDouble(), img.width, img.height)
 
             if (selectedObject != FieldObjects.OBJ_NONE) {
                 // write the received image data to the canvas, skipping black pixels (this fakes blend mode which won't work
                 // for some reason)
+                val tmpImage = WritableImage(CANVAS_WIDTH.toInt(), CANVAS_HEIGHT.toInt())
                 for (i in 0 until bytes) {
                     val byte = outBuf[i].toUByte().toInt()
                     if (byte == 0) continue
 
-                    val x = i % IMAGE_WIDTH.toInt()
-                    val y = floor(i / IMAGE_WIDTH).toInt()
-                    display.pixelWriter.setColor(x, y, Color.MAGENTA)
+                    val x = i % message.frameWidth
+                    val y = i / message.frameWidth
+                    tmpImage.pixelWriter.setColor(x, y, Color.MAGENTA)
                 }
+                display.drawImage(tmpImage, message.cropRect.x.toDouble(), message.cropRect.y.toDouble(), tmpImage.width, tmpImage.height)
 
-                // TODO add support for each object (not just the ball) - maybe rename "ballCentroid" to "objectCentroid"
-                // draw ball centre
+                // draw threshold centre
                 display.fill = Color.RED
-                val ballX = message.ballCentroid.x.toDouble()
-                val ballY = message.ballCentroid.y.toDouble()
-                // hack alert: in Omicam, if the ball centroid doesn't exist we set it to 0.0 so don't draw it if it's 0 here
-                // in future we should add a field called "exists" to the ball and the rect so we only render them if they exist
-                // in case the ball centroid is actually at (0, 0) for some reason
-                if (ballX != 0.0 && ballY != 0.0) display.fillOval(ballX, ballY, 10.0, 10.0)
+                val objectX = message.ballCentroid.x.toDouble()
+                val objectY = message.ballCentroid.y.toDouble()
+                // hack alert: in Omicam, if the centroid doesn't exist we set it to 0.0 so don't draw it if it's 0 here
+                // in future we should add a field called "exists" to the object and the rect so we only render them if they exist
+                // in case the object centroid is actually at (0, 0) for some reason
+                 if (objectX != 0.0 && objectY != 0.0)
+                     display.fillOval(objectX, objectY, 10.0, 10.0)
 
-                // draw ball bounding box
+                // draw threshold bounding box
                 display.stroke = Color.RED
                 display.lineWidth = 4.0
-                if (message.ballRect.x != 0 && message.ballRect.y != 0)
-                    display.strokeRect(message.ballRect.x.toDouble(), message.ballRect.y.toDouble(),
-                    message.ballRect.width.toDouble(), message.ballRect.height.toDouble())
+                if (message.ballRect.x != 0 && message.ballRect.y != 0) {
+                    val x = message.ballRect.x.toDouble()
+                    val y = message.ballRect.y.toDouble()
+                    display.strokeRect(x, y, message.ballRect.width.toDouble(), message.ballRect.height.toDouble())
+                }
             }
         }
     }
@@ -362,7 +366,7 @@ class CameraView : View() {
 
         hbox {
             vbox {
-                canvas(IMAGE_WIDTH, IMAGE_HEIGHT){
+                canvas(CANVAS_WIDTH, CANVAS_HEIGHT){
                     display = graphicsContext2D
                 }
                 alignment = Pos.TOP_RIGHT
@@ -414,7 +418,12 @@ class CameraView : View() {
                         }
                     }
 
-                    // temperature display
+                    fieldset {
+                        field {
+                            lastFpsLabel = label("Last FPS: None recorded")
+                        }
+                    }
+
                     fieldset {
                         field {
                             label("Temperature: ")
@@ -424,13 +433,13 @@ class CameraView : View() {
 
                     fieldset {
                         field {
-                            lastFpsLabel = label("Last FPS: None recorded")
+                            lastPingLabel = label("Last ping: None recorded")
                         }
                     }
 
                     fieldset {
                         field {
-                            lastPingLabel = label("Last ping: None recorded")
+                            sizeLabel = label("Packet size: None recorded")
                         }
                     }
                 }
@@ -450,7 +459,7 @@ class CameraView : View() {
 
         if (DEBUG_CAMERA_VIEW){
             display.fill = Color.WHITE
-            display.fillRect(0.0, 0.0, IMAGE_WIDTH, IMAGE_HEIGHT)
+            display.fillRect(0.0, 0.0, CANVAS_WIDTH, CANVAS_HEIGHT)
         }
     }
 }

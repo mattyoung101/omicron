@@ -30,14 +30,17 @@ message DebugFrame {
     RDRect ballRect = 4; // the bounding box of the ball
     RDPoint ballCentroid = 5; // the centroid of the ball
     int32 fps = 6; // the current FPS of the camera
+    int32 frameWidth = 7; // width of both frames
+    int32 frameHeight = 8; // height of both frames
+    RDRect cropRect = 9; // the crop rectangle, or all zeroes if cropping is disabled
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
 message DebugCommand {
     // List of commands:
     // CMD_OK: the last command completed successfully
-    // CMD_POWER_OFF: ask Omicam to shutdown the Jetson
-    // CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
+    // CMD_POWER_OFF: ask Omicam to shutdown the SBC
+    // CMD_POWER_REBOOT: ask Omicam to reboot the SBC
     // CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
     // CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
     // CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk

@@ -98,7 +98,7 @@ void localiser_init(char *fieldFile){
 
     double minCoord[] = {-field.fieldWidth / 2.0, -field.fieldHeight / 2.0};
     double maxCoord[] = {field.fieldWidth / 2.0, field.fieldHeight / 2.0};
-    log_trace("Min bound: (%f,%f) Max bound: (%f,%f)", minCoord[0], minCoord[1], maxCoord[0], maxCoord[1]);
+    log_trace("Min bound: (%.2f,%.2f) Max bound: (%.2f,%.2f)", minCoord[0], minCoord[1], maxCoord[0], maxCoord[1]);
     nlopt_set_lower_bounds(optimiser, minCoord);
     nlopt_set_upper_bounds(optimiser, maxCoord);
 

@@ -38,12 +38,10 @@ static _Atomic int32_t lastFpsMeasurement = 0;
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
  * This is in a separate function so that we can just invoke it for each object, likes "ball", "lines", etc.
- * @param frame the GPU accelerated Mat containing the current frame being processed
- * @param min an array containing the 3 minimum RGB values
- * @param max an array containing the 3 maximum RGB values
+ * @param frame the thresholded object to be processed
  * @param objectId what the object is
  */
-static object_result_t process_object(const Mat& thresholded, int32_t *min, int32_t *max, field_objects_t objectId){
+static object_result_t process_object(const Mat& thresholded, field_objects_t objectId){
     Mat labels, stats, centroids;
 
     // run computer vision tasks
@@ -73,6 +71,20 @@ static object_result_t process_object(const Mat& thresholded, int32_t *min, int3
         objRect = {rectX, rectY, rectW, rectH};
     }
 
+    // scale coordinates if cropping is enabled
+#if VISION_CROP_ENABLED
+    Rect cropRect(VISION_CROP_RECT);
+    objRect.x += cropRect.x;
+    objRect.y += cropRect.y;
+    largestCentroid.x += cropRect.x;
+    largestCentroid.y += cropRect.y;
+#endif
+
+    // resize coordinates if image was downscaled
+    if (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW){
+
+    }
+
     object_result_t result = {0}; // NOLINT
     result.exists = blobExists;
     result.centroid = {largestCentroid.x, largestCentroid.y};
@@ -82,10 +94,17 @@ static object_result_t process_object(const Mat& thresholded, int32_t *min, int3
     return result;
 }
 
+/**
+ * Widens a smaller threshold image to the actual size of the remote debug frame
+ * @param input the smaller threshold Mat, it will be scaled in place
+ */
+static void rescale_threshold_image(const Mat& input){
+    resize(input, input, Size(videoWidth, videoHeight), 0, 0, INTER_NEAREST);
+}
+
 /** this task runs all the computer vision for Omicam, using OpenCV */
 static auto cv_thread(void *arg) -> void *{
     uint32_t rdFrameCounter = 0;
-    //pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
@@ -97,8 +116,12 @@ static auto cv_thread(void *arg) -> void *{
     double fps = cap.get(CAP_PROP_FPS);
     log_debug("Video file FPS: %f, Capture API: %s", fps, cap.getBackendName().c_str());
 #else
-    log_trace("Build target is Jetson, initialising VideoCapture");
-    // TODO ... gstreamer and shit ...
+    log_trace("Build target is SBC, initialising VideoCapture");
+    VidoCapture cap(0);
+    // TODO configure framerate and shit here
+    if (!cap.isOpened()){
+        log_error("Failed to open OpenCV capture device");
+    }
     log_trace("OpenCV capture initialised successfully");
 #endif
 
@@ -113,11 +136,12 @@ static auto cv_thread(void *arg) -> void *{
 
         cap.read(frame);
         if (frame.empty()){
-            log_warn("Received empty frame from capture!");
 #if BUILD_TARGET == BUILD_TARGET_PC
             cap.set(CAP_PROP_FRAME_COUNT, 0);
             cap.set(CAP_PROP_POS_FRAMES, 0);
             cap.set(CAP_PROP_POS_AVI_RATIO, 0);
+#else
+            log_warn("Received empty frame from capture!");
 #endif
             continue;
         }
@@ -161,13 +185,12 @@ static auto cv_thread(void *arg) -> void *{
         }, 4);
 
         // process all our field objects
-        auto ball = process_object(thresholded[OBJ_BALL], minBallData, maxBallData, OBJ_BALL);
-        auto yellowGoal = process_object(thresholded[OBJ_GOAL_YELLOW], minYellowData, maxYellowData, OBJ_GOAL_YELLOW);
-        auto blueGoal = process_object(thresholded[OBJ_GOAL_BLUE], minBlueData, maxBlueData, OBJ_GOAL_BLUE);
-        auto lines = process_object(thresholded[OBJ_LINES], minLineData, maxLineData, OBJ_LINES);
+        auto ball = process_object(thresholded[OBJ_BALL], OBJ_BALL);
+        auto yellowGoal = process_object(thresholded[OBJ_GOAL_YELLOW], OBJ_GOAL_YELLOW);
+        auto blueGoal = process_object(thresholded[OBJ_GOAL_BLUE], OBJ_GOAL_BLUE);
+        auto lines = process_object(thresholded[OBJ_LINES], OBJ_LINES);
 
         // dispatch frames to remote debugger
-        // TODO add remote debug support for varying frame sizes (for goals)
 #if REMOTE_ENABLED
         if (rdFrameCounter++ % REMOTE_FRAME_INTERVAL == 0 && remote_debug_is_connected()) {
             // we optimised out the cvtColor in the main loop so we gotta do it here instead
@@ -178,8 +201,8 @@ static auto cv_thread(void *arg) -> void *{
             char buf[128] = {0};
             snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", rdFrameCounter, OMICAM_VERSION,
                      fieldObjToString[selectedFieldObject]);
-            putText(frameRGB, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.5,
-                    Scalar(255, 0, 0), 1, FILLED, false);
+            putText(frameRGB, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.6,
+                    Scalar(255, 255, 255), 1, FILLED, false);
 
             // copy the frame off the Mat into some raw data that can be processed by the remote debugger code
             // frame is a 3 channel RGB image (hence the times 3)
@@ -191,25 +214,27 @@ static auto cv_thread(void *arg) -> void *{
             switch (selectedFieldObject){
                 case OBJ_NONE: {
                     // just send the empty buffer
-                    remote_debug_post(frameData, threshData, {0, 0, 0, 0}, {0, 0}, lastFpsMeasurement);
+                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, frameRGB.cols, frameRGB.rows);
                     break;
                 }
                 case OBJ_BALL: {
                     memcpy(threshData, ball.threshMask.data, ball.threshMask.rows * ball.threshMask.cols);
-                    remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement);
+                    remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement, frameRGB.cols, frameRGB.rows);
                     break;
                 }
                 case OBJ_LINES: {
                     memcpy(threshData, lines.threshMask.data, lines.threshMask.rows * lines.threshMask.cols);
-                    remote_debug_post(frameData, threshData, {0, 0, 0, 0}, {0, 0}, lastFpsMeasurement);
+                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, frameRGB.cols, frameRGB.rows);
                     break;
                 }
-                default: {
-                    log_warn("Unsupported field object selected: %d", selectedFieldObject);
+                case OBJ_GOAL_BLUE: {
+                    // TODO rescale frame and send it, ignore for now
+                    break;
+                }
+                case OBJ_GOAL_YELLOW: {
                     break;
                 }
             }
-
         }
 #endif
         // encode protocol buffer to send to ESP over UART
@@ -225,7 +250,7 @@ static auto cv_thread(void *arg) -> void *{
         // printf("last frame took: %.2f ms to process (%.2f fps) \n", end, 1000.0 / end);
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-        // waitKey(static_cast<int>(1000 / fps));
+        waitKey(static_cast<int>(1000 / fps));
 #endif
     }
     destroyAllWindows();
@@ -237,30 +262,22 @@ static auto fps_counter_thread(void *arg) -> void *{
         sleep(1);
         lastFpsMeasurement = fpsCounter;
         fpsCounter = 0;
-        if (!remote_debug_is_connected()){
+
 #if VISION_DIAGNOSTICS
+        if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){
             printf("Vision FPS: %d\n", lastFpsMeasurement);
             fflush(stdout);
-#endif
         }
+#endif
     }
 }
 
 void vision_init(void){
     setUseOptimized(true);
     int numCpus = getNumberOfCPUs();
-    bool openCLDevice = false;
-    ocl::setUseOpenCL(true);
-    ocl::Context ctx = ocl::Context::getDefault();
-    if (ctx.ptr())
-        openCLDevice = true;
-    int numCudaDevices = cuda::getCudaEnabledDeviceCount();
+    string features = getCPUFeaturesLine();
     log_info("OpenCV version: %d.%d.%d", CV_VERSION_MAJOR, CV_VERSION_MINOR, CV_VERSION_REVISION);
-    log_info("System info: %d CPU core(s), %d CUDA device(s) available, %s", numCpus, numCudaDevices,
-            openCLDevice ? "OpenCL available" : "OpenCL unavailable");
-    if (numCudaDevices > 0){
-        cuda::printShortCudaDeviceInfo(cuda::getDevice());
-    }
+    log_info("System info: %d CPU core(s), supported features: %s", numCpus, features.c_str());
 
     // create threads
     int err = pthread_create(&cvThread, nullptr, cv_thread, nullptr);
@@ -285,12 +302,5 @@ void vision_init(void){
 void vision_dispose(void){
     log_trace("Stopping vision thread");
     pthread_cancel(cvThread);
-    // TODO: we need some way to shutdown the CV threads too
     pthread_join(cvThread, nullptr);
 }
-
-// and now...
-// This is your resident "FUCK YOU" to NVIDIA who couldn't be arsed to implement OpenCL on Tegra chips such as the Jetson Nano.
-// Was it really that difficult guys? Now I'm stuck with your shitty, proprietary, non-cross-platform CUDA bullshit that no-one wants.
-// Seriously, your fuckin terrible-ass Linux desktop driver even supports it, is it really that difficult to put on a Tegra?
-// Also, hardly unexpectedly, the bloody CUDA APIs in OpenCV absolutely suck shit compared to the OpenCL T-API ughhh

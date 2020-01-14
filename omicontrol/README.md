@@ -14,7 +14,7 @@ won't be seeing any proper design patterns like MVC). My apologies in advance!
 - Easy to use UI with built-in tutorials
 - Decode Omicam JPEG/data stream while overlaying threshold information
 - Edit and upload camera thresholds on the fly
-- Control the Jetson system (reboot, shutdown, halt) and ESP32 (reboot)
+- Control the camera single board computer (reboot, shutdown, halt) and ESP32 (reboot)
 - Visualise both robots' localised position on the field
 - Control the robots through a multitude of useful commands including automatically resetting to starting positions
 - Large buttons designed for tablet usage

@@ -1930,6 +1930,49 @@ public final class RemoteDebug {
      * <code>optional int32 fps = 6;</code>
      */
     int getFps();
+
+    /**
+     * <pre>
+     * width of both frames
+     * </pre>
+     *
+     * <code>optional int32 frameWidth = 7;</code>
+     */
+    int getFrameWidth();
+
+    /**
+     * <pre>
+     * height of both frames
+     * </pre>
+     *
+     * <code>optional int32 frameHeight = 8;</code>
+     */
+    int getFrameHeight();
+
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    boolean hasCropRect();
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    RemoteDebug.RDRect getCropRect();
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    RemoteDebug.RDRectOrBuilder getCropRectOrBuilder();
   }
   /**
    * <pre>
@@ -1953,6 +1996,8 @@ public final class RemoteDebug {
       ballThreshImage_ = com.google.protobuf.ByteString.EMPTY;
       temperature_ = 0F;
       fps_ = 0;
+      frameWidth_ = 0;
+      frameHeight_ = 0;
     }
 
     @java.lang.Override
@@ -2024,6 +2069,29 @@ public final class RemoteDebug {
             case 48: {
 
               fps_ = input.readInt32();
+              break;
+            }
+            case 56: {
+
+              frameWidth_ = input.readInt32();
+              break;
+            }
+            case 64: {
+
+              frameHeight_ = input.readInt32();
+              break;
+            }
+            case 74: {
+              RemoteDebug.RDRect.Builder subBuilder = null;
+              if (cropRect_ != null) {
+                subBuilder = cropRect_.toBuilder();
+              }
+              cropRect_ = input.readMessage(RemoteDebug.RDRect.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(cropRect_);
+                cropRect_ = subBuilder.buildPartial();
+              }
+
               break;
             }
           }
@@ -2167,6 +2235,65 @@ public final class RemoteDebug {
       return fps_;
     }
 
+    public static final int FRAMEWIDTH_FIELD_NUMBER = 7;
+    private int frameWidth_;
+    /**
+     * <pre>
+     * width of both frames
+     * </pre>
+     *
+     * <code>optional int32 frameWidth = 7;</code>
+     */
+    public int getFrameWidth() {
+      return frameWidth_;
+    }
+
+    public static final int FRAMEHEIGHT_FIELD_NUMBER = 8;
+    private int frameHeight_;
+    /**
+     * <pre>
+     * height of both frames
+     * </pre>
+     *
+     * <code>optional int32 frameHeight = 8;</code>
+     */
+    public int getFrameHeight() {
+      return frameHeight_;
+    }
+
+    public static final int CROPRECT_FIELD_NUMBER = 9;
+    private RemoteDebug.RDRect cropRect_;
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    public boolean hasCropRect() {
+      return cropRect_ != null;
+    }
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    public RemoteDebug.RDRect getCropRect() {
+      return cropRect_ == null ? RemoteDebug.RDRect.getDefaultInstance() : cropRect_;
+    }
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    public RemoteDebug.RDRectOrBuilder getCropRectOrBuilder() {
+      return getCropRect();
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2196,6 +2323,15 @@ public final class RemoteDebug {
       }
       if (fps_ != 0) {
         output.writeInt32(6, fps_);
+      }
+      if (frameWidth_ != 0) {
+        output.writeInt32(7, frameWidth_);
+      }
+      if (frameHeight_ != 0) {
+        output.writeInt32(8, frameHeight_);
+      }
+      if (cropRect_ != null) {
+        output.writeMessage(9, getCropRect());
       }
     }
 
@@ -2227,6 +2363,18 @@ public final class RemoteDebug {
       if (fps_ != 0) {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(6, fps_);
+      }
+      if (frameWidth_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(7, frameWidth_);
+      }
+      if (frameHeight_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(8, frameHeight_);
+      }
+      if (cropRect_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(9, getCropRect());
       }
       memoizedSize = size;
       return size;
@@ -2264,6 +2412,15 @@ public final class RemoteDebug {
       }
       result = result && (getFps()
           == other.getFps());
+      result = result && (getFrameWidth()
+          == other.getFrameWidth());
+      result = result && (getFrameHeight()
+          == other.getFrameHeight());
+      result = result && (hasCropRect() == other.hasCropRect());
+      if (hasCropRect()) {
+        result = result && getCropRect()
+            .equals(other.getCropRect());
+      }
       return result;
     }
 
@@ -2291,6 +2448,14 @@ public final class RemoteDebug {
       }
       hash = (37 * hash) + FPS_FIELD_NUMBER;
       hash = (53 * hash) + getFps();
+      hash = (37 * hash) + FRAMEWIDTH_FIELD_NUMBER;
+      hash = (53 * hash) + getFrameWidth();
+      hash = (37 * hash) + FRAMEHEIGHT_FIELD_NUMBER;
+      hash = (53 * hash) + getFrameHeight();
+      if (hasCropRect()) {
+        hash = (37 * hash) + CROPRECT_FIELD_NUMBER;
+        hash = (53 * hash) + getCropRect().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2435,6 +2600,16 @@ public final class RemoteDebug {
         }
         fps_ = 0;
 
+        frameWidth_ = 0;
+
+        frameHeight_ = 0;
+
+        if (cropRectBuilder_ == null) {
+          cropRect_ = null;
+        } else {
+          cropRect_ = null;
+          cropRectBuilder_ = null;
+        }
         return this;
       }
 
@@ -2471,6 +2646,13 @@ public final class RemoteDebug {
           result.ballCentroid_ = ballCentroidBuilder_.build();
         }
         result.fps_ = fps_;
+        result.frameWidth_ = frameWidth_;
+        result.frameHeight_ = frameHeight_;
+        if (cropRectBuilder_ == null) {
+          result.cropRect_ = cropRect_;
+        } else {
+          result.cropRect_ = cropRectBuilder_.build();
+        }
         onBuilt();
         return result;
       }
@@ -2529,6 +2711,15 @@ public final class RemoteDebug {
         }
         if (other.getFps() != 0) {
           setFps(other.getFps());
+        }
+        if (other.getFrameWidth() != 0) {
+          setFrameWidth(other.getFrameWidth());
+        }
+        if (other.getFrameHeight() != 0) {
+          setFrameHeight(other.getFrameHeight());
+        }
+        if (other.hasCropRect()) {
+          mergeCropRect(other.getCropRect());
         }
         onChanged();
         return this;
@@ -3019,6 +3210,235 @@ public final class RemoteDebug {
         onChanged();
         return this;
       }
+
+      private int frameWidth_ ;
+      /**
+       * <pre>
+       * width of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameWidth = 7;</code>
+       */
+      public int getFrameWidth() {
+        return frameWidth_;
+      }
+      /**
+       * <pre>
+       * width of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameWidth = 7;</code>
+       */
+      public Builder setFrameWidth(int value) {
+        
+        frameWidth_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * width of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameWidth = 7;</code>
+       */
+      public Builder clearFrameWidth() {
+        
+        frameWidth_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int frameHeight_ ;
+      /**
+       * <pre>
+       * height of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameHeight = 8;</code>
+       */
+      public int getFrameHeight() {
+        return frameHeight_;
+      }
+      /**
+       * <pre>
+       * height of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameHeight = 8;</code>
+       */
+      public Builder setFrameHeight(int value) {
+        
+        frameHeight_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * height of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameHeight = 8;</code>
+       */
+      public Builder clearFrameHeight() {
+        
+        frameHeight_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private RemoteDebug.RDRect cropRect_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder> cropRectBuilder_;
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public boolean hasCropRect() {
+        return cropRectBuilder_ != null || cropRect_ != null;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public RemoteDebug.RDRect getCropRect() {
+        if (cropRectBuilder_ == null) {
+          return cropRect_ == null ? RemoteDebug.RDRect.getDefaultInstance() : cropRect_;
+        } else {
+          return cropRectBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public Builder setCropRect(RemoteDebug.RDRect value) {
+        if (cropRectBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          cropRect_ = value;
+          onChanged();
+        } else {
+          cropRectBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public Builder setCropRect(
+          RemoteDebug.RDRect.Builder builderForValue) {
+        if (cropRectBuilder_ == null) {
+          cropRect_ = builderForValue.build();
+          onChanged();
+        } else {
+          cropRectBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public Builder mergeCropRect(RemoteDebug.RDRect value) {
+        if (cropRectBuilder_ == null) {
+          if (cropRect_ != null) {
+            cropRect_ =
+              RemoteDebug.RDRect.newBuilder(cropRect_).mergeFrom(value).buildPartial();
+          } else {
+            cropRect_ = value;
+          }
+          onChanged();
+        } else {
+          cropRectBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public Builder clearCropRect() {
+        if (cropRectBuilder_ == null) {
+          cropRect_ = null;
+          onChanged();
+        } else {
+          cropRect_ = null;
+          cropRectBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public RemoteDebug.RDRect.Builder getCropRectBuilder() {
+        
+        onChanged();
+        return getCropRectFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public RemoteDebug.RDRectOrBuilder getCropRectOrBuilder() {
+        if (cropRectBuilder_ != null) {
+          return cropRectBuilder_.getMessageOrBuilder();
+        } else {
+          return cropRect_ == null ?
+              RemoteDebug.RDRect.getDefaultInstance() : cropRect_;
+        }
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder> 
+          getCropRectFieldBuilder() {
+        if (cropRectBuilder_ == null) {
+          cropRectBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder>(
+                  getCropRect(),
+                  getParentForChildren(),
+                  isClean());
+          cropRect_ = null;
+        }
+        return cropRectBuilder_;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -3076,8 +3496,8 @@ public final class RemoteDebug {
      * <pre>
      * List of commands:
      * CMD_OK: the last command completed successfully
-     * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
-     * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
+     * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+     * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
      * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
      * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
      * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
@@ -3355,8 +3775,8 @@ public final class RemoteDebug {
      * <pre>
      * List of commands:
      * CMD_OK: the last command completed successfully
-     * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
-     * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
+     * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+     * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
      * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
      * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
      * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
@@ -3996,8 +4416,8 @@ public final class RemoteDebug {
        * <pre>
        * List of commands:
        * CMD_OK: the last command completed successfully
-       * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
-       * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
+       * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+       * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
        * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
        * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
        * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
@@ -4018,8 +4438,8 @@ public final class RemoteDebug {
        * <pre>
        * List of commands:
        * CMD_OK: the last command completed successfully
-       * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
-       * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
+       * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+       * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
        * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
        * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
        * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
@@ -4043,8 +4463,8 @@ public final class RemoteDebug {
        * <pre>
        * List of commands:
        * CMD_OK: the last command completed successfully
-       * CMD_POWER_OFF: ask Omicam to shutdown the Jetson
-       * CMD_POWER_REBOOT: ask Omicam to reboot the Jetson
+       * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+       * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
        * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
        * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
        * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
@@ -5697,19 +6117,20 @@ public final class RemoteDebug {
       "\n\021RemoteDebug.proto\"=\n\006RDRect\022\t\n\001x\030\001 \001(\005" +
       "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
       "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\'\n\013R" +
-      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\230\001\n" +
+      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\334\001\n" +
       "\nDebugFrame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017bal" +
       "lThreshImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022" +
       "\031\n\010ballRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentro" +
-      "id\030\005 \001(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\"\275\001\n\014Debu" +
-      "gCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords\030\002 " +
-      "\001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n\ral",
-      "lThresholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010objec" +
-      "tId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourChann" +
-      "el\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\"^\n\nRDMsgFrame\022\032\n" +
-      "\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001" +
-      "(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 \001(\005b" +
-      "\006proto3"
+      "id\030\005 \001(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframe" +
+      "Width\030\007 \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010crop" +
+      "Rect\030\t \001(\0132\007.RDRect\"\275\001\n\014DebugCommand\022\021\n\t",
+      "messageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoin" +
+      "t\022\023\n\013orientation\030\003 \001(\002\022#\n\rallThresholds\030" +
+      "\004 \003(\0132\014.RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n" +
+      "\006minMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005" +
+      "value\030\010 \001(\005\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\013" +
+      "2\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCo" +
+      "mmand\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -5746,7 +6167,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_DebugCommand_fieldAccessorTable = new
