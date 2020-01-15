@@ -40,11 +40,11 @@ static _Atomic int32_t lastFpsMeasurement = 0;
  * This is in a separate function so that we can just invoke it for each object, likes "ball", "lines", etc.
  * @param frame the thresholded object to be processed
  * @param objectId what the object is
+ * @param realWidth the real width of the (potentially cropped) frame, before downscaling
+ * @param realHeight the real size of the (potentially cropped) frame, before downscaling
  */
-static object_result_t process_object(const Mat& thresholded, field_objects_t objectId){
-    Mat labels, stats, centroids;
-
-    // run computer vision tasks
+static object_result_t process_object(const Mat& thresholded, field_objects_t objectId, int32_t realWidth, int32_t realHeight){
+    Mat labels, stats, centroids, threshScaled;
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
     // find the biggest blob, skipping id 0 which is the background
@@ -71,6 +71,21 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
         objRect = {rectX, rectY, rectW, rectH};
     }
 
+    // rescale coordinates if the image was downscaled
+    if (VISION_IS_RESCALED){
+        largestCentroid.x /= VISION_SCALE_FACTOR;
+        largestCentroid.y /= VISION_SCALE_FACTOR;
+        objRect.x /= VISION_SCALE_FACTOR;
+        objRect.y /= VISION_SCALE_FACTOR;
+        objRect.width /= VISION_SCALE_FACTOR;
+        objRect.height /= VISION_SCALE_FACTOR;
+
+        // also rescale image if remote debug is enabled
+        if (remote_debug_is_connected()){
+            resize(thresholded, threshScaled, Size(realWidth, realHeight), INTER_NEAREST);
+        }
+    }
+
     // scale coordinates if cropping is enabled
 #if VISION_CROP_ENABLED
     Rect cropRect(VISION_CROP_RECT);
@@ -80,26 +95,17 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
     largestCentroid.y += cropRect.y;
 #endif
 
-    // resize coordinates if image was downscaled
-    if (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW){
-
-    }
-
     object_result_t result = {0}; // NOLINT
     result.exists = blobExists;
     result.centroid = {largestCentroid.x, largestCentroid.y};
     result.boundingBox = objRect;
-    result.threshMask = thresholded;
+    if (VISION_IS_RESCALED){
+        result.threshMask = threshScaled;
+    } else {
+        result.threshMask = thresholded;
+    }
 
     return result;
-}
-
-/**
- * Widens a smaller threshold image to the actual size of the remote debug frame
- * @param input the smaller threshold Mat, it will be scaled in place
- */
-static void rescale_threshold_image(const Mat& input){
-    resize(input, input, Size(videoWidth, videoHeight), 0, 0, INTER_NEAREST);
 }
 
 /** this task runs all the computer vision for Omicam, using OpenCV */
@@ -109,7 +115,7 @@ static auto cv_thread(void *arg) -> void *{
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-    VideoCapture cap("../orange_ball.m4v");
+    VideoCapture cap("../test_footage_2.m4v");
     if (!cap.isOpened()) {
         log_error("Failed to load OpenCV test video");
     }
@@ -127,11 +133,14 @@ static auto cv_thread(void *arg) -> void *{
 
     // this is a stupid way of calculating this
     Mat junk(videoHeight, videoWidth, CV_8UC1);
+#if VISION_CROP_ENABLED
+    junk = junk(Rect(VISION_CROP_RECT));
+#endif
     resize(junk, junk, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR);
+    log_info("Frame size: %dx%d (cropping enabled: %s)", videoWidth, videoHeight, VISION_CROP_ENABLED ? "yes" : "no");
     log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
     while (true){
-        double begin = utils_get_millis();
         Mat frame, frameScaled;
 
         cap.read(frame);
@@ -150,6 +159,18 @@ static auto cv_thread(void *arg) -> void *{
         frame = frame(Rect(VISION_CROP_RECT));
 #endif
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
+
+        // apply CLAHE adaptive histogram normalisation as explained here: https://stackoverflow.com/a/47370615/5007892
+        // and also here: https://docs.opencv.org/3.1.0/d5/daf/tutorial_py_histogram_equalization.html
+//        Mat labFrame;
+//        cvtColor(frame, labFrame, COLOR_BGR2Lab);
+//        Mat labPlanes[3];
+//        split(labFrame, labPlanes);
+//        auto clahe = createCLAHE(2.0, Size(8, 8));
+//        clahe->apply(labPlanes[0], labPlanes[0]);
+//        Mat fixed;
+//        merge(labPlanes, 3, fixed);
+//        cvtColor(fixed, frame, COLOR_Lab2BGR);
 
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
         Mat thresholded[5] = {};
@@ -182,56 +203,65 @@ static auto cv_thread(void *arg) -> void *{
             Scalar minScalar = Scalar(min[2], min[1], min[0]);
             Scalar maxScalar = Scalar(max[2], max[1], max[0]);
             inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar, thresholded[object]);
+
+//            int morph_size = 12;
+//            Mat element = getStructuringElement(MORPH_RECT, Size( 2*morph_size + 1, 2*morph_size+1 ), Point( morph_size, morph_size ) );
+//            morphologyEx(thresholded[object], thresholded[object], MORPH_OPEN, element);
         }, 4);
 
         // process all our field objects
-        auto ball = process_object(thresholded[OBJ_BALL], OBJ_BALL);
-        auto yellowGoal = process_object(thresholded[OBJ_GOAL_YELLOW], OBJ_GOAL_YELLOW);
-        auto blueGoal = process_object(thresholded[OBJ_GOAL_BLUE], OBJ_GOAL_BLUE);
-        auto lines = process_object(thresholded[OBJ_LINES], OBJ_LINES);
+        int32_t realWidth = frame.cols;
+        int32_t realHeight = frame.rows;
+        auto ball = process_object(thresholded[OBJ_BALL], OBJ_BALL, realWidth, realHeight);
+        auto yellowGoal = process_object(thresholded[OBJ_GOAL_YELLOW], OBJ_GOAL_YELLOW, realWidth, realHeight);
+        auto blueGoal = process_object(thresholded[OBJ_GOAL_BLUE], OBJ_GOAL_BLUE, realWidth, realHeight);
+        auto lines = process_object(thresholded[OBJ_LINES], OBJ_LINES, realWidth, realHeight);
 
         // dispatch frames to remote debugger
 #if REMOTE_ENABLED
         if (rdFrameCounter++ % REMOTE_FRAME_INTERVAL == 0 && remote_debug_is_connected()) {
             // we optimised out the cvtColor in the main loop so we gotta do it here instead
             // we can remove it by simply swapping the order of the threshold values to save calling BGR2RGB
-            Mat frameRGB;
-            cvtColor(frame, frameRGB, COLOR_BGR2RGB);
+            Mat debugFrame;
+            cvtColor(frame, debugFrame, COLOR_BGR2RGB);
 
             char buf[128] = {0};
             snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", rdFrameCounter, OMICAM_VERSION,
                      fieldObjToString[selectedFieldObject]);
-            putText(frameRGB, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.6,
+            putText(debugFrame, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.6,
                     Scalar(255, 255, 255), 1, FILLED, false);
 
             // copy the frame off the Mat into some raw data that can be processed by the remote debugger code
             // frame is a 3 channel RGB image (hence the times 3)
             auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
-            memcpy(frameData, frameRGB.data, frame.rows * frame.cols * 3);
+            memcpy(frameData, debugFrame.data, frame.rows * frame.cols * 3);
 
             // ballThresh is just a 1-bit mask so it has only one channel
             auto *threshData = (uint8_t*) calloc(ball.threshMask.rows * ball.threshMask.cols, sizeof(uint8_t));
             switch (selectedFieldObject){
                 case OBJ_NONE: {
                     // just send the empty buffer
-                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, frameRGB.cols, frameRGB.rows);
+                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
                 }
                 case OBJ_BALL: {
                     memcpy(threshData, ball.threshMask.data, ball.threshMask.rows * ball.threshMask.cols);
-                    remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement, frameRGB.cols, frameRGB.rows);
+                    remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
                 }
                 case OBJ_LINES: {
                     memcpy(threshData, lines.threshMask.data, lines.threshMask.rows * lines.threshMask.cols);
-                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, frameRGB.cols, frameRGB.rows);
+                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
                 }
                 case OBJ_GOAL_BLUE: {
-                    // TODO rescale frame and send it, ignore for now
+                    memcpy(threshData, blueGoal.threshMask.data, blueGoal.threshMask.rows * blueGoal.threshMask.cols);
+                    remote_debug_post(frameData, threshData, blueGoal.boundingBox, blueGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
                 }
                 case OBJ_GOAL_YELLOW: {
+                    memcpy(threshData, yellowGoal.threshMask.data, yellowGoal.threshMask.rows * yellowGoal.threshMask.cols);
+                    remote_debug_post(frameData, threshData, yellowGoal.boundingBox, yellowGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
                 }
             }
@@ -245,12 +275,8 @@ static auto cv_thread(void *arg) -> void *{
         utils_cv_transmit_data(data);
 
         fpsCounter++;
-
-        double end = utils_get_millis() - begin;
-        // printf("last frame took: %.2f ms to process (%.2f fps) \n", end, 1000.0 / end);
-
 #if BUILD_TARGET == BUILD_TARGET_PC
-        waitKey(static_cast<int>(1000 / fps));
+         waitKey(static_cast<int>(1000 / fps));
 #endif
     }
     destroyAllWindows();

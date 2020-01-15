@@ -19,6 +19,7 @@ dependencies {
     compile 'com.google.protobuf:protobuf-java:3.9.2'
     compile group: 'commons-codec', name: 'commons-codec', version: '1.13'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile 'com.google.guava:guava:28.1-jre'
     implementation 'no.tornado:tornadofx:1.7.17'
     compile group: 'com.esotericsoftware', name: 'kryo', version: '4.0.0'

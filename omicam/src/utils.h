@@ -53,3 +53,4 @@ uint8_t *utils_load_bin(char *path, long *size);
 #define RD_SEND_OK_RESPONSE do { DebugCommand response = DebugCommand_init_zero; \
     response.messageId = CMD_OK; \
     send_response(response); } while (0)
+#define VISION_IS_RESCALED (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW)

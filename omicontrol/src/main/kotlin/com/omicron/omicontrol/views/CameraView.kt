@@ -22,6 +22,7 @@ import javafx.scene.control.Slider
 import javafx.scene.image.WritableImage
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
+import org.apache.commons.io.FileUtils
 import org.tinylog.kotlin.Logger
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
@@ -33,7 +34,7 @@ class CameraView : View() {
     private lateinit var temperatureLabel: Label
     private lateinit var selectBox: ComboBox<String>
     private lateinit var lastFpsLabel: Label
-    private lateinit var sizeLabel: Label
+    private lateinit var bandwidthLabel: Label
     private val compressor = Inflater()
     private var hideCameraFrame = false
     /** mapping between each field object and its threshold as received from Omicam **/
@@ -43,7 +44,12 @@ class CameraView : View() {
     private var selectedObject = FieldObjects.OBJ_NONE
     /** token for threads to wait on until updateThresholdValues() completes **/
     private val newThreshReceivedToken = Object()
+    /** timer which goes off when the user drags a slider **/
     private var grabSendTimer: Timer? = null
+    /** bytes received in the last second **/
+    private var bandwidth = 0L
+    /** when the last second recording began in system time **/
+    private var bandwidthRecordingBegin = System.currentTimeMillis()
 
     init {
         reloadStylesheetsOnFocus()
@@ -54,23 +60,44 @@ class CameraView : View() {
     @ExperimentalUnsignedTypes
     @Subscribe
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
+        // decode the message
         compressor.reset()
         compressor.setInput(message.ballThreshImage.toByteArray())
         val outBuf = ByteArray(1024 * 1024) // 1 megabyte (in binary bytes)
         val bytes = compressor.inflate(outBuf)
-
         val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
+
+        // display megabits per second of bandwidth used by the app
+        bandwidth += message.serializedSize
 
         runLater {
             val temp = message.temperature
-            temperatureLabel.text = "${String.format("%.2f", temp)}°C"
+            temperatureLabel.text = "Temperature: ${String.format("%.2f", temp)}°C"
             if (temp >= 75.0){
                 temperatureLabel.textFill = Color.RED
             } else {
-                temperatureLabel.textFill = Color.WHITE
+                temperatureLabel.textFill = Color.LIME
             }
-            lastFpsLabel.text = "Frame rate: ${message.fps} FPS"
-            sizeLabel.text = "Packet size: ${message.serializedSize / 1024} KiB"
+
+            val fps = message.fps
+            lastFpsLabel.text = "Frame rate: $fps FPS (${if (fps <= 0) "undefined" else (1000 / fps).toString()} ms)"
+            when {
+                fps >= 55 -> {
+                    lastFpsLabel.textFill = Color.LIME
+                }
+                fps in 45..54 -> {
+                    lastFpsLabel.textFill = Color.ORANGE
+                }
+                else -> {
+                    lastFpsLabel.textFill = Color.RED
+                }
+            }
+
+            if (System.currentTimeMillis() - bandwidthRecordingBegin >= 1000){
+                bandwidthLabel.text = "Bandwidth: ${FileUtils.byteCountToDisplaySize(bandwidth)}/s"
+                bandwidthRecordingBegin = System.currentTimeMillis()
+                bandwidth = 0
+            }
 
             // clear the canvas and display the normal camera frame
             display.fill = Color.BLACK
@@ -80,6 +107,7 @@ class CameraView : View() {
             if (selectedObject != FieldObjects.OBJ_NONE) {
                 // write the received image data to the canvas, skipping black pixels (this fakes blend mode which won't work
                 // for some reason)
+                // we create a temporary image of the entire canvas size and use it like an FBO, kind of a hack
                 val tmpImage = WritableImage(CANVAS_WIDTH.toInt(), CANVAS_HEIGHT.toInt())
                 for (i in 0 until bytes) {
                     val byte = outBuf[i].toUByte().toInt()
@@ -91,13 +119,14 @@ class CameraView : View() {
                 }
                 display.drawImage(tmpImage, message.cropRect.x.toDouble(), message.cropRect.y.toDouble(), tmpImage.width, tmpImage.height)
 
+                // note that Omicam fixes object positioning when cropping/scaling is enabled on its side, so we don't have
+                // to worry about it here
+
                 // draw threshold centre
                 display.fill = Color.RED
                 val objectX = message.ballCentroid.x.toDouble()
                 val objectY = message.ballCentroid.y.toDouble()
-                // hack alert: in Omicam, if the centroid doesn't exist we set it to 0.0 so don't draw it if it's 0 here
-                // in future we should add a field called "exists" to the object and the rect so we only render them if they exist
-                // in case the object centroid is actually at (0, 0) for some reason
+                // FIXME definitely need to add an "exists" parameter to the protobuf as this breaks when scaling is enabled
                  if (objectX != 0.0 && objectY != 0.0)
                      display.fillOval(objectX, objectY, 10.0, 10.0)
 
@@ -426,8 +455,7 @@ class CameraView : View() {
 
                     fieldset {
                         field {
-                            label("Temperature: ")
-                            temperatureLabel = label("Unknown")
+                            temperatureLabel = label("Temperature: Unknown")
                         }
                     }
 
@@ -439,7 +467,7 @@ class CameraView : View() {
 
                     fieldset {
                         field {
-                            sizeLabel = label("Packet size: None recorded")
+                            bandwidthLabel = label("Packet size: None recorded")
                         }
                     }
                 }
