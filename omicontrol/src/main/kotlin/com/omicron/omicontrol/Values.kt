@@ -2,6 +2,7 @@ package com.omicron.omicontrol
 
 import com.google.common.eventbus.EventBus
 import javafx.scene.control.Label
+import org.apache.commons.lang3.SystemUtils
 
 /**
  * Version history:
@@ -14,8 +15,8 @@ const val REMOTE_IP = "127.0.0.1"
 const val REMOTE_PORT = 42708
 val CONNECTION_MANAGER = ConnectionManager()
 val EVENT_BUS = EventBus()
-const val CANVAS_WIDTH = 1280.0
-const val CANVAS_HEIGHT = 720.0
+val CANVAS_WIDTH = if (SystemUtils.IS_OS_MAC) 1280.0 * 0.90 else 1280.0
+val CANVAS_HEIGHT = if (SystemUtils.IS_OS_MAC) 1280.0 * 0.90 else 720.0
 const val DEBUG_CAMERA_VIEW = false
 val COLOURS = listOf("R", "G", "B")
 var lastPingLabel: Label? = null
