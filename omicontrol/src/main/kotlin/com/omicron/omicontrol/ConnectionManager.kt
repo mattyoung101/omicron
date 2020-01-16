@@ -73,14 +73,14 @@ class ConnectionManager {
         })
     }
 
-    fun connect(ip: String = REMOTE_IP, port: Int = REMOTE_PORT){
+    fun connect(ip: String, port: Int){
         Logger.info("Connecting to remote at $ip:$port")
 
         // re-create thread and socket (to support reconnecting)
         requestShutdown = false
         socket.close()
         socket = Socket()
-        socket.connect(InetSocketAddress(REMOTE_IP, REMOTE_PORT))
+        socket.connect(InetSocketAddress(ip, port))
         tcpThread = thread(name="TCPThread"){ tcpThreadFun() }
         Logger.info("Connected successfully")
     }

@@ -39,6 +39,7 @@ static _Atomic float temperature = 0.0f;
 /** true if the device is likely to be thermal throttling **/
 static bool thermalThrottling = false;
 field_objects_t selectedFieldObject = OBJ_NONE;
+static int32_t totalFailures = 0;
 
 static void init_tcp_socket(void);
 
@@ -176,6 +177,7 @@ static void client_disconnected(void){
     close(sockfd);
     close(connfd);
     connfd = -1;
+    totalFailures = 0;
     init_tcp_socket();
 }
 
@@ -445,6 +447,13 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
         free(camFrame);
         free(entry);
         free(threshFrame);
+
+        if (totalFailures++ >= 75 && remote_debug_is_connected()){
+            log_warn("Too many failures, going to kick currently connected client!");
+            client_disconnected();
+        }
+    } else {
+        totalFailures = 0;
     }
 }
 

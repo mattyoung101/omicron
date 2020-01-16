@@ -21,7 +21,7 @@
 #define VISION_CROP_ENABLED 0 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 
-#define REMOTE_JPEG_QUALITY 50 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
+#define REMOTE_JPEG_QUALITY 20 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
 #define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames
 #define REMOTE_PORT 42708 // which port the remote debug TCP server runs on
