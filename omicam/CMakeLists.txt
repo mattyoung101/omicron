@@ -54,7 +54,7 @@ add_executable(omicam src/main.c
         lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
         src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h src/alloc_pool.c src/alloc_pool.h lib/map.c lib/map.h
         src/protobuf/FieldFile.pb.c src/protobuf/FieldFile.pb.h
-        src/protobuf/UART.pb.c src/protobuf/UART.pb.h lib/kdtree.c lib/kdtree.h
+        src/protobuf/UART.pb.c src/protobuf/UART.pb.h
         lib/stb_image.h src/computer_vision.cpp src/computer_vision.hpp src/comms_uart.c src/comms_uart.h)
 
 set_target_properties(omicam PROPERTIES POSITION_INDEPENDENT_CODE ON)

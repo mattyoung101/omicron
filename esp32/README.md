@@ -7,9 +7,9 @@ linked in through the IDF's component system (which is just a wrapper around CMa
 various Python scripts for data generation and development assistance. 
 
 **Credits:**
-- Matt Young: low level software (UART/I2C/Bluetooth comms, FSM backend), project maintenance
-- Lachlan Ellis: behaviour and movement code (FSM frontend, path following algorithm, strategies)
 - Ethan Lo: behaviour and movement code (FSM frontend), tuning
+- Lachlan Ellis: behaviour and movement code (FSM frontend, path following algorithm, strategies)
+- Matt Young: low level software (UART/I2C/Bluetooth comms, FSM backend), project maintenance
 
 ## Feature list
 - T.B.A.

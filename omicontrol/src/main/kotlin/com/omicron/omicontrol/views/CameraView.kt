@@ -387,7 +387,7 @@ class CameraView : View() {
                     """.trimIndent(), "Camera View Help")
                 }
                 item("About").setOnAction {
-                    Utils.showGenericAlert(Alert.AlertType.INFORMATION, "Copyright (c) 2019 Team Omicron. See LICENSE.txt",
+                    Utils.showGenericAlert(Alert.AlertType.INFORMATION, "Copyright (c) 2019-2020 Team Omicron. See LICENSE.txt",
                         "Omicontrol v${OMICONTROL_VERSION}", "About")
                 }
             }

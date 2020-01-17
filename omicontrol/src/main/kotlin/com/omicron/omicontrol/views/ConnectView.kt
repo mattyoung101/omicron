@@ -7,8 +7,10 @@ import javafx.geometry.Pos
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 import javafx.scene.control.TextField
+import javafx.scene.image.Image
 import javafx.scene.layout.Priority
 import javafx.scene.layout.Region
+import javafx.scene.paint.Color
 import org.tinylog.kotlin.Logger
 import tornadofx.*
 import kotlin.system.exitProcess
@@ -21,6 +23,7 @@ class ConnectView : View() {
 
     override val root = vbox {
         setPrefSize(1600.0, 900.0)
+        primaryStage.icons.add(Image("omicontrol_icon3.png"))
         alignment = Pos.CENTER
 
         stackpane {
@@ -30,6 +33,15 @@ class ConnectView : View() {
                 paddingBottom = 8.0
                 paddingRight = 8.0
             }
+
+//            hbox {
+//                label("Copyright (c) 2019-2020 Team Omicron. All rights reserved."){
+//                    textFill = Color.LIGHTGREY
+//                }
+//                alignment = Pos.BOTTOM_LEFT
+//                paddingLeft = 6.0
+//                paddingBottom = 6.0
+//            }
 
             vbox {
                 lateinit var ipField: TextField

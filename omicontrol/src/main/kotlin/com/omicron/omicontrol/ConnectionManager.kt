@@ -81,7 +81,7 @@ class ConnectionManager {
         socket.close()
         socket = Socket()
         socket.connect(InetSocketAddress(ip, port))
-        tcpThread = thread(name="TCPThread"){ tcpThreadFun() }
+        tcpThread = thread(name="TCP Thread"){ tcpThreadFun() }
         Logger.info("Connected successfully")
     }
 

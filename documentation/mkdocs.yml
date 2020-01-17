@@ -1,5 +1,5 @@
 site_name: Team Omicron
-theme: windmill
+theme: material
 site_description: "Documentation website for Team Omicron from BBC Robotics, competing in the RoboCup Jr 2020 Internationals."
 
 nav:
@@ -8,4 +8,7 @@ nav:
     - Hardware:
         - Structural design: structural_design.md
     - Software:
-        - Omicam (custom vision system): omicam.md
+        - Omicam (vision and localisastion): omicam.md
+        - Omicontrol (debugging and control): omicontrol.md
+        - Game strategies: strategy.md
+        - Protocol Buffers: protobuf.md

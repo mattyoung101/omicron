@@ -1,15 +1,14 @@
 # Omicam
+Omicam Team Omicron's custom, high-performance, all-in-one vision and localisation application that runs on a single board computer.
 
-This is the custom vision system for Team Omicron, to be deployed in the 2020 Internationals. 
-The production setup uses a NVIDIA Jetson Nano with a Pi Camera v2.
-
-For the full technical writeup on our custom vision pipeline, please see docs/DESCRIPTION.md or our website.
+For the full technical writeup on our vision pipeline, please see docs/DESCRIPTION.md or our website.
 
 **Credits:**
 - Matt Young: main C/C++ programmer, Markdown docs
 - Ethan Lo: field file generator, localisation research
-- Lachlan Ellis: localisation geometry maths
-- Tom Fraser: assistance with OpenCV CUDA performance
+
+**Special thanks:**
+- Tom Fraser: assistance with OpenCV CUDA performance debugging (when it was still being used)
 
 ## Features list
 - Efficient camera decoding using V4L2 via gstreamer
@@ -87,4 +86,3 @@ Omicam is available under the license of the whole Team Omicron repo, see LICENS
 - [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo): Various BSD and Zlib
 - [NLopt](https://github.com/stevengj/nlopt): MIT (as no LGPL code is used)
 - [OpenCV](https://opencv.org/): BSD 3-Clause
-- [kdtree](https://github.com/jtsiomb/kdtree): BSD 3-Clause
