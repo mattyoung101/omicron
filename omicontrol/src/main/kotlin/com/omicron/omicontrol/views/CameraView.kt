@@ -73,10 +73,16 @@ class CameraView : View() {
         runLater {
             val temp = message.temperature
             temperatureLabel.text = "Temperature: ${String.format("%.2f", temp)}°C"
-            if (temp >= 75.0){
-                temperatureLabel.textFill = Color.RED
-            } else {
-                temperatureLabel.textFill = Color.LIME
+            when {
+                temp <= 50 -> {
+                    temperatureLabel.textFill = Color.LIME
+                }
+                temp.toInt() in 51..75 -> {
+                    temperatureLabel.textFill = Color.ORANGE
+                }
+                temp > 75 -> {
+                    temperatureLabel.textFill = Color.RED
+                }
             }
 
             val fps = message.fps

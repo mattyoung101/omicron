@@ -160,18 +160,6 @@ static auto cv_thread(void *arg) -> void *{
 #endif
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
-        // apply CLAHE adaptive histogram normalisation as explained here: https://stackoverflow.com/a/47370615/5007892
-        // and also here: https://docs.opencv.org/3.1.0/d5/daf/tutorial_py_histogram_equalization.html
-//        Mat labFrame;
-//        cvtColor(frame, labFrame, COLOR_BGR2Lab);
-//        Mat labPlanes[3];
-//        split(labFrame, labPlanes);
-//        auto clahe = createCLAHE(2.0, Size(8, 8));
-//        clahe->apply(labPlanes[0], labPlanes[0]);
-//        Mat fixed;
-//        merge(labPlanes, 3, fixed);
-//        cvtColor(fixed, frame, COLOR_Lab2BGR);
-
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
         Mat thresholded[5] = {};
         parallel_for_(Range(1, 5), [&](const Range& range){
@@ -303,7 +291,7 @@ void vision_init(void){
     int numCpus = getNumberOfCPUs();
     string features = getCPUFeaturesLine();
     log_info("OpenCV version: %d.%d.%d", CV_VERSION_MAJOR, CV_VERSION_MINOR, CV_VERSION_REVISION);
-    log_info("System info: %d CPU core(s), supported features: %s", numCpus, features.c_str());
+    log_info("System info: %d CPU(s) available, supported features: %s", numCpus, features.c_str());
 
     // create threads
     int err = pthread_create(&cvThread, nullptr, cv_thread, nullptr);

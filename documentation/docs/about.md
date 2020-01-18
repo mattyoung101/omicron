@@ -25,7 +25,7 @@ we have previously developed.
 
 Some new innovations we have developed this year include:
 
-- **Omicam**: our custom vision pipeline developed to replace the OpenMV H7. Programmed in C/C++, running on a LattePanda Delta 437, this
+- **Omicam**: our custom vision pipeline developed to replace the OpenMV H7. Programmed in C/C++, running on a LattePanda Delta 432, this
 application is capable of 720p@60fps **(TODO: please confirm)** field object tracking, and centimetre accurate field localisation
 using only camera data (no LRFs, etc) via a novel approach that uses non-linear optimisation algorithms.
 - **Omicontrol**: our custom, wireless, all-in-one robot control software. Written in Kotlin, this program is used to
@@ -42,8 +42,8 @@ Some technologies we build upon this year include:
 - **FSM**: last year, we introduced the concept of a Hierarchical Finite State Machine (HFSM) as a novel method of organising
 robot behaviour through a graph of inter-connected state machines, each which contains a series of states that can be
 "switched" through. This year, we continue to build upon this technology, introducing more state machines and more states.
-- **Protocol Buffers:** last year, one of our original teams won the Innovation Prize for its use of Protocol Buffers, a Google-developed
-technology allowing the easy and fast transmission of data between devices. This year, we improve on this technology by using Protocol Buffers
-in our complex device network.
+- **Protocol Buffers:** at the 2019 Internationals, one of our founding teams (Deus Vult/Omicron) won the Innovation Prize for 
+its use of Protocol Buffers, a Google-developed technology allowing the easy and fast transmission of data between devices. 
+This year, we improve on this technology by using Protocol Buffers in our complex device network.
 - PCBs (modular?)
 - Wheels

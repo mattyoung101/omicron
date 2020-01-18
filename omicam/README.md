@@ -1,5 +1,5 @@
 # Omicam
-Omicam Team Omicron's custom, high-performance, all-in-one vision and localisation application that runs on a single board computer.
+Omicam Team Omicron's custom, high-performance, vision and localisation application that runs on a single board computer.
 
 For the full technical writeup on our vision pipeline, please see docs/DESCRIPTION.md or our website.
 
@@ -8,13 +8,13 @@ For the full technical writeup on our vision pipeline, please see docs/DESCRIPTI
 - Ethan Lo: field file generator, localisation research
 
 **Special thanks:**
-- Tom Fraser: assistance with OpenCV CUDA performance debugging (when it was still being used)
+- Tom Fraser: assistance with OpenCV CUDA performance debugging (when it was being used), help with selecting the best
+  single board computer and overall enthusiasm and support :)
 
 ## Features list
-- Efficient camera decoding using V4L2 via gstreamer
-- State of the art, GPU accelerated image processing using OpenCV and OpenCL
-- Highly advanced, millimetre accurate, custom localisation algorithm using non-linear optimisation methods
-- Fast, custom designed omnidirectional camera dewarping with nearest neighbour interpolation
+- Efficient camera decoding using V4L2
+- State of the art, multi-threaded, SIMD accelerated image processing using OpenCV v4
+- Highly advanced, centimetre accurate, custom localisation algorithm using non-linear optimisation methods
 - Asynchronous, wireless frame streaming using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app
     - Network protocol uses TCP socket and Protocol Buffers with zlib compression (low bandwidth requirements)
     - Also transmits misc. data like temperature of the Jetson
@@ -27,15 +27,17 @@ Hardware wise, you'll need a Jetson Nano and a supported CSI camera, probably th
 
 Flash your Jetson's SD card as per NVIDIA's instructions, boot and update it, then install the following additional packages:
 
-- CMake: To work around various issues (see below), you need to [build the latest CMake from source](https://cmake.org/install/) rather
-than getting it from the repos.
-You will need to `sudo apt install libssl-dev` beforehand, otherwise it will complain. To bootstrap the fastest, I'd recommend using this: 
-`./bootstrap --parallel=4 -- -DCMAKE_BUILD_TYPE:STRING=Release`
+- CMake: To work around various issues (see below), a newer version of CMake than the one provided by the Ubuntu repos is provided.
+  The easiest way to install the latest CMake, in my opinion, is to [add the PPA](https://apt.kitware.com/) and then just 
+  `sudo apt install cmake`.
 - Ninja: `sudo apt install ninja-build`
 - Clang & LLVM: `sudo apt install clang lldb llvm libasan5 libasan5-dbg`
 - NLopt: `sudo apt install libnlopt-dev libnlopt0`
 - libjpeg-turbo: `sudo apt install libturbojpeg libturbojpeg0-dev`
-- SDL2: `sudo apt install libsdl2-2.0.0 libsdl2-dev libsdl2-doc`
+- gstreamer: [see here](https://gstreamer.freedesktop.org/documentation/installing/on-linux.html) and also 
+  `sudo apt install libgstreamer-opencv1.0-0 libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`
+- ffmpeg: `sudo apt install ffmpeg libavformat-dev libavcodec-dev libswscale-dev libavresample-dev`
+- GTK devlopment files: `sudo apt install libgtk2.0-dev`
 - OpenCV: You will also have to build from source, [see here](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html)
 
 **Note:** A lot of these packages can also be compiled from source if you're experiencing issues.

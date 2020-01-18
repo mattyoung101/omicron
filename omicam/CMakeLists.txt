@@ -61,4 +61,4 @@ set_target_properties(omicam PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(omicam PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # link libraries
-target_link_libraries(omicam pthread dl rt m SDL2 z turbojpeg nlopt ${OpenCV_LIBS})
+target_link_libraries(omicam pthread dl rt m z turbojpeg nlopt ${OpenCV_LIBS})

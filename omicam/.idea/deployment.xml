@@ -2,12 +2,14 @@
 <project version="4">
   <component name="PublishConfigData" autoUpload="Always" createEmptyFolders="true" autoUploadExternalChanges="true">
     <serverData>
-      <paths name="Jetson (59435caa-e49e-4bcc-bb27-c183ff34e128)">
+      <paths name="SBC (59435caa-e49e-4bcc-bb27-c183ff34e128)">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/omicron/omicam" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/teamomicron/omicam" local="$PROJECT_DIR$" web="/" />
           </mappings>
           <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-release-sbc" />
+            <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-sbc" />
             <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-release-jetson" />
             <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-clang" />
             <excludedPath local="true" path="$PROJECT_DIR$/cmake-build-debug-jetson" />
