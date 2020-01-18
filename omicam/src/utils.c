@@ -13,13 +13,9 @@
 #include <errno.h>
 
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
-uint16_t videoWidth, videoHeight, videoFramerate;
-/*
- * OBJ_BALL,
- * OBJ_GOAL_YELLOW,
- * OBJ_GOAL_BLUE,
- * OBJ_LINES,
- */
+int32_t videoWidth, videoHeight;
+int32_t visionCropRect[4];
+// OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE,OBJ_LINES,
 int32_t *thresholds[] = {minBallData, maxBallData, minYellowData, maxYellowData, minBlueData, maxBlueData, minLineData, maxLineData};
 char *fieldObjToString[] = {"OBJ_NONE", "OBJ_BALL", "OBJ_GOAL_YELLOW", "OBJ_GOAL_BLUE", "OBJ_LINES"};
 
@@ -36,7 +32,7 @@ static void remove_spaces(char* s) {
 void utils_parse_thresh(char *threshStr, int32_t *array){
     char *token;
     char *threshOrig = strdup(threshStr);
-    int16_t i = 0;
+    int32_t i = 0;
     remove_spaces(threshStr);
     token = strtok(threshStr, ",");
 
@@ -50,14 +46,38 @@ void utils_parse_thresh(char *threshStr, int32_t *array){
         } else {
             array[i++] = number;
             if (i > 3){
-                log_error("Too many values for key: %s (max: 3)", threshOrig);
+                log_error("Too many elements in threshold value: %s (expected: 3)", threshOrig);
                 return;
             }
         }
         token = strtok(NULL, ",");
     }
-    // log_trace("Successfully parsed threshold key: %s", threshOrig);
     free(threshOrig);
+}
+
+void utils_parse_rect(char *rectStr, int32_t *array){
+    char *token;
+    char *rectOrig = strdup(rectStr);
+    int32_t i = 0;
+    remove_spaces(rectStr);
+    token = strtok(rectStr, ",");
+
+    while (token != NULL){
+        char *invalid = NULL;
+        int32_t number = strtol(token, &invalid, 10);
+
+        if (strlen(invalid) != 0){
+            log_error("Invalid rectangle string \"%s\": invalid token: \"%s\"", rectOrig, invalid);
+        } else {
+            array[i++] = number;
+            if (i > 4){
+                log_error("Too many elements in rectangle value: %s (expected: 4)", rectOrig);
+                return;
+            }
+        }
+        token = strtok(NULL, ",");
+    }
+    free(rectOrig);
 }
 
 void utils_cv_transmit_data(ObjectData ballData){

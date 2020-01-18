@@ -4,12 +4,12 @@
 #include "defines.h"
 #include "protobuf/UART.pb.h"
 
-// Misc macros and data
-
+// Globals
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 extern int32_t *thresholds[];
 extern char *fieldObjToString[];
-extern uint16_t videoWidth, videoHeight;
+extern int32_t videoWidth, videoHeight;
+extern int32_t visionCropRect[4];
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +17,8 @@ extern "C" {
 
 /** Parses a string in the format "x,y,z" into three numbers to be stored in the given array  **/
 void utils_parse_thresh(char *threshStr, int32_t *array);
+/** Similar to utils_parse_thresh, but expects a 4 element rectangle of (x, y, width, height) **/
+void utils_parse_rect(char *rectStr, int32_t *array);
 /** Gets the timestamp in milliseconds **/
 double utils_get_millis();
 /**

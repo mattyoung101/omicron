@@ -36,6 +36,7 @@ static pthread_t cvThread = {0};
 static pthread_t fpsCounterThread = {0};
 static _Atomic int32_t fpsCounter = 0;
 static _Atomic int32_t lastFpsMeasurement = 0;
+static Rect cropRect;
 
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
@@ -90,7 +91,6 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
 
     // scale coordinates if cropping is enabled
 #if VISION_CROP_ENABLED
-    Rect cropRect(VISION_CROP_RECT);
     objRect.x += cropRect.x;
     objRect.y += cropRect.y;
     largestCentroid.x += cropRect.x;
@@ -136,7 +136,7 @@ static auto cv_thread(void *arg) -> void *{
     // this is a stupid way of calculating this
     Mat junk(videoHeight, videoWidth, CV_8UC1);
 #if VISION_CROP_ENABLED
-    junk = junk(Rect(VISION_CROP_RECT));
+    junk = junk(cropRect);
 #endif
     resize(junk, junk, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR);
     log_info("Frame size: %dx%d (cropping enabled: %s)", videoWidth, videoHeight, VISION_CROP_ENABLED ? "yes" : "no");
@@ -158,10 +158,8 @@ static auto cv_thread(void *arg) -> void *{
         }
 
 #if VISION_CROP_ENABLED
-        frame = frame(Rect(VISION_CROP_RECT));
+        frame = frame(Rect(cropRect));
 #endif
-        // posterize
-
         // downscale
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
@@ -294,7 +292,8 @@ static auto fps_counter_thread(void *arg) -> void *{
 }
 
 void vision_init(void){
-    setUseOptimized(true);
+    cropRect = Rect(visionCropRect[0], visionCropRect[1], visionCropRect[2], visionCropRect[3]);
+
     int numCpus = getNumberOfCPUs();
     string features = getCPUFeaturesLine();
     log_info("OpenCV version: %d.%d.%d", CV_VERSION_MAJOR, CV_VERSION_MINOR, CV_VERSION_REVISION);

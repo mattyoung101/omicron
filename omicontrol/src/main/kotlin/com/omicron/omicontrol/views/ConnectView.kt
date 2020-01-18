@@ -54,24 +54,25 @@ class ConnectView : View() {
                     label("Omicontrol Connection Setup") {
                         addClass(Styles.titleLabel)
                         alignment = Pos.CENTER
+                        textFill = Color.WHITE
                     }
                     alignment = Pos.CENTER
                 }
 
                 hbox {
-                    label("Remote IP: ")
+                    label("Remote IP: "){ textFill = Color.WHITE }
                     ipField = textfield(REMOTE_IP)
                     alignment = Pos.CENTER
                 }
 
                 hbox {
-                    label("Remote port: ")
+                    label("Remote port: "){ textFill = Color.WHITE }
                     portField = textfield(REMOTE_PORT.toString())
                     alignment = Pos.CENTER
                 }
 
                 hbox {
-                    label("Choose view: ")
+                    label("Choose view: "){ textFill = Color.WHITE }
                     combobox<String> {
                         items = FXCollections.observableArrayList("Camera view", "Robot view")
                         selectionModel.selectFirst()

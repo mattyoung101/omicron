@@ -14,9 +14,7 @@
 
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 
-// TODO move SCALE_FACTOR and CROP_RECT to INI file
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
-#define VISION_CROP_RECT 242, 36, 797, 620 // rectangle describing the region of interest that will be applied to the camera frame
 #define VISION_CROP_ENABLED 0 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 

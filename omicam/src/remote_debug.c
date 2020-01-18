@@ -202,7 +202,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.frameWidth = width;
     msg.frameHeight = height;
 #if VISION_CROP_ENABLED
-    RDRect cropRect = {VISION_CROP_RECT};
+    RDRect cropRect = {visionCropRect[0], visionCropRect[1], visionCropRect[2], visionCropRect[3]};
     msg.cropRect = cropRect;
 #endif
 
