@@ -77,7 +77,7 @@ int main() {
         fprintf(stderr, "ATTENTION: Due to a current bug, you need to make the file ~/Documents/TeamOmicron/Omicam/omicam.log manually"
                         " for logging to work properly.");
     }
-    log_info("Omicam v%s - Copyright (c) 2019-2020 Team Omicron. All rights reserved.", OMICAM_VERSION);
+    log_info("Omicam v%s - Copyright (c) 2019-2020 Team Omicron.", OMICAM_VERSION);
     log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);
 
     log_debug("Loading and parsing config...");
@@ -111,12 +111,10 @@ int main() {
 
     uint16_t width = iniparser_getint(config, "VideoSettings:width", 1280);
     uint16_t height = iniparser_getint(config, "VideoSettings:height", 720);
-    uint16_t framerate = iniparser_getint(config, "VideoSettings:framerate", 60);
-    char *fieldFile = iniparser_getstring(config, "Localiser:fieldFile", "CONFIG_ERROR");
+    char *fieldFile = (char*) iniparser_getstring(config, "Localiser:fieldFile", "CONFIG_ERROR");
 
     videoWidth = width;
     videoHeight = height;
-    videoFramerate = framerate;
 
     // start OpenCV frame grabbing, which blocks the main thread until it's done
     remote_debug_init(width, height);

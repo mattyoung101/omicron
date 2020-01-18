@@ -1,11 +1,13 @@
 #include "computer_vision.hpp"
 #include <opencv2/core/utility.hpp>
 #include "log/log.h"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/videoio.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/core/mat.hpp"
-#include <opencv2/core/ocl.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/gapi.hpp>
+#include <opencv2/gapi/core.hpp>
+#include <opencv2/gapi/imgproc.hpp>
 #include <opencv2/core/cuda.hpp>
 #include <map>
 #include <unistd.h>
@@ -158,6 +160,9 @@ static auto cv_thread(void *arg) -> void *{
 #if VISION_CROP_ENABLED
         frame = frame(Rect(VISION_CROP_RECT));
 #endif
+        // posterize
+
+        // downscale
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
@@ -264,7 +269,9 @@ static auto cv_thread(void *arg) -> void *{
 
         fpsCounter++;
 #if BUILD_TARGET == BUILD_TARGET_PC
-         waitKey(static_cast<int>(1000 / fps));
+        if (remote_debug_is_connected()) {
+            waitKey(static_cast<int>(1000 / fps));
+        }
 #endif
     }
     destroyAllWindows();

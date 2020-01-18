@@ -17,10 +17,10 @@
 // TODO move SCALE_FACTOR and CROP_RECT to INI file
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
 #define VISION_CROP_RECT 242, 36, 797, 620 // rectangle describing the region of interest that will be applied to the camera frame
-#define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
+#define VISION_CROP_ENABLED 0 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 
-#define REMOTE_JPEG_QUALITY 20 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
+#define REMOTE_JPEG_QUALITY 45 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
 #define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames
 #define REMOTE_PORT 42708 // which port the remote debug TCP server runs on

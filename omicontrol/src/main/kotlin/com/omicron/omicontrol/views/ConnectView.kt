@@ -34,14 +34,14 @@ class ConnectView : View() {
                 paddingRight = 8.0
             }
 
-//            hbox {
-//                label("Copyright (c) 2019-2020 Team Omicron. All rights reserved."){
-//                    textFill = Color.LIGHTGREY
-//                }
-//                alignment = Pos.BOTTOM_LEFT
-//                paddingLeft = 6.0
-//                paddingBottom = 6.0
-//            }
+            hbox {
+                label("Copyright (c) 2019-2020 Team Omicron."){
+                    textFill = Color.LIGHTGREY
+                }
+                alignment = Pos.BOTTOM_LEFT
+                paddingLeft = 6.0
+                paddingBottom = 6.0
+            }
 
             vbox {
                 lateinit var ipField: TextField

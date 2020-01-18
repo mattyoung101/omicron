@@ -22,7 +22,7 @@ object Main {
     @JvmStatic
     fun main(args: Array<String>){
         System.setProperty("tinylog.configuration", "tinylog.properties")
-        Logger.info("Omicontrol v${OMICONTROL_VERSION} - Copyright (c) 2019-2020 Team Omicron. All rights reserved.")
+        Logger.info("Omicontrol v${OMICONTROL_VERSION} - Copyright (c) 2019-2020 Team Omicron.")
 
         Logger.debug("OS name: ${SystemUtils.OS_NAME}")
         if (SystemUtils.IS_OS_MAC){
