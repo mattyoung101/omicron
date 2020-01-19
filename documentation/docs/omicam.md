@@ -39,7 +39,8 @@ _<sup>1 results based on mediocre lighting conditions running well optimised Ope
 _<sup>2 depending on whether LRF based/goal based localisation was used.</sup>_
 
 ## Hardware
-Omicam runs on a Linux-based LattePanda Delta 432.
+Omicam runs on a Linux-based LattePanda Delta 432. The camera used is a USB 2.0 camera using the OV 4689 sensor which can 
+capture video footage at 720p 60 FPS.
 
 **More here, camera and stuff.**
 
