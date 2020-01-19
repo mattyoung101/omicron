@@ -18,6 +18,7 @@
 #include "utils.h"
 #include "computer_vision.hpp"
 #include "localisation.h"
+#include "comms_uart.h"
 
 static FILE *logFile = NULL;
 static pthread_mutex_t logLock;
@@ -28,6 +29,7 @@ static void disposeResources(){
     vision_dispose();
     remote_debug_dispose();
     localiser_dispose();
+    comms_uart_dispose();
     log_trace("Closing log file, goodbye!");
     fflush(logFile);
     fclose(logFile);
@@ -74,7 +76,7 @@ int main() {
     } else {
         fprintf(stderr, "Failed to open log file: %s\n", strerror(errno));
         fprintf(stderr, "ATTENTION: Due to a current bug, you need to make the file ~/Documents/TeamOmicron/Omicam/omicam.log manually"
-                        " for logging to work properly.");
+                        " for logging to work properly.\n");
     }
     log_info("Omicam v%s - Copyright (c) 2019-2020 Team Omicron.", OMICAM_VERSION);
     log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);
@@ -115,11 +117,24 @@ int main() {
     videoHeight = height;
 
     char *rectStr = (char*) iniparser_getstring(config, "Vision:cropRect", "0,0,1280,720");
+    log_trace("Vision crop rect: %s", rectStr);
     utils_parse_rect(rectStr, visionCropRect);
+
+#if CRANK_THE_MFIN_HOG
+    log_warn("Forcing high-performance CPU governing and disabling thermal throttling service (source: CRANK_THE_MFIN_HOG=1)");
+    log_warn("This may cause the SBC to overheat! Changes will persist until the next reboot. Monitor thermals carefully.");
+    // execute "sudo cpupower frequency-set -g performance" here
+    // also execute "sudo systemctl stop thermald"
+    // then if they both return successfully print:
+    log_debug("Maximum hog cranking configured successfully");
+    // otherwise print:
+    // log_warn("Failed to crank the mfin hog: %s. Please make sure you've configured password-free sudo access.");
+#endif
 
     // start OpenCV frame grabbing, which blocks the main thread until it's done
     remote_debug_init(width, height);
     localiser_init(fieldFile);
+    comms_uart_init();
 
     fflush(stdout);
     fflush(logFile);

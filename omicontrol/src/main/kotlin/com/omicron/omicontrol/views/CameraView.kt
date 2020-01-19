@@ -378,20 +378,6 @@ class CameraView : View() {
                 }
             }
             menu("Help") {
-                item("What's this?").setOnAction {
-                    Utils.showGenericAlert(Alert.AlertType.INFORMATION, """
-                        In the camera view, you can see the output of the camera and tune new thresholds. Use the "Select
-                        object" dropdown to select which object to view, then adjust the sliders. Select "None" to view
-                        just the normal camera frame, and tick the "Hide camera frame" button to view just the thresholds.
-                        
-                        Only the coloured blobs (corresponding to the selected colour) are pixels included in the threshold.
-                        
-                        Pro Tip! Click on the number to the right of each threshold slider to type in its value manually.
-                        
-                        It's VERY IMPORTANT that you select Actions > Save Config (or CTRL+S) before quitting to write
-                        your threshold values to the remote INI file.
-                    """.trimIndent(), "Camera View Help")
-                }
                 item("About").setOnAction {
                     Utils.showGenericAlert(Alert.AlertType.INFORMATION, "Copyright (c) 2019-2020 Team Omicron. See LICENSE.txt",
                         "Omicontrol v${OMICONTROL_VERSION}", "About")

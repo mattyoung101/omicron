@@ -35,7 +35,7 @@ static rpa_queue_t *frameQueue = NULL;
 static _Atomic int sockfd = -1;
 /** the file descriptor of the connection to the client **/
 static _Atomic int connfd = -1;
-static _Atomic float temperature = 0.0f;
+_Atomic double cpuTemperature = 0.0f;
 /** true if the device is likely to be thermal throttling **/
 static bool thermalThrottling = false;
 field_objects_t selectedFieldObject = OBJ_NONE;
@@ -195,7 +195,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     memcpy(msg.ballThreshImage.bytes, threshImg, threshImgSize);
     msg.defaultImage.size = camImgSize;
     msg.ballThreshImage.size = threshImgSize;
-    msg.temperature = temperature;
+    msg.temperature = cpuTemperature;
     msg.ballCentroid = entry->ballCentroid;
     msg.ballRect = entry->ballRect;
     msg.fps = entry->fps;
@@ -281,6 +281,8 @@ static void *frame_thread(void *param){
             read_remote_messages();
             continue;
         }
+        double begin = utils_time_millis();
+
         frame_entry_t *entry = (frame_entry_t*) queueData;
         uint8_t *camFrame = entry->camFrame; // normal view from the camera
         uint8_t *threshFrame = entry->threshFrame; // thresholded view from the camera
@@ -302,6 +304,8 @@ static void *frame_thread(void *param){
         free(threshFrame); // this is malloc'd and copied from the OpenCV threshold frame in computer_vision.cpp
         free(entry); // this is malloc'd in this file when we push to the queue
         pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+
+        //printf("RD encode took: %.2f ms\n", utils_time_millis() - begin);
     }
     return NULL;
 }
@@ -326,15 +330,15 @@ static void *thermal_thread(void *arg){
         fclose(tempFile);
 
         long tempLong = strtol(buf, NULL, 10);
-        float tempDegrees = (float) tempLong / 1000.0f;
-        temperature = tempDegrees;
+        double tempDegrees = tempLong / 1000.0f;
+        cpuTemperature = tempDegrees;
         // log_debug("Temperature is %.2f degrees", tempDegrees);
 
-        if (tempDegrees >= 80.0f && !thermalThrottling){
-            log_warn("CPU will probably be thermal throttling now (current temp: %.2f degrees, max is 80 degrees)", tempDegrees);
+        if (tempDegrees >= 95.0f && !thermalThrottling){
+            log_warn("CPU has reached dangerously high temperatures (current temp: %.2f degrees, Celeron max is 105 degrees)", tempDegrees);
             thermalThrottling = true;
-        } else if (tempDegrees <= 75.0f && thermalThrottling){
-            log_info("CPU will probably NO LONGER be thermal throttling now (current temp: %.2f degrees)", tempDegrees);
+        } else if (tempDegrees <= 80.0f && thermalThrottling){
+            log_info("CPU has returned to nominal temperature ranges (current temp: %.2f degrees)", tempDegrees);
             thermalThrottling = false;
         }
 
@@ -369,7 +373,7 @@ static void *tcp_thread(void *arg){
         return NULL;
     }
     clientAddrLen = sizeof(clientAddr);
-    log_debug("Awaiting client connection to TCP socket");
+    log_trace("Awaiting client connection to TCP socket");
 
     // block until a connection occurs (hence why this runs on its own thread)
     connfd = accept(sockfd, (struct sockaddr*) &clientAddr, &clientAddrLen);

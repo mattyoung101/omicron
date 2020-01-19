@@ -1,5 +1,5 @@
 # Omicam
-Omicam Team Omicron's custom, high-performance, vision and localisation application that runs on a single board computer.
+Omicam is Team Omicron's custom, high-performance vision and localisation application that runs on a single board computer.
 
 For the full technical writeup on our vision pipeline, please see docs/DESCRIPTION.md or our website.
 
@@ -13,7 +13,7 @@ For the full technical writeup on our vision pipeline, please see docs/DESCRIPTI
 
 ## Features list
 - Efficient camera decoding using V4L2
-- State of the art, multi-threaded, SIMD accelerated image processing using OpenCV v4
+- State of the art, multi-threaded, SIMD accelerated image processing using OpenCV
 - Highly advanced, centimetre accurate, custom localisation algorithm using non-linear optimisation methods
 - Asynchronous, wireless frame streaming using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app
     - Network protocol uses TCP socket and Protocol Buffers with zlib compression (low bandwidth requirements)
@@ -23,9 +23,10 @@ For the full technical writeup on our vision pipeline, please see docs/DESCRIPTI
 
 ## Building and running
 ### Instructions
-Hardware wise, you'll need a Jetson Nano and a supported CSI camera, probably the Raspberry Pi Camera v2 (or v1 if that's unavailable).
+While Omicam should in theory work on any single board computer with a bit of effort, we use a LattePanda Delta 432
+running Xubuntu 18.04. It will only work under Linux.
 
-Flash your Jetson's SD card as per NVIDIA's instructions, boot and update it, then install the following additional packages:
+Boot and install any Debian-based Linux distro to your SBC, then install the following extra packages:s
 
 - CMake: To work around various issues (see below), a newer version of CMake than the one provided by the Ubuntu repos is provided.
   The easiest way to install the latest CMake, in my opinion, is to [add the PPA](https://apt.kitware.com/) and then just 
@@ -38,14 +39,10 @@ Flash your Jetson's SD card as per NVIDIA's instructions, boot and update it, th
   `sudo apt install libgstreamer-opencv1.0-0 libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`
 - ffmpeg: `sudo apt install ffmpeg libavformat-dev libavcodec-dev libswscale-dev libavresample-dev`
 - GTK devlopment files: `sudo apt install libgtk2.0-dev`
-- OpenCV: You will also have to build from source, [see here](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html)
+- OpenCV: You have to build from source, [see here](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html).
+  Pro tip: use `ssh -Y <username>@<domain>` to enable X forwarding so you can run the cmake-gui remotely.
 
-**Note:** A lot of these packages can also be compiled from source if you're experiencing issues.
-
-It may be advisable to remove a bunch of the useless packages Ubuntu installs by default such as LibreOffice. You can do
-so with `sudo apt remove <PACKAGE_NAME>`.
-
-**FIXME: talk about how to add optimisations to the NLopt build (adding O3 and hard FPU, etc) if we still build by source.**
+**Note: It may be advisable to remove a bunch of the useless packages Ubuntu installs by default such as LibreOffice.**
 
 **FIXME: cover running on PC (test target) instead of Jetson. Also include specific Jetson setup instructions.**
 
@@ -53,7 +50,7 @@ so with `sudo apt remove <PACKAGE_NAME>`.
 
 We exclusively use CLion to develop Omicam. Import the project into CLion on your host computer and follow the 
 [instructions provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to configure a 
-remote toolchain, deployment and run configuration. The IP should be the IP of your Jetson, check your router or use nmap
+remote toolchain, deployment and run configuration. The IP should be the IP of your SBC, check your router or use nmap
 if you're unsure what this is.
 
 To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion will handle the rest for you. 
@@ -62,21 +59,13 @@ To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion 
 - **Clang is the only supported compiler** as it appears that gcc's implementation 
 of Google's Sanitizers doesn't work. You can do this by changing the compiler path from the default gcc 
 to /usr/bin/clang in CLion's toolchain settings.
-- CLion runs the wrong executable due to a long-standing bug with CUDA. Due to this, and also the fact we have elected
-to use the Ninja build tool, you have to build CMake from source, because the latest version in the repos is 3.10 which
-is quite outdated. Specifiying Ninja as the build generator fixes the wrong executable issue.
 - If lldb is broken, try using gdb instead (it doesn't matter that you're compiling with Clang, both will work fine).
 - You will need to disable the visual Address Sanitizer output in CLion as that is also broken.
-- If you install a new library on the Jetson, you will need run Tools->"Resync with remote hosts" to get the new headers.
+- If you install a new library on the SBC, you will need run Tools->"Resync with remote hosts" to get the new headers.
 - CLion's remote upload occasionally (a few times per full day of work) fails temporarily, just ignore it and try again.
 
-### Final notes
-I sincerely apologise for how complex this build process is, but a lot of it is out of my control as I have to do certain
-steps to work around unfixed bugs and other issues. If you have any questions, don't hesitate to contact me (see above
-for details).
-
-## License
-Omicam is available under the license of the whole Team Omicron repo, see LICENSE.txt in the root directory. 
+## Licence
+Omicam is available under the same licence of the whole Team Omicron repo, see LICENSE.txt in the root directory. 
 
 ## Libraries and licenses
 - [log.c](https://github.com/rxi/log.c): MIT license

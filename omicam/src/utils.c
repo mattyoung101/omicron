@@ -115,9 +115,12 @@ uint8_t *utils_load_bin(char *path, long *size){
     return buf;
 }
 
-// source: https://stackoverflow.com/a/3756954/5007892
-double utils_get_millis(){
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (tv.tv_sec) * 1000.0 + (tv.tv_usec) / 1000.0;
+// source: https://stackoverflow.com/a/3756954/5007892 and https://stackoverflow.com/a/17371925/5007892
+double utils_time_millis(){
+//    struct timeval tv;
+//    gettimeofday(&tv, NULL);
+//    return (tv.tv_sec) * 1000.0 + (tv.tv_usec) / 1000.0;
+    struct timespec time;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &time);
+    return (time.tv_sec) * 1000.0 + (time.tv_nsec / 1000.0) / 1000.0; // convert tv_sec & tv_usec to millisecond
 }

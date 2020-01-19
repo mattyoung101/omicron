@@ -4,21 +4,23 @@
 
 /**
  * Version history:
- * 0.0.0a: basic CPU blob detection, remote debugger implemented
- * 1.0.0a: switch to OpenCV blob detection and have it working
- * 1.1.0a: Integration with Omicontrol completed
- * 1.2.0a: works on Jetson with optimisation and thresholding for objects
- * 1.3.0a: (WIP) cropping (ROI) optimisations, support for goal thresholding at lower resolutions
+ * 0.0a: basic CPU blob detection, remote debugger implemented
+ * 1.0a: switch to OpenCV blob detection and have it working
+ * 1.1a: Integration with Omicontrol completed
+ * 1.2a: works on Jetson with optimisation and thresholding for objects
+ * 1.3a: cropping (ROI) optimisations, support for goal thresholding at lower resolutions
+ * 1.4a: (WIP) performance optimisations for new SBC, new FPS timing code, fixes
  */
-#define OMICAM_VERSION "1.3.0a"
-
+#define OMICAM_VERSION "1.4a"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
+#define CRANK_THE_MFIN_HOG 1 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
-#define VISION_CROP_ENABLED 0 // whether or not to enable the ROI crop
+#define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
+#define VISION_FPS_INCLUDE_FRAME_READ 1 // whether or not to ignore the time it takes to capture the frame in FPS calculations
 
-#define REMOTE_JPEG_QUALITY 45 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
+#define REMOTE_JPEG_QUALITY 30 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
 #define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames
 #define REMOTE_PORT 42708 // which port the remote debug TCP server runs on

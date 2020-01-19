@@ -111,31 +111,6 @@ class ConnectView : View() {
                 }
 
                 hbox {
-                    button("?") {
-                        setOnAction {
-                            Utils.showGenericAlert(
-                                Alert.AlertType.INFORMATION,
-                                """
-                                Welcome to Omicontrol, the wireless debugging, controlling and monitoring app used by Team Omicron.
-                                
-                                To begin, please make sure you're connected to the same network as the single board computer.
-                                This can be achieved to by connecting to the "Omicam" hotspot, or by having the SBC connect 
-                                to your Wi-Fi (not usually viable in competition).
-                                
-                                Use the "Choose view" dropdown to select whether you want to edit camera settings ("Camera view"),
-                                or control the robots ("Robot view").
-                                
-                                The default IP and port should be correct. If that fails, run an nmap scan or check
-                                your router to find the SBC's IP address. The port will be the same (unless you changed it).
-                            """.trimIndent(), "Connection Help"
-                            )
-                        }
-                    }
-                    addClass(Styles.paddedBox)
-                    alignment = Pos.CENTER
-                }
-
-                hbox {
                     button("Quit") {
                         setOnAction {
                             exitProcess(0)

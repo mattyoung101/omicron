@@ -66,8 +66,7 @@ static void *work_thread(void *arg){
         }
 
         localiser_entry_t *entry = (localiser_entry_t*) queueData;
-        // so what we'll do here is submit the frame to the GPU/CUDA program only once to save re-uploading it on each
-        // objective function evaluation
+        // bresenham's algorithm, etc, etc
         free(entry);
     }
     return NULL;
@@ -94,7 +93,6 @@ void localiser_init(char *fieldFile){
     nlopt_set_ftol_abs(optimiser, LOCALISER_STEP_TOLERANCE); // stop if the last step was too small (we must be going nowhere/solved)
     nlopt_set_maxtime(optimiser, LOCALISER_MAX_EVAL_TIME); // stop if it's taking too long
     nlopt_set_min_objective(optimiser, objective_function, NULL);
-    // TODO set lower and upper bounds to field dimensions noting that (0, 0) is the centre
 
     double minCoord[] = {-field.fieldWidth / 2.0, -field.fieldHeight / 2.0};
     double maxCoord[] = {field.fieldWidth / 2.0, field.fieldHeight / 2.0};
