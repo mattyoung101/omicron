@@ -27,6 +27,7 @@ double movavg_calc(movavg_t *mov_avg){
     for (int i = 0; i < mov_avg->counter; i++){
         sum += mov_avg->items[i];
     }
+    if (mov_avg->counter == 0) return 0; // stupid hack to prevent divide by zero
     return sum / (double) mov_avg->counter;
 }
 

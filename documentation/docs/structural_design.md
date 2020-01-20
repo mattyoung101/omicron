@@ -5,6 +5,7 @@ We also aimed on improving hardware from previous years including the custom omn
 year.
 
 The following are the major hardware improvements that have occurred this year:
+
 - Custom omni-directional wheels
 - Custom wound solenoid and kicking circuit
 - Custom microcontroller circuits

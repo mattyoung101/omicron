@@ -1,9 +1,10 @@
 #define DG_DYNARR_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
 #include "DG_dynarr.h"
-#include "stb_image.h"
-#undef STB_IMAGE_IMPLEMENTATION
 #undef DG_DYNARR_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#undef STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include <stdio.h>
 #include "log/log.h"
 #include "iniparser/iniparser.h"
@@ -66,6 +67,13 @@ int main() {
 #endif
     pthread_mutex_init(&logLock, NULL);
     log_set_lock(log_lock_func);
+
+//    pthread_t threads[4] = {0};
+//    for (int i = 0; i < 4; i++){
+//        pthread_create(&threads[i], NULL, bruh_moment, NULL);
+//    }
+//    puts("spawned hogs");
+//    pthread_join(threads[0], NULL);
 
     struct passwd *pw = getpwuid(getuid());
     char *homedir = pw->pw_dir;

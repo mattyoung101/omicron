@@ -25,14 +25,15 @@ message RDThreshold {
 // (this is because it's much easier to get the remote JavaFX app to draw geometries than to do it manually on a JPEG buffer)
 message DebugFrame {
     bytes defaultImage = 1; // the encoded image of just the normal view from the camera
-    bytes ballThreshImage = 2; // the zlib encoded buffer of the ball's binary threshold image
-    float temperature = 3; // the temperature of the CPU on the Pi
-    RDRect ballRect = 4; // the bounding box of the ball
+    bytes ballThreshImage = 2; // the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
+    float temperature = 3; // the temperature of the CPU on the SBC
+    RDRect ballRect = 4; // the bounding box of the object (not the ball, kept for legacy reasons)
     RDPoint ballCentroid = 5; // the centroid of the ball
     int32 fps = 6; // the current FPS of the camera
     int32 frameWidth = 7; // width of both frames
     int32 frameHeight = 8; // height of both frames
     RDRect cropRect = 9; // the crop rectangle, or all zeroes if cropping is disabled
+    repeated RDPoint linePoints = 10; // line points from localiser
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

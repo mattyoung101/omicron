@@ -16,6 +16,7 @@
 #include "remote_debug.h"
 #include "rpa_queue.h"
 #include "movavg.h"
+#include "localisation.h"
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
 using namespace std;
@@ -84,7 +85,7 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
         objRect.width /= VISION_SCALE_FACTOR;
         objRect.height /= VISION_SCALE_FACTOR;
 
-        // also rescale image if remote debug is enabled
+        // also rescale image if remote debug is enabled, otherwise don't bother for performance sake
         if (remote_debug_is_connected() && blobExists){
             resize(thresholded, threshScaled, Size(realWidth, realHeight), INTER_NEAREST);
         }
@@ -206,6 +207,14 @@ static auto cv_thread(void *arg) -> void *{
             Scalar minScalar = Scalar(min[2], min[1], min[0]);
             Scalar maxScalar = Scalar(max[2], max[1], max[0]);
             inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar, thresholded[object]);
+
+            // dispatch the lines immediately to the localiser for processing
+            if (object == OBJ_LINES){
+                // note: this assumes we will never scale the line image, otherwise we would have to check and use frameScaled
+                auto *localiserFrame = (uint8_t*) malloc(frame.rows * frame.cols);
+                memcpy(localiserFrame, thresholded[object].data, frame.rows * frame.cols);
+                localiser_post(localiserFrame, frame.cols, frame.rows);
+            }
         }, 4);
 
         // process all our field objects
@@ -237,6 +246,7 @@ static auto cv_thread(void *arg) -> void *{
             memcpy(frameData, debugFrame.data, frame.rows * frame.cols * 3);
 
             // ballThresh is just a 1-bit mask so it has only one channel
+            // TODO for each of these we should probably check if their data is null, and thus no object is present, else UBSan complains
             auto *threshData = (uint8_t*) calloc(ball.threshMask.rows * ball.threshMask.cols, sizeof(uint8_t));
             switch (selectedFieldObject){
                 case OBJ_NONE: {
@@ -260,7 +270,8 @@ static auto cv_thread(void *arg) -> void *{
                     break;
                 }
                 case OBJ_GOAL_YELLOW: {
-                    memcpy(threshData, yellowGoal.threshMask.data, yellowGoal.threshMask.rows * yellowGoal.threshMask.cols);
+                    if (yellowGoal.threshMask.data != nullptr)
+                        memcpy(threshData, yellowGoal.threshMask.data, yellowGoal.threshMask.rows * yellowGoal.threshMask.cols);
                     remote_debug_post(frameData, threshData, yellowGoal.boundingBox, yellowGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
                 }
@@ -278,9 +289,9 @@ static auto cv_thread(void *arg) -> void *{
         movavg_push(fpsAvg, elapsed);
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-//        if (remote_debug_is_connected()) {
-//            waitKey(static_cast<int>(1000 / fps));
-//        }
+        if (remote_debug_is_connected()) {
+            waitKey(static_cast<int>(1000 / fps));
+        }
 #endif
     }
     destroyAllWindows();
@@ -291,6 +302,7 @@ static auto fps_counter_thread(void *arg) -> void *{
     while (true){
         sleep(1);
         double avgTime = movavg_calc(fpsAvg);
+        if (avgTime == 0) continue; // another stupid to fix divide by zero when debugging
         lastFpsMeasurement = (int32_t) (1000.0 / avgTime);
         movavg_clear(fpsAvg);
 
@@ -310,7 +322,7 @@ void vision_init(void){
     // IMPORTANT: due to some weird shit with Intel's Turbo Boost on the Celeron, it may be faster to uncomment the below
     // line and disable multi-threading. With multi-threading enabled, all cores max out at 1.4 GHz, whereas with it
     // disabled they will happily run at 2 GHz. However, YMMV so just try it if Omicam is running slow.
-    // setNumThreads(1);
+    // setNumThreads(3); // leave one core free for localiser
 
     int numCpus = getNumberOfCPUs();
     string features = getCPUFeaturesLine();

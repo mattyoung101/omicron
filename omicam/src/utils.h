@@ -8,6 +8,7 @@
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 extern int32_t *thresholds[];
 extern char *fieldObjToString[];
+/** this is the UNCROPPED video width and height (i.e. what we receive raw from the camera) */
 extern int32_t videoWidth, videoHeight;
 extern int32_t visionCropRect[4];
 
@@ -47,12 +48,8 @@ uint8_t *utils_load_bin(char *path, long *size);
 /** unpack two 8 bit integers into a 16 bit integer **/
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
 #define KEEP_VAR __attribute__((used))
-#define SDL_CHECK(func) do { \
-    if ((func) != 0){ \
-        log_error("SDL function failed in %s:%d: %s", __FILE__, __LINE__, SDL_GetError()); \
-    } \
-} while (0);
 #define RD_SEND_OK_RESPONSE do { DebugCommand response = DebugCommand_init_zero; \
     response.messageId = CMD_OK; \
     send_response(response); } while (0)
 #define VISION_IS_RESCALED (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW)
+#define ROUND2INT(x) ((int32_t) round(x))

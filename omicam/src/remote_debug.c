@@ -137,12 +137,8 @@ static void read_remote_messages(void){
 #if BUILD_TARGET == BUILD_TARGET_PC
                 log_warn("Not shutting down as this is a PC build.");
 #else
-                // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
-                log_info("Shutting down SBC now...");
-                sync();
-                if (reboot(RB_POWER_OFF) == -1){
-                    log_error("Failed to shutdown system: %s", strerror(errno));
-                }
+                // note: requires passwordless access to sudo
+                system("sudo shutdown now"); // TODO error checking
 #endif
                 break;
             }
@@ -152,12 +148,8 @@ static void read_remote_messages(void){
 #if BUILD_TARGET == BUILD_TARGET_PC
                 log_warn("Not rebooting as this is a PC build.");
 #else
-                // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
-                log_info("Reeobting SBC now...");
-                sync();
-                if (reboot(RB_AUTOBOOT) == -1){
-                    log_error("Failed to reboot system: %s", strerror(errno));
-                }
+                // note: requires passwordless access to sudo
+                system("sudo reboot now"); // TODO error checking
 #endif
                 break;
             }
@@ -195,7 +187,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     memcpy(msg.ballThreshImage.bytes, threshImg, threshImgSize);
     msg.defaultImage.size = camImgSize;
     msg.ballThreshImage.size = threshImgSize;
-    msg.temperature = cpuTemperature;
+    msg.temperature = (float) cpuTemperature;
     msg.ballCentroid = entry->ballCentroid;
     msg.ballRect = entry->ballRect;
     msg.fps = entry->fps;

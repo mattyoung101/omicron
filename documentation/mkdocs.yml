@@ -1,6 +1,7 @@
 site_name: Team Omicron
 theme: material
 site_description: "Documentation website for Team Omicron from BBC Robotics, competing in the RoboCup Jr 2020 Internationals."
+copyright: "Copyright (c) 2020 Team Omicron."
 
 nav:
     - Home: index.md
@@ -12,3 +13,10 @@ nav:
         - Omicontrol (debugging and control): omicontrol.md
         - Game strategies: strategy.md
         - Protocol Buffers: protobuf.md
+
+plugins:
+    - search
+
+markdown_extensions:
+    - footnotes
+    - smarty

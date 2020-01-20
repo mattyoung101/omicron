@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='FieldFile.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n\x0f\x46ieldFile.proto\"k\n\tFieldFile\x12\x14\n\x0cunitDistance\x18\x01 \x01(\x05\x12\x11\n\tcellCount\x18\x02 \x01(\x05\x12\x12\n\nfieldWidth\x18\x03 \x01(\x05\x12\x13\n\x0b\x66ieldHeight\x18\x04 \x01(\x05\x12\x0c\n\x04\x64\x61ta\x18\x05 \x03(\x02\x62\x06proto3')
+  serialized_pb=_b('\n\x0f\x46ieldFile.proto\"a\n\tFieldFile\x12\x14\n\x0cunitDistance\x18\x01 \x01(\x05\x12\x11\n\tcellCount\x18\x02 \x01(\x05\x12\x0e\n\x06length\x18\x03 \x01(\x05\x12\r\n\x05width\x18\x04 \x01(\x05\x12\x0c\n\x04\x64\x61ta\x18\x05 \x03(\x02\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -48,14 +48,14 @@ _FIELDFILE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='fieldWidth', full_name='FieldFile.fieldWidth', index=2,
+      name='length', full_name='FieldFile.length', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='fieldHeight', full_name='FieldFile.fieldHeight', index=3,
+      name='width', full_name='FieldFile.width', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -81,7 +81,7 @@ _FIELDFILE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=19,
-  serialized_end=126,
+  serialized_end=116,
 )
 
 DESCRIPTOR.message_types_by_name['FieldFile'] = _FIELDFILE

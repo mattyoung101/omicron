@@ -56,5 +56,9 @@ typedef enum {
 #define LOCALISER_ERROR_TOLERANCE 2 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.1 // stop optimisation if the last step size was smaller than this in centimetres
 #define LOCALISER_MAX_EVAL_TIME 0.1 // max evaluation time for the optimiser in seconds
+#define LOCALISER_NUM_RAYS 64 // the number of rays to use when raycasting on the line image
+#define LOCALISER_MIRROR_RADIUS 256 // radius of the mirror in pixels on the image
 
 // error checking and other misc stuff
+#define PI 3.14159265359
+#define PI2 6.28318530718
