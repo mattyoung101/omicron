@@ -1,4 +1,5 @@
 from lineFunctions import linearFunction, circularFunction
+from objectiveFunction import virtualRobot, linePoint
 from math import sqrt, pow, radians
 import itertools
 from PIL import Image
@@ -27,6 +28,10 @@ whiteLines = [
     circularFunction(radians(270), radians(360), 15, 20, 86.5)
 ]
 
+robot = virtualRobot(0, 0, 0)
+
+# --- GENERATES FIELD FILE ARRAY --- #
+
 for rownum, row in enumerate(output):
     for colnum, cell in enumerate(row):
         smallestDist = sqrt(pow(fieldLength, 2) + pow(fieldWidth, 2))
@@ -34,13 +39,17 @@ for rownum, row in enumerate(output):
             smallestDist = min(line.smallestDist(colnum - fieldWidth / 2, rownum - fieldLength / 2), smallestDist)
         output[rownum][colnum] = smallestDist
 
+# --- FAKE OBJECTIVE FUNCTION --- #
+
+
+
 # maxDist = max([sublist[-1] for sublist in output])
 #
 # for rownum, row in enumerate(output):
 #     for colnum, cell in enumerate(row):
 #         output[rownum][colnum] = int(cell / maxDist * 255) * -1 + 255
 
-output = list(itertools.chain(*output))
+# output = list(itertools.chain(*output))
 
 # for row in output:
 #     print(*row)
@@ -50,13 +59,13 @@ output = list(itertools.chain(*output))
 # # img.save("Standard Field.bmp")
 # img.show()
 
-message = pb.FieldFile()
-message.unitDistance = 1
-message.cellCount = int(fieldLength * fieldWidth)
-message.fieldWidth = int(fieldWidth)
-message.fieldHeight = int(fieldLength)
-message.data.extend(output)
-
-with open("../../fields/Ints_StandardField.ff", "wb") as file:
-    serialised = message.SerializeToString()
-    file.write(serialised)
+# message = pb.FieldFile()
+# message.unitDistance = 1
+# message.cellCount = int(fieldLength * fieldWidth)
+# message.fieldWidth = int(fieldWidth)
+# message.fieldHeight = int(fieldLength)
+# message.data.extend(output)
+#
+# with open("../../fields/Ints_StandardField.ff", "wb") as file:
+#     serialised = message.SerializeToString()
+#     file.write(serialised)
