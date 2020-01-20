@@ -172,11 +172,15 @@ static auto cv_thread(void *arg) -> void *{
         frame = frame(Rect(cropRect));
 #endif
 
+        // mask out the robot
+#if VISION_DRAW_ROBOT_MASK
+        circle(frame, Point(frame.cols / 2, frame.rows / 2), visionCircleRadius,Scalar(0, 0, 0), FILLED);
+#endif
+
         // downscale for goal detection (and possibly initial ball pass)
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
-        // PARALLEL IMPLEMENTATION
         Mat thresholded[5] = {};
         parallel_for_(Range(1, 5), [&](const Range& range){
             auto object = (field_objects_t) range.start;
@@ -245,36 +249,38 @@ static auto cv_thread(void *arg) -> void *{
             auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
             memcpy(frameData, debugFrame.data, frame.rows * frame.cols * 3);
 
+            // wait for localisation to finish before dispatching info
+            // if performance issue occur, make this mutexes and shit instead of a busy loop - just couldn't be bothered now
+            while (!localiserDone){
+                puts("had to wait for localiser!");
+                nanosleep((const struct timespec[]){{0, 500000L}}, nullptr);
+            }
+
             // ballThresh is just a 1-bit mask so it has only one channel
             // TODO for each of these we should probably check if their data is null, and thus no object is present, else UBSan complains
             auto *threshData = (uint8_t*) calloc(ball.threshMask.rows * ball.threshMask.cols, sizeof(uint8_t));
             switch (selectedFieldObject){
-                case OBJ_NONE: {
+                case OBJ_NONE:
                     // just send the empty buffer
                     remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
-                case OBJ_BALL: {
+                case OBJ_BALL:
                     memcpy(threshData, ball.threshMask.data, ball.threshMask.rows * ball.threshMask.cols);
                     remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
-                case OBJ_LINES: {
+                case OBJ_LINES:
                     memcpy(threshData, lines.threshMask.data, lines.threshMask.rows * lines.threshMask.cols);
                     remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
-                case OBJ_GOAL_BLUE: {
+                case OBJ_GOAL_BLUE:
                     memcpy(threshData, blueGoal.threshMask.data, blueGoal.threshMask.rows * blueGoal.threshMask.cols);
                     remote_debug_post(frameData, threshData, blueGoal.boundingBox, blueGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
-                case OBJ_GOAL_YELLOW: {
+                case OBJ_GOAL_YELLOW:
                     if (yellowGoal.threshMask.data != nullptr)
                         memcpy(threshData, yellowGoal.threshMask.data, yellowGoal.threshMask.rows * yellowGoal.threshMask.cols);
                     remote_debug_post(frameData, threshData, yellowGoal.boundingBox, yellowGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
             }
         }
 #endif

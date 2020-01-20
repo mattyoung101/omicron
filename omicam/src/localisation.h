@@ -2,13 +2,18 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <pthread.h>
+#include <stdbool.h>
 
-/** An entry submitted to the localisation work queue **/
+/** An entry submitted to the localisation work queue */
 typedef struct {
     uint8_t *frame;
     int32_t width;
     int32_t height;
 } localiser_entry_t;
+
+/** true if the localisation for the last frame has completed */
+extern _Atomic bool localiserDone;
 
 
 #ifdef __cplusplus

@@ -25,6 +25,7 @@ static FieldFile field = FieldFile_init_zero;
 static rpa_queue_t *queue;
 static vec2_array_t linePoints = {0};
 //static uint8_t *outImage = NULL;
+_Atomic bool localiserDone = false;
 
 /**
  * The bread and butter of our localisation system, this is the function to be minimised by the subplex optimiser.
@@ -118,6 +119,7 @@ static void *work_thread(void *arg){
 
         localiser_entry_t *entry = (localiser_entry_t*) queueData;
         da_clear(linePoints);
+        localiserDone = false;
 
         // 1. calculate begin points for Bresenham's line algorithm
         double interval = PI2 / LOCALISER_NUM_RAYS;
@@ -149,6 +151,7 @@ static void *work_thread(void *arg){
         cleanup:
         free(entry->frame);
         free(entry);
+        localiserDone = true;
     }
     return NULL;
 }
@@ -212,8 +215,8 @@ void localiser_post(uint8_t *frame, int32_t width, int32_t height){
 
 void localiser_dispose(void){
     log_trace("Disposing localiser");
-    nlopt_destroy(optimiser);
     pthread_cancel(workThread);
     pthread_join(workThread, NULL);
+    nlopt_destroy(optimiser);
     rpa_queue_destroy(queue);
 }

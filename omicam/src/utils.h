@@ -9,7 +9,7 @@ extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], m
 extern int32_t *thresholds[];
 extern char *fieldObjToString[];
 /** this is the UNCROPPED video width and height (i.e. what we receive raw from the camera) */
-extern int32_t videoWidth, videoHeight;
+extern int32_t videoWidth, videoHeight, visionCircleRadius;
 extern int32_t visionCropRect[4];
 
 #ifdef __cplusplus

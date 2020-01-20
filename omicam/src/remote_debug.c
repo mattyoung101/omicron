@@ -45,15 +45,15 @@ static void init_tcp_socket(void);
 
 /** Quickly encodes and sends the given DebugCommand back to Omicontrol as a response **/
 static void send_response(DebugCommand command){
-    uint8_t buf[512] = {0};
-    pb_ostream_t stream = pb_ostream_from_buffer(buf, 512);
+    uint8_t buf[1024] = {0};
+    pb_ostream_t stream = pb_ostream_from_buffer(buf, 1024);
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.command = command;
     wrapper.whichMessage = 2;
 
     if (!pb_encode_delimited(&stream, RDMsgFrame_fields, &wrapper)){
-        log_error("Failed to encode Omicontrol response: %s", PB_GET_ERROR(&stream));
+        log_error("Failed to encode Omicontrol response: %s (max stream size: %d)", PB_GET_ERROR(&stream), stream.max_size);
     } else {
         ssize_t bytesWritten = write(connfd, buf, stream.bytes_written);
         if (bytesWritten == -1){
