@@ -13,17 +13,16 @@ add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2)
 set (SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -static-libsan")
 # these flags are used to enable the FPU and tune to the architecture of the jetson nano (this will break PC builds!)
 # if anything related to NLopt or math in general breaks, use -mfpu=vfp and disable ffast-math
-# source of gcc arguments for jetson: https://devtalk.nvidia.com/default/topic/1055706/jetson-nano/gcc-options-for-nano/
 # note: using -flto to enable link time optimisations breaks using "-Og" and "-Ofast"
-set (PERFORMANCE_FLAGS "-ffast-math -march=native")
+set (PERFORMANCE_FLAGS "-march=native")
 # (we generate debug info in all modes since it adds no performance penalty and is good for debug)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-unused-parameter -g3 -pthread")
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -g3 -pthread")
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -O0 ${SAFETY_FLAGS} ${PERFORMANCE_FLAGS}") # safety features and debug optimisation
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -O0 ${SAFETY_FLAGS} ${PERFORMANCE_FLAGS}")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${PERFORMANCE_FLAGS}") # full optimisation and no safety features
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS} -Ofast ${PERFORMANCE_FLAGS}")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 ${PERFORMANCE_FLAGS}") # full optimisation and no safety features
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 ${PERFORMANCE_FLAGS}")
 
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -lineinfo -O3")
 
@@ -54,7 +53,7 @@ add_executable(omicam src/main.c
         lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
         src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h lib/map.c lib/map.h
         src/protobuf/FieldFile.pb.c src/protobuf/FieldFile.pb.h
-        src/protobuf/UART.pb.c src/protobuf/UART.pb.h
+        src/protobuf/UART.pb.c src/protobuf/UART.pb.h src/movavg.c src/movavg.h
         lib/stb_image.h src/computer_vision.cpp src/computer_vision.hpp src/comms_uart.c src/comms_uart.h)
 
 set_target_properties(omicam PROPERTIES POSITION_INDEPENDENT_CODE ON)

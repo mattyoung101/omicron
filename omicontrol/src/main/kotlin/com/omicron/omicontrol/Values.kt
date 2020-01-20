@@ -6,11 +6,12 @@ import org.apache.commons.lang3.SystemUtils
 
 /**
  * Version history:
- * 0.0.0a: basic application and communication implemented
- * 0.1.0a: works with new OpenCV stuff
- * 1.1.0a: UI implemented and threshold sliders/debug commands work properly
+ * 0.0a: basic application and communication implemented
+ * 0.1a: works with new OpenCV stuff
+ * 1.1a: UI implemented and threshold sliders/debug commands work properly
+ * 1.2a: works with Omicam cropping and downscaling
  */
-const val OMICONTROL_VERSION = "1.1.0a"
+const val OMICONTROL_VERSION = "1.2a"
 const val REMOTE_IP = "192.168.1.8"
 const val REMOTE_PORT = 42708
 val CONNECTION_MANAGER = ConnectionManager()

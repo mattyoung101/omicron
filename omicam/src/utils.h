@@ -20,7 +20,7 @@ void utils_parse_thresh(char *threshStr, int32_t *array);
 /** Similar to utils_parse_thresh, but expects a 4 element rectangle of (x, y, width, height) **/
 void utils_parse_rect(char *rectStr, int32_t *array);
 /** Gets the timestamp in milliseconds **/
-double utils_get_millis();
+double utils_time_millis();
 /**
  * Opens the INI file, looks for the key and substitutes in the specified value.
  * @param file the already opened INI file

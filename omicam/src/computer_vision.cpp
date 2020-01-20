@@ -15,6 +15,7 @@
 #include "utils.h"
 #include "remote_debug.h"
 #include "rpa_queue.h"
+#include "movavg.h"
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
 using namespace std;
@@ -34,9 +35,9 @@ typedef struct {
 
 static pthread_t cvThread = {0};
 static pthread_t fpsCounterThread = {0};
-static _Atomic int32_t fpsCounter = 0;
 static _Atomic int32_t lastFpsMeasurement = 0;
 static Rect cropRect;
+static movavg_t *fpsAvg;
 
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
@@ -84,7 +85,7 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
         objRect.height /= VISION_SCALE_FACTOR;
 
         // also rescale image if remote debug is enabled
-        if (remote_debug_is_connected()){
+        if (remote_debug_is_connected() && blobExists){
             resize(thresholded, threshScaled, Size(realWidth, realHeight), INTER_NEAREST);
         }
     }
@@ -112,7 +113,7 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
 
 /** this task runs all the computer vision for Omicam, using OpenCV */
 static auto cv_thread(void *arg) -> void *{
-    uint32_t rdFrameCounter = 0;
+    uint32_t frameCounter = 0;
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
@@ -139,13 +140,17 @@ static auto cv_thread(void *arg) -> void *{
     junk = junk(cropRect);
 #endif
     resize(junk, junk, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR);
-    log_info("Frame size: %dx%d (cropping enabled: %s)", videoWidth, videoHeight, VISION_CROP_ENABLED ? "yes" : "no");
+    log_info("Frame size: %dx%d (cropping enabled: %s)", videoWidth, videoHeight, VISION_CROP_ENABLED ? "YES" : "NO");
     log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
     while (true){
+#if VISION_FPS_INCLUDE_FRAME_READ
+        double begin = utils_time_millis();
+#endif
+        // capture the frame and check for errors
         Mat frame, frameScaled;
-
         cap.read(frame);
+
         if (frame.empty()){
 #if BUILD_TARGET == BUILD_TARGET_PC
             cap.set(CAP_PROP_FRAME_COUNT, 0);
@@ -157,47 +162,50 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
+#if !VISION_FPS_INCLUDE_FRAME_READ
+        double begin = utils_time_millis();
+#endif
+
+        // crop the frame if cropping is enabled
 #if VISION_CROP_ENABLED
         frame = frame(Rect(cropRect));
 #endif
-        // downscale
+
+        // downscale for goal detection (and possibly initial ball pass)
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
+        // PARALLEL IMPLEMENTATION
         Mat thresholded[5] = {};
         parallel_for_(Range(1, 5), [&](const Range& range){
-           auto object = (field_objects_t) range.start;
-           uint32_t *min, *max;
+            auto object = (field_objects_t) range.start;
+            uint32_t *min, *max;
 
-           switch (object){
-               case OBJ_BALL:
-                   min = (uint32_t*) minBallData;
-                   max = (uint32_t*) maxBallData;
-                   break;
-               case OBJ_GOAL_YELLOW:
-                   min = (uint32_t*) minYellowData;
-                   max = (uint32_t*) maxYellowData;
-                   break;
-               case OBJ_GOAL_BLUE:
-                   min = (uint32_t*) minBlueData;
-                   max = (uint32_t*) maxBlueData;
-                   break;
-               case OBJ_LINES:
-                   min = (uint32_t*) minLineData;
-                   max = (uint32_t*) maxLineData;
-                   break;
-               default:
-                   return;
-           }
+            switch (object){
+                case OBJ_BALL:
+                    min = (uint32_t*) minBallData;
+                    max = (uint32_t*) maxBallData;
+                    break;
+                case OBJ_GOAL_YELLOW:
+                    min = (uint32_t*) minYellowData;
+                    max = (uint32_t*) maxYellowData;
+                    break;
+                case OBJ_GOAL_BLUE:
+                    min = (uint32_t*) minBlueData;
+                    max = (uint32_t*) maxBlueData;
+                    break;
+                case OBJ_LINES:
+                    min = (uint32_t*) minLineData;
+                    max = (uint32_t*) maxLineData;
+                    break;
+                default:
+                    return;
+            }
 
             // we re-arrange the orders of these to convert from RGB to BGR so we can skip the call to cvtColor
             Scalar minScalar = Scalar(min[2], min[1], min[0]);
             Scalar maxScalar = Scalar(max[2], max[1], max[0]);
             inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar, thresholded[object]);
-
-//            int morph_size = 12;
-//            Mat element = getStructuringElement(MORPH_RECT, Size( 2*morph_size + 1, 2*morph_size+1 ), Point( morph_size, morph_size ) );
-//            morphologyEx(thresholded[object], thresholded[object], MORPH_OPEN, element);
         }, 4);
 
         // process all our field objects
@@ -207,17 +215,18 @@ static auto cv_thread(void *arg) -> void *{
         auto yellowGoal = process_object(thresholded[OBJ_GOAL_YELLOW], OBJ_GOAL_YELLOW, realWidth, realHeight);
         auto blueGoal = process_object(thresholded[OBJ_GOAL_BLUE], OBJ_GOAL_BLUE, realWidth, realHeight);
         auto lines = process_object(thresholded[OBJ_LINES], OBJ_LINES, realWidth, realHeight);
+        //printf("actual processing took %.2f ms\n", utils_time_millis() - proBegin);
 
         // dispatch frames to remote debugger
 #if REMOTE_ENABLED
-        if (rdFrameCounter++ % REMOTE_FRAME_INTERVAL == 0 && remote_debug_is_connected()) {
+        if (frameCounter++ % REMOTE_FRAME_INTERVAL == 0 && remote_debug_is_connected()) {
             // we optimised out the cvtColor in the main loop so we gotta do it here instead
             // we can remove it by simply swapping the order of the threshold values to save calling BGR2RGB
             Mat debugFrame;
             cvtColor(frame, debugFrame, COLOR_BGR2RGB);
 
             char buf[128] = {0};
-            snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", rdFrameCounter, OMICAM_VERSION,
+            snprintf(buf, 128, "Frame %d (Omicam v%s), selected object: %s", frameCounter, OMICAM_VERSION,
                      fieldObjToString[selectedFieldObject]);
             putText(debugFrame, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.6,
                     Scalar(255, 255, 255), 1, FILLED, false);
@@ -265,11 +274,13 @@ static auto cv_thread(void *arg) -> void *{
         data.ballY = ball.centroid.y;
         utils_cv_transmit_data(data);
 
-        fpsCounter++;
+        double elapsed = utils_time_millis() - begin;
+        movavg_push(fpsAvg, elapsed);
+
 #if BUILD_TARGET == BUILD_TARGET_PC
-        if (remote_debug_is_connected()) {
-            waitKey(static_cast<int>(1000 / fps));
-        }
+//        if (remote_debug_is_connected()) {
+//            waitKey(static_cast<int>(1000 / fps));
+//        }
 #endif
     }
     destroyAllWindows();
@@ -279,12 +290,13 @@ static auto cv_thread(void *arg) -> void *{
 static auto fps_counter_thread(void *arg) -> void *{
     while (true){
         sleep(1);
-        lastFpsMeasurement = fpsCounter;
-        fpsCounter = 0;
+        double avgTime = movavg_calc(fpsAvg);
+        lastFpsMeasurement = (int32_t) (1000.0 / avgTime);
+        movavg_clear(fpsAvg);
 
 #if VISION_DIAGNOSTICS
         if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){
-            printf("Vision FPS: %d\n", lastFpsMeasurement);
+            printf("Average frame time: %.2f ms, CPU temp: %.2f, FPS: %d\n", avgTime, cpuTemperature, lastFpsMeasurement);
             fflush(stdout);
         }
 #endif
@@ -293,6 +305,12 @@ static auto fps_counter_thread(void *arg) -> void *{
 
 void vision_init(void){
     cropRect = Rect(visionCropRect[0], visionCropRect[1], visionCropRect[2], visionCropRect[3]);
+    fpsAvg = movavg_create(256);
+
+    // IMPORTANT: due to some weird shit with Intel's Turbo Boost on the Celeron, it may be faster to uncomment the below
+    // line and disable multi-threading. With multi-threading enabled, all cores max out at 1.4 GHz, whereas with it
+    // disabled they will happily run at 2 GHz. However, YMMV so just try it if Omicam is running slow.
+    // setNumThreads(1);
 
     int numCpus = getNumberOfCPUs();
     string features = getCPUFeaturesLine();
@@ -323,4 +341,5 @@ void vision_dispose(void){
     log_trace("Stopping vision thread");
     pthread_cancel(cvThread);
     pthread_join(cvThread, nullptr);
+    movavg_free(fpsAvg);
 }
