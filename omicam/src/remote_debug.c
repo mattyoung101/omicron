@@ -20,6 +20,7 @@
 #include <sys/ioctl.h>
 #include "nanopb/pb_decode.h"
 #include "protobuf/RemoteDebug.pb.h"
+#include "localisation.h"
 #include <sys/reboot.h>
 
 // Manages encoding camera frames to JPG images (with turbo-jpeg) or PNG images (with lodepng) and sending them over a
@@ -178,7 +179,7 @@ static void client_disconnected(void){
  */
 static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize, frame_entry_t *entry){
     DebugFrame msg = DebugFrame_init_zero;
-    size_t bufSize = camImgSize + threshImgSize + 1024; // the buffer size is the image sizes + 1KB of extra protobuf data
+    size_t bufSize = camImgSize + threshImgSize + 8192; // the buffer size is the image sizes + 8KB of extra protobuf data
     uint8_t *buf = malloc(bufSize); // we'll malloc this since we won't ever send the garbage on the end
     pb_ostream_t stream = pb_ostream_from_buffer(buf, bufSize);
 
@@ -195,15 +196,20 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.frameHeight = height;
 #if VISION_CROP_ENABLED
     RDRect cropRect = {visionCropRect[0], visionCropRect[1], visionCropRect[2], visionCropRect[3]};
-    msg.cropRect = cropRect;
+#else
+    RDRect cropRect = {0, 0, videoWidth, videoHeight};
 #endif
+    msg.cropRect = cropRect;
+    localiser_remote_get_points(msg.linePoints, 256);
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.frame = msg;
     wrapper.whichMessage = 1;
 
     if (!pb_encode_delimited(&stream, RDMsgFrame_fields, &wrapper)){
-        log_error("Protobuf encode failed: %s", PB_GET_ERROR(&stream));
+        log_error("Protobuf encode failed: %s (allocated size was: %d)", PB_GET_ERROR(&stream), bufSize);
+        free(buf);
+        return;
     }
 
     // dispatch the buffer over TCP and handle errors
@@ -445,7 +451,7 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
         free(threshFrame);
 
         if (totalFailures++ >= 75 && remote_debug_is_connected()){
-            log_warn("Too many failures, going to kick currently connected client!");
+            log_error("Too many failures, going to kick currently connected client!");
             client_disconnected();
         }
     } else {

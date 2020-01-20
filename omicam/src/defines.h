@@ -18,7 +18,7 @@
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 #define VISION_FPS_INCLUDE_FRAME_READ 1 // whether or not to ignore the time it takes to capture the frame in FPS calculations
-#define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
+#define VISION_DRAW_ROBOT_MASK 0 // whether or not to draw the robot mask
 
 #define REMOTE_JPEG_QUALITY 40 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive

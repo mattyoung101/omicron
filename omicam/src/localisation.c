@@ -13,6 +13,7 @@
 #include "DG_dynarr.h"
 #include "mathc.h"
 #include "stb_image_write.h"
+#include <sys/param.h>
 
 DA_TYPEDEF(struct vec2, vec2_array_t);
 
@@ -66,6 +67,7 @@ static double objective_function(unsigned n, const double* x, double* grad, void
 /**
  * Uses Bresenham's line algorithm to determine the positions where the ray intersects a field line, and adds these
  * to the line points linked list
+ * TODO should this use floating point maths for precision?
  */
 static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t imageWidth){
     bool wasLine = false; // true if the last pixel we accessed was on the line
@@ -85,13 +87,11 @@ static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, in
             struct vec2 pos = {(double) x0, (double) y0};
             da_push(linePoints, pos);
             wasLine = true;
-//            outImage[i] = 255;
         } else if (!isLine && wasLine){
             // we just exited the line so add a point
             struct vec2 pos = {(double) x0, (double) y0};
             da_push(linePoints, pos);
             wasLine = false;
-//            outImage[i] = 255;
         }
 
         if (x0 == x1 && y0 == y1) break;
@@ -128,7 +128,7 @@ static void *work_thread(void *arg){
 
 //        outImage = calloc(1, entry->width * entry->height);
 
-        // 1.1. emit line segments from the centre of the mirror to the edge of it, to calculate the line points (NOLINTNEXTLINE)
+        // 1.1. cast line segments from the centre of the mirror to the edge of it, to calculate the line points (NOLINTNEXTLINE)
         for (double angle = 0.0; angle < PI2; angle += interval){
             double r = (double) LOCALISER_MIRROR_RADIUS;
             double x1 = x0 + (r * cos(angle));
@@ -213,10 +213,22 @@ void localiser_post(uint8_t *frame, int32_t width, int32_t height){
     }
 }
 
+void localiser_remote_get_points(RDPoint *array, size_t arraySize){
+    // this is to stop it from overflowing the Protobuf fixed size buffer
+    int32_t size = MIN(arraySize, da_count(linePoints));
+
+    for (int i = 0; i < size; i++){
+        struct vec2 point = da_get(linePoints, i);
+        array[i].x = ROUND2INT(point.x);
+        array[i].y = ROUND2INT(point.y);
+    }
+}
+
 void localiser_dispose(void){
     log_trace("Disposing localiser");
     pthread_cancel(workThread);
     pthread_join(workThread, NULL);
     nlopt_destroy(optimiser);
     rpa_queue_destroy(queue);
+    da_free(linePoints);
 }
