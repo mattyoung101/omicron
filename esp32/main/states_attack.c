@@ -35,7 +35,7 @@ static void noball_timer_callback(TimerHandle_t timer){
     // it should probably be an integer) - so we pass the state_machine_t as the timer's ID
     state_machine_t *fsm = (state_machine_t*) pvTimerGetTimerID(timer);
     om_timer_stop(&noBallTimer);
-    FSM_CHANGE_STATE(Idle); // TODO: make this change into ball finder
+    FSM_CHANGE_STATE_GENERAL(Findball); // TODO: make this change into ball finder
 }
 
 static void yeet_timer_callback(TimerHandle_t timer){
@@ -81,14 +81,14 @@ void state_attack_pursue_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball is not visible, braking");
         om_timer_start(&noBallTimer);
         FSM_MOTOR_BRAKE;
-    } else if (rs.inBallStrength >= ORBIT_DIST){
+    } else if (rs.inBallDistance >= ORBIT_DIST){
         if (is_angle_between(rs.inBallAngle, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
             LOG_ONCE(TAG, "Ball close enough and ball is in forward range, switching to front orbit, strength: %f, orbit dist thresh: %d, angle: %f", 
-            rs.inBallStrength, ORBIT_DIST, rs.inBallAngle);
+            rs.inBallDistance, ORBIT_DIST, rs.inBallAngle);
             FSM_CHANGE_STATE(FrontOrbit);
         } else {
             LOG_ONCE(TAG, "Ball close enough and ball is in back range, switching to reverse orbit, strength: %f, orbit dist thresh: %d, angle: %f", 
-            rs.inBallStrength, ORBIT_DIST, rs.inBallAngle);
+            rs.inBallDistance, ORBIT_DIST, rs.inBallAngle);
             FSM_CHANGE_STATE(ReverseOrbit);
         }
     }
@@ -112,9 +112,9 @@ void state_attack_frontorbit_update(state_machine_t *fsm){
     imu_correction(&robotState);
     timer_check();
 
-    if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
+    if (rs.inBallDistance <= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
         LOG_ONCE(TAG, "Ball and angle in correct spot, changing intro dribble, strength: %f, angle: %f, orbit dist thresh: %d"
-                " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
+                " angle range: %d-%d", robotState.inBallDistance, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
                 IN_FRONT_MAX_ANGLE);
         accelBegin = rs.outSpeed;
         FSM_CHANGE_STATE(Yeet);
@@ -123,11 +123,11 @@ void state_attack_frontorbit_update(state_machine_t *fsm){
     // Check criteria:
     // Ball too far away, Ball too close and angle good (go to yeet), Ball too far (revert)
     if (!orangeBall.exists){
-        LOG_ONCE(TAG, "Ball not visible, starting idle timer, strength: %f", robotState.inBallStrength);
+        LOG_ONCE(TAG, "Ball not visible, starting idle timer, strength: %f", robotState.inBallDistance);
         om_timer_start(&noBallTimer);
         FSM_MOTOR_BRAKE;
-    } else if (rs.inBallStrength < ORBIT_DIST){
-        LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, orbit dist thresh: %d", robotState.inBallStrength,
+    } else if (rs.inBallDistance < ORBIT_DIST){
+        LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, orbit dist thresh: %d", robotState.inBallDistance,
                  ORBIT_DIST);
         FSM_REVERT;
     } else if (!is_angle_between(rs.inBallAngle, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
@@ -152,11 +152,11 @@ void state_attack_reverseorbit_update(state_machine_t *fsm){
 
     // Check criteria:
     if (!orangeBall.exists){
-        LOG_ONCE(TAG, "Ball not visible, starting idle timer, strength: %f", robotState.inBallStrength);
+        LOG_ONCE(TAG, "Ball not visible, starting idle timer, strength: %f", robotState.inBallDistance);
         om_timer_start(&noBallTimer);
         FSM_MOTOR_BRAKE;
-    } else if (rs.inBallStrength < ORBIT_DIST){
-        LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, orbit dist thresh: %d", robotState.inBallStrength,
+    } else if (rs.inBallDistance < ORBIT_DIST){
+        LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, orbit dist thresh: %d", robotState.inBallDistance,
                  ORBIT_DIST);
         FSM_REVERT;
     } else if (is_angle_between(rs.inBallAngle, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
@@ -190,10 +190,10 @@ void state_attack_yeet_update(state_machine_t *fsm){
     // Ball not visible, ball not in front, ball too far away, not facing goal, should we kick?
     if (rs.inFrontGate && is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, 
         IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
-        LOG_ONCE(TAG, "Ball in capture zone and facing goal and shoot permitted, shooting, angle: %f, range: %d", rs.inGoalAngle, rs.inGoalLength);
+        LOG_ONCE(TAG, "Ball in capture zone and facing goal and shoot permitted, shooting, angle: %d, range: %d", rs.inGoalAngle, rs.inGoalLength);
         FSM_CHANGE_STATE_GENERAL(Shoot); // TODO: use real world units
     } else if (!orangeBall.exists && !rs.inFrontGate){
-        LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallStrength);
+        LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallDistance);
         om_timer_start(&noBallTimer);
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallAngle > IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER && rs.inBallAngle < IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER){
@@ -248,7 +248,7 @@ void state_attack_linerun_update(state_machine_t *fsm){
 
     RS_SEM_LOCK
     rs.outIsAttack = true;
-    rs.outSwitchOk - false; // we're trying to score so piss off
+    rs.outSwitchOk = false; // we're trying to score so piss off
     RS_SEM_UNLOCK
     goal_correction(&robotState);
     timer_check();
@@ -271,7 +271,7 @@ void state_attack_zigzag_update(state_machine_t *fsm)
 
     RS_SEM_LOCK
     rs.outIsAttack = true;
-    rs.outSwitchOk - false; // we're trying to score so piss off
+    rs.outSwitchOk = false; // we're trying to score so piss off
     RS_SEM_UNLOCK
     goal_correction(&robotState);
     timer_check();

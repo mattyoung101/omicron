@@ -24,7 +24,7 @@
 #include "comms_bluetooth.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
-#include "i2c.pb.h"
+#include "wirecomms.pb.h"
 #include "bno055.h"
 #include "button.h"
 #include "movavg.h"
@@ -111,7 +111,8 @@ static void master_task(void *pvParameter){
     yawOffset = yawRaw;
     ESP_LOGI(TAG, "Yaw offset: %f degrees", yawOffset);
 
-    gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
+    gpio_set_direction(KICKER_PIN1, GPIO_MODE_OUTPUT);
+    gpio_set_direction(KICKER_PIN2, GPIO_MODE_OUTPUT);
     QueueHandle_t buttonQueue = button_init(PIN_BIT(RST_BTN));
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
 
@@ -168,7 +169,7 @@ static void master_task(void *pvParameter){
 
                 // update FSM in values
                 robotState.inBallAngle = orangeBall.angle;
-                robotState.inBallStrength = orangeBall.exists ? orangeBall.length : 0.0f;
+                robotState.inBallDistance = orangeBall.exists ? orangeBall.length : 0.0f;
                 // TODO make goal stuff floats as well
                 if (robotState.outIsAttack){
                     robotState.inGoalVisible = AWAY_GOAL.exists;
@@ -206,7 +207,7 @@ static void master_task(void *pvParameter){
         fsm_update(stateMachine);
         
         // encode and send Protobuf message to Teensy slave
-        I2CMasterProvide msg = I2CMasterProvide_init_default;
+        MasterToLSlave teensyMsg = MasterToLSlave_init_default;
         uint8_t buf[PROTOBUF_SIZE] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
 
@@ -216,12 +217,10 @@ static void master_task(void *pvParameter){
         // robotState.outDirection = 0;
         // print_ball_data(&robotState);
         
-        msg.heading = yaw; // IMU heading
-        msg.direction = robotState.outDirection; // motor direction (which way we're driving)
-        msg.orientation = -robotState.outOrientation; // motor orientation (which way we're facing)
-        msg.speed = robotState.outSpeed; // motor speed as 0-100%
+        teensyMsg.heading = yaw; // IMU heading
+        memcpy(teensyMsg.debugLEDs, robotState.debugLEDs, 6 * sizeof(bool));
 
-        if (!pb_encode(&stream, I2CMasterProvide_fields, &msg)){
+        if (!pb_encode(&stream, MasterToLSlave_fields, &teensyMsg)){
             ESP_LOGE(TAG, "Protobuf encode error: %s", PB_GET_ERROR(&stream));
             if (pbErrors++ > 4){
                 ESP_LOGE(TAG, "Too many Protobuf errors, resetting!");

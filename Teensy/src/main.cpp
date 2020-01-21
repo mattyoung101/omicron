@@ -119,6 +119,8 @@ void loop() {
     #if LS_ON
         // Update line data
         lineAvoid = ls.update(heading);
+
+        // (ETHAN) NOTE TO SELF: RETURN LINEANGLE, LINEDISTANCE AND ISOUT
     #endif
 
     #if LRFS_ON

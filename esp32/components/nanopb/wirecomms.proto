@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 // Transmits values from the Teensy to the ESP32
-message I2CSlaveProvide {
+message LSlaveToMaster {
     // Processed light sensor values
     float lineAngle = 1;
     float lineSize = 2;
@@ -14,13 +14,29 @@ message I2CSlaveProvide {
     int32 rightLRF = 7;
     int32 backLRF = 8;
     int32 leftLRF = 9;
-
-    // In case we need to use the MPU9250 mounted to the Teensy
-    float heading = 10;
 }
 
 // Transmits values from the ESP32 to the Teensy
-message I2CMasterProvide {
+message MasterToLSlave {
     // IMU
     float heading = 1;
+
+    // Debug LEDs
+    repeated bool debugLEDs = 2;
+}
+
+// Transmits values from the ATMega to the ESP32
+message MSlaveToMaster {
+    // Mouse sensor
+    int32 mouseDX = 1;
+    int32 mouseDY = 2;
+}
+
+// Transmits values from ESP32 to ATMega
+message MasterToMSlave {
+    // Motor outputs
+    int32 frMotor = 1;
+    int32 brMotor = 2;
+    int32 blMotor = 3;
+    int32 flMotor = 4;
 }

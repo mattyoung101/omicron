@@ -158,10 +158,10 @@ void orbit(robot_state_t *robotState){
 
     // I hate to do this but...
     if(robotState->inRobotId == 0){
-        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallStrength * 1.45f : robotState->inBallStrength; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
+        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
         
         float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
-        float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
+        float strengthFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
         float distanceMultiplier = constrain(0.08 * strengthFactor * powf(E, 3.8 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
@@ -170,10 +170,10 @@ void orbit(robot_state_t *robotState){
         robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
         // printf("tempStrength: %f\n", tempStrength);
     } else {
-        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallStrength * 1.45f : robotState->inBallStrength; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
+        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
         
         float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
-        float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
+        float strengthFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
         float distanceMultiplier = constrain(0.08 * strengthFactor * powf(E, 3.8 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
@@ -249,41 +249,41 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
 }
 
 void update_line(robot_state_t *robotState) { // TODO: FIX THIS
-    robotState->inOnLine = robotState->inLineAngle != NO_LINE_ANGLE;
+    // robotState->inOnLine = robotState->inLineAngle != NO_LINE_ANGLE;
 
-    if (robotState->inOnField) {
-        if (robotState->inOnLine) {
-            robotState->inOnField = false;
-            robotState->inTrueLineAngle = robotState->inLineAngle;
-            robotState->inTrueLineSize = robotState->inLineSize;
-        }
-    } else {
-        if (robotState->inTrueLineAngle == 3) {
-            if (robotState->inOnLine) {
-                robotState->inTrueLineAngle = modf(robotState->inLineAngle + 180.0f, 360.0f);
-                robotState->inTrueLineSize = 2 - robotState->inLineSize;
-            }
-        } else {
-            if (!robotState->inOnLine) {
-                if (robotState->inTrueLineSize <= 1) {
-                    robotState->inOnField = true;
-                    robotState->inTrueLineSize = -1;
-                    robotState->inTrueLineAngle = NO_LINE_ANGLE;
-                } else {
-                    robotState->inTrueLineSize = 3;
-                }
-            } else {
-                if (smallestAngleBetween(robotState->inLineAngle, robotState->inTrueLineAngle) <= LS_LINEOVER_BUFFER) {
-                    robotState->inTrueLineAngle = robotState->inLineAngle;
-                    robotState->inTrueLineSize = robotState->inLineSize;
-                } else {
-                    robotState->inTrueLineAngle = modf(robotState->inLineAngle + 180.0f, 360.0f);
-                    robotState->inLineSize = 2 - robotState->inLineSize;
-                }
-            }
-        }
-    }
-} // I won't even use this what am I doing
+    // if (robotState->inOnField) {
+    //     if (robotState->inOnLine) {
+    //         robotState->inOnField = false;
+    //         robotState->inTrueLineAngle = robotState->inLineAngle;
+    //         robotState->inTrueLineSize = robotState->inLineSize;
+    //     }
+    // } else {
+    //     if (robotState->inTrueLineAngle == 3) {
+    //         if (robotState->inOnLine) {
+    //             robotState->inTrueLineAngle = modf(robotState->inLineAngle + 180.0f, 360.0f);
+    //             robotState->inTrueLineSize = 2 - robotState->inLineSize;
+    //         }
+    //     } else {
+    //         if (!robotState->inOnLine) {
+    //             if (robotState->inTrueLineSize <= 1) {
+    //                 robotState->inOnField = true;
+    //                 robotState->inTrueLineSize = -1;
+    //                 robotState->inTrueLineAngle = NO_LINE_ANGLE;
+    //             } else {
+    //                 robotState->inTrueLineSize = 3;
+    //             }
+    //         } else {
+    //             if (smallestAngleBetween(robotState->inLineAngle, robotState->inTrueLineAngle) <= LS_LINEOVER_BUFFER) {
+    //                 robotState->inTrueLineAngle = robotState->inLineAngle;
+    //                 robotState->inTrueLineSize = robotState->inLineSize;
+    //             } else {
+    //                 robotState->inTrueLineAngle = modf(robotState->inLineAngle + 180.0f, 360.0f);
+    //                 robotState->inLineSize = 2 - robotState->inLineSize;
+    //             }
+    //         }
+    //     }
+    // }
+}
 
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec){
     // r cos theta, r sin theta
@@ -330,13 +330,14 @@ void i2c_scanner(i2c_port_t port){
 
 void print_ball_data(robot_state_t *robotState){
     static const char *TAG = "BallDebug";
-    ESP_LOGD(TAG, "Ball angle: %f, Ball strength: %f", robotState->inBallAngle, robotState->inBallStrength);
+    ESP_LOGD(TAG, "Ball angle: %f, Ball strength: %f", robotState->inBallAngle, robotState->inBallDistance);
 }
 
 void print_line_data(robot_state_t *robotState){
     static const char *TAG = "LineDebug";
-    ESP_LOGD(TAG, "Line angle: %f, Line size: %f, On line: %d, Over line: %d, Last angle: %f", robotState->inLineAngle, 
-    robotState->inLineSize, robotState->inOnLine, robotState->inLineOver, robotState->inLastAngle);
+    // ESP_LOGD(TAG, "Line angle: %f, Line size: %f, On line: %d, On field: %d, Last angle: %f", robotState->inLineAngle, 
+    // robotState->inLineSize, robotState->inOnLine, robotState->inOnField, robotState->inLastAngle);
+    ESP_LOGD(TAG, "Currently obselete, needs fixing once I figure out how the rest of this LS stuff works");
 }
 
 void print_goal_data(){
