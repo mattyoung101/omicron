@@ -5,13 +5,12 @@ We also aimed on improving hardware from previous years including the custom omn
 year.
 
 The following are the major hardware improvements that have occurred this year:
-
-- Custom omni-directional wheels
-- Custom wound solenoid and kicking circuit
-- Custom microcontroller circuits
-- Custom camera hardware
-- Mouse sensor implemenation
-- Various debugging options for software to use
+* Custom omni-directional wheels
+* Custom wound solenoid and kicking circuit
+* Custom microcontroller circuits
+* Custom camera hardware
+* Mouse sensor implemenation
+* Various debugging options for software to use
 
 ## Omni-directional Wheels
 
@@ -39,3 +38,17 @@ components caused rollers to fall out of the wheel during games.
 ## Kicker Unit
 
 **TODO: Idek if this works**
+
+## Chip-on-Board Microcontrollers
+
+## Custom Vision System
+
+The primary goal for this year was to improve the vision system of the robot by developing a custom vision pipeline.
+This was achieved with the 
+
+## Debugging
+
+Further improvements upon the debugging options were made this year including:
+* 4 piezzoelectric buzzers for audio feedback
+* 8 LEDs and a text LCD screen for visual feedback
+* Wireless degbugging UI for easy visualisation
