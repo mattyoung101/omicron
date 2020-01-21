@@ -49,11 +49,8 @@ static void can_kick_callback(TimerHandle_t timer){
 
     goal_correction(&robotState);
 
-    // Check criteria: goal visible and ball visible, should surge?
-    if (!rs.inGoalVisible){
-        LOG_ONCE(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
-        FSM_CHANGE_STATE_DEFENCE(Reverse);
-    } else if (!orangeBall.exists){
+    // Check criteria: TODO: FIX
+    if (!orangeBall.exists){
         LOG_ONCE(TAG, "Ball not visible, switching to Idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } else if (is_angle_between(rs.inBallAngle, SURGEON_ANGLE_MIN, SURGEON_ANGLE_MAX) 

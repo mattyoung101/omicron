@@ -116,11 +116,6 @@ void other_goal_correction(robot_state_t *robotState){
     }
 }
 
-void line_correction(robot_state_t *robotState){
-    robotState->outOrientation = (int16_t) -pid_update(&lineavoidPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
-                            + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Correct with idle PID
-}
-
 inline float get_magnitude(int16_t x, int16_t y){
     return sqrtf((float) (x * x + y * y)); // Cheeky pythag theorem
 }
@@ -197,27 +192,6 @@ void position(robot_state_t *robotState, float distance, float offset, int16_t g
 
     float distanceMovement = -pid_update(&forwardPID, verticalDistance, distance, 0.0f); // Determine the speed for each component
     float sidewaysMovement = -pid_update(&sidePID, horizontalDistance, offset, 0.0f);
-
-    if(reversed) distanceMovement *= -1; // All dimensions are inverted cos the goal is behind for the defender
-
-    robotState->outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - robotState->inHeading, 360.0f); // Use atan2 to find angle
-    robotState->outSpeed = get_magnitude(sidewaysMovement, distanceMovement); // Use pythag to find the overall speed
-
-    robotState->outSpeed = robotState->outSpeed <= IDLE_MIN_SPEED ? 0 : robotState->outSpeed; // To stop the robot from spazzing, if the robot is close to it's destination (so is moving very little), it will just stop.
-
-    // printf("goalAngle_: %f, verticalDistance: %f, horizontalDistance: %f\n", goalAngle_, verticalDistance, horizontalDistance);
-    // printf("goalAngle_: %f, verticalDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
-}
-
-void positionFast(robot_state_t *robotState, float distance, float offset, float goalAngle, int16_t goalLength, bool reversed) {
-    float goalAngle_ = goalAngle < 0.0f ? goalAngle + 360.0f : goalAngle; // Convert to 0 - 360 range
-    float goalAngle__ = fmodf(goalAngle_ + robotState->inHeading, 360.0f); // Add the heading to counteract the rotation
-
-    float verticalDistance = fabsf(goalLength * cosf(DEG_RAD * goalAngle__)); // Break the goal vector into cartesian components (not actually vectors but it kinda is)
-    float horizontalDistance = goalLength * sinf(DEG_RAD * goalAngle__);
-
-    float distanceMovement = -pid_update(&lineavoidPID, verticalDistance, distance, 0.0f); // Determine the speed for each component
-    float sidewaysMovement = -pid_update(&lineavoidPID, horizontalDistance, offset, 0.0f);
 
     if(reversed) distanceMovement *= -1; // All dimensions are inverted cos the goal is behind for the defender
 

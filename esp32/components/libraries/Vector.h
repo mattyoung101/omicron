@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+#include <stdbool.h>
 
 typedef struct vect_2d_t
 {
