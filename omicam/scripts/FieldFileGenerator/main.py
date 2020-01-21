@@ -5,6 +5,9 @@ import itertools
 from PIL import Image
 import FieldFile_pb2 as pb
 
+def constrain(val, smol, big):
+    return min(max(val, smol), big)
+
 # Rules and field specifications:
 # https://junior.robocup.org/wp-content/uploads/2020Rules/2020_Soccer_Rules_draft01.pdf
 
@@ -28,7 +31,7 @@ whiteLines = [
     circularFunction(radians(270), radians(360), 15, 20, 86.5)
 ]
 
-robot = virtualRobot(0, 0, 0)
+robot = virtualRobot(500, 1000, 0)
 
 # --- GENERATES FIELD FILE ARRAY --- #
 
@@ -41,23 +44,34 @@ for rownum, row in enumerate(output):
 
 # --- FAKE OBJECTIVE FUNCTION --- #
 
+objectiveMap = [[None for x in range(fieldWidth)] for y in range(fieldLength)] # Note: notation is output[y][x]
 
+for X in range(0, fieldWidth):
+    x = X - fieldWidth / 2
+    for Y in range(0, fieldLength):
+        y = Y - fieldLength / 2
+        runningTotal = 0
+        for point in robot.points:
+            runningTotal += output[constrain(int(round(point.y + fieldLength / 2 + y)), 0, fieldLength - 1)][constrain(int(round(point.x + fieldWidth / 2 + x)), 0, fieldWidth - 1)]
+        objectiveMap[Y][X] = runningTotal
 
-# maxDist = max([sublist[-1] for sublist in output])
-#
-# for rownum, row in enumerate(output):
-#     for colnum, cell in enumerate(row):
-#         output[rownum][colnum] = int(cell / maxDist * 255) * -1 + 255
+# print(objectiveMap)
 
-# output = list(itertools.chain(*output))
+maxDist = max([sublist[-1] for sublist in objectiveMap])
 
-# for row in output:
-#     print(*row)
+for rownum, row in enumerate(output):
+    for colnum, cell in enumerate(row):
+        objectiveMap[rownum][colnum] = int(cell / maxDist * 255) * -1 + 255
 
-# img = Image.new('L', (fieldWidth, fieldLength))
-# img.putdata(output)
-# # img.save("Standard Field.bmp")
-# img.show()
+output = list(itertools.chain(*objectiveMap))
+
+for row in output:
+    print(row)
+
+img = Image.new('L', (fieldWidth, fieldLength))
+img.putdata(output)
+# img.save("Standard Field.bmp")
+img.show()
 
 # message = pb.FieldFile()
 # message.unitDistance = 1
