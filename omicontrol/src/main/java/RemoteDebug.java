@@ -2017,6 +2017,15 @@ public final class RemoteDebug {
      */
     RemoteDebug.RDPointOrBuilder getLinePointsOrBuilder(
         int index);
+
+    /**
+     * <pre>
+     * mirror radius used by localiser
+     * </pre>
+     *
+     * <code>optional int32 mirrorRadius = 11;</code>
+     */
+    int getMirrorRadius();
   }
   /**
    * <pre>
@@ -2043,6 +2052,7 @@ public final class RemoteDebug {
       frameWidth_ = 0;
       frameHeight_ = 0;
       linePoints_ = java.util.Collections.emptyList();
+      mirrorRadius_ = 0;
     }
 
     @java.lang.Override
@@ -2146,6 +2156,11 @@ public final class RemoteDebug {
               }
               linePoints_.add(
                   input.readMessage(RemoteDebug.RDPoint.parser(), extensionRegistry));
+              break;
+            }
+            case 88: {
+
+              mirrorRadius_ = input.readInt32();
               break;
             }
           }
@@ -2407,6 +2422,19 @@ public final class RemoteDebug {
       return linePoints_.get(index);
     }
 
+    public static final int MIRRORRADIUS_FIELD_NUMBER = 11;
+    private int mirrorRadius_;
+    /**
+     * <pre>
+     * mirror radius used by localiser
+     * </pre>
+     *
+     * <code>optional int32 mirrorRadius = 11;</code>
+     */
+    public int getMirrorRadius() {
+      return mirrorRadius_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2448,6 +2476,9 @@ public final class RemoteDebug {
       }
       for (int i = 0; i < linePoints_.size(); i++) {
         output.writeMessage(10, linePoints_.get(i));
+      }
+      if (mirrorRadius_ != 0) {
+        output.writeInt32(11, mirrorRadius_);
       }
     }
 
@@ -2496,6 +2527,10 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(10, linePoints_.get(i));
       }
+      if (mirrorRadius_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(11, mirrorRadius_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -2543,6 +2578,8 @@ public final class RemoteDebug {
       }
       result = result && getLinePointsList()
           .equals(other.getLinePointsList());
+      result = result && (getMirrorRadius()
+          == other.getMirrorRadius());
       return result;
     }
 
@@ -2582,6 +2619,8 @@ public final class RemoteDebug {
         hash = (37 * hash) + LINEPOINTS_FIELD_NUMBER;
         hash = (53 * hash) + getLinePointsList().hashCode();
       }
+      hash = (37 * hash) + MIRRORRADIUS_FIELD_NUMBER;
+      hash = (53 * hash) + getMirrorRadius();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2743,6 +2782,8 @@ public final class RemoteDebug {
         } else {
           linePointsBuilder_.clear();
         }
+        mirrorRadius_ = 0;
+
         return this;
       }
 
@@ -2797,6 +2838,7 @@ public final class RemoteDebug {
         } else {
           result.linePoints_ = linePointsBuilder_.build();
         }
+        result.mirrorRadius_ = mirrorRadius_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2891,6 +2933,9 @@ public final class RemoteDebug {
               linePointsBuilder_.addAllMessages(other.linePoints_);
             }
           }
+        }
+        if (other.getMirrorRadius() != 0) {
+          setMirrorRadius(other.getMirrorRadius());
         }
         onChanged();
         return this;
@@ -3922,6 +3967,44 @@ public final class RemoteDebug {
           linePoints_ = null;
         }
         return linePointsBuilder_;
+      }
+
+      private int mirrorRadius_ ;
+      /**
+       * <pre>
+       * mirror radius used by localiser
+       * </pre>
+       *
+       * <code>optional int32 mirrorRadius = 11;</code>
+       */
+      public int getMirrorRadius() {
+        return mirrorRadius_;
+      }
+      /**
+       * <pre>
+       * mirror radius used by localiser
+       * </pre>
+       *
+       * <code>optional int32 mirrorRadius = 11;</code>
+       */
+      public Builder setMirrorRadius(int value) {
+        
+        mirrorRadius_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * mirror radius used by localiser
+       * </pre>
+       *
+       * <code>optional int32 mirrorRadius = 11;</code>
+       */
+      public Builder clearMirrorRadius() {
+        
+        mirrorRadius_ = 0;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -6601,21 +6684,22 @@ public final class RemoteDebug {
       "\n\021RemoteDebug.proto\"=\n\006RDRect\022\t\n\001x\030\001 \001(\005" +
       "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
       "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\'\n\013R" +
-      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\372\001\n" +
+      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\220\002\n" +
       "\nDebugFrame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017bal" +
       "lThreshImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022" +
       "\031\n\010ballRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentro" +
       "id\030\005 \001(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframe" +
       "Width\030\007 \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010crop" +
       "Rect\030\t \001(\0132\007.RDRect\022\034\n\nlinePoints\030\n \003(\0132",
-      "\010.RDPoint\"\275\001\n\014DebugCommand\022\021\n\tmessageId\030" +
-      "\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orien" +
-      "tation\030\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RD" +
-      "Threshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 " +
-      "\001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(" +
-      "\005\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFr" +
-      "ame\022\036\n\007command\030\002 \001(\0132\r.DebugCommand\022\024\n\014w" +
-      "hichMessage\030\003 \001(\005b\006proto3"
+      "\010.RDPoint\022\024\n\014mirrorRadius\030\013 \001(\005\"\275\001\n\014Debu" +
+      "gCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords\030\002 " +
+      "\001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n\ral" +
+      "lThresholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010objec" +
+      "tId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourChann" +
+      "el\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\"^\n\nRDMsgFrame\022\032\n" +
+      "\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001" +
+      "(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 \001(\005b" +
+      "\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -6652,7 +6736,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "LinePoints", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "LinePoints", "MirrorRadius", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_DebugCommand_fieldAccessorTable = new

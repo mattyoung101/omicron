@@ -3,8 +3,8 @@ Omicontrol is Team Omicron's wireless robot/camera debugging and management appl
 we needed a way of visualising camera output, managing the SBC and editing thresholds. In the past, we used the OpenMV IDE,
 but given that Omicam is entirely custom developed, this meant we also had to custom-develop our own camera application.
 
-In addition, with our new advanced strategies and localisation, as well as the potential "auto referee" future rule addition,
-we felt like this year was a good opportunity to add a remote robot management feature with the ability to reposition, reorient
+In addition, with our new advanced strategies and localisation, as well as the potential auto referee future rule addition,
+we felt like this year was a good time to add a remote robot management feature with the ability to reposition, reorient
 and automatically reset robots on the field wirelessly, as well as visualise their positions. 
 
 We added both of these features into Omicontrol, to make it essentially our all-in-one robot management application.

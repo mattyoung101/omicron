@@ -25,6 +25,7 @@ static FieldFile field = FieldFile_init_zero;
 // finishes optimising)
 static rpa_queue_t *queue;
 static vec2_array_t linePoints = {0};
+static vec2_array_t linePointsDewarped = {0};
 //static uint8_t *outImage = NULL;
 _Atomic bool localiserDone = false;
 
@@ -65,9 +66,8 @@ static double objective_function(unsigned n, const double* x, double* grad, void
 }
 
 /**
- * Uses Bresenham's line algorithm to determine the positions where the ray intersects a field line, and adds these
- * to the line points linked list
- * TODO should this use floating point maths for precision?
+ * Uses Bresenham's line algorithm to draw a line from (x0, y0) to (x1, y1), adding a line point to the linked list at
+ * the start and end of each white object.
  */
 static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t imageWidth){
     bool wasLine = false; // true if the last pixel we accessed was on the line
@@ -111,6 +111,7 @@ static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, in
 static void *work_thread(void *arg){
     log_trace("Localiser work thread started");
     while (true){
+        pthread_testcancel();
         void *queueData = NULL;
         if (!rpa_queue_pop(queue, &queueData)){
             log_warn("Failed to pop item from localisation queue");
@@ -126,32 +127,27 @@ static void *work_thread(void *arg){
         double x0 = entry->width / 2.0;
         double y0 = entry->height / 2.0;
 
-//        outImage = calloc(1, entry->width * entry->height);
-
         // 1.1. cast line segments from the centre of the mirror to the edge of it, to calculate the line points (NOLINTNEXTLINE)
         for (double angle = 0.0; angle < PI2; angle += interval){
-            double r = (double) LOCALISER_MIRROR_RADIUS;
+            double r = (double) visionMirrorRadius;
             double x1 = x0 + (r * cos(angle));
             double y1 = y0 + (r * sin(angle));
             raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), ROUND2INT(x1), ROUND2INT(y1), entry->width);
         }
 
-//        stbi_write_tga("../rays.tga", entry->width, entry->height, 1, outImage);
-//        puts("written successfully");
-//        free(outImage);
-//        exit(EXIT_SUCCESS);
-
         // don't bother localising if no lines are present
         if (da_count(linePoints) == 0){
             goto cleanup;
-        } else {
-            // printf("have: %zu line points\n", da_count(linePoints));
         }
+
+        // 1.2 dewarp points based on calculated mirror model
+        // TODO make a copy called dewarpedPoints so we can still send the warped points for debug
 
         cleanup:
         free(entry->frame);
         free(entry);
         localiserDone = true;
+        pthread_testcancel();
     }
     return NULL;
 }
@@ -194,6 +190,7 @@ void localiser_init(char *fieldFile){
     }
 
     free(data);
+    pthread_testcancel();
 }
 
 void localiser_post(uint8_t *frame, int32_t width, int32_t height){
@@ -213,7 +210,11 @@ void localiser_post(uint8_t *frame, int32_t width, int32_t height){
     }
 }
 
-void localiser_remote_get_points(RDPoint *array, size_t arraySize){
+uint32_t localiser_remote_get_points(RDPoint *array, size_t arraySize){
+    if (da_count(linePoints) > arraySize){
+        log_warn("Line points size overflow. Please increase the max_count for linePoints in RemoteDebug.options.");
+    }
+
     // this is to stop it from overflowing the Protobuf fixed size buffer
     int32_t size = MIN(arraySize, da_count(linePoints));
 
@@ -222,6 +223,8 @@ void localiser_remote_get_points(RDPoint *array, size_t arraySize){
         array[i].x = ROUND2INT(point.x);
         array[i].y = ROUND2INT(point.y);
     }
+
+    return size;
 }
 
 void localiser_dispose(void){

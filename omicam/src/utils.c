@@ -13,7 +13,7 @@
 #include <errno.h>
 
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
-int32_t videoWidth, videoHeight, visionCircleRadius;
+int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
 int32_t visionCropRect[4];
 // OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE,OBJ_LINES,
 int32_t *thresholds[] = {minBallData, maxBallData, minYellowData, maxYellowData, minBlueData, maxBlueData, minLineData, maxLineData};
@@ -90,9 +90,16 @@ void utils_cv_transmit_data(ObjectData ballData){
     comms_uart_send(buf, stream.bytes_written);
 }
 
-void utils_ini_update_key(FILE *file, char *key, char *value){
-    // so... here we are! string processing in C. this is going to be fun.
+void utils_write_thresholds_disk(){
+    FILE *curFp = fopen("../omicam.ini", "r");
+    FILE *newFp = fopen("../omicam_new.ini", "w+");
 
+    // read curFp line by line, if we need to add the new threshold do so, then write it out to newFp
+    // delete curFp
+    // rename newFp
+
+    fclose(curFp);
+    fclose(newFp);
 }
 
 uint8_t *utils_load_bin(char *path, long *size){

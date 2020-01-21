@@ -179,7 +179,7 @@ static void client_disconnected(void){
  */
 static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize, frame_entry_t *entry){
     DebugFrame msg = DebugFrame_init_zero;
-    size_t bufSize = camImgSize + threshImgSize + 8192; // the buffer size is the image sizes + 8KB of extra protobuf data
+    size_t bufSize = camImgSize + threshImgSize + 32768; // the buffer size is the image sizes + 32KB of extra protobuf data
     uint8_t *buf = malloc(bufSize); // we'll malloc this since we won't ever send the garbage on the end
     pb_ostream_t stream = pb_ostream_from_buffer(buf, bufSize);
 
@@ -200,7 +200,9 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     RDRect cropRect = {0, 0, videoWidth, videoHeight};
 #endif
     msg.cropRect = cropRect;
-    localiser_remote_get_points(msg.linePoints, 256);
+    uint32_t linePointsSize = localiser_remote_get_points(msg.linePoints, 512);
+    msg.linePoints_count = linePointsSize;
+    msg.mirrorRadius = visionMirrorRadius;
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.frame = msg;
@@ -277,6 +279,7 @@ static void *frame_thread(void *param){
         // if there is no connection, then delay indefinitely to save CPU rather than looping
         if (!rpa_queue_timedpop(frameQueue, &queueData, remote_debug_is_connected() ? 5 : RPA_WAIT_FOREVER)){
             read_remote_messages();
+            pthread_testcancel();
             continue;
         }
         double begin = utils_time_millis();
@@ -302,6 +305,7 @@ static void *frame_thread(void *param){
         free(threshFrame); // this is malloc'd and copied from the OpenCV threshold frame in computer_vision.cpp
         free(entry); // this is malloc'd in this file when we push to the queue
         pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+        pthread_testcancel();
 
         //printf("RD encode took: %.2f ms\n", utils_time_millis() - begin);
     }

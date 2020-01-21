@@ -18,7 +18,7 @@
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 #define VISION_FPS_INCLUDE_FRAME_READ 1 // whether or not to ignore the time it takes to capture the frame in FPS calculations
-#define VISION_DRAW_ROBOT_MASK 0 // whether or not to draw the robot mask
+#define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
 
 #define REMOTE_JPEG_QUALITY 40 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
@@ -57,7 +57,6 @@ typedef enum {
 #define LOCALISER_STEP_TOLERANCE 0.1 // stop optimisation if the last step size was smaller than this in centimetres
 #define LOCALISER_MAX_EVAL_TIME 0.1 // max evaluation time for the optimiser in seconds
 #define LOCALISER_NUM_RAYS 64 // the number of rays to use when raycasting on the line image
-#define LOCALISER_MIRROR_RADIUS 256 // radius of the mirror in pixels on the image
 
 #define PI 3.14159265359
 #define PI2 6.28318530718

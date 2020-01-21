@@ -117,6 +117,8 @@ static auto cv_thread(void *arg) -> void *{
     uint32_t frameCounter = 0;
     log_trace("Vision thread started");
 
+    Mat ogFrame = imread("../field.png");
+
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
     VideoCapture cap("../test_footage_2.m4v");
@@ -145,12 +147,14 @@ static auto cv_thread(void *arg) -> void *{
     log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
     while (true){
+        pthread_testcancel();
 #if VISION_FPS_INCLUDE_FRAME_READ
         double begin = utils_time_millis();
 #endif
         // capture the frame and check for errors
         Mat frame, frameScaled;
-        cap.read(frame);
+        // cap.read(frame);
+        ogFrame.copyTo(frame);
 
         if (frame.empty()){
 #if BUILD_TARGET == BUILD_TARGET_PC
@@ -174,7 +178,7 @@ static auto cv_thread(void *arg) -> void *{
 
         // mask out the robot
 #if VISION_DRAW_ROBOT_MASK
-        circle(frame, Point(frame.cols / 2, frame.rows / 2), visionCircleRadius,Scalar(0, 0, 0), FILLED);
+        circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius, Scalar(0, 0, 0), FILLED);
 #endif
 
         // downscale for goal detection (and possibly initial ball pass)
@@ -291,14 +295,14 @@ static auto cv_thread(void *arg) -> void *{
         data.ballY = ball.centroid.y;
         utils_cv_transmit_data(data);
 
-        double elapsed = utils_time_millis() - begin;
-        movavg_push(fpsAvg, elapsed);
-
 #if BUILD_TARGET == BUILD_TARGET_PC
         if (remote_debug_is_connected()) {
             waitKey(static_cast<int>(1000 / fps));
         }
 #endif
+        double elapsed = utils_time_millis() - begin;
+        movavg_push(fpsAvg, elapsed);
+        pthread_testcancel();
     }
     destroyAllWindows();
 }
