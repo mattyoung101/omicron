@@ -1,5 +1,4 @@
 #pragma once
-
 // Misc constants and settings
 
 /**
@@ -13,14 +12,15 @@
  */
 #define OMICAM_VERSION "1.4a"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
-#define CRANK_THE_MFIN_HOG 1 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
+#define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 #define VISION_FPS_INCLUDE_FRAME_READ 1 // whether or not to ignore the time it takes to capture the frame in FPS calculations
+#define VISION_DRAW_ROBOT_MASK 0 // whether or not to draw the robot mask
 
-#define REMOTE_JPEG_QUALITY 30 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
+#define REMOTE_JPEG_QUALITY 40 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
 #define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames
 #define REMOTE_PORT 42708 // which port the remote debug TCP server runs on
@@ -56,5 +56,8 @@ typedef enum {
 #define LOCALISER_ERROR_TOLERANCE 2 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.1 // stop optimisation if the last step size was smaller than this in centimetres
 #define LOCALISER_MAX_EVAL_TIME 0.1 // max evaluation time for the optimiser in seconds
+#define LOCALISER_NUM_RAYS 64 // the number of rays to use when raycasting on the line image
+#define LOCALISER_MIRROR_RADIUS 256 // radius of the mirror in pixels on the image
 
-// error checking and other misc stuff
+#define PI 3.14159265359
+#define PI2 6.28318530718

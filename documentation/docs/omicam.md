@@ -53,7 +53,7 @@ Then, we apply any pre-processing steps such as downscaling the goal frames and 
 Next, we threshold all objects in parallel to make use of our quad-core CPU, using OpenCV's `inRange` thresholder but a custom
 parallel framework (as it doesn't run in parallel by default). Thresholding generates a 1-bit binary mask of the image, where
 each pixel is 255 (true) if it's inside the RGB value specified, and 0 (false) if it's not.
-Then, we use OpenCV's parallel connected component labeller, specifically the BBDT algorithm[1] to detect regions
+Then, we use OpenCV's parallel connected component labeller, specifically the BBDT algorithm[^1] to detect regions
 of the same colour in the image. The largest connected region will be the field object we are looking for. OpenCV automatically
 calculates the bounding box and centroid for each of these connected regions.
 
@@ -85,7 +85,7 @@ this as not an ideal approach.
 
 ### Our solution
 This year, Team Omicron presents a novel approach to robot localisation based on a middle-size league paper by Lu, Li, Zhang,
-Hu & Zheng (2013). We localise using purely RGB camera data by solving a non-linear optimisation problem using the lines on the
+Hu & Zheng[^2]. We localise using purely RGB camera data by solving a non-linear optimisation problem using the lines on the
 playing field.
 
 The principle method of operation of our algorithm is that we need to match a virtual model of field geometry to the observed
@@ -105,7 +105,7 @@ The localiser's input is a 1-bit mask of pixels that are determined to be on fie
 for the colour white, which is handled by the vision pipeline described earlier.
 
 With the input provided, a certain number of rays (usually 64) are casted over the line image using a modified version 
-Bresenham's line algorithm[3]  to find every time a ray intersects a line (these are called "line points"). We modified 
+Bresenham's line algorithm[^3]  to find every time a ray intersects a line (these are called "line points"). We modified 
 Bresenham's original algorithm so that it works with rays instead of lines, and terminates when it reaches the edge of 
 the image instead of when it's finished drawing a line.
 
@@ -126,8 +126,8 @@ using the accurate BNO055 IMU using IMUPLUS (sensor fusion between accelerometer
 see the ESP32 and movement code page.
 
 #### Position optimisation
-The main part of our solution is the Subplex[4] local derivative-free non-linear optimiser, re-implemented as 
-part of the NLopt package[5]. This algorithm essentially acts as an efficiency and stability improvement over the well-known 
+The main part of our solution is the Subplex[^4] local derivative-free non-linear optimiser, re-implemented as 
+part of the NLopt package[^5]. This algorithm essentially acts as an efficiency and stability improvement over the well-known 
 Nelder-Mead Simplex algorithm.
 
 The most critical part of this process is the _objective function_, which is a function that takes an N-dimensional vector
@@ -171,7 +171,9 @@ data and thus increase accuracy. Other distance sensors such as 360 LiDARS can a
 ## Interfacing with Omicontrol
 To interface with our remote management application Omicontrol, Omicam starts a TCP server on port 42708. This server sends
 Protocol Buffer packets containing JPEG encoded frames, zlib compressed threshold data as well as other information such as
-the temperature of the SBC.
+the temperature of the SBC. Although C isn't an officially supported language by Google for Protocol Buffers, we use the mature
+nanopb library to do the encoding. This is the same library used on the ESP32 and Teensy as well, and so far we've had no
+issues with it.
 
 We use the SIMD optimised libjpeg-turbo to efficiently encode JPEG frames, so as to not waste performance to the remote debugger
 (which is disabled during competition). Instead of compressing threshold frames with JPEG, because they are 1-bit images,
@@ -196,12 +198,12 @@ a it's already relatively close to the true position.
 **Also cover Linux CPU optimisation and associated thermal issues if relevant**
 
 ## References
-[1] C. Grana, D. Borghesani, and R. Cucchiara, “Optimized Block-Based Connected Components Labeling With Decision Trees,” IEEE Trans. Image Process., vol. 19, no. 6, pp. 1596–1609, 2010, doi: 10.1109/TIP.2010.2044963.
+[^1]: C. Grana, D. Borghesani, and R. Cucchiara, “Optimized Block-Based Connected Components Labeling With Decision Trees,” IEEE Trans. Image Process., vol. 19, no. 6, pp. 1596–1609, 2010, doi: 10.1109/TIP.2010.2044963.
 
-[2] H. Lu, X. Li, H. Zhang, M. Hu, and Z. Zheng, “Robust and real-time self-localization based on omnidirectional vision for soccer robots,” Adv. Robot., vol. 27, no. 10, pp. 799–811, Jul. 2013, doi: 10.1080/01691864.2013.785473.
+[^2]: H. Lu, X. Li, H. Zhang, M. Hu, and Z. Zheng, “Robust and real-time self-localization based on omnidirectional vision for soccer robots,” Adv. Robot., vol. 27, no. 10, pp. 799–811, Jul. 2013, doi: 10.1080/01691864.2013.785473.
 
-[3] J. E. Bresenhman, “Algorithm for computer control of a digital plotter,” IBM Syst. J., vol. 4, no. 1, pp. 25–30, 1965.
+[^3]: J. E. Bresenhman, “Algorithm for computer control of a digital plotter,” IBM Syst. J., vol. 4, no. 1, pp. 25–30, 1965.
 
-[4] T. H. Rowan, “Functional stability analysis of numerical algorithms,” Unpuplished Diss., p. 218, 1990.
+[^4]: T. H. Rowan, “Functional stability analysis of numerical algorithms,” Unpuplished Diss., p. 218, 1990.
 
-[5] Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
+[^5]: Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt

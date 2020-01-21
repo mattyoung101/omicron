@@ -1856,7 +1856,7 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * the zlib encoded buffer of the ball's binary threshold image
+     * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional bytes ballThreshImage = 2;</code>
@@ -1865,7 +1865,7 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * the temperature of the CPU on the Pi
+     * the temperature of the CPU on the SBC
      * </pre>
      *
      * <code>optional float temperature = 3;</code>
@@ -1874,7 +1874,7 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * the bounding box of the ball
+     * the bounding box of the object (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional .RDRect ballRect = 4;</code>
@@ -1882,7 +1882,7 @@ public final class RemoteDebug {
     boolean hasBallRect();
     /**
      * <pre>
-     * the bounding box of the ball
+     * the bounding box of the object (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional .RDRect ballRect = 4;</code>
@@ -1890,7 +1890,7 @@ public final class RemoteDebug {
     RemoteDebug.RDRect getBallRect();
     /**
      * <pre>
-     * the bounding box of the ball
+     * the bounding box of the object (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional .RDRect ballRect = 4;</code>
@@ -1973,6 +1973,50 @@ public final class RemoteDebug {
      * <code>optional .RDRect cropRect = 9;</code>
      */
     RemoteDebug.RDRectOrBuilder getCropRectOrBuilder();
+
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    java.util.List<RemoteDebug.RDPoint> 
+        getLinePointsList();
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    RemoteDebug.RDPoint getLinePoints(int index);
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    int getLinePointsCount();
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+        getLinePointsOrBuilderList();
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    RemoteDebug.RDPointOrBuilder getLinePointsOrBuilder(
+        int index);
   }
   /**
    * <pre>
@@ -1998,6 +2042,7 @@ public final class RemoteDebug {
       fps_ = 0;
       frameWidth_ = 0;
       frameHeight_ = 0;
+      linePoints_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -2094,6 +2139,15 @@ public final class RemoteDebug {
 
               break;
             }
+            case 82: {
+              if (!((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
+                linePoints_ = new java.util.ArrayList<RemoteDebug.RDPoint>();
+                mutable_bitField0_ |= 0x00000200;
+              }
+              linePoints_.add(
+                  input.readMessage(RemoteDebug.RDPoint.parser(), extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -2102,6 +2156,9 @@ public final class RemoteDebug {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
+          linePoints_ = java.util.Collections.unmodifiableList(linePoints_);
+        }
         makeExtensionsImmutable();
       }
     }
@@ -2117,6 +2174,7 @@ public final class RemoteDebug {
               RemoteDebug.DebugFrame.class, RemoteDebug.DebugFrame.Builder.class);
     }
 
+    private int bitField0_;
     public static final int DEFAULTIMAGE_FIELD_NUMBER = 1;
     private com.google.protobuf.ByteString defaultImage_;
     /**
@@ -2134,7 +2192,7 @@ public final class RemoteDebug {
     private com.google.protobuf.ByteString ballThreshImage_;
     /**
      * <pre>
-     * the zlib encoded buffer of the ball's binary threshold image
+     * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional bytes ballThreshImage = 2;</code>
@@ -2147,7 +2205,7 @@ public final class RemoteDebug {
     private float temperature_;
     /**
      * <pre>
-     * the temperature of the CPU on the Pi
+     * the temperature of the CPU on the SBC
      * </pre>
      *
      * <code>optional float temperature = 3;</code>
@@ -2160,7 +2218,7 @@ public final class RemoteDebug {
     private RemoteDebug.RDRect ballRect_;
     /**
      * <pre>
-     * the bounding box of the ball
+     * the bounding box of the object (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional .RDRect ballRect = 4;</code>
@@ -2170,7 +2228,7 @@ public final class RemoteDebug {
     }
     /**
      * <pre>
-     * the bounding box of the ball
+     * the bounding box of the object (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional .RDRect ballRect = 4;</code>
@@ -2180,7 +2238,7 @@ public final class RemoteDebug {
     }
     /**
      * <pre>
-     * the bounding box of the ball
+     * the bounding box of the object (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional .RDRect ballRect = 4;</code>
@@ -2294,6 +2352,61 @@ public final class RemoteDebug {
       return getCropRect();
     }
 
+    public static final int LINEPOINTS_FIELD_NUMBER = 10;
+    private java.util.List<RemoteDebug.RDPoint> linePoints_;
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public java.util.List<RemoteDebug.RDPoint> getLinePointsList() {
+      return linePoints_;
+    }
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+        getLinePointsOrBuilderList() {
+      return linePoints_;
+    }
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public int getLinePointsCount() {
+      return linePoints_.size();
+    }
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public RemoteDebug.RDPoint getLinePoints(int index) {
+      return linePoints_.get(index);
+    }
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public RemoteDebug.RDPointOrBuilder getLinePointsOrBuilder(
+        int index) {
+      return linePoints_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2332,6 +2445,9 @@ public final class RemoteDebug {
       }
       if (cropRect_ != null) {
         output.writeMessage(9, getCropRect());
+      }
+      for (int i = 0; i < linePoints_.size(); i++) {
+        output.writeMessage(10, linePoints_.get(i));
       }
     }
 
@@ -2375,6 +2491,10 @@ public final class RemoteDebug {
       if (cropRect_ != null) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(9, getCropRect());
+      }
+      for (int i = 0; i < linePoints_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10, linePoints_.get(i));
       }
       memoizedSize = size;
       return size;
@@ -2421,6 +2541,8 @@ public final class RemoteDebug {
         result = result && getCropRect()
             .equals(other.getCropRect());
       }
+      result = result && getLinePointsList()
+          .equals(other.getLinePointsList());
       return result;
     }
 
@@ -2455,6 +2577,10 @@ public final class RemoteDebug {
       if (hasCropRect()) {
         hash = (37 * hash) + CROPRECT_FIELD_NUMBER;
         hash = (53 * hash) + getCropRect().hashCode();
+      }
+      if (getLinePointsCount() > 0) {
+        hash = (37 * hash) + LINEPOINTS_FIELD_NUMBER;
+        hash = (53 * hash) + getLinePointsList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -2576,6 +2702,7 @@ public final class RemoteDebug {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getLinePointsFieldBuilder();
         }
       }
       public Builder clear() {
@@ -2610,6 +2737,12 @@ public final class RemoteDebug {
           cropRect_ = null;
           cropRectBuilder_ = null;
         }
+        if (linePointsBuilder_ == null) {
+          linePoints_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000200);
+        } else {
+          linePointsBuilder_.clear();
+        }
         return this;
       }
 
@@ -2632,6 +2765,8 @@ public final class RemoteDebug {
 
       public RemoteDebug.DebugFrame buildPartial() {
         RemoteDebug.DebugFrame result = new RemoteDebug.DebugFrame(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
         result.defaultImage_ = defaultImage_;
         result.ballThreshImage_ = ballThreshImage_;
         result.temperature_ = temperature_;
@@ -2653,6 +2788,16 @@ public final class RemoteDebug {
         } else {
           result.cropRect_ = cropRectBuilder_.build();
         }
+        if (linePointsBuilder_ == null) {
+          if (((bitField0_ & 0x00000200) == 0x00000200)) {
+            linePoints_ = java.util.Collections.unmodifiableList(linePoints_);
+            bitField0_ = (bitField0_ & ~0x00000200);
+          }
+          result.linePoints_ = linePoints_;
+        } else {
+          result.linePoints_ = linePointsBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -2721,6 +2866,32 @@ public final class RemoteDebug {
         if (other.hasCropRect()) {
           mergeCropRect(other.getCropRect());
         }
+        if (linePointsBuilder_ == null) {
+          if (!other.linePoints_.isEmpty()) {
+            if (linePoints_.isEmpty()) {
+              linePoints_ = other.linePoints_;
+              bitField0_ = (bitField0_ & ~0x00000200);
+            } else {
+              ensureLinePointsIsMutable();
+              linePoints_.addAll(other.linePoints_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.linePoints_.isEmpty()) {
+            if (linePointsBuilder_.isEmpty()) {
+              linePointsBuilder_.dispose();
+              linePointsBuilder_ = null;
+              linePoints_ = other.linePoints_;
+              bitField0_ = (bitField0_ & ~0x00000200);
+              linePointsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getLinePointsFieldBuilder() : null;
+            } else {
+              linePointsBuilder_.addAllMessages(other.linePoints_);
+            }
+          }
+        }
         onChanged();
         return this;
       }
@@ -2746,6 +2917,7 @@ public final class RemoteDebug {
         }
         return this;
       }
+      private int bitField0_;
 
       private com.google.protobuf.ByteString defaultImage_ = com.google.protobuf.ByteString.EMPTY;
       /**
@@ -2791,7 +2963,7 @@ public final class RemoteDebug {
       private com.google.protobuf.ByteString ballThreshImage_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <pre>
-       * the zlib encoded buffer of the ball's binary threshold image
+       * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional bytes ballThreshImage = 2;</code>
@@ -2801,7 +2973,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the zlib encoded buffer of the ball's binary threshold image
+       * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional bytes ballThreshImage = 2;</code>
@@ -2817,7 +2989,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the zlib encoded buffer of the ball's binary threshold image
+       * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional bytes ballThreshImage = 2;</code>
@@ -2832,7 +3004,7 @@ public final class RemoteDebug {
       private float temperature_ ;
       /**
        * <pre>
-       * the temperature of the CPU on the Pi
+       * the temperature of the CPU on the SBC
        * </pre>
        *
        * <code>optional float temperature = 3;</code>
@@ -2842,7 +3014,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the temperature of the CPU on the Pi
+       * the temperature of the CPU on the SBC
        * </pre>
        *
        * <code>optional float temperature = 3;</code>
@@ -2855,7 +3027,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the temperature of the CPU on the Pi
+       * the temperature of the CPU on the SBC
        * </pre>
        *
        * <code>optional float temperature = 3;</code>
@@ -2872,7 +3044,7 @@ public final class RemoteDebug {
           RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder> ballRectBuilder_;
       /**
        * <pre>
-       * the bounding box of the ball
+       * the bounding box of the object (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional .RDRect ballRect = 4;</code>
@@ -2882,7 +3054,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the bounding box of the ball
+       * the bounding box of the object (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional .RDRect ballRect = 4;</code>
@@ -2896,7 +3068,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the bounding box of the ball
+       * the bounding box of the object (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional .RDRect ballRect = 4;</code>
@@ -2916,7 +3088,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the bounding box of the ball
+       * the bounding box of the object (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional .RDRect ballRect = 4;</code>
@@ -2934,7 +3106,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the bounding box of the ball
+       * the bounding box of the object (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional .RDRect ballRect = 4;</code>
@@ -2956,7 +3128,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the bounding box of the ball
+       * the bounding box of the object (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional .RDRect ballRect = 4;</code>
@@ -2974,7 +3146,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the bounding box of the ball
+       * the bounding box of the object (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional .RDRect ballRect = 4;</code>
@@ -2986,7 +3158,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the bounding box of the ball
+       * the bounding box of the object (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional .RDRect ballRect = 4;</code>
@@ -3001,7 +3173,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the bounding box of the ball
+       * the bounding box of the object (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional .RDRect ballRect = 4;</code>
@@ -3438,6 +3610,318 @@ public final class RemoteDebug {
           cropRect_ = null;
         }
         return cropRectBuilder_;
+      }
+
+      private java.util.List<RemoteDebug.RDPoint> linePoints_ =
+        java.util.Collections.emptyList();
+      private void ensureLinePointsIsMutable() {
+        if (!((bitField0_ & 0x00000200) == 0x00000200)) {
+          linePoints_ = new java.util.ArrayList<RemoteDebug.RDPoint>(linePoints_);
+          bitField0_ |= 0x00000200;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> linePointsBuilder_;
+
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public java.util.List<RemoteDebug.RDPoint> getLinePointsList() {
+        if (linePointsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(linePoints_);
+        } else {
+          return linePointsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public int getLinePointsCount() {
+        if (linePointsBuilder_ == null) {
+          return linePoints_.size();
+        } else {
+          return linePointsBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPoint getLinePoints(int index) {
+        if (linePointsBuilder_ == null) {
+          return linePoints_.get(index);
+        } else {
+          return linePointsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder setLinePoints(
+          int index, RemoteDebug.RDPoint value) {
+        if (linePointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureLinePointsIsMutable();
+          linePoints_.set(index, value);
+          onChanged();
+        } else {
+          linePointsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder setLinePoints(
+          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          linePoints_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          linePointsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addLinePoints(RemoteDebug.RDPoint value) {
+        if (linePointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureLinePointsIsMutable();
+          linePoints_.add(value);
+          onChanged();
+        } else {
+          linePointsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addLinePoints(
+          int index, RemoteDebug.RDPoint value) {
+        if (linePointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureLinePointsIsMutable();
+          linePoints_.add(index, value);
+          onChanged();
+        } else {
+          linePointsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addLinePoints(
+          RemoteDebug.RDPoint.Builder builderForValue) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          linePoints_.add(builderForValue.build());
+          onChanged();
+        } else {
+          linePointsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addLinePoints(
+          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          linePoints_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          linePointsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addAllLinePoints(
+          java.lang.Iterable<? extends RemoteDebug.RDPoint> values) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, linePoints_);
+          onChanged();
+        } else {
+          linePointsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder clearLinePoints() {
+        if (linePointsBuilder_ == null) {
+          linePoints_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000200);
+          onChanged();
+        } else {
+          linePointsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder removeLinePoints(int index) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          linePoints_.remove(index);
+          onChanged();
+        } else {
+          linePointsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPoint.Builder getLinePointsBuilder(
+          int index) {
+        return getLinePointsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPointOrBuilder getLinePointsOrBuilder(
+          int index) {
+        if (linePointsBuilder_ == null) {
+          return linePoints_.get(index);  } else {
+          return linePointsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+           getLinePointsOrBuilderList() {
+        if (linePointsBuilder_ != null) {
+          return linePointsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(linePoints_);
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPoint.Builder addLinePointsBuilder() {
+        return getLinePointsFieldBuilder().addBuilder(
+            RemoteDebug.RDPoint.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPoint.Builder addLinePointsBuilder(
+          int index) {
+        return getLinePointsFieldBuilder().addBuilder(
+            index, RemoteDebug.RDPoint.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public java.util.List<RemoteDebug.RDPoint.Builder> 
+           getLinePointsBuilderList() {
+        return getLinePointsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> 
+          getLinePointsFieldBuilder() {
+        if (linePointsBuilder_ == null) {
+          linePointsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder>(
+                  linePoints_,
+                  ((bitField0_ & 0x00000200) == 0x00000200),
+                  getParentForChildren(),
+                  isClean());
+          linePoints_ = null;
+        }
+        return linePointsBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -6117,20 +6601,21 @@ public final class RemoteDebug {
       "\n\021RemoteDebug.proto\"=\n\006RDRect\022\t\n\001x\030\001 \001(\005" +
       "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
       "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\'\n\013R" +
-      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\334\001\n" +
+      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\372\001\n" +
       "\nDebugFrame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017bal" +
       "lThreshImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022" +
       "\031\n\010ballRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentro" +
       "id\030\005 \001(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframe" +
       "Width\030\007 \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010crop" +
-      "Rect\030\t \001(\0132\007.RDRect\"\275\001\n\014DebugCommand\022\021\n\t",
-      "messageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoin" +
-      "t\022\023\n\013orientation\030\003 \001(\002\022#\n\rallThresholds\030" +
-      "\004 \003(\0132\014.RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n" +
-      "\006minMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005" +
-      "value\030\010 \001(\005\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\013" +
-      "2\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCo" +
-      "mmand\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
+      "Rect\030\t \001(\0132\007.RDRect\022\034\n\nlinePoints\030\n \003(\0132",
+      "\010.RDPoint\"\275\001\n\014DebugCommand\022\021\n\tmessageId\030" +
+      "\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orien" +
+      "tation\030\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RD" +
+      "Threshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 " +
+      "\001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(" +
+      "\005\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFr" +
+      "ame\022\036\n\007command\030\002 \001(\0132\r.DebugCommand\022\024\n\014w" +
+      "hichMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -6167,7 +6652,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "LinePoints", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_DebugCommand_fieldAccessorTable = new

@@ -2,26 +2,46 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <pthread.h>
+#include <stdbool.h>
+#include "protobuf/RemoteDebug.pb.h"
 
-/** An entry submitted to the localisation work queue **/
+/** An entry submitted to the localisation work queue */
 typedef struct {
     uint8_t *frame;
-    uint16_t width;
-    uint16_t height;
+    int32_t width;
+    int32_t height;
 } localiser_entry_t;
+
+/** true if the localisation for the last frame has completed */
+extern _Atomic bool localiserDone;
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Initialises the localiser using the provided field file
  * @param fieldFile the full path including extension to the field file
  **/
 void localiser_init(char *fieldFile);
+
 /**
  * Posts a frame to the localiser for processing. This will be sent to a work queue
  * and processed asynchronously so the function returns immediately.
  */
-void localiser_post(uint8_t *frame, uint16_t width, uint16_t height);
+void localiser_post(uint8_t *frame, int32_t width, int32_t height);
+
 /** Destroys the localiser and its resources **/
 void localiser_dispose(void);
 
-extern float estimatedX;
-extern float estimatedY;
+/**
+ * Puts the current line point list into a Protobuf compatible format. Only for use by the remote_debug.c.
+ * IMPORTANT: the localiser MUST have finished working by this point, please wait on localiserDone if unsure.
+ */
+void localiser_remote_get_points(RDPoint *array, size_t arraySize);
+
+#ifdef __cplusplus
+};
+#endif

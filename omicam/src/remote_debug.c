@@ -20,6 +20,7 @@
 #include <sys/ioctl.h>
 #include "nanopb/pb_decode.h"
 #include "protobuf/RemoteDebug.pb.h"
+#include "localisation.h"
 #include <sys/reboot.h>
 
 // Manages encoding camera frames to JPG images (with turbo-jpeg) or PNG images (with lodepng) and sending them over a
@@ -45,15 +46,15 @@ static void init_tcp_socket(void);
 
 /** Quickly encodes and sends the given DebugCommand back to Omicontrol as a response **/
 static void send_response(DebugCommand command){
-    uint8_t buf[512] = {0};
-    pb_ostream_t stream = pb_ostream_from_buffer(buf, 512);
+    uint8_t buf[1024] = {0};
+    pb_ostream_t stream = pb_ostream_from_buffer(buf, 1024);
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.command = command;
     wrapper.whichMessage = 2;
 
     if (!pb_encode_delimited(&stream, RDMsgFrame_fields, &wrapper)){
-        log_error("Failed to encode Omicontrol response: %s", PB_GET_ERROR(&stream));
+        log_error("Failed to encode Omicontrol response: %s (max stream size: %d)", PB_GET_ERROR(&stream), stream.max_size);
     } else {
         ssize_t bytesWritten = write(connfd, buf, stream.bytes_written);
         if (bytesWritten == -1){
@@ -137,12 +138,8 @@ static void read_remote_messages(void){
 #if BUILD_TARGET == BUILD_TARGET_PC
                 log_warn("Not shutting down as this is a PC build.");
 #else
-                // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
-                log_info("Shutting down SBC now...");
-                sync();
-                if (reboot(RB_POWER_OFF) == -1){
-                    log_error("Failed to shutdown system: %s", strerror(errno));
-                }
+                // note: requires passwordless access to sudo
+                system("sudo shutdown now"); // TODO error checking
 #endif
                 break;
             }
@@ -152,12 +149,8 @@ static void read_remote_messages(void){
 #if BUILD_TARGET == BUILD_TARGET_PC
                 log_warn("Not rebooting as this is a PC build.");
 #else
-                // https://stackoverflow.com/questions/2678766/how-to-restart-linux-from-inside-a-c-program
-                log_info("Reeobting SBC now...");
-                sync();
-                if (reboot(RB_AUTOBOOT) == -1){
-                    log_error("Failed to reboot system: %s", strerror(errno));
-                }
+                // note: requires passwordless access to sudo
+                system("sudo reboot now"); // TODO error checking
 #endif
                 break;
             }
@@ -186,7 +179,7 @@ static void client_disconnected(void){
  */
 static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize, frame_entry_t *entry){
     DebugFrame msg = DebugFrame_init_zero;
-    size_t bufSize = camImgSize + threshImgSize + 1024; // the buffer size is the image sizes + 1KB of extra protobuf data
+    size_t bufSize = camImgSize + threshImgSize + 8192; // the buffer size is the image sizes + 8KB of extra protobuf data
     uint8_t *buf = malloc(bufSize); // we'll malloc this since we won't ever send the garbage on the end
     pb_ostream_t stream = pb_ostream_from_buffer(buf, bufSize);
 
@@ -195,7 +188,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     memcpy(msg.ballThreshImage.bytes, threshImg, threshImgSize);
     msg.defaultImage.size = camImgSize;
     msg.ballThreshImage.size = threshImgSize;
-    msg.temperature = cpuTemperature;
+    msg.temperature = (float) cpuTemperature;
     msg.ballCentroid = entry->ballCentroid;
     msg.ballRect = entry->ballRect;
     msg.fps = entry->fps;
@@ -203,15 +196,20 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.frameHeight = height;
 #if VISION_CROP_ENABLED
     RDRect cropRect = {visionCropRect[0], visionCropRect[1], visionCropRect[2], visionCropRect[3]};
-    msg.cropRect = cropRect;
+#else
+    RDRect cropRect = {0, 0, videoWidth, videoHeight};
 #endif
+    msg.cropRect = cropRect;
+    localiser_remote_get_points(msg.linePoints, 256);
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.frame = msg;
     wrapper.whichMessage = 1;
 
     if (!pb_encode_delimited(&stream, RDMsgFrame_fields, &wrapper)){
-        log_error("Protobuf encode failed: %s", PB_GET_ERROR(&stream));
+        log_error("Protobuf encode failed: %s (allocated size was: %d)", PB_GET_ERROR(&stream), bufSize);
+        free(buf);
+        return;
     }
 
     // dispatch the buffer over TCP and handle errors
@@ -453,7 +451,7 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
         free(threshFrame);
 
         if (totalFailures++ >= 75 && remote_debug_is_connected()){
-            log_warn("Too many failures, going to kick currently connected client!");
+            log_error("Too many failures, going to kick currently connected client!");
             client_disconnected();
         }
     } else {

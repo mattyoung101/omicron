@@ -16,6 +16,7 @@
 #include "remote_debug.h"
 #include "rpa_queue.h"
 #include "movavg.h"
+#include "localisation.h"
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
 using namespace std;
@@ -84,7 +85,7 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
         objRect.width /= VISION_SCALE_FACTOR;
         objRect.height /= VISION_SCALE_FACTOR;
 
-        // also rescale image if remote debug is enabled
+        // also rescale image if remote debug is enabled, otherwise don't bother for performance sake
         if (remote_debug_is_connected() && blobExists){
             resize(thresholded, threshScaled, Size(realWidth, realHeight), INTER_NEAREST);
         }
@@ -171,11 +172,15 @@ static auto cv_thread(void *arg) -> void *{
         frame = frame(Rect(cropRect));
 #endif
 
+        // mask out the robot
+#if VISION_DRAW_ROBOT_MASK
+        circle(frame, Point(frame.cols / 2, frame.rows / 2), visionCircleRadius,Scalar(0, 0, 0), FILLED);
+#endif
+
         // downscale for goal detection (and possibly initial ball pass)
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
-        // PARALLEL IMPLEMENTATION
         Mat thresholded[5] = {};
         parallel_for_(Range(1, 5), [&](const Range& range){
             auto object = (field_objects_t) range.start;
@@ -206,6 +211,14 @@ static auto cv_thread(void *arg) -> void *{
             Scalar minScalar = Scalar(min[2], min[1], min[0]);
             Scalar maxScalar = Scalar(max[2], max[1], max[0]);
             inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar, thresholded[object]);
+
+            // dispatch the lines immediately to the localiser for processing
+            if (object == OBJ_LINES){
+                // note: this assumes we will never scale the line image, otherwise we would have to check and use frameScaled
+                auto *localiserFrame = (uint8_t*) malloc(frame.rows * frame.cols);
+                memcpy(localiserFrame, thresholded[object].data, frame.rows * frame.cols);
+                localiser_post(localiserFrame, frame.cols, frame.rows);
+            }
         }, 4);
 
         // process all our field objects
@@ -236,34 +249,38 @@ static auto cv_thread(void *arg) -> void *{
             auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
             memcpy(frameData, debugFrame.data, frame.rows * frame.cols * 3);
 
+            // wait for localisation to finish before dispatching info
+            // if performance issue occur, make this mutexes and shit instead of a busy loop - just couldn't be bothered now
+            while (!localiserDone){
+                puts("had to wait for localiser!");
+                nanosleep((const struct timespec[]){{0, 500000L}}, nullptr);
+            }
+
             // ballThresh is just a 1-bit mask so it has only one channel
+            // TODO for each of these we should probably check if their data is null, and thus no object is present, else UBSan complains
             auto *threshData = (uint8_t*) calloc(ball.threshMask.rows * ball.threshMask.cols, sizeof(uint8_t));
             switch (selectedFieldObject){
-                case OBJ_NONE: {
+                case OBJ_NONE:
                     // just send the empty buffer
                     remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
-                case OBJ_BALL: {
+                case OBJ_BALL:
                     memcpy(threshData, ball.threshMask.data, ball.threshMask.rows * ball.threshMask.cols);
                     remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
-                case OBJ_LINES: {
+                case OBJ_LINES:
                     memcpy(threshData, lines.threshMask.data, lines.threshMask.rows * lines.threshMask.cols);
                     remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
-                case OBJ_GOAL_BLUE: {
+                case OBJ_GOAL_BLUE:
                     memcpy(threshData, blueGoal.threshMask.data, blueGoal.threshMask.rows * blueGoal.threshMask.cols);
                     remote_debug_post(frameData, threshData, blueGoal.boundingBox, blueGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
-                case OBJ_GOAL_YELLOW: {
-                    memcpy(threshData, yellowGoal.threshMask.data, yellowGoal.threshMask.rows * yellowGoal.threshMask.cols);
+                case OBJ_GOAL_YELLOW:
+                    if (yellowGoal.threshMask.data != nullptr)
+                        memcpy(threshData, yellowGoal.threshMask.data, yellowGoal.threshMask.rows * yellowGoal.threshMask.cols);
                     remote_debug_post(frameData, threshData, yellowGoal.boundingBox, yellowGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
-                }
             }
         }
 #endif
@@ -278,9 +295,9 @@ static auto cv_thread(void *arg) -> void *{
         movavg_push(fpsAvg, elapsed);
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-//        if (remote_debug_is_connected()) {
-//            waitKey(static_cast<int>(1000 / fps));
-//        }
+        if (remote_debug_is_connected()) {
+            waitKey(static_cast<int>(1000 / fps));
+        }
 #endif
     }
     destroyAllWindows();
@@ -291,6 +308,7 @@ static auto fps_counter_thread(void *arg) -> void *{
     while (true){
         sleep(1);
         double avgTime = movavg_calc(fpsAvg);
+        if (avgTime == 0) continue; // another stupid to fix divide by zero when debugging
         lastFpsMeasurement = (int32_t) (1000.0 / avgTime);
         movavg_clear(fpsAvg);
 
@@ -310,7 +328,7 @@ void vision_init(void){
     // IMPORTANT: due to some weird shit with Intel's Turbo Boost on the Celeron, it may be faster to uncomment the below
     // line and disable multi-threading. With multi-threading enabled, all cores max out at 1.4 GHz, whereas with it
     // disabled they will happily run at 2 GHz. However, YMMV so just try it if Omicam is running slow.
-    // setNumThreads(1);
+    // setNumThreads(3); // leave one core free for localiser
 
     int numCpus = getNumberOfCPUs();
     string features = getCPUFeaturesLine();

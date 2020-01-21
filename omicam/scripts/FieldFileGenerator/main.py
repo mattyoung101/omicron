@@ -76,8 +76,8 @@ img.show()
 # message = pb.FieldFile()
 # message.unitDistance = 1
 # message.cellCount = int(fieldLength * fieldWidth)
-# message.fieldWidth = int(fieldWidth)
-# message.fieldHeight = int(fieldLength)
+# message.width = int(fieldWidth)
+# message.length = int(fieldLength)
 # message.data.extend(output)
 #
 # with open("../../fields/Ints_StandardField.ff", "wb") as file:

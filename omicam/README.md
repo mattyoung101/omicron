@@ -77,3 +77,4 @@ Omicam is available under the same licence of the whole Team Omicron repo, see L
 - [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo): Various BSD and Zlib
 - [NLopt](https://github.com/stevengj/nlopt): MIT (as no LGPL code is used)
 - [OpenCV](https://opencv.org/): BSD 3-Clause
+- [mathc](https://github.com/felselva/mathc): Zlib license

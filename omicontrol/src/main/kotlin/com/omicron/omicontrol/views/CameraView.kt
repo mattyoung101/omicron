@@ -37,6 +37,7 @@ class CameraView : View() {
     private lateinit var bandwidthLabel: Label
     private val compressor = Inflater()
     private var hideCameraFrame = false
+    private var localiserDebug = false
     /** mapping between each field object and its threshold as received from Omicam **/
     private val objectThresholds = hashMapOf<FieldObjects, RemoteDebug.RDThreshold>()
     /** mapping between a name, eg "RMin" and an associated JavaFX slider. Stored in insertion order. **/
@@ -126,7 +127,7 @@ class CameraView : View() {
                 display.drawImage(tmpImage, message.cropRect.x.toDouble(), message.cropRect.y.toDouble(), tmpImage.width, tmpImage.height)
 
                 // note that Omicam fixes object positioning when cropping/scaling is enabled on its side, so we don't have
-                // to worry about it here
+                // to worry about it here, at least not for the centroid and bounding box
 
                 // draw threshold centre
                 display.fill = Color.RED
@@ -143,6 +144,26 @@ class CameraView : View() {
                     val x = message.ballRect.x.toDouble()
                     val y = message.ballRect.y.toDouble()
                     display.strokeRect(x, y, message.ballRect.width.toDouble(), message.ballRect.height.toDouble())
+                }
+            }
+
+            // draw localiser debug
+            if (localiserDebug) {
+                display.fill = Color.LIME
+                display.stroke = Color.BLACK
+                display.lineWidth = 2.0
+
+//                val centreX = message.cropRect.x + (message.cropRect.width / 2.0)
+//                val centreY = message.cropRect.y + (message.cropRect.height / 2.0)
+//                display.fillOval(centreX, centreY, 8.0, 8.0)
+//                display.strokeOval(centreX, centreY, 8.0, 8.0)
+
+                for (point in message.linePointsList) {
+                    val x = point.x.toDouble() + message.cropRect.x
+                    val y = point.y.toDouble() + message.cropRect.y
+                    display.fillOval(x, y, 8.0, 8.0)
+                    display.strokeOval(x, y, 8.0, 8.0)
+//                    display.strokeLine(centreX, centreY, x, y)
                 }
             }
         }
@@ -199,7 +220,7 @@ class CameraView : View() {
 
             val newObjThresh = objectThresholds[newObj] ?: run {
                 // this would be weird and shouldn't happen, but let's log it just in case
-                Logger.error("No threshold for $newObj?")
+                Logger.error("No threshold for $newObj? (objThresholds[newObj] == null)")
                 return@thread
             }
 
@@ -441,6 +462,17 @@ class CameraView : View() {
 
                     fieldset {
                         field {
+                            label("Localiser debug: ")
+                            checkbox {
+                                selectedProperty().addListener { _, _, newValue ->
+                                    localiserDebug = newValue
+                                }
+                            }
+                        }
+                    }
+
+                    fieldset {
+                        field {
                             lastFpsLabel = label("Last FPS: None recorded")
                         }
                     }
@@ -477,6 +509,7 @@ class CameraView : View() {
             button("Switch to robot view")
         }
 
+        @Suppress("ConstantConditionIf")
         if (DEBUG_CAMERA_VIEW){
             display.fill = Color.WHITE
             display.fillRect(0.0, 0.0, CANVAS_WIDTH, CANVAS_HEIGHT)

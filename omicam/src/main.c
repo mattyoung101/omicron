@@ -1,9 +1,10 @@
 #define DG_DYNARR_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
 #include "DG_dynarr.h"
-#include "stb_image.h"
-#undef STB_IMAGE_IMPLEMENTATION
 #undef DG_DYNARR_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#undef STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include <stdio.h>
 #include "log/log.h"
 #include "iniparser/iniparser.h"
@@ -67,6 +68,13 @@ int main() {
     pthread_mutex_init(&logLock, NULL);
     log_set_lock(log_lock_func);
 
+//    pthread_t threads[4] = {0};
+//    for (int i = 0; i < 4; i++){
+//        pthread_create(&threads[i], NULL, bruh_moment, NULL);
+//    }
+//    puts("spawned hogs");
+//    pthread_join(threads[0], NULL);
+
     struct passwd *pw = getpwuid(getuid());
     char *homedir = pw->pw_dir;
     // FIXME this will fail if the directory doesn't exist!
@@ -110,15 +118,17 @@ int main() {
     utils_parse_thresh(minYellowStr, minYellowData);
     utils_parse_thresh(maxYellowStr, maxYellowData);
 
-    uint16_t width = iniparser_getint(config, "VideoSettings:width", 1280);
-    uint16_t height = iniparser_getint(config, "VideoSettings:height", 720);
-    char *fieldFile = (char*) iniparser_getstring(config, "Localiser:fieldFile", "CONFIG_ERROR");
+    int32_t width = iniparser_getint(config, "VideoSettings:width", 1280);
+    int32_t height = iniparser_getint(config, "VideoSettings:height", 720);
     videoWidth = width;
     videoHeight = height;
 
+    visionCircleRadius = iniparser_getint(config, "Vision:robotMaskRadius", 64);
     char *rectStr = (char*) iniparser_getstring(config, "Vision:cropRect", "0,0,1280,720");
     log_trace("Vision crop rect: %s", rectStr);
     utils_parse_rect(rectStr, visionCropRect);
+
+    char *fieldFile = (char*) iniparser_getstring(config, "Localiser:fieldFile", "../fields/Ints_StandardField.ff");
 
 #if CRANK_THE_MFIN_HOG
     log_warn("Forcing high-performance CPU governing and disabling thermal throttling service (source: CRANK_THE_MFIN_HOG=1)");

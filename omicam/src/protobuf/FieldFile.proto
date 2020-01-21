@@ -7,10 +7,10 @@ message FieldFile {
     int32 unitDistance = 1;
     // the number of cells in the field file
     int32 cellCount = 2;
-    // the width of the field in cm
-    int32 fieldWidth = 3;
-    // the height of the field in cm
-    int32 fieldHeight = 4;
+    // the length of the field (long side) in cm
+    int32 length = 3;
+    // the width of the field (short side) in cm
+    int32 width = 4;
     // the actual data of the field file, which is the distance from each cell to the nearest line
     repeated float data = 5;
 }
