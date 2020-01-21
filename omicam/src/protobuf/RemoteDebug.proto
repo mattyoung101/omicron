@@ -34,6 +34,7 @@ message DebugFrame {
     int32 frameHeight = 8; // height of both frames
     RDRect cropRect = 9; // the crop rectangle, or all zeroes if cropping is disabled
     repeated RDPoint linePoints = 10; // line points from localiser
+    int32 mirrorRadius = 11; // mirror radius used by localiser
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

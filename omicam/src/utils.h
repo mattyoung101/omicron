@@ -9,7 +9,7 @@ extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], m
 extern int32_t *thresholds[];
 extern char *fieldObjToString[];
 /** this is the UNCROPPED video width and height (i.e. what we receive raw from the camera) */
-extern int32_t videoWidth, videoHeight, visionCircleRadius;
+extern int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
 extern int32_t visionCropRect[4];
 
 #ifdef __cplusplus
@@ -22,13 +22,8 @@ void utils_parse_thresh(char *threshStr, int32_t *array);
 void utils_parse_rect(char *rectStr, int32_t *array);
 /** Gets the timestamp in milliseconds **/
 double utils_time_millis();
-/**
- * Opens the INI file, looks for the key and substitutes in the specified value.
- * @param file the already opened INI file
- * @param key the key to look for, must be unique as this function just finds the first occurrence ignoring sections
- * @param value the value to add in
- */
-void utils_ini_update_key(FILE *file, char *key, char *value);
+/** Writes all thresholds to the INI file using their current values **/
+void utils_write_thresholds_disk();
 /**
  * Utility function to encode the vision data into a protobuf packet and sent it over UART, using the
  * comms_uart module.

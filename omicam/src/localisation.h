@@ -39,8 +39,11 @@ void localiser_dispose(void);
 /**
  * Puts the current line point list into a Protobuf compatible format. Only for use by the remote_debug.c.
  * IMPORTANT: the localiser MUST have finished working by this point, please wait on localiserDone if unsure.
+ * @param array the array to store the line points in
+ * @param arraySize the max size this array can hold
+ * @return the real size of elements put into the array
  */
-void localiser_remote_get_points(RDPoint *array, size_t arraySize);
+uint32_t localiser_remote_get_points(RDPoint *array, size_t arraySize);
 
 #ifdef __cplusplus
 };

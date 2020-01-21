@@ -153,18 +153,24 @@ class CameraView : View() {
                 display.stroke = Color.BLACK
                 display.lineWidth = 2.0
 
-//                val centreX = message.cropRect.x + (message.cropRect.width / 2.0)
-//                val centreY = message.cropRect.y + (message.cropRect.height / 2.0)
-//                display.fillOval(centreX, centreY, 8.0, 8.0)
-//                display.strokeOval(centreX, centreY, 8.0, 8.0)
+                val centreX = message.cropRect.x + (message.cropRect.width / 2.0)
+                val centreY = message.cropRect.y + (message.cropRect.height / 2.0)
 
-                for (point in message.linePointsList) {
+                for (point in message.linePointsList.take(message.linePointsCount)) {
+                    display.lineWidth = 2.0
                     val x = point.x.toDouble() + message.cropRect.x
                     val y = point.y.toDouble() + message.cropRect.y
-                    display.fillOval(x, y, 8.0, 8.0)
-                    display.strokeOval(x, y, 8.0, 8.0)
-//                    display.strokeLine(centreX, centreY, x, y)
+                    display.fillOval(x, y, 10.0, 10.0)
+                    display.strokeOval(x, y, 10.0, 10.0)
+
+                    display.lineWidth = 1.0
+                    display.strokeLine(centreX, centreY, x, y)
                 }
+
+                display.lineWidth = 4.0
+                display.stroke = Color.LIME
+                val diameter = message.mirrorRadius * 2.0
+                display.strokeOval(centreX - message.mirrorRadius, centreY - message.mirrorRadius, diameter, diameter)
             }
         }
     }

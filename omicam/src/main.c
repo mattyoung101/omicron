@@ -123,7 +123,8 @@ int main() {
     videoWidth = width;
     videoHeight = height;
 
-    visionCircleRadius = iniparser_getint(config, "Vision:robotMaskRadius", 64);
+    visionRobotMaskRadius = iniparser_getint(config, "Vision:robotMaskRadius", 64);
+    visionMirrorRadius = iniparser_getint(config, "Vision:mirrorRadius", 256);
     char *rectStr = (char*) iniparser_getstring(config, "Vision:cropRect", "0,0,1280,720");
     log_trace("Vision crop rect: %s", rectStr);
     utils_parse_rect(rectStr, visionCropRect);

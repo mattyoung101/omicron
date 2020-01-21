@@ -4,22 +4,23 @@ localisation application called _Omicam_. The application is developed mostly in
 OpenCV. It runs on the powerful LattePanda Delta 432 single board computer and uses Linux (Xubuntu 18.04) as its OS.
 
 We are proud to report that Omicam is a significant step up compared to previous vision applications in use at BBC
-Robotics, as shown below.
+Robotics, as explained in the "Performance and results" section.
 
 Omicam consists of **X** lines of code, and took about **X** hours to develop.
 
 ## Background and previous methods
 Intelligent, accurate and fast computer vision continues to become increasingly important in RoboCup Jr Open Soccer.
-With the introduction of the orange ball and advanced teams' application of "ball-hiding" strategies, accurate and fast
-computer vision is now one of the most important elements of a successful RoboCup Jr Open robot.
+With the introduction of the orange ball and advanced teams' application of "ball-hiding" strategies, high resolution yet
+performant computer vision is now one of the most important elements of a successful RoboCup Jr Open robot. However, detecting the
+field objects (ball, goals, etc) is now only the bare minimum. Advanced teams also need to accurately estimate their 
+position on the field (localise) in order to execute advanced strategies and gain the upper hand in the competition.
 
 Previously, our team used an OpenMV H7 to provide vision. This is a module which uses an STM32 MCU combined combined with
 an OmniVision camera module to provide low-resolution vision in an easy-to-use MicroPython environment. However, although
 this approach is functional, its resolution and framerate are extremely limiting for our use case. Hence, we decided the
 best solution was to do what the most advanced teams were doing, and develop a custom vision application running on a 
-single board computer (SBC).
-
-**TODO cover Omicam development with other SBCs**
+single board computer (SBC). In terms of localisation, in the past we managed to get away with not using any, or using
+a low-fidelity approach based on detecting the goals in the image.
 
 ## Performance and results
 Omicam is capable of detecting 4 field objects at **over 60fps at 720p (1280x720) resolution**. Compared to the previous
@@ -44,6 +45,8 @@ motion JPEG (MJPEG) at 720p 100+ fps.
 
 **More here, justifcations for why we picked this hardware.**
 
+**TODO cover Omicam development with other SBCs**
+
 ## Field object detection
 The primary responsibility of Omicam is to detect the bounding box and centroid of field objects: the ball, goals and also lines. 
 To do this, we use the  popular computer vision library OpenCV (v4.2.0). 
@@ -52,13 +55,15 @@ Then, we apply any pre-processing steps such as downscaling the goal frames and 
 
 Next, we threshold all objects in parallel to make use of our quad-core CPU, using OpenCV's `inRange` thresholder but a custom
 parallel framework (as it doesn't run in parallel by default). Thresholding generates a 1-bit binary mask of the image, where
-each pixel is 255 (true) if it's inside the RGB value specified, and 0 (false) if it's not.
-Then, we use OpenCV's parallel connected component labeller, specifically the BBDT algorithm[^1] to detect regions
+each pixel is 255 (true) if it's inside the RGB range specified, and 0 (false) if it's not.
+Then, we use OpenCV's parallel connected component labeller, specifically the algorithm by Grana et al.[^1] to detect regions
 of the same colour in the image. The largest connected region will be the field object we are looking for. OpenCV automatically
 calculates the bounding box and centroid for each of these connected regions.
 
 We then dispatch the largest detected blob's centroid via UART to the ESP32, encoded using Protocol Buffers and using
 POSIX termios for UART configuration.
+
+**TODO images and/or video of thresholded field**
 
 ## Localisation
 Localisation is the problem of detecting where the robot is on the field. This information is essential to know in order
@@ -85,8 +90,8 @@ this as not an ideal approach.
 
 ### Our solution
 This year, Team Omicron presents a novel approach to robot localisation based on a middle-size league paper by Lu, Li, Zhang,
-Hu & Zheng[^2]. We localise using purely RGB camera data by solving a non-linear optimisation problem using the lines on the
-playing field.
+Hu & Zheng[^2]. We localise using only RGB camera data by solving a multi-variate non-linear optimisation problem using the 
+lines on the playing field, in realtime.
 
 The principle method of operation of our algorithm is that we need to match a virtual model of field geometry to the observed
 one from the camera. If we match the lines so that they align in both the virtual model and real-world model, then we can
@@ -120,13 +125,12 @@ vision pipeline to determine the distance to the ball and goals in centimetres.
 ![Dewarped](images/dewarped.png)    
 _Figure 1: example of frame dewarping from the old, low reolution OpenMV H7_
 
-The second phase of the camera normalisation is to rotate the points relative to the robot's heading. The robot's heading
-value, which is relative to when it was powered on, is transmitted by the ESP32, again using Protocol Buffers. It is calculated
-using the accurate BNO055 IMU using IMUPLUS (sensor fusion between accelerometer and gyroscope) mode. For more information,
-see the ESP32 and movement code page.
+The second phase of the camera normalisation is to rotate the points relative to the robot's heading, using a rotation matrix.
+The robot's heading value, which is relative to when it was powered on, is transmitted by the ESP32, again using Protocol Buffers.
+For information about how this value is calculated using the IMU, see the ESP32 and movement code page.
 
 #### Position optimisation
-The main part of our solution is the Subplex[^4] local derivative-free non-linear optimiser, re-implemented as 
+The main part of our solution is the Subplex local derivative-free non-linear optimiser[^4], re-implemented as 
 part of the NLopt package[^5]. This algorithm essentially acts as an efficiency and stability improvement over the well-known 
 Nelder-Mead Simplex algorithm.
 
@@ -134,18 +138,19 @@ The most critical part of this process is the _objective function_, which is a f
 (in our case, an estimated 2D position) and calculates essentially a "score" of how accurate the value is. This
 objective function must be highly optimised as it could be evaluated thousands of times by the optimisation algorithm.
 
-We spent a great deal of effort drafting the most efficient objective function, and the approach we used makes heavy use
+We spent a great deal of effort drafting the most efficient objective function, and the approach we present makes heavy use
 of pre-computation via a "field file". This field file is a binary Protcol Buffer file that encodes the geometry of any
 RoboCup field by dividing it into a grid, where each cell contains the distance in centimetres to the closest line. Increasing
 the resolution of the grid will increase its accuracy, but also significantly increase its file size. We use a 1cm grid,
-which stores 44,226 cells and is 172 KiB on disk and takes about 2 seconds to generate on a fast desktop computer. 
+which stores 44,226 cells and is 172 KiB on disk. This takes about 2 seconds to generate on a fast desktop computer, and
+is copied across to the LattePanda.
 The field file is generated by a Python script which can be easily modified to support an arbitrary number of different 
-field layouts, such as super team or the Australian field (without the goalie box).
+field layouts, such as SuperTeam or our regional Australian field.
 
 The objective function essentially works as follows:
 
 1. For each line point, snap it to the nearest grid cell unit and look it up in the field file to determine the error
-   to the real line distance. (**TODO: better explanation needed**)
+   to the real line distance.
 2. Sum all these errors to produce a total error.
 
 By running most computations outside the objective function, we greatly increase the speed of the localisation. As the
@@ -156,7 +161,7 @@ Although a derivative-based algorithm may be more efficient at solving the probl
 the derivative of the objective function.
 
 ### Adding new sensor data to the world model
-Our localisation algorithm is also flexible with new sensor inputs. Because the use a "virtual world model" approach, if
+Our localisation algorithm is also flexible with new sensor inputs. Due to the use of a "virtual world model" approach, if
 any sensors can be modelled as a measurement of a distance to a static object, then they can be integrated as extra data
 in the world model.
 
@@ -179,11 +184,11 @@ We use the SIMD optimised libjpeg-turbo to efficiently encode JPEG frames, so as
 (which is disabled during competition). Instead of compressing threshold frames with JPEG, because they are 1-bit images,
 it was determined that zlib could compress them more efficiently (around about 460,800x reduction in size). 
 
-With all these optimisations, even at high framerates (60+ packets per second), the remote debug system only uses 300KB/s to 1 MB/s 
-of network bandwidth.
+With all these optimisations, even at high framerates (60+ packets per second), the remote debug system uses no more than
+1 MB/s of outgoing bandwidth, which is small enough to work reliably on both local and Internet networks.
 
 ## Debugging and performance optimisation
-Low-level compiled languages such as C and C++ are notoriously unstable. In order to improve the stability of Omicam
+Low-level compiled languages such as C and C++ are notoriously unstable and difficult to debug. In order to improve the stability of Omicam
 and fix bugs, we used Google's Address Sanitizer to easily find and trace a variety of bugs such as buffer overflows,
 memory leaks and more. In addition, we used the LLVM toolchain's debugger lldb (or just gdb) to analyse the application frequently.
 
