@@ -74,7 +74,10 @@ class ConnectView : View() {
                 hbox {
                     label("Choose view: "){ textFill = Color.WHITE }
                     combobox<String> {
-                        items = FXCollections.observableArrayList("Camera view", "Robot view")
+                        items = FXCollections.observableArrayList(
+                            "Camera view",
+                            "Robot view",
+                            "Calibration view")
                         selectionModel.selectFirst()
                     }
                     alignment = Pos.CENTER
@@ -95,6 +98,7 @@ class ConnectView : View() {
                         setOnAction {
                             try {
                                 CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
+                                // TODO check for which view to transition to
                                 Utils.transitionMetro(this@ConnectView, CameraView())
                             } catch (e: Exception) {
                                 Utils.showGenericAlert(

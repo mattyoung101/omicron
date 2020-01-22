@@ -17,7 +17,6 @@
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
-#define VISION_FPS_INCLUDE_FRAME_READ 1 // whether or not to ignore the time it takes to capture the frame in FPS calculations
 #define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
 
 #define REMOTE_JPEG_QUALITY 40 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
@@ -51,7 +50,7 @@ typedef enum {
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET BUILD_TARGET_PC // which platform Omicam will be running on
+#define BUILD_TARGET BUILD_TARGET_SBC // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 2 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.1 // stop optimisation if the last step size was smaller than this in centimetres

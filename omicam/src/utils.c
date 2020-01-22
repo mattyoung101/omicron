@@ -29,6 +29,11 @@ static void remove_spaces(char* s) {
     } while ((*s++ = *d++));
 }
 
+double utils_camera_dewarp(double x){
+    // FIXME just temporary
+    return x;
+}
+
 void utils_parse_thresh(char *threshStr, int32_t *array){
     char *token;
     char *threshOrig = strdup(threshStr);

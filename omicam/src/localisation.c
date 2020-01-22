@@ -25,9 +25,10 @@ static FieldFile field = FieldFile_init_zero;
 // finishes optimising)
 static rpa_queue_t *queue;
 static vec2_array_t linePoints = {0};
-static vec2_array_t linePointsDewarped = {0};
+static vec2_array_t correctedLinePoints = {0};
 //static uint8_t *outImage = NULL;
 _Atomic bool localiserDone = false;
+static double orientation = 0.0; // last received orientation from ESP32
 
 /**
  * The bread and butter of our localisation system, this is the function to be minimised by the subplex optimiser.
@@ -120,6 +121,7 @@ static void *work_thread(void *arg){
 
         localiser_entry_t *entry = (localiser_entry_t*) queueData;
         da_clear(linePoints);
+        da_clear(correctedLinePoints);
         localiserDone = false;
 
         // 1. calculate begin points for Bresenham's line algorithm
@@ -140,8 +142,15 @@ static void *work_thread(void *arg){
             goto cleanup;
         }
 
-        // 1.2 dewarp points based on calculated mirror model
-        // TODO make a copy called dewarpedPoints so we can still send the warped points for debug
+        // 2. dewarp points based on calculated mirror model, and rotate based on robot's real orientation
+        for (size_t i = 0; i < da_count(linePoints); i++){
+            struct vec2 point = da_get(linePoints, i);
+            struct vec2 dewarped = {0};
+            dewarped.x = utils_camera_dewarp(point.x);
+            dewarped.y = utils_camera_dewarp(point.y);
+            svec2_rotate(dewarped, orientation);
+            da_add(correctedLinePoints, dewarped);
+        }
 
         cleanup:
         free(entry->frame);
@@ -181,7 +190,7 @@ void localiser_init(char *fieldFile){
     nlopt_set_upper_bounds(optimiser, maxCoord);
 
     // create work thread
-    rpa_queue_create(&queue, 4);
+    rpa_queue_create(&queue, 2);
     int err = pthread_create(&workThread, NULL, work_thread, NULL);
     if (err != 0){
         log_error("Failed to create localiser thread: %s", strerror(err));
@@ -194,11 +203,6 @@ void localiser_init(char *fieldFile){
 }
 
 void localiser_post(uint8_t *frame, int32_t width, int32_t height){
-    // the input we receive will be the thresholded mask of only the lines (1 bit greyscale), so what we do is:
-    // 1. cast out lines using Bresenham's line algorithm in OpenCL to get our localisation points
-    // 2. optimise to find new estimated position using NLopt's Subplex algorithm (better than NM-Simplex) - cannot be threaded
-    // 3. publish result to esp32 over UART
-
     localiser_entry_t *entry = malloc(sizeof(localiser_entry_t));
     entry->frame = frame;
     entry->width = width;
@@ -234,4 +238,5 @@ void localiser_dispose(void){
     nlopt_destroy(optimiser);
     rpa_queue_destroy(queue);
     da_free(linePoints);
+    da_free(correctedLinePoints);
 }

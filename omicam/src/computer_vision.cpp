@@ -123,19 +123,24 @@ static auto cv_thread(void *arg) -> void *{
     log_trace("Build target is PC, using test data");
     VideoCapture cap("../test_footage_2.m4v");
     if (!cap.isOpened()) {
-        log_error("Failed to load OpenCV test video");
+        log_error("Failed to load OpenCV test video, cannot continue");
+        fflush(stdout);
+        fflush(stderr);
+        exit(EXIT_FAILURE);
     }
-    double fps = cap.get(CAP_PROP_FPS);
-    log_debug("Video file FPS: %f, Capture API: %s", fps, cap.getBackendName().c_str());
 #else
     log_trace("Build target is SBC, initialising VideoCapture");
-    VidoCapture cap(0);
-    // TODO configure framerate and shit here
+    VideoCapture cap("v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720 ! jpegdec ! videoconvert "
+                     "! appsink drop=true", CAP_GSTREAMER);
     if (!cap.isOpened()){
-        log_error("Failed to open OpenCV capture device");
+        log_error("Failed to open OpenCV capture device. Impossible to continue running Omicam.");
+        fflush(stdout);
+        fflush(stderr);
+        exit(EXIT_FAILURE);
     }
-    log_trace("OpenCV capture initialised successfully");
 #endif
+    auto fps = static_cast<int32_t>(cap.get(CAP_PROP_FPS));
+    log_info("Video capture initialised successfully using API: %s at %d FPS", cap.getBackendName().c_str(), fps);
 
     // this is a stupid way of calculating this
     Mat junk(videoHeight, videoWidth, CV_8UC1);
@@ -148,13 +153,11 @@ static auto cv_thread(void *arg) -> void *{
 
     while (true){
         pthread_testcancel();
-#if VISION_FPS_INCLUDE_FRAME_READ
         double begin = utils_time_millis();
-#endif
-        // capture the frame and check for errors
+
         Mat frame, frameScaled;
-        // cap.read(frame);
-        ogFrame.copyTo(frame);
+        cap.read(frame);
+        //ogFrame.copyTo(frame);
 
         if (frame.empty()){
 #if BUILD_TARGET == BUILD_TARGET_PC
@@ -167,20 +170,15 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
-#if !VISION_FPS_INCLUDE_FRAME_READ
-        double begin = utils_time_millis();
-#endif
-
+        // pre-processing:
         // crop the frame if cropping is enabled
 #if VISION_CROP_ENABLED
         frame = frame(Rect(cropRect));
 #endif
-
         // mask out the robot
 #if VISION_DRAW_ROBOT_MASK
         circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius, Scalar(0, 0, 0), FILLED);
 #endif
-
         // downscale for goal detection (and possibly initial ball pass)
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 

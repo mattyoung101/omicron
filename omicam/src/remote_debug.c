@@ -128,7 +128,7 @@ static void read_remote_messages(void){
             }
             case CMD_THRESHOLDS_WRITE_DISK: {
                 log_debug("Received CMD_THRESHOLDS_WRITE_DISK");
-                // TODO you would do it here, check the utils function
+                utils_write_thresholds_disk();
                 RD_SEND_OK_RESPONSE;
                 break;
             }

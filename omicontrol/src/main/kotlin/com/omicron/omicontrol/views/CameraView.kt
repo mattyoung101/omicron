@@ -344,7 +344,7 @@ class CameraView : View() {
 
     override val root = vbox {
         setPrefSize(1600.0, 900.0)
-
+        
         menubar {
             menu("File") {
                 item("Exit"){

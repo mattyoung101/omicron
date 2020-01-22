@@ -31,6 +31,8 @@ void utils_write_thresholds_disk();
 void utils_cv_transmit_data(ObjectData ballData);
 /** Reads a binary file from disk. You must free() the returned buffer. **/
 uint8_t *utils_load_bin(char *path, long *size);
+/** Applies the calculated dewarp model to turn the given pixel distance into a centimetre distance in the camera **/
+double utils_camera_dewarp(double x);
 
 #ifdef __cplusplus
 }
