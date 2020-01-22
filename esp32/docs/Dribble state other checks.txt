@@ -1,5 +1,5 @@
-    // } else if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR - IN_FRONT_STRENGTH_BUFFER){
-    //     LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, thresh: %d", robotState.inBallStrength,
+    // } else if (rs.inBallDistance <= DRIBBLE_BALL_TOO_FAR - IN_FRONT_STRENGTH_BUFFER){
+    //     LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, thresh: %d", robotState.inBallDistance,
     //             DRIBBLE_BALL_TOO_FAR - IN_FRONT_STRENGTH_BUFFER);
     //     FSM_REVERT;
     // }

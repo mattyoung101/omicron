@@ -154,18 +154,18 @@ void LightSensorController::read(){
 			ringCount += 1;
 		}
 	}
-	if(isOnLine[26] == true && isOnLine[29] == true) {
-		isOnLine[27] = true;
-		isOnLine[28] = true;
-		// Serial.println("hello im a fucking retard");
-	} else {
-		isOnLine[27] = false;
-		isOnLine[28] = false;
-	}
+	// if(isOnLine[26] == true && isOnLine[29] == true) {
+	// 	isOnLine[27] = true;
+	// 	isOnLine[28] = true;
+	// 	// Serial.println("hello im a fucking retard");
+	// } else {
+	// 	isOnLine[27] = false;
+	// 	isOnLine[28] = false;
+	// }
 
-	for(int i = 0; i < LS_RING_NUM; i++) {
-		// Serial.print(isOnLine[i]);
-	}
+	// for(int i = 0; i < LS_RING_NUM; i++) {
+	// 	// Serial.print(isOnLine[i]);
+	// }
 	// Serial.println("");
 }
 

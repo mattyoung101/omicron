@@ -24,15 +24,15 @@ static void pf_calculate_nearest(point_list_t points, float robotX, float robotY
         }
     
         if (nextPoint.x > point.x) {
-            curClosest.X = constrain(curClosest.x, point.x, nextPoint.x);
+            curClosest.x = constrain(curClosest.x, point.x, nextPoint.x);
         } else {
-            curClosest.Y = constrain(curClosest.y, nextPoint.x, point.x);
+            curClosest.y = constrain(curClosest.y, nextPoint.x, point.x);
         }
     
-        if(nextPoint.Y > point.Y) {
-            curClosest.X = constrain(curClosest.y, point.y, nextPoint.y);
+        if(nextPoint.y > point.y) {
+            curClosest.x = constrain(curClosest.y, point.y, nextPoint.y);
         } else {
-            curClosest.X = constrain(curClosest.y, nextPoint.y, point.y);
+            curClosest.x = constrain(curClosest.y, nextPoint.y, point.y);
         }
 
         curDistance = sqrtf(powf((curClosest.x - robotX), 2) + powf((curClosest.y - robotY), 2));

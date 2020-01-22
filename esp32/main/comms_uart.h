@@ -8,7 +8,7 @@
 #include "freertos/timers.h"
 #include "string.h"
 #include "esp_task_wdt.h"
-#include "i2c.pb.h"
+#include "wirecomms.pb.h"
 #include "driver/uart.h"
 
 // Handles slave to master communication over UART

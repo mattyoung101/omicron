@@ -28,16 +28,14 @@ typedef struct {
     float inHeading;
     // Ball Inputs
     float inBallAngle;
-    float inBallStrength;
+    float inBallDistance;
     int16_t inBallX;
     int16_t inBallY;
     // Line Inputs
     float inLineAngle;
     float inLineSize;
-    bool inOnLine;
-    bool inOnField;
-    float inTrueLineAngle;
-    float inTrueLineSize;
+    bool inIsOver;
+    bool inOnLine; // Gotta call some update function for this one probs
     // Lightgate Inputs
     bool inFrontGate;
     bool inBackGate;
@@ -58,6 +56,7 @@ typedef struct {
     int16_t outBRMotor;
     int16_t outBLMotor;
     int16_t outFLMotor;
+    bool debugLEDs[6];
 } robot_state_t;
 
 typedef struct {
@@ -126,7 +125,7 @@ extern fsm_state_t stateAttackLinerun;
 // Zigzag state: move in zigzags down the field so the opposition finds it hard to counter you reliably
 void state_attack_zigzag_enter(state_machine_t *fsm);
 void state_attack_zigzag_update(state_machine_t *fsm);
-extern fsm_state_t stateAttackZigzag
+extern fsm_state_t stateAttackZigzag;
 
 /////////// DEFENCE FSM /////////
 // Idle state: centres on own goal

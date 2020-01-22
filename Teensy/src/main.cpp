@@ -12,9 +12,7 @@
 // IMPORTANT: WE ARE USING UART FOR PROTOBUF NOT I2C, WE ARE JUST TOO LAZY TO RENAME STUFF
 
 typedef enum {
-    MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
-    MSG_PUSH_I2C_MASTER, // as the I2C master, I'm providing data to the I2C slave
-    MSG_PULL_I2C_SLAVE, // requesting data from the I2C slave
+    MSG_ANY = 0
 } msg_type_t;
 
 static I2CMasterProvide lastMasterProvide = I2CMasterProvide_init_zero;
@@ -67,7 +65,7 @@ static void decodeProtobuf(void){
 
         // assign destination struct based on message ID
         switch (msgId){
-            case MSG_PUSH_I2C_MASTER:
+            case MSG_ESP_TO_TEENSY:
                 dest = (void*) &lastMasterProvide;
                 msgFields = (void*) &I2CMasterProvide_fields;
                 break;
@@ -119,6 +117,8 @@ void loop() {
     #if LS_ON
         // Update line data
         lineAvoid = ls.update(heading);
+
+        // (ETHAN) NOTE TO SELF: RETURN LINEANGLE, LINEDISTANCE AND ISOUT
     #endif
 
     #if LRFS_ON
