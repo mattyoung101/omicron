@@ -63,11 +63,8 @@
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
-#define I2C_BUF_SIZE 128 // size of I2C buffer
 typedef enum {
-    MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
-    MSG_PUSH_I2C_MASTER, // as the I2C master, I'm providing data to the I2C slave
-    MSG_PULL_I2C_SLAVE, // requesting data from the I2C slave
+    MSG_ANY = 0
 } msg_type_t;
 
 // Music

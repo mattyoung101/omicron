@@ -208,14 +208,8 @@ static void master_task(void *pvParameter){
         
         // encode and send Protobuf message to Teensy slave
         MasterToLSlave teensyMsg = MasterToLSlave_init_default;
-        uint8_t buf[PROTOBUF_SIZE] = {0};
-        pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
-
-        // ESP_LOGD(TAG,"%f",yaw);
-        // robotState.outSpeed = 0;
-        // goal_correction(&robotState);
-        // robotState.outDirection = 0;
-        // print_ball_data(&robotState);
+        uint8_t teensyBuf[PROTOBUF_SIZE] = {0};
+        pb_ostream_t stream = pb_ostream_from_buffer(teensyBuf, PROTOBUF_SIZE);
         
         teensyMsg.heading = yaw; // IMU heading
         memcpy(teensyMsg.debugLEDs, robotState.debugLEDs, 6 * sizeof(bool));
@@ -229,7 +223,7 @@ static void master_task(void *pvParameter){
         } else {
             pbErrors = 0;
         }
-        comms_uart_send(MSG_PUSH_I2C_MASTER, buf, stream.bytes_written);
+        comms_uart_send(MSG_ANY, teensyBuf, stream.bytes_written);
 
         // handle reset button
         if (xQueueReceive(buttonQueue, &buttonEvent, 0)){
