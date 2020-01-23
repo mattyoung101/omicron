@@ -8,9 +8,10 @@
  * 1.1a: Integration with Omicontrol completed
  * 1.2a: works on Jetson with optimisation and thresholding for objects
  * 1.3a: cropping (ROI) optimisations, support for goal thresholding at lower resolutions
- * 1.4a: (WIP) performance optimisations for new SBC, new FPS timing code, fixes
+ * 1.4a: performance optimisations for new SBC, new FPS timing code, fixes
+ * 2.4a: (WIP) localisation prototype implemented
  */
-#define OMICAM_VERSION "1.4a"
+#define OMICAM_VERSION "2.4a"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
 

@@ -1,6 +1,5 @@
 package com.omicron.omicontrol.views
 
-import com.google.common.eventbus.Subscribe
 import com.omicron.omicontrol.*
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
@@ -23,6 +22,7 @@ import javafx.scene.image.WritableImage
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
 import org.apache.commons.io.FileUtils
+import org.greenrobot.eventbus.Subscribe
 import org.tinylog.kotlin.Logger
 import java.util.*
 import kotlin.concurrent.fixedRateTimer
@@ -55,7 +55,6 @@ class CameraView : View() {
     init {
         reloadStylesheetsOnFocus()
         title = "Camera View | Omicontrol"
-        EVENT_BUS.register(this)
     }
 
     @ExperimentalUnsignedTypes
@@ -182,7 +181,7 @@ class CameraView : View() {
             Utils.showGenericAlert(Alert.AlertType.ERROR, "The remote connection has unexpectedly terminated.\n" +
                     "Please check Omicam is still running and try again.\n\nError description: Protobuf message was null",
                 "Connection error")
-            Utils.transitionMetro(this, ConnectView())
+            disconnect()
         }
     }
 
@@ -202,7 +201,7 @@ class CameraView : View() {
             // notify awaiting threads that the new data has been received
             synchronized(newThreshReceivedToken) { newThreshReceivedToken.notifyAll() }
         }, {
-            Logger.warn("Failed to update threshold values")
+            Logger.error("Failed to update threshold values")
             Utils.showGenericAlert(Alert.AlertType.ERROR, "An error occurred updating the latest threshold values." +
                     "\nIf this error continues to happen, Omicontrol will no longer function properly." +
                     "\nPlease restart Omicam and Omicontrol and try again.", "Error updating threshold values")
@@ -227,6 +226,14 @@ class CameraView : View() {
             val newObjThresh = objectThresholds[newObj] ?: run {
                 // this would be weird and shouldn't happen, but let's log it just in case
                 Logger.error("No threshold for $newObj? (objThresholds[newObj] == null)")
+                runLater {
+                    selectBox.isDisable = false
+                    Utils.showGenericAlert(Alert.AlertType.ERROR,
+                        "Corrupted information was received from Omicam while trying to change objects.\n" +
+                                "This may indicate a slow connection. Please try again later",
+                        "Error switching objects"
+                    )
+                }
                 return@thread
             }
 
@@ -334,8 +341,9 @@ class CameraView : View() {
     }
 
     private fun disconnect(){
+        Logger.debug("Disconnecting...")
         CONNECTION_MANAGER.disconnect()
-        EVENT_BUS.unregister(this)
+        EVENT_BUS.unregister(this@CameraView)
         // if the user is stupid enough to press CTRL+D WHILE dragging the slider, stop them
         grabSendTimer?.cancel()
         grabSendTimer?.purge()
@@ -344,6 +352,7 @@ class CameraView : View() {
 
     override val root = vbox {
         setPrefSize(1600.0, 900.0)
+        EVENT_BUS.register(this@CameraView)
         
         menubar {
             menu("File") {

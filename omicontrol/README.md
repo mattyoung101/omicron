@@ -82,3 +82,4 @@ Omicontrol is available under the license of the whole Team Omicron repo, see LI
 - [Protocol Buffers](https://github.com/protocolbuffers/protobuf): BSD 3-clause
 - [TornadoFX](https://github.com/edvin/tornadofx): Apache 2
 - [Apache Commons](https://commons.apache.org/): Apache 2
+- [GreenRobot EventBus](https://github.com/greenrobot/EventBus): Apache 2

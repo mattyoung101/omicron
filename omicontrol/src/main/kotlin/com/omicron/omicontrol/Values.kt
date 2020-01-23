@@ -1,8 +1,8 @@
 package com.omicron.omicontrol
 
-import com.google.common.eventbus.EventBus
 import javafx.scene.control.Label
 import org.apache.commons.lang3.SystemUtils
+import org.greenrobot.eventbus.EventBus
 
 /**
  * Version history:
@@ -10,12 +10,13 @@ import org.apache.commons.lang3.SystemUtils
  * 0.1a: works with new OpenCV stuff
  * 1.1a: UI implemented and threshold sliders/debug commands work properly
  * 1.2a: works with Omicam cropping and downscaling
+ * 1.3a: (WIP) added support for camera calibration
  */
-const val OMICONTROL_VERSION = "1.2a"
-const val REMOTE_IP = "192.168.1.8"
+const val OMICONTROL_VERSION = "1.3a"
+const val REMOTE_IP = "monkeyonkeyboard.ddns.net"
 const val REMOTE_PORT = 42708
 val CONNECTION_MANAGER = ConnectionManager()
-val EVENT_BUS = EventBus()
+val EVENT_BUS = EventBus.getDefault()!!
 val CANVAS_WIDTH = if (SystemUtils.IS_OS_MAC) 1280.0 * 0.90 else 1280.0
 val CANVAS_HEIGHT = if (SystemUtils.IS_OS_MAC) 720.0 * 0.90 else 720.0
 const val DEBUG_CAMERA_VIEW = false
