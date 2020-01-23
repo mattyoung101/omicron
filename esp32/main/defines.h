@@ -69,6 +69,10 @@ typedef enum {
 
 // Music
 #define MUSIC_BPM 100
+#define BUZZER_1 23
+#define BUZZER_2 5
+#define BUZZER_3 12
+#define BUZZER_4 4
 
 // PIDs
 // --- IMU Correction --- //
