@@ -37,7 +37,7 @@ class ConnectView : View() {
             }
 
             hbox {
-                label("Copyright (c) 2019-2020 Team Omicron."){
+                label("v${OMICONTROL_VERSION} | Copyright (c) 2019-2020 Team Omicron."){
                     textFill = Color.LIGHTGREY
                 }
                 alignment = Pos.BOTTOM_LEFT

@@ -2,6 +2,7 @@ package com.omicron.omicontrol.views
 
 import RemoteDebug
 import com.omicron.omicontrol.*
+import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.Alert
@@ -17,7 +18,9 @@ import tornadofx.*
 import java.io.ByteArrayInputStream
 import kotlin.system.exitProcess
 
-class DewarpPoint(val pixelDistance: Double, var realDistance: Double)
+class DewarpPoint(var pixelDistance: Double){
+    var realDistance: Double = 0.0
+}
 
 /**
  * This is essentially a stripped down version of the ConnectView which can be used to make calibrating the
@@ -25,11 +28,55 @@ class DewarpPoint(val pixelDistance: Double, var realDistance: Double)
  */
 class CalibrationView : View() {
     private lateinit var display: GraphicsContext
-    private val points = mutableListOf<DewarpPoint>()
+    private val points = mutableListOf<DewarpPoint>().observable()
+    /** begin point of line or null if no line being drawn **/
+    private var origin: Point2D? = null
+    /** end point of line or null if no line being drawn **/
+    private var end: Point2D? = null
+    /** whether or not the user is currently drawing a line **/
+    private var selecting = false
+    private var mousePos = Point2D(0.0, 0.0)
+    private var latestImage: Image? = null
+    private var cropRect: RemoteDebug.RDRect? = null
 
     init {
         reloadStylesheetsOnFocus()
         title = "Calibration View | Omicontrol"
+    }
+
+    private fun updateDisplay(){
+        display.fill = Color.BLACK
+        display.lineWidth = 4.0
+        display.stroke = Color.RED
+        display.fillRect(0.0, 0.0, CANVAS_WIDTH, CANVAS_HEIGHT)
+        if (latestImage != null && cropRect != null) {
+            // since Kotlin's automatic null cast checking is useless as fuck, we have to null assert these all manually
+            display.drawImage(latestImage!!, cropRect!!.x.toDouble(), cropRect!!.y.toDouble(), latestImage!!.width, latestImage!!.height)
+        }
+
+        // draw the line between the two points
+        if (origin != null && end != null){
+            display.strokeLine(origin!!.x, origin!!.y, end!!.x, end!!.y)
+        } else if (selecting){
+            display.strokeLine(origin!!.x, origin!!.y, mousePos.x, mousePos.y)
+        }
+
+        // draw the origin point if we hav eit
+        if (origin != null){
+            display.fill = Color.RED
+            display.fillOval(origin!!.x, origin!!.y, 10.0, 10.0)
+        }
+
+        // if we got no points, don't bother drawing anything
+        if (!selecting && end == null) return
+        val endPoint = if (selecting) mousePos else end!!
+
+        display.fill = Color.RED
+        display.fillOval(endPoint.x, endPoint.y, 10.0, 10.0)
+
+        display.fill = Color.WHITE
+        display.fillText(String.format("%.2f pixels", origin!!.distance(endPoint)), (origin!!.x + endPoint.x) / 2.0,
+            (origin!!.y + endPoint.y) / 2.0)
     }
 
     @ExperimentalUnsignedTypes
@@ -37,11 +84,11 @@ class CalibrationView : View() {
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
         // decode the message, but in this case we only care about the image
         val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
+        latestImage = img
+        cropRect = message.cropRect
 
         runLater {
-            display.fill = Color.BLACK
-            display.fillRect(0.0, 0.0, CANVAS_WIDTH, CANVAS_HEIGHT)
-            display.drawImage(img, message.cropRect.x.toDouble(), message.cropRect.y.toDouble(), img.width, img.height)
+            updateDisplay()
         }
     }
 
@@ -98,6 +145,24 @@ class CalibrationView : View() {
             vbox {
                 canvas(CANVAS_WIDTH, CANVAS_HEIGHT){
                     display = graphicsContext2D
+
+                    setOnMouseClicked {
+                        if (!selecting){
+                            selecting = true
+                            origin = Point2D(it.x, it.y)
+                            end = null
+                        } else {
+                            selecting = false
+                            end = Point2D(it.x, it.y)
+                            points.add(DewarpPoint(origin!!.distance(end)))
+                        }
+                        updateDisplay()
+                    }
+
+                    setOnMouseMoved {
+                        mousePos = Point2D(it.x, it.y)
+                        updateDisplay()
+                    }
                 }
                 alignment = Pos.TOP_RIGHT
             }
@@ -115,18 +180,31 @@ class CalibrationView : View() {
                 form {
                     fieldset {
                         field {
-                            tableview(points.observable()){
-                                readonlyColumn("Pixel distance", DewarpPoint::pixelDistance)
-                                column("Real distance", DewarpPoint::realDistance)
+                            tableview(points){
+                                column("Pixel dist", DewarpPoint::pixelDistance).makeEditable().contentWidth(16.0)
+                                column("Real dist (cm)", DewarpPoint::realDistance).makeEditable().remainingWidth()
+
+                                enableCellEditing()
+                                regainFocusAfterEdit()
+
+                                setOnKeyPressed {
+                                    if (it.code == KeyCode.DELETE){
+                                        items.remove(selectionModel.selectedItem)
+                                    }
+                                }
+                                columnResizePolicy = SmartResize.POLICY
                             }
                         }
                     }
 
                     fieldset {
                         field {
-                            button("Clear points"){
+                            button("Clear"){
                                 setOnAction {
                                     points.clear()
+                                    selecting = false
+                                    origin = null
+                                    end = null
                                 }
                             }
                         }
@@ -141,6 +219,12 @@ class CalibrationView : View() {
                             }
                         }
                     }
+
+                    fieldset {
+                        field {
+                            label("Model status: Not calculated")
+                        }
+                    }
                 }
 
                 hgrow = Priority.ALWAYS
@@ -153,7 +237,14 @@ class CalibrationView : View() {
         vbox {
             paddingTop = 25.0
             alignment = Pos.CENTER
-            button("Switch to camera view")
+            button("Switch to camera view"){
+
+                setOnAction {
+                    Logger.debug("Changing views")
+                    EVENT_BUS.unregister(this@CalibrationView)
+                    Utils.transitionMetro(this@CalibrationView, CameraView())
+                }
+            }
         }
     }
 }

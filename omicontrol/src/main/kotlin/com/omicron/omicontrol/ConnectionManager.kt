@@ -110,8 +110,9 @@ class ConnectionManager {
             } else {
                 // Logger.trace("Received OK response from Omicontrol!")
                 synchronized (cmdReceivedToken){
-                    // yeah this is a stupid hack but for some reason there's no fuckin clone function
                     val assertedReceivedCmd = receivedCmd ?: return@synchronized
+
+                    // yeah this is a stupid hack but for some reason there's no fuckin clone function
                     val copy = RemoteDebug.DebugCommand.parseFrom(assertedReceivedCmd.toByteArray())
                     val end = System.currentTimeMillis() - begin
                     receivedCmd = null
