@@ -8,9 +8,10 @@
  * 1.1a: Integration with Omicontrol completed
  * 1.2a: works on Jetson with optimisation and thresholding for objects
  * 1.3a: cropping (ROI) optimisations, support for goal thresholding at lower resolutions
- * 1.4a: (WIP) performance optimisations for new SBC, new FPS timing code, fixes
+ * 1.4a: performance optimisations for new SBC, new FPS timing code, fixes
+ * 2.4a: (WIP) localisation prototype implemented
  */
-#define OMICAM_VERSION "1.4a"
+#define OMICAM_VERSION "2.4a"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
 
@@ -50,7 +51,7 @@ typedef enum {
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET BUILD_TARGET_SBC // which platform Omicam will be running on
+#define BUILD_TARGET BUILD_TARGET_PC // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 2 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.1 // stop optimisation if the last step size was smaller than this in centimetres

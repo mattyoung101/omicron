@@ -130,6 +130,7 @@ static auto cv_thread(void *arg) -> void *{
     }
 #else
     log_trace("Build target is SBC, initialising VideoCapture");
+    // TODO make the width be "videoWidth" and the height also be "videoHeight"
     VideoCapture cap("v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720 ! jpegdec ! videoconvert "
                      "! appsink drop=true", CAP_GSTREAMER);
     if (!cap.isOpened()){
@@ -156,8 +157,8 @@ static auto cv_thread(void *arg) -> void *{
         double begin = utils_time_millis();
 
         Mat frame, frameScaled;
-        cap.read(frame);
-        //ogFrame.copyTo(frame);
+//        cap.read(frame);
+        ogFrame.copyTo(frame);
 
         if (frame.empty()){
 #if BUILD_TARGET == BUILD_TARGET_PC
@@ -298,6 +299,7 @@ static auto cv_thread(void *arg) -> void *{
             waitKey(static_cast<int>(1000 / fps));
         }
 #endif
+
         double elapsed = utils_time_millis() - begin;
         movavg_push(fpsAvg, elapsed);
         pthread_testcancel();

@@ -6,6 +6,7 @@ import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
+import javafx.scene.control.ComboBox
 import javafx.scene.control.TextField
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority
@@ -16,6 +17,7 @@ import tornadofx.*
 import kotlin.system.exitProcess
 
 class ConnectView : View() {
+    private lateinit var viewBox: ComboBox<String>
     init {
         reloadStylesheetsOnFocus()
         title = "Connect to Robot | Omicontrol"
@@ -73,7 +75,7 @@ class ConnectView : View() {
 
                 hbox {
                     label("Choose view: "){ textFill = Color.WHITE }
-                    combobox<String> {
+                    viewBox = combobox {
                         items = FXCollections.observableArrayList(
                             "Camera view",
                             "Robot view",
@@ -83,6 +85,7 @@ class ConnectView : View() {
                     alignment = Pos.CENTER
                 }
 
+                @Suppress("ConstantConditionIf")
                 if (DEBUG_CAMERA_VIEW) {
                     button("Force camera view") {
                         setOnAction {
@@ -98,8 +101,13 @@ class ConnectView : View() {
                         setOnAction {
                             try {
                                 CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
-                                // TODO check for which view to transition to
-                                Utils.transitionMetro(this@ConnectView, CameraView())
+
+                                when (viewBox.value){
+                                    "Camera view" -> Utils.transitionMetro(this@ConnectView, CameraView())
+                                    "Calibration view" -> Utils.transitionMetro(this@ConnectView, CalibrationView())
+                                    else -> Logger.error("Unsupported view: ${viewBox.value}")
+                                }
+
                             } catch (e: Exception) {
                                 Utils.showGenericAlert(
                                     Alert.AlertType.ERROR, "Error: $e\n\nPlease check the device is" +

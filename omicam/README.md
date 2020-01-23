@@ -75,6 +75,6 @@ Omicam is available under the same licence of the whole Team Omicron repo, see L
 - [DG_dynarr](https://github.com/DanielGibson/Snippets/blob/master/DG_dynarr.h): Public Domain
 - [rpa_queue](https://github.com/chrismerck/rpa_queue): Apache 2
 - [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo): Various BSD and Zlib
-- [NLopt](https://github.com/stevengj/nlopt): MIT (as no LGPL code is used)
+- [NLopt](https://github.com/stevengj/nlopt): MIT license
 - [OpenCV](https://opencv.org/): BSD 3-Clause
 - [mathc](https://github.com/felselva/mathc): Zlib license
