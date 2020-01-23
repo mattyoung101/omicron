@@ -18,6 +18,7 @@ set(COMPONENT_SRCS "defines.c"
                    "comms_uart.c"
                    "path_following.c"
                    "lstemp.c"
+                   "buzzer.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")

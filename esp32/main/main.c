@@ -30,6 +30,7 @@
 #include "movavg.h"
 #include "goap.h"
 #include "path_following.h"
+#include "buzzer.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -276,6 +277,14 @@ static void master_task(void *pvParameter){
     }
 }
 
+static void test_music_task(void *pvParameter){
+    static const char *TAG = "TestMusicTask";
+    buzzer_init();
+    while(true){
+        play_song(10);
+    }
+}
+
 void app_main(){
     puts("====================================================================================");
     puts(" * This ESP32 belongs to a robot from Team Omicron at Brisbane Boys' College.");
@@ -305,6 +314,6 @@ void app_main(){
     fflush(stdout);
 
     // create the main (or test, uncomment it if you want that) task 
-    xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-    // xTaskCreatePinnedToCore(test_task, "TestTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    // xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    xTaskCreatePinnedToCore(test_music_task, "TestMusicTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
 }
