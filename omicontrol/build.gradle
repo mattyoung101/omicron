@@ -20,6 +20,7 @@ dependencies {
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
+    compile group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
     compile 'com.google.guava:guava:28.1-jre'
     implementation 'no.tornado:tornadofx:1.7.17'
     implementation 'org.tinylog:tinylog-api-kotlin:2.0.0'

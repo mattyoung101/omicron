@@ -6,16 +6,22 @@ import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.Alert
+import javafx.scene.control.Label
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
+import javafx.stage.FileChooser
+import net.objecthunter.exp4j.Expression
+import net.objecthunter.exp4j.ExpressionBuilder
 import org.greenrobot.eventbus.Subscribe
 import org.tinylog.kotlin.Logger
 import tornadofx.*
 import java.io.ByteArrayInputStream
+import java.io.FileWriter
+import java.nio.file.Paths
 import kotlin.system.exitProcess
 
 class DewarpPoint(var pixelDistance: Double){
@@ -28,7 +34,7 @@ class DewarpPoint(var pixelDistance: Double){
  */
 class CalibrationView : View() {
     private lateinit var display: GraphicsContext
-    private val points = mutableListOf<DewarpPoint>().observable()
+    private val measurements = mutableListOf<DewarpPoint>().observable()
     /** begin point of line or null if no line being drawn **/
     private var origin: Point2D? = null
     /** end point of line or null if no line being drawn **/
@@ -38,6 +44,15 @@ class CalibrationView : View() {
     private var mousePos = Point2D(0.0, 0.0)
     private var latestImage: Image? = null
     private var cropRect: RemoteDebug.RDRect? = null
+    private lateinit var modelStatusLabel: Label
+    /** whether the model has been loaded yet **/
+    private var loadedModel = false
+        set(value) {
+            field = value
+            modelStatusLabel.text = "Model status: ${if(value) "Loaded" else "Not loaded"}"
+        }
+    private var ghostPoints = mutableListOf<Point2D>()
+    private var model: Expression? = null
 
     init {
         reloadStylesheetsOnFocus()
@@ -61,10 +76,16 @@ class CalibrationView : View() {
             display.strokeLine(origin!!.x, origin!!.y, mousePos.x, mousePos.y)
         }
 
-        // draw the origin point if we hav eit
+        // draw the origin point if we have it
         if (origin != null){
             display.fill = Color.RED
             display.fillOval(origin!!.x, origin!!.y, 10.0, 10.0)
+        }
+
+        // draw ghost points, which show the endpoint of all lines
+        for (point in ghostPoints){
+            display.fill = Color.ORANGE
+            display.fillOval(point.x, point.y, 10.0, 10.0)
         }
 
         // if we got no points, don't bother drawing anything
@@ -75,8 +96,16 @@ class CalibrationView : View() {
         display.fillOval(endPoint.x, endPoint.y, 10.0, 10.0)
 
         display.fill = Color.WHITE
-        display.fillText(String.format("%.2f pixels", origin!!.distance(endPoint)), (origin!!.x + endPoint.x) / 2.0,
-            (origin!!.y + endPoint.y) / 2.0)
+        val posX = (origin!!.x + endPoint.x) / 2.0
+        val posY = (origin!!.y + endPoint.y) / 2.0
+        val dist = origin!!.distance(endPoint)
+
+        if (loadedModel){
+            val cmDist = model!!.setVariable("x", dist).evaluate()
+            display.fillText(String.format("%.2f pixels (%.2f cm)", dist, cmDist), posX, posY)
+        } else {
+            display.fillText(String.format("%.2f pixels", dist), posX, posY)
+        }
     }
 
     @ExperimentalUnsignedTypes
@@ -109,6 +138,26 @@ class CalibrationView : View() {
         CONNECTION_MANAGER.disconnect()
         EVENT_BUS.unregister(this@CalibrationView)
         Utils.transitionMetro(this@CalibrationView, ConnectView())
+    }
+
+    private fun updateModel(function: String){
+        // parse the expression
+        Logger.debug("Setting model to: $function")
+        val tmpModel = ExpressionBuilder(function).variables("x").build()
+
+        try {
+            tmpModel.setVariable("x", 1.0).evaluate()
+            model = tmpModel
+            loadedModel = true
+            Logger.debug("Model seems to be valid")
+        } catch (e: Exception){
+            // model is invalid
+            Logger.error("Model appears to be invalid")
+            Logger.error(e)
+            Utils.showGenericAlert(Alert.AlertType.ERROR, "Details: $e",
+                "Model \"$function\" appears to be invalid.")
+            return
+        }
     }
 
     override val root = vbox {
@@ -154,7 +203,8 @@ class CalibrationView : View() {
                         } else {
                             selecting = false
                             end = Point2D(it.x, it.y)
-                            points.add(DewarpPoint(origin!!.distance(end)))
+                            measurements.add(DewarpPoint(origin!!.distance(end)))
+                            ghostPoints.add(end!!)
                         }
                         updateDisplay()
                     }
@@ -180,7 +230,7 @@ class CalibrationView : View() {
                 form {
                     fieldset {
                         field {
-                            tableview(points){
+                            tableview(measurements){
                                 column("Pixel dist", DewarpPoint::pixelDistance).makeEditable().contentWidth(16.0)
                                 column("Real dist (cm)", DewarpPoint::realDistance).makeEditable().remainingWidth()
 
@@ -201,20 +251,35 @@ class CalibrationView : View() {
                         field {
                             button("Clear"){
                                 setOnAction {
-                                    points.clear()
+                                    measurements.clear()
                                     selecting = false
                                     origin = null
                                     end = null
+                                    loadedModel = false
+                                    ghostPoints.clear()
                                 }
                             }
                         }
                     }
 
-                    fieldset {
+                    fieldset{
                         field {
-                            button("Calculate model"){
+                            button("Export as CSV"){
                                 setOnAction {
-                                    // TODO
+                                    val chooser = FileChooser().apply {
+                                        initialDirectory = Paths.get(".").toFile()
+                                        extensionFilters.add(FileChooser.ExtensionFilter("CSV file", "*.csv"))
+                                    }
+                                    val csvFile = chooser.showSaveDialog(currentWindow) ?: return@setOnAction
+
+                                    val writer = FileWriter(csvFile)
+                                    writer.append("Pixel dist,Real dist").appendln()
+                                    for (row in measurements){
+                                        writer.append("${row.pixelDistance},${row.realDistance}").appendln()
+                                    }
+                                    writer.close()
+                                    Utils.showGenericAlert(Alert.AlertType.INFORMATION,
+                                        "Saved to: $csvFile", "Export completed successfully.")
                                 }
                             }
                         }
@@ -222,7 +287,19 @@ class CalibrationView : View() {
 
                     fieldset {
                         field {
-                            label("Model status: Not calculated")
+                            button("Load model"){
+                                setOnAction {
+                                    val funcStr = Utils.showTextInputDialog("", "Enter model function").trim()
+                                    if (funcStr == "") return@setOnAction
+                                    updateModel(funcStr)
+                                }
+                            }
+                        }
+                    }
+
+                    fieldset {
+                        field {
+                            modelStatusLabel = label("Model status: Not loaded")
                         }
                     }
                 }

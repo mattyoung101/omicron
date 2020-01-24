@@ -216,7 +216,7 @@ void localiser_post(uint8_t *frame, int32_t width, int32_t height){
 
 uint32_t localiser_remote_get_points(RDPoint *array, size_t arraySize){
     if (da_count(linePoints) > arraySize){
-        log_warn("Line points size overflow. Please increase the max_count for linePoints in RemoteDebug.options.");
+        //log_warn("Line points size overflow. Please increase the max_count for linePoints in RemoteDebug.options.");
     }
 
     // this is to stop it from overflowing the Protobuf fixed size buffer

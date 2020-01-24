@@ -14,6 +14,7 @@ movavg_t *movavg_create(size_t size){
 }
 
 void movavg_free(movavg_t *mov_avg){
+    free(mov_avg->items);
     free(mov_avg);
     mov_avg = NULL;
 }

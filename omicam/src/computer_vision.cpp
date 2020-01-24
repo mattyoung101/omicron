@@ -117,7 +117,7 @@ static auto cv_thread(void *arg) -> void *{
     uint32_t frameCounter = 0;
     log_trace("Vision thread started");
 
-    Mat ogFrame = imread("../field.png");
+    Mat ogFrame = imread("../field_calib.png");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
@@ -255,7 +255,7 @@ static auto cv_thread(void *arg) -> void *{
             // wait for localisation to finish before dispatching info
             // if performance issue occur, make this mutexes and shit instead of a busy loop - just couldn't be bothered now
             while (!localiserDone){
-                puts("had to wait for localiser!");
+                log_info("Had to wait for localiser before posting to remote debug");
                 nanosleep((const struct timespec[]){{0, 500000L}}, nullptr);
             }
 
@@ -362,6 +362,8 @@ void vision_init(void){
 void vision_dispose(void){
     log_trace("Stopping vision thread");
     pthread_cancel(cvThread);
+    pthread_cancel(fpsCounterThread);
     pthread_join(cvThread, nullptr);
+    pthread_join(fpsCounterThread, nullptr);
     movavg_free(fpsAvg);
 }

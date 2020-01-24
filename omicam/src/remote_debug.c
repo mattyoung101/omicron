@@ -41,6 +41,8 @@ _Atomic double cpuTemperature = 0.0f;
 static bool thermalThrottling = false;
 field_objects_t selectedFieldObject = OBJ_NONE;
 static int32_t totalFailures = 0;
+static bool wasError = false;
+static int32_t errorTicks = 0;
 
 static void init_tcp_socket(void);
 
@@ -332,7 +334,7 @@ static void *thermal_thread(void *arg){
         fclose(tempFile);
 
         long tempLong = strtol(buf, NULL, 10);
-        double tempDegrees = tempLong / 1000.0f;
+        double tempDegrees = (double) tempLong / 1000.0f;
         cpuTemperature = tempDegrees;
         // log_debug("Temperature is %.2f degrees", tempDegrees);
 
@@ -405,7 +407,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
     compressor = tjInitCompress();
     width = w;
     height = h;
-    if (!rpa_queue_create(&frameQueue, 4)){
+    if (!rpa_queue_create(&frameQueue, 6)){
         log_error("Failed to create frame queue");
     }
 
@@ -449,7 +451,8 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
     height = h;
 
     if (!rpa_queue_trypush(frameQueue, entry)){
-        log_warn("Failed to push new frame to queue. This likely indicates a hang, performance issue or a busy network.");
+        if (!wasError) wasError = true;
+        log_warn("Failed to push new frame to queue. This may indicate a hang, performance issue or a busy network.");
         free(camFrame);
         free(entry);
         free(threshFrame);
@@ -459,6 +462,10 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
             client_disconnected();
         }
     } else {
+        if (wasError){
+            log_info("Successfully pushed new frame after %d failures", totalFailures);
+            wasError = false;
+        }
         totalFailures = 0;
     }
 }

@@ -406,7 +406,7 @@ class CameraView : View() {
                             .build()
                         CONNECTION_MANAGER.dispatchCommand(msg, {
                             Utils.showGenericAlert(
-                            Alert.AlertType.INFORMATION, "Your settings have been saved permanently to the remote host.",
+                            Alert.AlertType.INFORMATION, "Your settings have been written to the remote Omicam config file.",
                             "Config saved successfully"
                             )
                         })
