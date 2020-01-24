@@ -30,40 +30,40 @@ static vec2_array_t correctedLinePoints = {0};
 _Atomic bool localiserDone = false;
 static double orientation = 0.0; // last received orientation from ESP32
 
+static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
+    if (x < min){
+        return min;
+    } else if (x > max){
+        return max;
+    } else {
+        return x;
+    }
+}
+
 /**
- * The bread and butter of our localisation system, this is the function to be minimised by the subplex optimiser.
- * What this does is basically given an x,y coordinate pair returns a "score" of how close the estimated position of
- * the robot is to the real one.
+ * This function will be minimised by the Subplex optimiser. Based on pseudocode, research and field files by Ethan.
+ * Poorly documented because it's complicated :(
  * @param n the number of dimensions, should be always 2
  * @param x an N dimensional array containing the input values
  * @param grad the gradient, ignored as we're using a derivative-free optimisation algorithm
- * @param f_data ignored
+ * @param f_data user data, ignored
  * @return a score of how close the estimated position is to the real position
  */
 static double objective_function(unsigned n, const double* x, double* grad, void* f_data){
-    // this will likely be ethan's implementation of the objective function where we look up the value in the field map
+    // convert to field file array coords
+    int32_t ix = ROUND2INT(x[0] + (field.length / 2.0));
+    int32_t iy = ROUND2INT(x[1] + (field.width / 2.0));
+    int32_t fx = constrain(ix, 0, field.length);
+    int32_t fy = constrain(iy, 0, field.width);
 
-    /** ALGORITHM OUTLINE
-     * Get the relative coordinates of the points at which the rays intersect the white line (let's call these line points)
-     * Rotate all line points around the centre of the robot based on the current heading
-     * Translate all line points to the current estimated position of the robot (wherever the algorithm is testing)
-     * Round the coordinates of each line point to the nearest cm
-     * Lookup the smallest distance for each line point to the closest line in the massive field file array
-     * Sum all the distances together
-     * 
-     * A potential micro-optimisation here is to arrange the algorithm as such:
-     * 
-     * FOR EACH LINE POINT
-     *     Rotate
-     *     Translate
-     *     Round
-     *     Lookup
-     *     Add to current working total
-     * 
-     * This gives us a value for which the optimiser will aim to minimise. The closer the value is to 0, the better the line points align with the white line
-    **/ 
+    // sum the error
+    double totalError = 3.0;
+    for (size_t i = 0; i < da_count(correctedLinePoints); i++){
+        // runningTotal += output[constrain(int(round(point.y + fieldLength / 2 + y)), 0, fieldLength - 1)]
+        // [constrain(int(round(point.x + fieldWidth / 2 + x)), 0, fieldWidth - 1)]
+    }
 
-    return 0.0;
+    return totalError;
 }
 
 /**
@@ -115,7 +115,7 @@ static void *work_thread(void *arg){
         pthread_testcancel();
         void *queueData = NULL;
         if (!rpa_queue_pop(queue, &queueData)){
-            log_warn("Failed to pop item from localisation queue");
+            log_warn("Failed to pop item from localisation work queue");
             continue;
         }
 
@@ -124,6 +124,7 @@ static void *work_thread(void *arg){
         da_clear(correctedLinePoints);
         localiserDone = false;
 
+        // image analysis
         // 1. calculate begin points for Bresenham's line algorithm
         double interval = PI2 / LOCALISER_NUM_RAYS;
         double x0 = entry->width / 2.0;
@@ -142,15 +143,35 @@ static void *work_thread(void *arg){
             goto cleanup;
         }
 
-        // 2. dewarp points based on calculated mirror model, and rotate based on robot's real orientation
+        // image normalisation
+        // 2. dewarp points based on calculated mirror model to get cm field coord, then rotate based on robot's real orientation
         for (size_t i = 0; i < da_count(linePoints); i++){
             struct vec2 point = da_get(linePoints, i);
-            struct vec2 dewarped = {0};
-            dewarped.x = utils_camera_dewarp(point.x);
-            dewarped.y = utils_camera_dewarp(point.y);
+
+            // 2.1. convert the point to polar coordinates to apply dewarp
+            struct vec2 origin = {entry->width / 2.0, entry->height / 2.0}; // centre of robot on image in pixel coords
+            double r = utils_camera_dewarp(svec2_distance(origin, point));
+            double theta = svec2_angle(point);
+
+            // 2.2. convert back to cartesian and rotate
+            struct vec2 dewarped = {r * cos(theta), r * sin(theta)};
             svec2_rotate(dewarped, orientation);
             da_add(correctedLinePoints, dewarped);
         }
+
+        // coordinate optimisation
+        // 3. start the NLopt Subplex optimiser
+        /*double resultCoord[2] = {0.0, 0.0}; // TODO use last mouse sensor coordinate to seed optimisation
+        double resultError = 0.0;
+        nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
+        if (result < 0){
+            // seem as though we've been stitched up and the NLopt version Ubuntu ships doesn't support nlopt_result_to_string()
+            log_warn("The optimiser may have failed to converge on a solution: code %d", result);
+        }
+        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %d\n", resultCoord[0], resultCoord[1],
+               resultError, result);*/
+
+        // TODO post results with uart and also send it to the performance evaluator (like the FPS logger but for optimiser)
 
         cleanup:
         free(entry->frame);
@@ -162,6 +183,10 @@ static void *work_thread(void *arg){
 }
 
 void localiser_init(char *fieldFile){
+    int major, minor, bugfix;
+    nlopt_version(&major, &minor, &bugfix);
+    log_info("NLopt version: %d.%d.%d", major, minor, bugfix);
+
     log_info("Initialising localiser with field file: %s", fieldFile);
     long fileSize = 0;
     uint8_t *data = utils_load_bin(fieldFile, &fileSize);
@@ -180,7 +205,7 @@ void localiser_init(char *fieldFile){
     optimiser = nlopt_create(NLOPT_LN_SBPLX, 2);
     nlopt_set_stopval(optimiser, LOCALISER_ERROR_TOLERANCE); // stop if we're close enough to a solution
     nlopt_set_ftol_abs(optimiser, LOCALISER_STEP_TOLERANCE); // stop if the last step was too small (we must be going nowhere/solved)
-    nlopt_set_maxtime(optimiser, LOCALISER_MAX_EVAL_TIME); // stop if it's taking too long
+    nlopt_set_maxtime(optimiser, LOCALISER_MAX_EVAL_TIME / 1000.0); // stop if it's taking too long
     nlopt_set_min_objective(optimiser, objective_function, NULL);
 
     double minCoord[] = {-field.length / 2.0, -field.width / 2.0};
@@ -216,7 +241,7 @@ void localiser_post(uint8_t *frame, int32_t width, int32_t height){
 
 uint32_t localiser_remote_get_points(RDPoint *array, size_t arraySize){
     if (da_count(linePoints) > arraySize){
-        //log_warn("Line points size overflow. Please increase the max_count for linePoints in RemoteDebug.options.");
+        log_warn("Line points size overflow. Please increase the max_count for linePoints in RemoteDebug.options.");
     }
 
     // this is to stop it from overflowing the Protobuf fixed size buffer
@@ -235,6 +260,7 @@ void localiser_dispose(void){
     log_trace("Disposing localiser");
     pthread_cancel(workThread);
     pthread_join(workThread, NULL);
+    nlopt_force_stop(optimiser);
     nlopt_destroy(optimiser);
     rpa_queue_destroy(queue);
     da_free(linePoints);

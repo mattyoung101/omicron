@@ -11,7 +11,7 @@ import tornadofx.ViewTransition
 
 object Utils {
     fun transitionMetro(from: View, to: View) {
-        from.replaceWith(to, transition = ViewTransition.Metro(Duration.seconds(1.5)))
+        from.replaceWith(to, transition = ViewTransition.Metro(Duration.seconds(1.2)))
     }
 
     fun showGenericAlert(alertType: Alert.AlertType, contentText: String, headerText: String, titleText: String = "Omicontrol"){

@@ -117,7 +117,7 @@ static auto cv_thread(void *arg) -> void *{
     uint32_t frameCounter = 0;
     log_trace("Vision thread started");
 
-    Mat ogFrame = imread("../field_calib.png");
+    Mat ogFrame = imread("../field.png");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
@@ -140,8 +140,8 @@ static auto cv_thread(void *arg) -> void *{
         exit(EXIT_FAILURE);
     }
 #endif
-    auto fps = static_cast<int32_t>(cap.get(CAP_PROP_FPS));
-    log_info("Video capture initialised successfully using API: %s at %d FPS", cap.getBackendName().c_str(), fps);
+    auto fps = ROUND2INT(cap.get(CAP_PROP_FPS));
+    log_info("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
 
     // this is a stupid way of calculating this
     Mat junk(videoHeight, videoWidth, CV_8UC1);

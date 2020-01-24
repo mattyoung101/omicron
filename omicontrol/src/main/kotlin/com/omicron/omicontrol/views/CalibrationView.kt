@@ -79,22 +79,24 @@ class CalibrationView : View() {
         // draw the origin point if we have it
         if (origin != null){
             display.fill = Color.RED
-            display.fillOval(origin!!.x, origin!!.y, 10.0, 10.0)
+            display.fillOval(origin!!.x - 5.0, origin!!.y - 5.0, 10.0, 10.0)
         }
 
         // draw ghost points, which show the endpoint of all lines
         for (point in ghostPoints){
             display.fill = Color.ORANGE
-            display.fillOval(point.x, point.y, 10.0, 10.0)
+            display.fillOval(point.x - 5.0, point.y - 5.0, 10.0, 10.0)
         }
 
         // if we got no points, don't bother drawing anything
         if (!selecting && end == null) return
         val endPoint = if (selecting) mousePos else end!!
 
+        // draw end point
         display.fill = Color.RED
-        display.fillOval(endPoint.x, endPoint.y, 10.0, 10.0)
+        display.fillOval(endPoint.x - 5.0, endPoint.y - 5.0, 10.0, 10.0)
 
+        // draw line distance text
         display.fill = Color.WHITE
         val posX = (origin!!.x + endPoint.x) / 2.0
         val posY = (origin!!.y + endPoint.y) / 2.0
@@ -149,6 +151,7 @@ class CalibrationView : View() {
             tmpModel.setVariable("x", 1.0).evaluate()
             model = tmpModel
             loadedModel = true
+            ghostPoints.clear()
             Logger.debug("Model seems to be valid")
         } catch (e: Exception){
             Logger.error("Model appears to be invalid")
@@ -202,8 +205,10 @@ class CalibrationView : View() {
                         } else {
                             selecting = false
                             end = Point2D(it.x, it.y)
-                            measurements.add(DewarpPoint(origin!!.distance(end)))
-                            ghostPoints.add(end!!)
+                            if (!loadedModel) {
+                                measurements.add(DewarpPoint(origin!!.distance(end)))
+                                ghostPoints.add(end!!)
+                            }
                         }
                         updateDisplay()
                     }
