@@ -14,6 +14,7 @@
 #define OMICAM_VERSION "2.4a"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
+#define DEWARP_MODEL (5.0407 * exp(0.0106 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop

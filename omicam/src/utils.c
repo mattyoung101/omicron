@@ -30,8 +30,7 @@ static void remove_spaces(char* s) {
 }
 
 double utils_camera_dewarp(double x){
-    // FIXME just temporary
-    return x;
+    return DEWARP_MODEL;
 }
 
 void utils_parse_thresh(char *threshStr, int32_t *array){

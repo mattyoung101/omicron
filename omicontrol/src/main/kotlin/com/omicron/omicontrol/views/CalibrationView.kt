@@ -151,7 +151,6 @@ class CalibrationView : View() {
             loadedModel = true
             Logger.debug("Model seems to be valid")
         } catch (e: Exception){
-            // model is invalid
             Logger.error("Model appears to be invalid")
             Logger.error(e)
             Utils.showGenericAlert(Alert.AlertType.ERROR, "Details: $e",

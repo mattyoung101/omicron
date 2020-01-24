@@ -10,7 +10,8 @@ import org.greenrobot.eventbus.EventBus
  * 0.1a: works with new OpenCV stuff
  * 1.1a: UI implemented and threshold sliders/debug commands work properly
  * 1.2a: works with Omicam cropping and downscaling
- * 1.3a: (WIP) added support for camera calibration
+ * 1.3a: added support for camera calibration
+ * XXX: unknown yet
  */
 const val OMICONTROL_VERSION = "1.3a"
 const val REMOTE_IP = "monkeyonkeyboard.ddns.net"
