@@ -3,6 +3,7 @@
 #include <bits/types/FILE.h>
 #include "defines.h"
 #include "protobuf/UART.pb.h"
+#include <pthread.h>
 
 // Globals
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
@@ -11,6 +12,10 @@ extern char *fieldObjToString[];
 /** this is the UNCROPPED video width and height (i.e. what we receive raw from the camera) */
 extern int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
 extern int32_t visionCropRect[4];
+/** true if Omicam is currently in sleep mode (low power mode) **/
+extern bool sleeping;
+extern pthread_cond_t sleepCond;
+extern pthread_mutex_t sleepMutex;
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,15 +29,21 @@ void utils_parse_rect(char *rectStr, int32_t *array);
 double utils_time_millis();
 /** Writes all thresholds to the INI file using their current values **/
 void utils_write_thresholds_disk();
-/**
- * Utility function to encode the vision data into a protobuf packet and sent it over UART, using the
- * comms_uart module.
- */
+/** Utility function to encode the vision data into a protobuf packet and sent it over UART, using the comms_uart module. */
 void utils_cv_transmit_data(ObjectData ballData);
-/** Reads a binary file from disk. You must free() the returned buffer. **/
+/** Reads a binary file from disk and its size. You must free() the returned buffer. **/
 uint8_t *utils_load_bin(char *path, long *size);
-/** Applies the calculated dewarp model to turn the given pixel distance into a centimetre distance in the camera **/
+/** Applies the calculated dewarp model to turn the given pixel distance into a centimetre distance in the camera. **/
 double utils_camera_dewarp(double x);
+/**
+ * Enters sleep mode (low power mode), designed to keep CPU thermals under control if no work needs to be done.
+ * In this mode, networking is kept alive but vision processing (and thus also localisation) is suspended.
+ * If an Omicontrol client is currently connected, it is expected to disconnect after this call.
+ * When a new connection is received, Omicam will automatically wake up from sleep.
+ */
+void utils_sleep_enter(void);
+/** Exits sleep mode (low power mode). Does nothing if already awake. */
+void utils_sleep_exit(void);
 
 #ifdef __cplusplus
 }
@@ -45,7 +56,8 @@ double utils_camera_dewarp(double x);
 /** unpack two 8 bit integers into a 16 bit integer **/
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
 #define KEEP_VAR __attribute__((used))
-#define RD_SEND_OK_RESPONSE do { DebugCommand response = DebugCommand_init_zero; \
+#define RD_SEND_OK_RESPONSE do { \
+    DebugCommand response = DebugCommand_init_zero; \
     response.messageId = CMD_OK; \
     send_response(response); } while (0)
 #define VISION_IS_RESCALED (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW)

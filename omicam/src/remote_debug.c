@@ -64,7 +64,17 @@ static void send_response(DebugCommand command){
     }
 }
 
-/** reads and processes Omicontrol messages. (mostly) non-blocking. **/
+/** called to handle when Omicontrol disconnects */
+static void client_disconnected(void){
+    log_info("Client has disconnected. Restarting socket server...");
+    close(sockfd);
+    close(connfd);
+    connfd = -1;
+    totalFailures = 0;
+    init_tcp_socket();
+}
+
+/** reads and processes Omicontrol messages. Non-blocking (or at least, as much as is possible). */
 static void read_remote_messages(void){
     // read potential protobuf command from Omicontrol socket, recycling buffer
     // https://stackoverflow.com/a/3054519/5007892
@@ -133,26 +143,15 @@ static void read_remote_messages(void){
                 RD_SEND_OK_RESPONSE;
                 break;
             }
-            case CMD_POWER_OFF: {
-                log_info("Received CMD_POWER_OFF");
+            case CMD_SLEEP_ENTER: {
+                log_debug("Received CMD_SLEEP_ENTER, going to enter sleep mode");
+                utils_sleep_enter();
                 RD_SEND_OK_RESPONSE;
-#if BUILD_TARGET == BUILD_TARGET_PC
-                log_warn("Not shutting down as this is a PC build.");
-#else
-                // note: requires passwordless access to sudo
-                system("sudo shutdown now"); // TODO error checking
-#endif
-                break;
-            }
-            case CMD_POWER_REBOOT: {
-                log_info("Received CMD_POWER_REBOOT");
-                RD_SEND_OK_RESPONSE;
-#if BUILD_TARGET == BUILD_TARGET_PC
-                log_warn("Not rebooting as this is a PC build.");
-#else
-                // note: requires passwordless access to sudo
-                system("sudo reboot now"); // TODO error checking
-#endif
+                // wait for Omicontrol to disconnect itself first, so we don't cause the unexpected disconnect message
+                sleep(1);
+                // since we're not sending messages anymore as we're sleeping (where we would usually check to see if
+                // the client disconnected with SIGPIPE), we have to signal the disconnect to the rest of the code manually
+                client_disconnected();
                 break;
             }
             default: {
@@ -165,18 +164,8 @@ static void read_remote_messages(void){
     }
 }
 
-/** called to handle when Omicontrol disconnects **/
-static void client_disconnected(void){
-    log_info("Client has disconnected. Restarting socket server...");
-    close(sockfd);
-    close(connfd);
-    connfd = -1;
-    totalFailures = 0;
-    init_tcp_socket();
-}
-
 /**
- * Encodes the given JPEG images into a Protocl Buffer and disaptches it over the TCP socket, if connected.
+ * Encodes the given JPEG images into a Protocol Buffer and dispatches it over the TCP socket, if connected.
  */
 static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *threshImg, unsigned long threshImgSize, frame_entry_t *entry){
     DebugFrame msg = DebugFrame_init_zero;
@@ -388,6 +377,7 @@ static void *tcp_thread(void *arg){
         log_info("Accepted client connection from %s:%d, streaming will now begin", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
         // reset selected object to OBJ_NONE to match what Omicontrol will be set to now
         selectedFieldObject = OBJ_NONE;
+        utils_sleep_exit();
     }
     return NULL;
 }

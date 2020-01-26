@@ -372,31 +372,17 @@ class CameraView : View() {
                 }
             }
             menu("Actions") {
-                item("Reboot camera"){
+                item("Enter sleep mode"){
                     setOnAction {
-                        if (Utils.showConfirmDialog("This may take some time.", "Reboot the SBC now?")){
-                            val msg = RemoteDebug.DebugCommand.newBuilder()
-                                .setMessageId(DebugCommands.CMD_POWER_REBOOT.ordinal)
-                                .build()
-                            CONNECTION_MANAGER.dispatchCommand(msg, {
-                                Logger.info("Reboot command sent successfully, disconnecting")
-                                disconnect()
-                            })
-                        }
+                        val msg = RemoteDebug.DebugCommand.newBuilder()
+                            .setMessageId(DebugCommands.CMD_SLEEP_ENTER.ordinal)
+                            .build()
+                        CONNECTION_MANAGER.dispatchCommand(msg, {
+                            Logger.info("Acknowledgement of sleep received, disconnecting")
+                            runLater { disconnect() }
+                        })
                     }
-                }
-                item("Shutdown camera"){
-                    setOnAction {
-                        if (Utils.showConfirmDialog("You will need to power it back on manually.", "Shutdown the SBC now?")){
-                            val msg = RemoteDebug.DebugCommand.newBuilder()
-                                .setMessageId(DebugCommands.CMD_POWER_OFF.ordinal)
-                                .build()
-                            CONNECTION_MANAGER.dispatchCommand(msg, {
-                                Logger.info("Shutdown command sent successfully, disconnecting")
-                                disconnect()
-                            })
-                        }
-                    }
+                    accelerator = KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN)
                 }
                 item("Save config"){
                     accelerator = KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN)

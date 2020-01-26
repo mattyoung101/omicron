@@ -68,13 +68,6 @@ int main() {
     pthread_mutex_init(&logLock, NULL);
     log_set_lock(log_lock_func);
 
-//    pthread_t threads[4] = {0};
-//    for (int i = 0; i < 4; i++){
-//        pthread_create(&threads[i], NULL, bruh_moment, NULL);
-//    }
-//    puts("spawned hogs");
-//    pthread_join(threads[0], NULL);
-
     struct passwd *pw = getpwuid(getuid());
     char *homedir = pw->pw_dir;
     // FIXME this will fail if the directory doesn't exist!

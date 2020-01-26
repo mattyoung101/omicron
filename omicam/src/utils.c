@@ -12,6 +12,7 @@
 #include "comms_uart.h"
 #include <errno.h>
 #include <unistd.h>
+#include <pthread.h>
 
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
@@ -19,6 +20,9 @@ int32_t visionCropRect[4];
 // OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE,OBJ_LINES,
 int32_t *thresholds[] = {minBallData, maxBallData, minYellowData, maxYellowData, minBlueData, maxBlueData, minLineData, maxLineData};
 char *fieldObjToString[] = {"OBJ_NONE", "OBJ_BALL", "OBJ_GOAL_YELLOW", "OBJ_GOAL_BLUE", "OBJ_LINES"};
+bool sleeping;
+pthread_cond_t sleepCond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t sleepMutex = PTHREAD_MUTEX_INITIALIZER;
 
 // https://stackoverflow.com/a/1726321/5007892
 static void remove_spaces(char* s) {
@@ -182,6 +186,25 @@ uint8_t *utils_load_bin(char *path, long *size){
     fread(buf, 1, length, f);
     fclose(f);
     return buf;
+}
+
+void utils_sleep_enter(void){
+    pthread_mutex_lock(&sleepMutex);
+    sleeping = true;
+    pthread_cond_broadcast(&sleepCond);
+    pthread_mutex_unlock(&sleepMutex);
+    log_debug("Entered sleep mode successfully");
+}
+
+void utils_sleep_exit(void){
+    if (!sleeping) return;
+
+    puts("attempting to wake the piece of shit");
+    pthread_mutex_lock(&sleepMutex);
+    sleeping = false;
+    pthread_cond_broadcast(&sleepCond);
+    pthread_mutex_unlock(&sleepMutex);
+    log_debug("Exited sleep mode successfully");
 }
 
 // source: https://stackoverflow.com/a/3756954/5007892 and https://stackoverflow.com/a/17371925/5007892

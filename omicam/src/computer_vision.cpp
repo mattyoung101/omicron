@@ -153,7 +153,14 @@ static auto cv_thread(void *arg) -> void *{
     log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
     while (true){
+        // handle threading crap before beginning with the vision
         pthread_testcancel();
+        pthread_mutex_lock(&sleepMutex);
+        while (sleeping){
+            pthread_cond_wait(&sleepCond, &sleepMutex);
+        }
+        pthread_mutex_unlock(&sleepMutex);
+
         double begin = utils_time_millis();
 
         Mat frame, frameScaled;

@@ -31,8 +31,8 @@
 #define REMOTE_TEMP_REPORTING_INTERVAL 2 // record the temperature every this many seconds
 typedef enum {
     CMD_OK = 0, // the last command completed successfully
-    CMD_POWER_OFF, // ask Omicam to shutdown the Jetson
-    CMD_POWER_REBOOT, // ask Omicam to reboot the Jetson
+    CMD_ERROR, // the last command had a problem with it
+    CMD_SLEEP_ENTER, // enter sleep mode (low power mode)
     CMD_THRESHOLDS_GET_ALL, // return the current thresholds for all object
     CMD_THRESHOLDS_SET, // set the specified object's threshold to the given value
     CMD_THRESHOLDS_WRITE_DISK, // writes the current thresholds to the INI file and then to disk
