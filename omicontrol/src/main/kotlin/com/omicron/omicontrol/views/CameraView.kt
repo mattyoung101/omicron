@@ -477,7 +477,7 @@ class CameraView : View() {
 
                     fieldset {
                         field {
-                            label("Localiser debug: ")
+                            label("Raycast debug: ")
                             checkbox {
                                 selectedProperty().addListener { _, _, newValue ->
                                     localiserDebug = newValue

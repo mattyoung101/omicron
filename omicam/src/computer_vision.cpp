@@ -141,7 +141,7 @@ static auto cv_thread(void *arg) -> void *{
     }
 #endif
     auto fps = ROUND2INT(cap.get(CAP_PROP_FPS));
-    log_info("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
+    log_debug("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
 
     // this is a stupid way of calculating this
     Mat junk(videoHeight, videoWidth, CV_8UC1);
@@ -276,7 +276,8 @@ static auto cv_thread(void *arg) -> void *{
                     remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
                 case OBJ_GOAL_BLUE:
-                    memcpy(threshData, blueGoal.threshMask.data, blueGoal.threshMask.rows * blueGoal.threshMask.cols);
+                    if (blueGoal.threshMask.data != nullptr)
+                        memcpy(threshData, blueGoal.threshMask.data, blueGoal.threshMask.rows * blueGoal.threshMask.cols);
                     remote_debug_post(frameData, threshData, blueGoal.boundingBox, blueGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
                     break;
                 case OBJ_GOAL_YELLOW:

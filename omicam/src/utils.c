@@ -11,6 +11,7 @@
 #include "nanopb/pb_encode.h"
 #include "comms_uart.h"
 #include <errno.h>
+#include <unistd.h>
 
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
@@ -94,16 +95,73 @@ void utils_cv_transmit_data(ObjectData ballData){
     comms_uart_send(buf, stream.bytes_written);
 }
 
+static void write_thresholds(FILE *fp){
+    fprintf(fp, "minBall = %d,%d,%d\n", minBallData[0], minBallData[1], minBallData[2]);
+    fprintf(fp, "maxBall = %d,%d,%d\n\n", maxBallData[0], maxBallData[1], maxBallData[2]);
+
+    fprintf(fp, "minYellow = %d,%d,%d\n", minYellowData[0], minYellowData[1], minYellowData[2]);
+    fprintf(fp, "maxYellow = %d,%d,%d\n\n", maxYellowData[0], maxYellowData[1], maxYellowData[2]);
+
+    fprintf(fp, "minBlue = %d,%d,%d\n", minBlueData[0], minBlueData[1], minBlueData[2]);
+    fprintf(fp, "maxBlue = %d,%d,%d\n\n", maxBlueData[0], maxBlueData[1], maxBlueData[2]);
+
+    fprintf(fp, "minLine = %d,%d,%d\n", minLineData[0], minLineData[1], minLineData[2]);
+    fprintf(fp, "maxLine = %d,%d,%d\n", maxLineData[0], maxLineData[1], maxLineData[2]);
+}
+
 void utils_write_thresholds_disk(){
-    FILE *curFp = fopen("../omicam.ini", "r");
-    FILE *newFp = fopen("../omicam_new.ini", "w+");
+    FILE *curConfig = fopen("../omicam.ini", "r");
+    if (curConfig == NULL){
+        log_error("Failed to open config file: %s", strerror(errno));
+        return;
+    }
+    FILE *newConfig = fopen("../omicam_new.ini", "w+");
+    if (newConfig == NULL){
+        log_error("Failed to open new config file: %s", strerror(errno));
+        return;
+    }
+    char lineBuf[255];
+    uint32_t line = 0;
+    bool skipping = false;
 
-    // read curFp line by line, if we need to add the new threshold do so, then write it out to newFp
-    // delete curFp
-    // rename newFp
+    // read current config line by line, writing out the entire threshold section once we reach OMICAM_THRESH_BEGIN
+    // and continuing as normal once we reach OMICAM_THRESH_END
+    while (fgets(lineBuf, 255, curConfig) != NULL){
+        line++;
 
-    fclose(curFp);
-    fclose(newFp);
+        if (skipping){
+            // if the "OMICAM_THRESH_END" marker is not in the line, continue skipping, otherwise stop
+            if (!strstr(lineBuf, "OMICAM_THRESH_END")){
+                continue;
+            } else {
+                log_trace("Stopping skip on line %d", line);
+                skipping = false;
+            }
+        }
+        fputs(lineBuf, newConfig);
+
+        if (strstr(lineBuf, "OMICAM_THRESH_BEGIN")){
+            log_trace("Found thresh begin region on line %d", line);
+            write_thresholds(newConfig);
+            skipping = true;
+        }
+    }
+    fclose(curConfig);
+    fclose(newConfig);
+
+    // delete current config file
+    if (unlink("../omicam.ini") != 0){
+        log_error("Failed to remove old config file: %s", strerror(errno));
+        return;
+    }
+
+    // rename new config file to old config file
+    if (rename("../omicam_new.ini", "../omicam.ini")){
+        log_error("You will have to rename \"omicam_new.ini\" to \"omicam.ini\" manually, error: %s", strerror(errno));
+        return;
+    }
+
+    log_debug("New config written to disk successfully!");
 }
 
 uint8_t *utils_load_bin(char *path, long *size){

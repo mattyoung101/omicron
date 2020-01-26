@@ -42,7 +42,6 @@ static bool thermalThrottling = false;
 field_objects_t selectedFieldObject = OBJ_NONE;
 static int32_t totalFailures = 0;
 static bool wasError = false;
-static int32_t errorTicks = 0;
 
 static void init_tcp_socket(void);
 
@@ -103,7 +102,7 @@ static void read_remote_messages(void){
                 for (int obj = 1; obj <= 4; obj++) {
                     int32_t *min = thresholds[i++];
                     int32_t *max = thresholds[i++];
-                    log_trace("object %s, min (%d,%d,%d), max (%d,%d,%d)", fieldObjToString[obj], min[0], min[1], min[2], max[0], max[1], max[2]);
+                    log_trace("Object %s, min (%d,%d,%d), max (%d,%d,%d)", fieldObjToString[obj], min[0], min[1], min[2], max[0], max[1], max[2]);
                     // memcpy apparently doesn't work with this so we have to do it semi-manually
                     for (int j = 0; j < 3; j++) {
                         response.allThresholds[obj].min[j] = min[j];
