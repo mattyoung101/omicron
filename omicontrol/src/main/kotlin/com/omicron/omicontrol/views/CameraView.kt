@@ -47,8 +47,6 @@ class CameraView : View() {
     private val newThreshReceivedToken = Object()
     /** timer which goes off when the user drags a slider **/
     private var grabSendTimer: Timer? = null
-    /** bytes received in the last second **/
-    private var bandwidth = 0L
     /** when the last second recording began in system time **/
     private var bandwidthRecordingBegin = System.currentTimeMillis()
 
@@ -68,7 +66,7 @@ class CameraView : View() {
         val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
 
         // display megabits per second of bandwidth used by the app
-        bandwidth += message.serializedSize
+        BANDWIDTH += message.serializedSize
 
         runLater {
             val temp = message.temperature
@@ -100,9 +98,9 @@ class CameraView : View() {
             }
 
             if (System.currentTimeMillis() - bandwidthRecordingBegin >= 1000){
-                bandwidthLabel.text = "Bandwidth: ${FileUtils.byteCountToDisplaySize(bandwidth)}/s"
+                bandwidthLabel.text = "Bandwidth: ${FileUtils.byteCountToDisplaySize(BANDWIDTH)}/s"
                 bandwidthRecordingBegin = System.currentTimeMillis()
-                bandwidth = 0
+                BANDWIDTH = 0
             }
 
             // clear the canvas and display the normal camera frame
@@ -230,7 +228,7 @@ class CameraView : View() {
                     selectBox.isDisable = false
                     Utils.showGenericAlert(Alert.AlertType.ERROR,
                         "Corrupted information was received from Omicam while trying to change objects.\n" +
-                                "This may indicate a slow connection. Please try again later",
+                                "This could indicate a slow connection. Please restart the SBC and try again.",
                         "Error switching objects"
                     )
                 }
@@ -344,7 +342,7 @@ class CameraView : View() {
         Logger.debug("Disconnecting...")
         CONNECTION_MANAGER.disconnect()
         EVENT_BUS.unregister(this@CameraView)
-        // if the user is stupid enough to press CTRL+D WHILE dragging the slider, stop them
+        // if the user is stupid enough to press CTRL+D _while_ dragging the slider, stop them
         grabSendTimer?.cancel()
         grabSendTimer?.purge()
         Utils.transitionMetro(this@CameraView, ConnectView())
@@ -379,7 +377,12 @@ class CameraView : View() {
                             .build()
                         CONNECTION_MANAGER.dispatchCommand(msg, {
                             Logger.info("Acknowledgement of sleep received, disconnecting")
-                            runLater { disconnect() }
+                            runLater {
+                                Utils.showGenericAlert(Alert.AlertType.INFORMATION,
+                                    "Omicam has entered a low power sleep state.\n\nVision will not be functional until" +
+                                            " you reconnect, which automatically exits sleep mode.", "Sleep mode")
+                                disconnect()
+                            }
                         })
                     }
                     accelerator = KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN)
@@ -391,8 +394,8 @@ class CameraView : View() {
                             .setMessageId(DebugCommands.CMD_THRESHOLDS_WRITE_DISK.ordinal)
                             .build()
                         CONNECTION_MANAGER.dispatchCommand(msg, {
-                            Utils.showGenericAlert(
-                            Alert.AlertType.INFORMATION, "Your settings have been written to the remote Omicam config file.",
+                            Utils.showGenericAlert(Alert.AlertType.INFORMATION,
+                                "Your settings have been written to the remote Omicam config file.",
                             "Config saved successfully"
                             )
                         })

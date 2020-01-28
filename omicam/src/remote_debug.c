@@ -23,8 +23,8 @@
 #include "localisation.h"
 #include <sys/reboot.h>
 
-// Manages encoding camera frames to JPG images (with turbo-jpeg) or PNG images (with lodepng) and sending them over a
-// TCP socket to the eventual Kotlin remote debugging application
+// Manages encoding camera frames to JPG images (with turbo-jpeg) and sending them over a TCP socket to Omicontrol
+// Also handles receiving data from Omicontrol
 // source for libjpeg-turbo usage: https://stackoverflow.com/a/17671012/5007892
 
 static tjhandle compressor;
@@ -253,7 +253,6 @@ static uint8_t *compress_thresh_image(uint8_t *inBuffer, unsigned long *outputSi
     }
 }
 
-// TODO set frame thread priority!
 /**
  * The frame thread is the main thread in the remote debugger which waits for a frame to be posted, then encodes
  * and sends it. It also handles receiving commands from Omicontrol.
@@ -440,8 +439,10 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
     height = h;
 
     if (!rpa_queue_trypush(frameQueue, entry)){
-        if (!wasError) wasError = true;
-        log_warn("Failed to push new frame to queue. This may indicate a hang, performance issue or a busy network.");
+        if (!wasError){
+            wasError = true;
+            log_warn("Failed to push new frame to queue. This may indicate a hang, performance issue or a busy network.");
+        }
         free(camFrame);
         free(entry);
         free(threshFrame);

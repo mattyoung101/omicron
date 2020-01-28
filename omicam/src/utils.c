@@ -17,7 +17,7 @@
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
 int32_t visionCropRect[4];
-// OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE,OBJ_LINES,
+// OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE, OBJ_LINES,
 int32_t *thresholds[] = {minBallData, maxBallData, minYellowData, maxYellowData, minBlueData, maxBlueData, minLineData, maxLineData};
 char *fieldObjToString[] = {"OBJ_NONE", "OBJ_BALL", "OBJ_GOAL_YELLOW", "OBJ_GOAL_BLUE", "OBJ_LINES"};
 bool sleeping;
@@ -199,7 +199,6 @@ void utils_sleep_enter(void){
 void utils_sleep_exit(void){
     if (!sleeping) return;
 
-    puts("attempting to wake the piece of shit");
     pthread_mutex_lock(&sleepMutex);
     sleeping = false;
     pthread_cond_broadcast(&sleepCond);

@@ -135,19 +135,16 @@ int main() {
     // log_warn("Failed to crank the mfin hog: %s. Please make sure you've configured password-free sudo access.");
 #endif
 
-    // start OpenCV frame grabbing, which blocks the main thread until it's done
+    // initialise all the things
     remote_debug_init(width, height);
     localiser_init(fieldFile);
     comms_uart_init();
 
     fflush(stdout);
     fflush(logFile);
-    vision_init();
-    log_debug("Omicam terminating normally");
-
-    // this dictionary may be needed by the vision module to initialise some things, so we free it after
-    // the application is done
     iniparser_freedict(config);
-    // hopefully by now disposeResources() will have already been called, unless we terminated unexpectedly
-    // TODO add a variable and check if we already disposed, and if not, do so here
+
+    vision_init();
+
+    log_debug("Omicam terminating through main loop exit");
 }

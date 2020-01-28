@@ -14,11 +14,6 @@ import kotlin.system.exitProcess
 class OmicontrolApp : App(ConnectView::class, Styles::class)
 
 object Main {
-    @Subscribe
-    fun receiveDeadEvent(event: DeadEvent){
-        Logger.warn("Warning: Failed to deliver event of class ${event.event.javaClass.simpleName} as it has no subscribers")
-    }
-
     @JvmStatic
     fun main(args: Array<String>){
         System.setProperty("tinylog.configuration", "tinylog.properties")

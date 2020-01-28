@@ -9,12 +9,11 @@
  * 1.2a: works on Jetson with optimisation and thresholding for objects
  * 1.3a: cropping (ROI) optimisations, support for goal thresholding at lower resolutions
  * 1.4a: performance optimisations for new SBC, new FPS timing code, fixes
- * 2.4a: (WIP) localisation prototype implemented
+ * 2.4a: (WIP) localisation prototype implemented, sleep mode added
  */
 #define OMICAM_VERSION "2.4a"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
-#define CREATE_WIFI_AP 0 // if true, create a WiFi access point to connect to on Omicam startup. Useful at competition venues.
 #define DEWARP_MODEL (4.96776 * exp(0.0123892 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
@@ -24,7 +23,7 @@
 
 #define REMOTE_JPEG_QUALITY 40 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
-#define REMOTE_FRAME_INTERVAL 3 // send a debug frame every N real frames
+#define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames
 #define REMOTE_PORT 42708 // which port the remote debug TCP server runs on
 #define REMOTE_ENABLED 1 // whether or not remote debug is enabled
 #define REMOTE_ALWAYS_SEND 0 // if true, ignore whether or not a connection exists and always send debug frames

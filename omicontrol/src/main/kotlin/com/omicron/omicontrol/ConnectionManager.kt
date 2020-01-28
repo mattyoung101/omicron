@@ -95,12 +95,11 @@ class ConnectionManager {
         thread(name="Omicontrol Dispatch Await") {
             val begin = System.currentTimeMillis()
 
-            // Logger.trace("Dispatching command to Omicam")
             val outStream = ByteArrayOutputStream()
             command.writeDelimitedTo(outStream)
+            BANDWIDTH += outStream.size()
             outStream.writeTo(socket.getOutputStream())
             socket.getOutputStream().flush()
-            // Logger.trace("Dispatched, awaiting response")
 
             synchronized(cmdReceivedToken) { cmdReceivedToken.wait(5000) }
 

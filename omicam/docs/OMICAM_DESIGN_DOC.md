@@ -57,7 +57,10 @@ it checks for incoming messages from Omicontrol and if there are any, decodes th
 3. If there is data in the work queue: compress the RGB frame image using libjpeg-turbo, compress the threshold mask
 using zlib, add extra information to Protobuf and send.
 
-The socket and thermal threads aren't described here as they're trivial.
+The thermal thread is a trivial thread which periodically polls the Linux special file `/sys/class/thermal/thermal_zone0/temp`
+to determine the CPU temperature. 
+
+The TCP thread is a trivial `bind()`, `listen()`, `accept()` loop very common in networking.
 
 Some information about zlib encoding for the threshold frame: I observed that this data is a great target for compression
 with something like zlib, rather than an image encoding library, due to the huge amount of repeated data which is a
@@ -67,11 +70,8 @@ to only about 1-2KB.
 ## Other information
 ### Transmission
 Protocol Buffers are extensively used to transmit information to and from the ESP32 and Omicontrol. Nanopb is the
-library used for this.
+library used for this. There is a Fish (shell) script to compile it automatically.
 
 ### Performance notes
-- OpenCV will handle most operations on the GPU through the OpenCL transparent API (T-API)
-- The localiser will run the line-casting on the GPU as well, also using OpenCL (we're avoiding CUDA because it's 
-proprietary and not cross-platform).
 - We make make many call to `malloc` and `free` which in theory could cause memory fragmentation, but I haven't
-observed that yet
+observed that yet. I assume the glibc allocator is pretty smart about this.
