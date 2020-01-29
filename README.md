@@ -1,70 +1,51 @@
 Team Omicron (2020)
 ====================
 
-This repository contains the code powering Team Omicron's 2020 robot, competing in RoboCup Jr Open Soccer at the Bordeaux
-Internationals. The Omicam and the ESP32 firmware are written in C, Teensy firmware in C++ (Arduino), and Omicontrol in Kotlin.
+Welcome to the official repository for Team Omicron, a robotics team competing in RoboCup Jr Open Soccer from Brisbane
+Boys' College in Brisbane, Queensland, Australia.
 
-For more information on our robot that isn't covered here (especially hardware), please see our team's PowerPoint and poster.
+This repo contains all the hardware (including full PCBs and robot designs), software (including firmware for all
+microcontrollers, our custom robot control software and vision pipeline) and associated documentation that we used to
+compete in the 2020 Bordeaux Internationals in France.
 
-Contact repo maintainer Matt Young (25070@bbc.qld.edu.au) for any questions, queries, qualms or concerns - I will forward
-you to the appropriate team member.
+This is an unprecedented amount of information all available under a relatively permissive license (see below for details). 
+We hope this will make an excellent resource for advanced members of the league to study and learn from in the years to
+come. So please, clone the repo, read the docs and get tinkering - and make sure you tell your friends!
 
-## General overview
-**TODO update for new robot**
+If you have any specific questions, please check out the Team Omicron Team Description Paper, our website and feel
+free to contact any team member directly (our info is below, or just use our GitHub profile). Thanks, and have fun!
 
-Our robot consists of two microcontrollers: the ESP32 which acts as a master for running logic, and a Teensy 3.5
-slave which reads light sensors and controls motors. The ESP project is in main/ and components/, while the Teensy
-project is in Teensy/. The ESP project uses the ESP-IDF toolchain, and as of writing (October 2019) it is believed that
-we are the only team in RoboCup Jr worldwide to use the ESP32 with IDF (most other teams use Arduino). The ESP32 project
-is written in C11 and the Teensy 3.5 project is written in C++98.
+**we should include how many lines of code we we wrote and perhaps some metric for designs as well!**
 
-The robot's behaviour is implemented using a finite state machine. The implementation of this is in fsm.c and fsm.h,
-while the implementation of the FSM states are in the states* files (this is all in the "main" directory). To increase
-our robot's teamwork ability, we use Bluetooth Classic stack built in to the ESP32 to perform inter-robot communication,
-meaning our defender robot can switch to an attacker if it gets the ball, and the attacker can become a defender if the
-current attacker goes off for damage.
+## About Team Omicron
+Team Omicron was formed in 2019 as a merger between two BBC teams, J-TEC (previously Team APEX) and Team Omicron (previously
+Deus Vult). Our team members are:
 
-To perform intra-robot communication between the ESP32 and Teensy, we use Protocol Buffers via the nanopb library. The
-bytes are sent over UART clocked at 115200 baud.
+| Name               | Primary responsibilities                                        | Original team | Contact |
+|--------------------|-----------------------------------------------------------------|---------------|---------|
+| Lachlan Ellis      | Movement code                                                   | J-TEC         | TBA     |
+| Tynan Jones        | Electrical design                                               | J-TEC         | TBA     | 
+| Ethan Lo           | Mechanical & electrical deign, movement code, docs              | Omicron       | TBA     |
+| James Talkington   | Mechanical design                                               | J-TEC         | TBA     |
+| Matt Young         | Vision systems developer, docs                                  | Omicron       | TBA     |
 
-For more information about our gameplay features and hardware, you should consult Omicron's team poster and/or website.
+**Important: Team roles are a lot more nuanced than written here.** Please see individual projects in the repo for
+a more thorough description of the project itself, as well as who developed it and how to contact them. Thanks!
 
-### Team history and current members
-**TODO and list members**
+## List of projects
+Our team members work on seven main projects:
 
-## Directory structure
-- .vscode: VSCode settings, mainly spellchecking. In order to create `c_cpp_properties.json` for the C/C++ extension (which is not synced on Git), please see `docs/c_properties_template.txt`.
-- components: contains ESP32 libraries, see below for links and licenses
-- docs: contains various bits of documentation, templates, etc for ESP32 project
-- main: contains the main code that runs on the master and slave ESP32
-- omicam: contains our advanced custom camera running on a Raspberry Pi Compute Module 3+, please see the README inside
-- omicontrol: contains our custom remote debug/management app for the robot and camera, see the README inside for more info
-- openmv: contains the legacy camera code that used to run on our old OpenMV H7, now replaced by the custom Omicam. Scheduled for removal soon.
-- scripts: contains various Python scripts for generating code and simple debugging
-    - midis: contains MIDI files to be converted and played on the robot
-- Teensy: contains PlatformIO project for Teensy slave
-- b.bat, b.sh: shortcut for "idf.py build"
-- f.bat, f.sh: shortcut for "idf.py flash"
-- fm.bat, fm.sh: shortcut to run "idf.py flash" then "idf.py monitor" if compilation was successful
+| Name       | Path                | Description                                                                   |
+|------------|---------------------|-------------------------------------------------------------------------------|
+| Electrical | /designs/electrical | All the PCBs used in our robots.                                              |
+| Mechanical | /designs/mechanical | All the CAD designs used to construct our robotss.                            |
+| ESP32      | /esp32              | The ESP32 firmware that powers our movement and strategy code.                |
+| ATMega     | /atmega             | The firmware that powers our ATMega328P motor and mouse sensor slave device.  |
+| Teensy     | /teensy             | The firmware that powers our Teensy 4 light sensor and LRF slave device.      |
+| Omicam     | /omicam             | Our advanced vision and localisation system running on a NVIDIA Jetson Nano.  |
+| Omicontrol | /omicontrol         | Our custom wireless visualisation and debugging application.                  |
 
 ## License
 This code is currently proprietary and confidential to Brisbane Boys' College and Team Omicron. No redistribution or use outside of our team is permitted. 
 
-_If we are allowed to, the code will be made available under a permissive open source license once our competition is done._
-
-## Developer notes
-### IDF version
-Due to the fact that we sync the file `sdkconfig`, it's important that you use the exact same IDF version that we do, to avoid merge conflicts.
-This project currently uses the **[v3.3 release branch](https://github.com/espressif/esp-idf/tree/release/v3.3) version** (i.e. the latest commit on origin/release/v3.3).
-
-Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/versions.html) for more information about IDF versions.
-
-**TODO this is only for ESP, also we should move ESP project to a subfolder**
-## Libraries and licenses
-- [ESP-IDF](https://github.com/espressif/esp-idf/): Apache 2 license
-- [DG_dynarr](https://github.com/DanielGibson/Snippets/blob/master/DG_dynarr.h): Public domain
-- [HandmadeMath](https://github.com/HandmadeMath/Handmade-Math): Public domain
-- [Nanopb](https://github.com/nanopb/nanopb/): zlib license
-- [BNO055_driver](https://github.com/BoschSensortec/BNO055_driver): BSD 3-Clause license
-- [Wren VM](https://github.com/wren-lang/wren/): MIT license
-- [esp32-button](https://github.com/craftmetrics/esp32-button): MIT license
+_Once our competition is done, this code will be released under the MPL 2.0._

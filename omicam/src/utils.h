@@ -1,46 +1,53 @@
 #pragma once
-
-// Misc macros
-
-/** if the key exists in the INI file, puts it into the omxcam settings struct as an integer **/
 #include <GLES2/gl2.h>
+#include <bits/types/FILE.h>
+#include "defines.h"
+#include "protobuf/UART.pb.h"
+#include <pthread.h>
 
-#define INI_LOAD_INT(key) if (iniparser_find_entry(config, "VideoSettings:" #key)) { \
-    log_trace("Have int key: " #key); \
-    settings.camera.key = iniparser_getint(config, "VideoSettings:" #key, -1); \
-} else { \
-    log_trace("Using default value for int key: " # key); \
+// Globals
+extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+extern int32_t *thresholds[];
+extern char *fieldObjToString[];
+/** this is the UNCROPPED video width and height (i.e. what we receive raw from the camera) */
+extern int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
+extern int32_t visionCropRect[4];
+/** true if Omicam is currently in sleep mode (low power mode) **/
+extern bool sleeping;
+extern pthread_cond_t sleepCond;
+extern pthread_mutex_t sleepMutex;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Parses a string in the format "x,y,z" into three numbers to be stored in the given array  **/
+void utils_parse_thresh(char *threshStr, int32_t *array);
+/** Similar to utils_parse_thresh, but expects a 4 element rectangle of (x, y, width, height) **/
+void utils_parse_rect(char *rectStr, int32_t *array);
+/** Gets the timestamp in milliseconds **/
+double utils_time_millis();
+/** Writes all thresholds to the INI file using their current values **/
+void utils_write_thresholds_disk();
+/** Utility function to encode the vision data into a protobuf packet and sent it over UART, using the comms_uart module. */
+void utils_cv_transmit_data(ObjectData ballData);
+/** Reads a binary file from disk and its size. You must free() the returned buffer. **/
+uint8_t *utils_load_bin(char *path, long *size);
+/** Applies the calculated dewarp model to turn the given pixel distance into a centimetre distance in the camera. **/
+double utils_camera_dewarp(double x);
+/**
+ * Enters sleep mode (low power mode), designed to keep CPU thermals under control if no work needs to be done.
+ * In this mode, networking is kept alive but vision processing (and thus also localisation) is suspended.
+ * If an Omicontrol client is currently connected, it is expected to disconnect after this call.
+ * When a new connection is received, Omicam will automatically wake up from sleep.
+ */
+void utils_sleep_enter(void);
+/** Exits sleep mode (low power mode). Does nothing if already awake. */
+void utils_sleep_exit(void);
+
+#ifdef __cplusplus
 }
-
-/** if the key exists in the INI file, puts it into the omxcam settings struct as a boolean **/
-#define INI_LOAD_BOOL(key) if (iniparser_find_entry(config, "VideoSettings:" #key)) { \
-    log_trace("Have bool key: " #key); \
-    settings.camera.key = iniparser_getboolean(config, "VideoSettings:" #key, false); \
-} else { \
-    log_trace("Using default value for bool key: " # key); \
-}
-
-/** locks a pthread semaphore, then runs the provided code and unlocks it again **/
-#define PTHREAD_SEM_RUN(sem, code) if (pthread_mutex_trylock(sem)){ \
-    code; \
-    pthread_mutex_unlock(sem); \
-}
-
-#define UPDATE_UNIFORM(location, dataName) if (location != -1){ \
-    log_trace("Updating uniform at %d to the following: [%.2f, %.2f, %.2f]", location, dataName[0], dataName[1], dataName[2]); \
-    glUniform3fv(location, 1, dataName); /* count is 1 because it's one vec3 */ \
-    check_gl_error(); \
-}  else { \
-    log_warn("Failed to update uniform at location: " #location); \
-}
-
-#define GET_UNIFORM_LOCATION(uniform, name) do { uniform = glGetUniformLocation(shaderProgram, name); \
-    check_gl_error(); \
-    if (uniform == -1){ \
-        log_error("Failed to get uniform location of " name); \
-    } } while (0);
-
-#define GCC_UNUSED __attribute__((unused))
+#endif
 
 /** first 8 bits of unsigned 16 bit int **/
 #define HIGH_BYTE_16(num) ((uint8_t) ((num >> 8) & 0xFF))
@@ -48,18 +55,10 @@
 #define LOW_BYTE_16(num)  ((uint8_t) ((num & 0xFF)))
 /** unpack two 8 bit integers into a 16 bit integer **/
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
-
-#define SDL_CHECK(func) do { \
-    if ((func) != 0){ \
-        log_error("SDL function failed in %s:%d: %s", __FILE__, __LINE__, SDL_GetError()); \
-    } \
-} while (0);
-
-/** gets the timestamp in milliseconds **/
-double utils_get_millis();
-/** get the last EGL error as a descriptive string **/
-const char *eglGetErrorStr();
-/** GL enum to error **/
-char *glErrorStr(GLenum error);
-/** SDL rendering test **/
-void sdl_test_main(void);
+#define KEEP_VAR __attribute__((used))
+#define RD_SEND_OK_RESPONSE do { \
+    DebugCommand response = DebugCommand_init_zero; \
+    response.messageId = CMD_OK; \
+    send_response(response); } while (0)
+#define VISION_IS_RESCALED (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW)
+#define ROUND2INT(x) ((int32_t) round(x))

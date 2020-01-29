@@ -4,92 +4,214 @@
 #include <math.h>
 #include <stdint.h>
 #include <sys/time.h>
-#include <EGL/egl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <log/log.h>
+#include "pb.h"
+#include "nanopb/pb_encode.h"
+#include "comms_uart.h"
+#include <errno.h>
+#include <unistd.h>
+#include <pthread.h>
 
-// source: https://stackoverflow.com/a/3756954/5007892
-double utils_get_millis(){
-    struct timeval  tv;
-    gettimeofday(&tv, NULL);
-    return (tv.tv_sec) * 1000.0 + (tv.tv_usec) / 1000.0;
+int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
+int32_t visionCropRect[4];
+// OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE, OBJ_LINES,
+int32_t *thresholds[] = {minBallData, maxBallData, minYellowData, maxYellowData, minBlueData, maxBlueData, minLineData, maxLineData};
+char *fieldObjToString[] = {"OBJ_NONE", "OBJ_BALL", "OBJ_GOAL_YELLOW", "OBJ_GOAL_BLUE", "OBJ_LINES"};
+bool sleeping;
+pthread_cond_t sleepCond = PTHREAD_COND_INITIALIZER;
+pthread_mutex_t sleepMutex = PTHREAD_MUTEX_INITIALIZER;
+
+// https://stackoverflow.com/a/1726321/5007892
+static void remove_spaces(char* s) {
+    const char* d = s;
+    do {
+        while (*d == ' ') {
+            ++d;
+        }
+    } while ((*s++ = *d++));
 }
 
-const char *eglGetErrorStr(){
-    switch (eglGetError()){
-        case EGL_SUCCESS:
-            return "The last function succeeded without error.";
-        case EGL_NOT_INITIALIZED:
-            return "EGL is not initialized, or could not be initialized, for the "
-                   "specified EGL display connection.";
-        case EGL_BAD_ACCESS:
-            return "EGL cannot access a requested resource (for example a context "
-                   "is bound in another thread).";
-        case EGL_BAD_ALLOC:
-            return "EGL failed to allocate resources for the requested operation.";
-        case EGL_BAD_ATTRIBUTE:
-            return "An unrecognized attribute or attribute value was passed in the "
-                   "attribute list.";
-        case EGL_BAD_CONTEXT:
-            return "An EGLContext argument does not name a valid EGL rendering "
-                   "context.";
-        case EGL_BAD_CONFIG:
-            return "An EGLConfig argument does not name a valid EGL frame buffer "
-                   "configuration.";
-        case EGL_BAD_CURRENT_SURFACE:
-            return "The current surface of the calling thread is a window, pixel "
-                   "buffer or pixmap that is no longer valid.";
-        case EGL_BAD_DISPLAY:
-            return "An EGLDisplay argument does not name a valid EGL display "
-                   "connection.";
-        case EGL_BAD_SURFACE:
-            return "An EGLSurface argument does not name a valid surface (window, "
-                   "pixel buffer or pixmap) configured for GL rendering.";
-        case EGL_BAD_MATCH:
-            return "Arguments are inconsistent (for example, a valid context "
-                   "requires buffers not supplied by a valid surface).";
-        case EGL_BAD_PARAMETER:
-            return "One or more argument values are invalid.";
-        case EGL_BAD_NATIVE_PIXMAP:
-            return "A NativePixmapType argument does not refer to a valid native "
-                   "pixmap.";
-        case EGL_BAD_NATIVE_WINDOW:
-            return "A NativeWindowType argument does not refer to a valid native "
-                   "window.";
-        case EGL_CONTEXT_LOST:
-            return "A power management event has occurred. The application must "
-                   "destroy all contexts and reinitialise OpenGL ES state and "
-                   "objects to continue rendering.";
-        default:
-            break;
+double utils_camera_dewarp(double x){
+    return DEWARP_MODEL;
+}
+
+void utils_parse_thresh(char *threshStr, int32_t *array){
+    char *token;
+    char *threshOrig = strdup(threshStr);
+    int32_t i = 0;
+    remove_spaces(threshStr);
+    token = strtok(threshStr, ",");
+
+    while (token != NULL){
+        char *invalid = NULL;
+        int32_t number = strtol(token, &invalid, 10);
+
+        // TODO may want to check the colour range again? depending on which colour space we're using
+        if (strlen(invalid) != 0){
+            log_error("Invalid threshold string \"%s\": invalid token: \"%s\"", threshOrig, invalid);
+        } else {
+            array[i++] = number;
+            if (i > 3){
+                log_error("Too many elements in threshold value: %s (expected: 3)", threshOrig);
+                return;
+            }
+        }
+        token = strtok(NULL, ",");
     }
-    return "Unknown error!";
+    free(threshOrig);
 }
 
-char *glErrorStr(GLenum error){
-    /*
-    #define GL_NO_ERROR                       0
-    #define GL_INVALID_ENUM                   0x0500
-    #define GL_INVALID_VALUE                  0x0501
-    #define GL_INVALID_OPERATION              0x0502
-    #define GL_OUT_OF_MEMORY                  0x0505
-     */
-    switch (error){
-        case GL_NO_ERROR:
-            return "GL_NO_ERROR";
-        case GL_INVALID_ENUM:
-            return "GL_INVALID_ENUM";
-        case GL_INVALID_VALUE:
-            return "GL_INVALID_VALUE";
-        case GL_INVALID_OPERATION:
-            return "GL_INVALID_OPERATION";
-        case GL_OUT_OF_MEMORY:
-            return "GL_OUT_OF_MEMORY";
-        default:
-            return "Unknown GL error!?";
+void utils_parse_rect(char *rectStr, int32_t *array){
+    char *token;
+    char *rectOrig = strdup(rectStr);
+    int32_t i = 0;
+    remove_spaces(rectStr);
+    token = strtok(rectStr, ",");
+
+    while (token != NULL){
+        char *invalid = NULL;
+        int32_t number = strtol(token, &invalid, 10);
+
+        if (strlen(invalid) != 0){
+            log_error("Invalid rectangle string \"%s\": invalid token: \"%s\"", rectOrig, invalid);
+        } else {
+            array[i++] = number;
+            if (i > 4){
+                log_error("Too many elements in rectangle value: %s (expected: 4)", rectOrig);
+                return;
+            }
+        }
+        token = strtok(NULL, ",");
     }
+    free(rectOrig);
 }
 
-void sdl_test_main(void){
-    puts("running SDL test main");
+void utils_cv_transmit_data(ObjectData ballData){
+    uint8_t buf[128] = {0};
+    pb_ostream_t stream = pb_ostream_from_buffer(buf, 128);
+    if (!pb_encode_delimited(&stream, ObjectData_fields, &ballData)){
+        log_error("Failed to encode vision protocol buffer message: %s", PB_GET_ERROR(&stream));
+        return;
+    }
+    comms_uart_send(buf, stream.bytes_written);
+}
+
+static void write_thresholds(FILE *fp){
+    fprintf(fp, "minBall = %d,%d,%d\n", minBallData[0], minBallData[1], minBallData[2]);
+    fprintf(fp, "maxBall = %d,%d,%d\n\n", maxBallData[0], maxBallData[1], maxBallData[2]);
+
+    fprintf(fp, "minYellow = %d,%d,%d\n", minYellowData[0], minYellowData[1], minYellowData[2]);
+    fprintf(fp, "maxYellow = %d,%d,%d\n\n", maxYellowData[0], maxYellowData[1], maxYellowData[2]);
+
+    fprintf(fp, "minBlue = %d,%d,%d\n", minBlueData[0], minBlueData[1], minBlueData[2]);
+    fprintf(fp, "maxBlue = %d,%d,%d\n\n", maxBlueData[0], maxBlueData[1], maxBlueData[2]);
+
+    fprintf(fp, "minLine = %d,%d,%d\n", minLineData[0], minLineData[1], minLineData[2]);
+    fprintf(fp, "maxLine = %d,%d,%d\n", maxLineData[0], maxLineData[1], maxLineData[2]);
+}
+
+void utils_write_thresholds_disk(){
+    FILE *curConfig = fopen("../omicam.ini", "r");
+    if (curConfig == NULL){
+        log_error("Failed to open config file: %s", strerror(errno));
+        return;
+    }
+    FILE *newConfig = fopen("../omicam_new.ini", "w+");
+    if (newConfig == NULL){
+        log_error("Failed to open new config file: %s", strerror(errno));
+        return;
+    }
+    char lineBuf[255];
+    uint32_t line = 0;
+    bool skipping = false;
+
+    // read current config line by line, writing out the entire threshold section once we reach OMICAM_THRESH_BEGIN
+    // and continuing as normal once we reach OMICAM_THRESH_END
+    while (fgets(lineBuf, 255, curConfig) != NULL){
+        line++;
+
+        if (skipping){
+            // if the "OMICAM_THRESH_END" marker is not in the line, continue skipping, otherwise stop
+            if (!strstr(lineBuf, "OMICAM_THRESH_END")){
+                continue;
+            } else {
+                log_trace("Stopping skip on line %d", line);
+                skipping = false;
+            }
+        }
+        fputs(lineBuf, newConfig);
+
+        if (strstr(lineBuf, "OMICAM_THRESH_BEGIN")){
+            log_trace("Found thresh begin region on line %d", line);
+            write_thresholds(newConfig);
+            skipping = true;
+        }
+    }
+    fclose(curConfig);
+    fclose(newConfig);
+
+    // delete current config file
+    if (unlink("../omicam.ini") != 0){
+        log_error("Failed to remove old config file: %s", strerror(errno));
+        return;
+    }
+
+    // rename new config file to old config file
+    if (rename("../omicam_new.ini", "../omicam.ini")){
+        log_error("You will have to rename \"omicam_new.ini\" to \"omicam.ini\" manually, error: %s", strerror(errno));
+        return;
+    }
+
+    log_debug("New config written to disk successfully!");
+}
+
+uint8_t *utils_load_bin(char *path, long *size){
+    uint8_t *buf = NULL;
+    long length;
+    FILE *f = fopen(path, "rb");
+    if (!f){
+        log_error("Failed to open file \"%s\": %s", path, strerror(errno));
+        *size = 0;
+        return NULL;
+    }
+
+    fseek(f, 0, SEEK_END);
+    length = ftell(f);
+    *size = length;
+    fseek(f, 0, SEEK_SET);
+    buf = malloc(length);
+    fread(buf, 1, length, f);
+    fclose(f);
+    return buf;
+}
+
+void utils_sleep_enter(void){
+    pthread_mutex_lock(&sleepMutex);
+    sleeping = true;
+    pthread_cond_broadcast(&sleepCond);
+    pthread_mutex_unlock(&sleepMutex);
+    log_debug("Entered sleep mode successfully");
+}
+
+void utils_sleep_exit(void){
+    if (!sleeping) return;
+
+    pthread_mutex_lock(&sleepMutex);
+    sleeping = false;
+    pthread_cond_broadcast(&sleepCond);
+    pthread_mutex_unlock(&sleepMutex);
+    log_debug("Exited sleep mode successfully");
+}
+
+// source: https://stackoverflow.com/a/3756954/5007892 and https://stackoverflow.com/a/17371925/5007892
+double utils_time_millis(){
+//    struct timeval tv;
+//    gettimeofday(&tv, NULL);
+//    return (tv.tv_sec) * 1000.0 + (tv.tv_usec) / 1000.0;
+    struct timespec time;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &time);
+    return (time.tv_sec) * 1000.0 + (time.tv_nsec / 1000.0) / 1000.0; // convert tv_sec & tv_usec to millisecond
 }

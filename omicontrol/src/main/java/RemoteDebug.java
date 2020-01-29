@@ -12,6 +12,1835 @@ public final class RemoteDebug {
     registerAllExtensions(
         (com.google.protobuf.ExtensionRegistryLite) registry);
   }
+  public interface RDRectOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RDRect)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional int32 x = 1;</code>
+     */
+    int getX();
+
+    /**
+     * <code>optional int32 y = 2;</code>
+     */
+    int getY();
+
+    /**
+     * <code>optional int32 width = 3;</code>
+     */
+    int getWidth();
+
+    /**
+     * <code>optional int32 height = 4;</code>
+     */
+    int getHeight();
+  }
+  /**
+   * Protobuf type {@code RDRect}
+   */
+  public  static final class RDRect extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:RDRect)
+      RDRectOrBuilder {
+    // Use RDRect.newBuilder() to construct.
+    private RDRect(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RDRect() {
+      x_ = 0;
+      y_ = 0;
+      width_ = 0;
+      height_ = 0;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private RDRect(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+
+              x_ = input.readInt32();
+              break;
+            }
+            case 16: {
+
+              y_ = input.readInt32();
+              break;
+            }
+            case 24: {
+
+              width_ = input.readInt32();
+              break;
+            }
+            case 32: {
+
+              height_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RemoteDebug.internal_static_RDRect_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RemoteDebug.internal_static_RDRect_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RemoteDebug.RDRect.class, RemoteDebug.RDRect.Builder.class);
+    }
+
+    public static final int X_FIELD_NUMBER = 1;
+    private int x_;
+    /**
+     * <code>optional int32 x = 1;</code>
+     */
+    public int getX() {
+      return x_;
+    }
+
+    public static final int Y_FIELD_NUMBER = 2;
+    private int y_;
+    /**
+     * <code>optional int32 y = 2;</code>
+     */
+    public int getY() {
+      return y_;
+    }
+
+    public static final int WIDTH_FIELD_NUMBER = 3;
+    private int width_;
+    /**
+     * <code>optional int32 width = 3;</code>
+     */
+    public int getWidth() {
+      return width_;
+    }
+
+    public static final int HEIGHT_FIELD_NUMBER = 4;
+    private int height_;
+    /**
+     * <code>optional int32 height = 4;</code>
+     */
+    public int getHeight() {
+      return height_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (x_ != 0) {
+        output.writeInt32(1, x_);
+      }
+      if (y_ != 0) {
+        output.writeInt32(2, y_);
+      }
+      if (width_ != 0) {
+        output.writeInt32(3, width_);
+      }
+      if (height_ != 0) {
+        output.writeInt32(4, height_);
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (x_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, x_);
+      }
+      if (y_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, y_);
+      }
+      if (width_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, width_);
+      }
+      if (height_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(4, height_);
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RemoteDebug.RDRect)) {
+        return super.equals(obj);
+      }
+      RemoteDebug.RDRect other = (RemoteDebug.RDRect) obj;
+
+      boolean result = true;
+      result = result && (getX()
+          == other.getX());
+      result = result && (getY()
+          == other.getY());
+      result = result && (getWidth()
+          == other.getWidth());
+      result = result && (getHeight()
+          == other.getHeight());
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (37 * hash) + X_FIELD_NUMBER;
+      hash = (53 * hash) + getX();
+      hash = (37 * hash) + Y_FIELD_NUMBER;
+      hash = (53 * hash) + getY();
+      hash = (37 * hash) + WIDTH_FIELD_NUMBER;
+      hash = (53 * hash) + getWidth();
+      hash = (37 * hash) + HEIGHT_FIELD_NUMBER;
+      hash = (53 * hash) + getHeight();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RemoteDebug.RDRect parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDRect parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDRect parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDRect parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDRect parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDRect parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDRect parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDRect parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDRect parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDRect parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RemoteDebug.RDRect prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code RDRect}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RDRect)
+        RemoteDebug.RDRectOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RemoteDebug.internal_static_RDRect_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RemoteDebug.internal_static_RDRect_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RemoteDebug.RDRect.class, RemoteDebug.RDRect.Builder.class);
+      }
+
+      // Construct using RemoteDebug.RDRect.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        x_ = 0;
+
+        y_ = 0;
+
+        width_ = 0;
+
+        height_ = 0;
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RemoteDebug.internal_static_RDRect_descriptor;
+      }
+
+      public RemoteDebug.RDRect getDefaultInstanceForType() {
+        return RemoteDebug.RDRect.getDefaultInstance();
+      }
+
+      public RemoteDebug.RDRect build() {
+        RemoteDebug.RDRect result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RemoteDebug.RDRect buildPartial() {
+        RemoteDebug.RDRect result = new RemoteDebug.RDRect(this);
+        result.x_ = x_;
+        result.y_ = y_;
+        result.width_ = width_;
+        result.height_ = height_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RemoteDebug.RDRect) {
+          return mergeFrom((RemoteDebug.RDRect)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RemoteDebug.RDRect other) {
+        if (other == RemoteDebug.RDRect.getDefaultInstance()) return this;
+        if (other.getX() != 0) {
+          setX(other.getX());
+        }
+        if (other.getY() != 0) {
+          setY(other.getY());
+        }
+        if (other.getWidth() != 0) {
+          setWidth(other.getWidth());
+        }
+        if (other.getHeight() != 0) {
+          setHeight(other.getHeight());
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RemoteDebug.RDRect parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RemoteDebug.RDRect) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private int x_ ;
+      /**
+       * <code>optional int32 x = 1;</code>
+       */
+      public int getX() {
+        return x_;
+      }
+      /**
+       * <code>optional int32 x = 1;</code>
+       */
+      public Builder setX(int value) {
+        
+        x_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 x = 1;</code>
+       */
+      public Builder clearX() {
+        
+        x_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int y_ ;
+      /**
+       * <code>optional int32 y = 2;</code>
+       */
+      public int getY() {
+        return y_;
+      }
+      /**
+       * <code>optional int32 y = 2;</code>
+       */
+      public Builder setY(int value) {
+        
+        y_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 y = 2;</code>
+       */
+      public Builder clearY() {
+        
+        y_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int width_ ;
+      /**
+       * <code>optional int32 width = 3;</code>
+       */
+      public int getWidth() {
+        return width_;
+      }
+      /**
+       * <code>optional int32 width = 3;</code>
+       */
+      public Builder setWidth(int value) {
+        
+        width_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 width = 3;</code>
+       */
+      public Builder clearWidth() {
+        
+        width_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int height_ ;
+      /**
+       * <code>optional int32 height = 4;</code>
+       */
+      public int getHeight() {
+        return height_;
+      }
+      /**
+       * <code>optional int32 height = 4;</code>
+       */
+      public Builder setHeight(int value) {
+        
+        height_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 height = 4;</code>
+       */
+      public Builder clearHeight() {
+        
+        height_ = 0;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:RDRect)
+    }
+
+    // @@protoc_insertion_point(class_scope:RDRect)
+    private static final RemoteDebug.RDRect DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RemoteDebug.RDRect();
+    }
+
+    public static RemoteDebug.RDRect getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RDRect>
+        PARSER = new com.google.protobuf.AbstractParser<RDRect>() {
+      public RDRect parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new RDRect(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RDRect> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RDRect> getParserForType() {
+      return PARSER;
+    }
+
+    public RemoteDebug.RDRect getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface RDPointOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RDPoint)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional int32 x = 1;</code>
+     */
+    int getX();
+
+    /**
+     * <code>optional int32 y = 2;</code>
+     */
+    int getY();
+  }
+  /**
+   * Protobuf type {@code RDPoint}
+   */
+  public  static final class RDPoint extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:RDPoint)
+      RDPointOrBuilder {
+    // Use RDPoint.newBuilder() to construct.
+    private RDPoint(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RDPoint() {
+      x_ = 0;
+      y_ = 0;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private RDPoint(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+
+              x_ = input.readInt32();
+              break;
+            }
+            case 16: {
+
+              y_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RemoteDebug.internal_static_RDPoint_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RemoteDebug.internal_static_RDPoint_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RemoteDebug.RDPoint.class, RemoteDebug.RDPoint.Builder.class);
+    }
+
+    public static final int X_FIELD_NUMBER = 1;
+    private int x_;
+    /**
+     * <code>optional int32 x = 1;</code>
+     */
+    public int getX() {
+      return x_;
+    }
+
+    public static final int Y_FIELD_NUMBER = 2;
+    private int y_;
+    /**
+     * <code>optional int32 y = 2;</code>
+     */
+    public int getY() {
+      return y_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (x_ != 0) {
+        output.writeInt32(1, x_);
+      }
+      if (y_ != 0) {
+        output.writeInt32(2, y_);
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (x_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, x_);
+      }
+      if (y_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, y_);
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RemoteDebug.RDPoint)) {
+        return super.equals(obj);
+      }
+      RemoteDebug.RDPoint other = (RemoteDebug.RDPoint) obj;
+
+      boolean result = true;
+      result = result && (getX()
+          == other.getX());
+      result = result && (getY()
+          == other.getY());
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (37 * hash) + X_FIELD_NUMBER;
+      hash = (53 * hash) + getX();
+      hash = (37 * hash) + Y_FIELD_NUMBER;
+      hash = (53 * hash) + getY();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RemoteDebug.RDPoint parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDPoint parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDPoint parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDPoint parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDPoint parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDPoint parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDPoint parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDPoint parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDPoint parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDPoint parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RemoteDebug.RDPoint prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code RDPoint}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RDPoint)
+        RemoteDebug.RDPointOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RemoteDebug.internal_static_RDPoint_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RemoteDebug.internal_static_RDPoint_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RemoteDebug.RDPoint.class, RemoteDebug.RDPoint.Builder.class);
+      }
+
+      // Construct using RemoteDebug.RDPoint.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        x_ = 0;
+
+        y_ = 0;
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RemoteDebug.internal_static_RDPoint_descriptor;
+      }
+
+      public RemoteDebug.RDPoint getDefaultInstanceForType() {
+        return RemoteDebug.RDPoint.getDefaultInstance();
+      }
+
+      public RemoteDebug.RDPoint build() {
+        RemoteDebug.RDPoint result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RemoteDebug.RDPoint buildPartial() {
+        RemoteDebug.RDPoint result = new RemoteDebug.RDPoint(this);
+        result.x_ = x_;
+        result.y_ = y_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RemoteDebug.RDPoint) {
+          return mergeFrom((RemoteDebug.RDPoint)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RemoteDebug.RDPoint other) {
+        if (other == RemoteDebug.RDPoint.getDefaultInstance()) return this;
+        if (other.getX() != 0) {
+          setX(other.getX());
+        }
+        if (other.getY() != 0) {
+          setY(other.getY());
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RemoteDebug.RDPoint parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RemoteDebug.RDPoint) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private int x_ ;
+      /**
+       * <code>optional int32 x = 1;</code>
+       */
+      public int getX() {
+        return x_;
+      }
+      /**
+       * <code>optional int32 x = 1;</code>
+       */
+      public Builder setX(int value) {
+        
+        x_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 x = 1;</code>
+       */
+      public Builder clearX() {
+        
+        x_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int y_ ;
+      /**
+       * <code>optional int32 y = 2;</code>
+       */
+      public int getY() {
+        return y_;
+      }
+      /**
+       * <code>optional int32 y = 2;</code>
+       */
+      public Builder setY(int value) {
+        
+        y_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional int32 y = 2;</code>
+       */
+      public Builder clearY() {
+        
+        y_ = 0;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:RDPoint)
+    }
+
+    // @@protoc_insertion_point(class_scope:RDPoint)
+    private static final RemoteDebug.RDPoint DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RemoteDebug.RDPoint();
+    }
+
+    public static RemoteDebug.RDPoint getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RDPoint>
+        PARSER = new com.google.protobuf.AbstractParser<RDPoint>() {
+      public RDPoint parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new RDPoint(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RDPoint> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RDPoint> getParserForType() {
+      return PARSER;
+    }
+
+    public RemoteDebug.RDPoint getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  public interface RDThresholdOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RDThreshold)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>repeated int32 min = 2;</code>
+     */
+    java.util.List<java.lang.Integer> getMinList();
+    /**
+     * <code>repeated int32 min = 2;</code>
+     */
+    int getMinCount();
+    /**
+     * <code>repeated int32 min = 2;</code>
+     */
+    int getMin(int index);
+
+    /**
+     * <code>repeated int32 max = 3;</code>
+     */
+    java.util.List<java.lang.Integer> getMaxList();
+    /**
+     * <code>repeated int32 max = 3;</code>
+     */
+    int getMaxCount();
+    /**
+     * <code>repeated int32 max = 3;</code>
+     */
+    int getMax(int index);
+  }
+  /**
+   * <pre>
+   * Contains the colour channel values for the min and max of a particular threshold
+   * </pre>
+   *
+   * Protobuf type {@code RDThreshold}
+   */
+  public  static final class RDThreshold extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:RDThreshold)
+      RDThresholdOrBuilder {
+    // Use RDThreshold.newBuilder() to construct.
+    private RDThreshold(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RDThreshold() {
+      min_ = java.util.Collections.emptyList();
+      max_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private RDThreshold(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 16: {
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+                min_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              min_.add(input.readInt32());
+              break;
+            }
+            case 18: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001) && input.getBytesUntilLimit() > 0) {
+                min_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000001;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                min_.add(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 24: {
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+                max_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              max_.add(input.readInt32());
+              break;
+            }
+            case 26: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
+                max_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000002;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                max_.add(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+          min_ = java.util.Collections.unmodifiableList(min_);
+        }
+        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+          max_ = java.util.Collections.unmodifiableList(max_);
+        }
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RemoteDebug.internal_static_RDThreshold_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RemoteDebug.internal_static_RDThreshold_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RemoteDebug.RDThreshold.class, RemoteDebug.RDThreshold.Builder.class);
+    }
+
+    public static final int MIN_FIELD_NUMBER = 2;
+    private java.util.List<java.lang.Integer> min_;
+    /**
+     * <code>repeated int32 min = 2;</code>
+     */
+    public java.util.List<java.lang.Integer>
+        getMinList() {
+      return min_;
+    }
+    /**
+     * <code>repeated int32 min = 2;</code>
+     */
+    public int getMinCount() {
+      return min_.size();
+    }
+    /**
+     * <code>repeated int32 min = 2;</code>
+     */
+    public int getMin(int index) {
+      return min_.get(index);
+    }
+    private int minMemoizedSerializedSize = -1;
+
+    public static final int MAX_FIELD_NUMBER = 3;
+    private java.util.List<java.lang.Integer> max_;
+    /**
+     * <code>repeated int32 max = 3;</code>
+     */
+    public java.util.List<java.lang.Integer>
+        getMaxList() {
+      return max_;
+    }
+    /**
+     * <code>repeated int32 max = 3;</code>
+     */
+    public int getMaxCount() {
+      return max_.size();
+    }
+    /**
+     * <code>repeated int32 max = 3;</code>
+     */
+    public int getMax(int index) {
+      return max_.get(index);
+    }
+    private int maxMemoizedSerializedSize = -1;
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (getMinList().size() > 0) {
+        output.writeUInt32NoTag(18);
+        output.writeUInt32NoTag(minMemoizedSerializedSize);
+      }
+      for (int i = 0; i < min_.size(); i++) {
+        output.writeInt32NoTag(min_.get(i));
+      }
+      if (getMaxList().size() > 0) {
+        output.writeUInt32NoTag(26);
+        output.writeUInt32NoTag(maxMemoizedSerializedSize);
+      }
+      for (int i = 0; i < max_.size(); i++) {
+        output.writeInt32NoTag(max_.get(i));
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      {
+        int dataSize = 0;
+        for (int i = 0; i < min_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(min_.get(i));
+        }
+        size += dataSize;
+        if (!getMinList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        minMemoizedSerializedSize = dataSize;
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < max_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(max_.get(i));
+        }
+        size += dataSize;
+        if (!getMaxList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        maxMemoizedSerializedSize = dataSize;
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RemoteDebug.RDThreshold)) {
+        return super.equals(obj);
+      }
+      RemoteDebug.RDThreshold other = (RemoteDebug.RDThreshold) obj;
+
+      boolean result = true;
+      result = result && getMinList()
+          .equals(other.getMinList());
+      result = result && getMaxList()
+          .equals(other.getMaxList());
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (getMinCount() > 0) {
+        hash = (37 * hash) + MIN_FIELD_NUMBER;
+        hash = (53 * hash) + getMinList().hashCode();
+      }
+      if (getMaxCount() > 0) {
+        hash = (37 * hash) + MAX_FIELD_NUMBER;
+        hash = (53 * hash) + getMaxList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RemoteDebug.RDThreshold parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDThreshold parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDThreshold parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDThreshold parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDThreshold parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDThreshold parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDThreshold parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDThreshold parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDThreshold parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDThreshold parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RemoteDebug.RDThreshold prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * Contains the colour channel values for the min and max of a particular threshold
+     * </pre>
+     *
+     * Protobuf type {@code RDThreshold}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RDThreshold)
+        RemoteDebug.RDThresholdOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RemoteDebug.internal_static_RDThreshold_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RemoteDebug.internal_static_RDThreshold_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RemoteDebug.RDThreshold.class, RemoteDebug.RDThreshold.Builder.class);
+      }
+
+      // Construct using RemoteDebug.RDThreshold.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        min_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        max_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RemoteDebug.internal_static_RDThreshold_descriptor;
+      }
+
+      public RemoteDebug.RDThreshold getDefaultInstanceForType() {
+        return RemoteDebug.RDThreshold.getDefaultInstance();
+      }
+
+      public RemoteDebug.RDThreshold build() {
+        RemoteDebug.RDThreshold result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RemoteDebug.RDThreshold buildPartial() {
+        RemoteDebug.RDThreshold result = new RemoteDebug.RDThreshold(this);
+        int from_bitField0_ = bitField0_;
+        if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          min_ = java.util.Collections.unmodifiableList(min_);
+          bitField0_ = (bitField0_ & ~0x00000001);
+        }
+        result.min_ = min_;
+        if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          max_ = java.util.Collections.unmodifiableList(max_);
+          bitField0_ = (bitField0_ & ~0x00000002);
+        }
+        result.max_ = max_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RemoteDebug.RDThreshold) {
+          return mergeFrom((RemoteDebug.RDThreshold)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RemoteDebug.RDThreshold other) {
+        if (other == RemoteDebug.RDThreshold.getDefaultInstance()) return this;
+        if (!other.min_.isEmpty()) {
+          if (min_.isEmpty()) {
+            min_ = other.min_;
+            bitField0_ = (bitField0_ & ~0x00000001);
+          } else {
+            ensureMinIsMutable();
+            min_.addAll(other.min_);
+          }
+          onChanged();
+        }
+        if (!other.max_.isEmpty()) {
+          if (max_.isEmpty()) {
+            max_ = other.max_;
+            bitField0_ = (bitField0_ & ~0x00000002);
+          } else {
+            ensureMaxIsMutable();
+            max_.addAll(other.max_);
+          }
+          onChanged();
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RemoteDebug.RDThreshold parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RemoteDebug.RDThreshold) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private java.util.List<java.lang.Integer> min_ = java.util.Collections.emptyList();
+      private void ensureMinIsMutable() {
+        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+          min_ = new java.util.ArrayList<java.lang.Integer>(min_);
+          bitField0_ |= 0x00000001;
+         }
+      }
+      /**
+       * <code>repeated int32 min = 2;</code>
+       */
+      public java.util.List<java.lang.Integer>
+          getMinList() {
+        return java.util.Collections.unmodifiableList(min_);
+      }
+      /**
+       * <code>repeated int32 min = 2;</code>
+       */
+      public int getMinCount() {
+        return min_.size();
+      }
+      /**
+       * <code>repeated int32 min = 2;</code>
+       */
+      public int getMin(int index) {
+        return min_.get(index);
+      }
+      /**
+       * <code>repeated int32 min = 2;</code>
+       */
+      public Builder setMin(
+          int index, int value) {
+        ensureMinIsMutable();
+        min_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 min = 2;</code>
+       */
+      public Builder addMin(int value) {
+        ensureMinIsMutable();
+        min_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 min = 2;</code>
+       */
+      public Builder addAllMin(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureMinIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, min_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 min = 2;</code>
+       */
+      public Builder clearMin() {
+        min_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<java.lang.Integer> max_ = java.util.Collections.emptyList();
+      private void ensureMaxIsMutable() {
+        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+          max_ = new java.util.ArrayList<java.lang.Integer>(max_);
+          bitField0_ |= 0x00000002;
+         }
+      }
+      /**
+       * <code>repeated int32 max = 3;</code>
+       */
+      public java.util.List<java.lang.Integer>
+          getMaxList() {
+        return java.util.Collections.unmodifiableList(max_);
+      }
+      /**
+       * <code>repeated int32 max = 3;</code>
+       */
+      public int getMaxCount() {
+        return max_.size();
+      }
+      /**
+       * <code>repeated int32 max = 3;</code>
+       */
+      public int getMax(int index) {
+        return max_.get(index);
+      }
+      /**
+       * <code>repeated int32 max = 3;</code>
+       */
+      public Builder setMax(
+          int index, int value) {
+        ensureMaxIsMutable();
+        max_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 max = 3;</code>
+       */
+      public Builder addMax(int value) {
+        ensureMaxIsMutable();
+        max_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 max = 3;</code>
+       */
+      public Builder addAllMax(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureMaxIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, max_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 max = 3;</code>
+       */
+      public Builder clearMax() {
+        max_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000002);
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:RDThreshold)
+    }
+
+    // @@protoc_insertion_point(class_scope:RDThreshold)
+    private static final RemoteDebug.RDThreshold DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RemoteDebug.RDThreshold();
+    }
+
+    public static RemoteDebug.RDThreshold getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RDThreshold>
+        PARSER = new com.google.protobuf.AbstractParser<RDThreshold>() {
+      public RDThreshold parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new RDThreshold(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RDThreshold> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RDThreshold> getParserForType() {
+      return PARSER;
+    }
+
+    public RemoteDebug.RDThreshold getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface DebugFrameOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DebugFrame)
       com.google.protobuf.MessageOrBuilder {
@@ -27,7 +1856,7 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * the zlib encoded buffer of the ball's binary threshold image
+     * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional bytes ballThreshImage = 2;</code>
@@ -36,12 +1865,167 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * the temperature of the CPU on the Pi
+     * the temperature of the CPU on the SBC
      * </pre>
      *
      * <code>optional float temperature = 3;</code>
      */
     float getTemperature();
+
+    /**
+     * <pre>
+     * the bounding box of the object (not the ball, kept for legacy reasons)
+     * </pre>
+     *
+     * <code>optional .RDRect ballRect = 4;</code>
+     */
+    boolean hasBallRect();
+    /**
+     * <pre>
+     * the bounding box of the object (not the ball, kept for legacy reasons)
+     * </pre>
+     *
+     * <code>optional .RDRect ballRect = 4;</code>
+     */
+    RemoteDebug.RDRect getBallRect();
+    /**
+     * <pre>
+     * the bounding box of the object (not the ball, kept for legacy reasons)
+     * </pre>
+     *
+     * <code>optional .RDRect ballRect = 4;</code>
+     */
+    RemoteDebug.RDRectOrBuilder getBallRectOrBuilder();
+
+    /**
+     * <pre>
+     * the centroid of the ball
+     * </pre>
+     *
+     * <code>optional .RDPoint ballCentroid = 5;</code>
+     */
+    boolean hasBallCentroid();
+    /**
+     * <pre>
+     * the centroid of the ball
+     * </pre>
+     *
+     * <code>optional .RDPoint ballCentroid = 5;</code>
+     */
+    RemoteDebug.RDPoint getBallCentroid();
+    /**
+     * <pre>
+     * the centroid of the ball
+     * </pre>
+     *
+     * <code>optional .RDPoint ballCentroid = 5;</code>
+     */
+    RemoteDebug.RDPointOrBuilder getBallCentroidOrBuilder();
+
+    /**
+     * <pre>
+     * the current FPS of the camera
+     * </pre>
+     *
+     * <code>optional int32 fps = 6;</code>
+     */
+    int getFps();
+
+    /**
+     * <pre>
+     * width of both frames
+     * </pre>
+     *
+     * <code>optional int32 frameWidth = 7;</code>
+     */
+    int getFrameWidth();
+
+    /**
+     * <pre>
+     * height of both frames
+     * </pre>
+     *
+     * <code>optional int32 frameHeight = 8;</code>
+     */
+    int getFrameHeight();
+
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    boolean hasCropRect();
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    RemoteDebug.RDRect getCropRect();
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    RemoteDebug.RDRectOrBuilder getCropRectOrBuilder();
+
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    java.util.List<RemoteDebug.RDPoint> 
+        getLinePointsList();
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    RemoteDebug.RDPoint getLinePoints(int index);
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    int getLinePointsCount();
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+        getLinePointsOrBuilderList();
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    RemoteDebug.RDPointOrBuilder getLinePointsOrBuilder(
+        int index);
+
+    /**
+     * <pre>
+     * mirror radius used by localiser
+     * </pre>
+     *
+     * <code>optional int32 mirrorRadius = 11;</code>
+     */
+    int getMirrorRadius();
   }
   /**
    * <pre>
@@ -64,6 +2048,11 @@ public final class RemoteDebug {
       defaultImage_ = com.google.protobuf.ByteString.EMPTY;
       ballThreshImage_ = com.google.protobuf.ByteString.EMPTY;
       temperature_ = 0F;
+      fps_ = 0;
+      frameWidth_ = 0;
+      frameHeight_ = 0;
+      linePoints_ = java.util.Collections.emptyList();
+      mirrorRadius_ = 0;
     }
 
     @java.lang.Override
@@ -106,6 +2095,74 @@ public final class RemoteDebug {
               temperature_ = input.readFloat();
               break;
             }
+            case 34: {
+              RemoteDebug.RDRect.Builder subBuilder = null;
+              if (ballRect_ != null) {
+                subBuilder = ballRect_.toBuilder();
+              }
+              ballRect_ = input.readMessage(RemoteDebug.RDRect.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(ballRect_);
+                ballRect_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 42: {
+              RemoteDebug.RDPoint.Builder subBuilder = null;
+              if (ballCentroid_ != null) {
+                subBuilder = ballCentroid_.toBuilder();
+              }
+              ballCentroid_ = input.readMessage(RemoteDebug.RDPoint.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(ballCentroid_);
+                ballCentroid_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 48: {
+
+              fps_ = input.readInt32();
+              break;
+            }
+            case 56: {
+
+              frameWidth_ = input.readInt32();
+              break;
+            }
+            case 64: {
+
+              frameHeight_ = input.readInt32();
+              break;
+            }
+            case 74: {
+              RemoteDebug.RDRect.Builder subBuilder = null;
+              if (cropRect_ != null) {
+                subBuilder = cropRect_.toBuilder();
+              }
+              cropRect_ = input.readMessage(RemoteDebug.RDRect.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(cropRect_);
+                cropRect_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 82: {
+              if (!((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
+                linePoints_ = new java.util.ArrayList<RemoteDebug.RDPoint>();
+                mutable_bitField0_ |= 0x00000200;
+              }
+              linePoints_.add(
+                  input.readMessage(RemoteDebug.RDPoint.parser(), extensionRegistry));
+              break;
+            }
+            case 88: {
+
+              mirrorRadius_ = input.readInt32();
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -114,6 +2171,9 @@ public final class RemoteDebug {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
+          linePoints_ = java.util.Collections.unmodifiableList(linePoints_);
+        }
         makeExtensionsImmutable();
       }
     }
@@ -129,6 +2189,7 @@ public final class RemoteDebug {
               RemoteDebug.DebugFrame.class, RemoteDebug.DebugFrame.Builder.class);
     }
 
+    private int bitField0_;
     public static final int DEFAULTIMAGE_FIELD_NUMBER = 1;
     private com.google.protobuf.ByteString defaultImage_;
     /**
@@ -146,7 +2207,7 @@ public final class RemoteDebug {
     private com.google.protobuf.ByteString ballThreshImage_;
     /**
      * <pre>
-     * the zlib encoded buffer of the ball's binary threshold image
+     * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
      * </pre>
      *
      * <code>optional bytes ballThreshImage = 2;</code>
@@ -159,13 +2220,219 @@ public final class RemoteDebug {
     private float temperature_;
     /**
      * <pre>
-     * the temperature of the CPU on the Pi
+     * the temperature of the CPU on the SBC
      * </pre>
      *
      * <code>optional float temperature = 3;</code>
      */
     public float getTemperature() {
       return temperature_;
+    }
+
+    public static final int BALLRECT_FIELD_NUMBER = 4;
+    private RemoteDebug.RDRect ballRect_;
+    /**
+     * <pre>
+     * the bounding box of the object (not the ball, kept for legacy reasons)
+     * </pre>
+     *
+     * <code>optional .RDRect ballRect = 4;</code>
+     */
+    public boolean hasBallRect() {
+      return ballRect_ != null;
+    }
+    /**
+     * <pre>
+     * the bounding box of the object (not the ball, kept for legacy reasons)
+     * </pre>
+     *
+     * <code>optional .RDRect ballRect = 4;</code>
+     */
+    public RemoteDebug.RDRect getBallRect() {
+      return ballRect_ == null ? RemoteDebug.RDRect.getDefaultInstance() : ballRect_;
+    }
+    /**
+     * <pre>
+     * the bounding box of the object (not the ball, kept for legacy reasons)
+     * </pre>
+     *
+     * <code>optional .RDRect ballRect = 4;</code>
+     */
+    public RemoteDebug.RDRectOrBuilder getBallRectOrBuilder() {
+      return getBallRect();
+    }
+
+    public static final int BALLCENTROID_FIELD_NUMBER = 5;
+    private RemoteDebug.RDPoint ballCentroid_;
+    /**
+     * <pre>
+     * the centroid of the ball
+     * </pre>
+     *
+     * <code>optional .RDPoint ballCentroid = 5;</code>
+     */
+    public boolean hasBallCentroid() {
+      return ballCentroid_ != null;
+    }
+    /**
+     * <pre>
+     * the centroid of the ball
+     * </pre>
+     *
+     * <code>optional .RDPoint ballCentroid = 5;</code>
+     */
+    public RemoteDebug.RDPoint getBallCentroid() {
+      return ballCentroid_ == null ? RemoteDebug.RDPoint.getDefaultInstance() : ballCentroid_;
+    }
+    /**
+     * <pre>
+     * the centroid of the ball
+     * </pre>
+     *
+     * <code>optional .RDPoint ballCentroid = 5;</code>
+     */
+    public RemoteDebug.RDPointOrBuilder getBallCentroidOrBuilder() {
+      return getBallCentroid();
+    }
+
+    public static final int FPS_FIELD_NUMBER = 6;
+    private int fps_;
+    /**
+     * <pre>
+     * the current FPS of the camera
+     * </pre>
+     *
+     * <code>optional int32 fps = 6;</code>
+     */
+    public int getFps() {
+      return fps_;
+    }
+
+    public static final int FRAMEWIDTH_FIELD_NUMBER = 7;
+    private int frameWidth_;
+    /**
+     * <pre>
+     * width of both frames
+     * </pre>
+     *
+     * <code>optional int32 frameWidth = 7;</code>
+     */
+    public int getFrameWidth() {
+      return frameWidth_;
+    }
+
+    public static final int FRAMEHEIGHT_FIELD_NUMBER = 8;
+    private int frameHeight_;
+    /**
+     * <pre>
+     * height of both frames
+     * </pre>
+     *
+     * <code>optional int32 frameHeight = 8;</code>
+     */
+    public int getFrameHeight() {
+      return frameHeight_;
+    }
+
+    public static final int CROPRECT_FIELD_NUMBER = 9;
+    private RemoteDebug.RDRect cropRect_;
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    public boolean hasCropRect() {
+      return cropRect_ != null;
+    }
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    public RemoteDebug.RDRect getCropRect() {
+      return cropRect_ == null ? RemoteDebug.RDRect.getDefaultInstance() : cropRect_;
+    }
+    /**
+     * <pre>
+     * the crop rectangle, or all zeroes if cropping is disabled
+     * </pre>
+     *
+     * <code>optional .RDRect cropRect = 9;</code>
+     */
+    public RemoteDebug.RDRectOrBuilder getCropRectOrBuilder() {
+      return getCropRect();
+    }
+
+    public static final int LINEPOINTS_FIELD_NUMBER = 10;
+    private java.util.List<RemoteDebug.RDPoint> linePoints_;
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public java.util.List<RemoteDebug.RDPoint> getLinePointsList() {
+      return linePoints_;
+    }
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+        getLinePointsOrBuilderList() {
+      return linePoints_;
+    }
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public int getLinePointsCount() {
+      return linePoints_.size();
+    }
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public RemoteDebug.RDPoint getLinePoints(int index) {
+      return linePoints_.get(index);
+    }
+    /**
+     * <pre>
+     * line points from localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint linePoints = 10;</code>
+     */
+    public RemoteDebug.RDPointOrBuilder getLinePointsOrBuilder(
+        int index) {
+      return linePoints_.get(index);
+    }
+
+    public static final int MIRRORRADIUS_FIELD_NUMBER = 11;
+    private int mirrorRadius_;
+    /**
+     * <pre>
+     * mirror radius used by localiser
+     * </pre>
+     *
+     * <code>optional int32 mirrorRadius = 11;</code>
+     */
+    public int getMirrorRadius() {
+      return mirrorRadius_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -189,6 +2456,30 @@ public final class RemoteDebug {
       if (temperature_ != 0F) {
         output.writeFloat(3, temperature_);
       }
+      if (ballRect_ != null) {
+        output.writeMessage(4, getBallRect());
+      }
+      if (ballCentroid_ != null) {
+        output.writeMessage(5, getBallCentroid());
+      }
+      if (fps_ != 0) {
+        output.writeInt32(6, fps_);
+      }
+      if (frameWidth_ != 0) {
+        output.writeInt32(7, frameWidth_);
+      }
+      if (frameHeight_ != 0) {
+        output.writeInt32(8, frameHeight_);
+      }
+      if (cropRect_ != null) {
+        output.writeMessage(9, getCropRect());
+      }
+      for (int i = 0; i < linePoints_.size(); i++) {
+        output.writeMessage(10, linePoints_.get(i));
+      }
+      if (mirrorRadius_ != 0) {
+        output.writeInt32(11, mirrorRadius_);
+      }
     }
 
     public int getSerializedSize() {
@@ -207,6 +2498,38 @@ public final class RemoteDebug {
       if (temperature_ != 0F) {
         size += com.google.protobuf.CodedOutputStream
           .computeFloatSize(3, temperature_);
+      }
+      if (ballRect_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, getBallRect());
+      }
+      if (ballCentroid_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(5, getBallCentroid());
+      }
+      if (fps_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(6, fps_);
+      }
+      if (frameWidth_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(7, frameWidth_);
+      }
+      if (frameHeight_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(8, frameHeight_);
+      }
+      if (cropRect_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(9, getCropRect());
+      }
+      for (int i = 0; i < linePoints_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(10, linePoints_.get(i));
+      }
+      if (mirrorRadius_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(11, mirrorRadius_);
       }
       memoizedSize = size;
       return size;
@@ -232,6 +2555,31 @@ public final class RemoteDebug {
           java.lang.Float.floatToIntBits(getTemperature())
           == java.lang.Float.floatToIntBits(
               other.getTemperature()));
+      result = result && (hasBallRect() == other.hasBallRect());
+      if (hasBallRect()) {
+        result = result && getBallRect()
+            .equals(other.getBallRect());
+      }
+      result = result && (hasBallCentroid() == other.hasBallCentroid());
+      if (hasBallCentroid()) {
+        result = result && getBallCentroid()
+            .equals(other.getBallCentroid());
+      }
+      result = result && (getFps()
+          == other.getFps());
+      result = result && (getFrameWidth()
+          == other.getFrameWidth());
+      result = result && (getFrameHeight()
+          == other.getFrameHeight());
+      result = result && (hasCropRect() == other.hasCropRect());
+      if (hasCropRect()) {
+        result = result && getCropRect()
+            .equals(other.getCropRect());
+      }
+      result = result && getLinePointsList()
+          .equals(other.getLinePointsList());
+      result = result && (getMirrorRadius()
+          == other.getMirrorRadius());
       return result;
     }
 
@@ -249,6 +2597,30 @@ public final class RemoteDebug {
       hash = (37 * hash) + TEMPERATURE_FIELD_NUMBER;
       hash = (53 * hash) + java.lang.Float.floatToIntBits(
           getTemperature());
+      if (hasBallRect()) {
+        hash = (37 * hash) + BALLRECT_FIELD_NUMBER;
+        hash = (53 * hash) + getBallRect().hashCode();
+      }
+      if (hasBallCentroid()) {
+        hash = (37 * hash) + BALLCENTROID_FIELD_NUMBER;
+        hash = (53 * hash) + getBallCentroid().hashCode();
+      }
+      hash = (37 * hash) + FPS_FIELD_NUMBER;
+      hash = (53 * hash) + getFps();
+      hash = (37 * hash) + FRAMEWIDTH_FIELD_NUMBER;
+      hash = (53 * hash) + getFrameWidth();
+      hash = (37 * hash) + FRAMEHEIGHT_FIELD_NUMBER;
+      hash = (53 * hash) + getFrameHeight();
+      if (hasCropRect()) {
+        hash = (37 * hash) + CROPRECT_FIELD_NUMBER;
+        hash = (53 * hash) + getCropRect().hashCode();
+      }
+      if (getLinePointsCount() > 0) {
+        hash = (37 * hash) + LINEPOINTS_FIELD_NUMBER;
+        hash = (53 * hash) + getLinePointsList().hashCode();
+      }
+      hash = (37 * hash) + MIRRORRADIUS_FIELD_NUMBER;
+      hash = (53 * hash) + getMirrorRadius();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -369,6 +2741,7 @@ public final class RemoteDebug {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getLinePointsFieldBuilder();
         }
       }
       public Builder clear() {
@@ -378,6 +2751,38 @@ public final class RemoteDebug {
         ballThreshImage_ = com.google.protobuf.ByteString.EMPTY;
 
         temperature_ = 0F;
+
+        if (ballRectBuilder_ == null) {
+          ballRect_ = null;
+        } else {
+          ballRect_ = null;
+          ballRectBuilder_ = null;
+        }
+        if (ballCentroidBuilder_ == null) {
+          ballCentroid_ = null;
+        } else {
+          ballCentroid_ = null;
+          ballCentroidBuilder_ = null;
+        }
+        fps_ = 0;
+
+        frameWidth_ = 0;
+
+        frameHeight_ = 0;
+
+        if (cropRectBuilder_ == null) {
+          cropRect_ = null;
+        } else {
+          cropRect_ = null;
+          cropRectBuilder_ = null;
+        }
+        if (linePointsBuilder_ == null) {
+          linePoints_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000200);
+        } else {
+          linePointsBuilder_.clear();
+        }
+        mirrorRadius_ = 0;
 
         return this;
       }
@@ -401,9 +2806,40 @@ public final class RemoteDebug {
 
       public RemoteDebug.DebugFrame buildPartial() {
         RemoteDebug.DebugFrame result = new RemoteDebug.DebugFrame(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
         result.defaultImage_ = defaultImage_;
         result.ballThreshImage_ = ballThreshImage_;
         result.temperature_ = temperature_;
+        if (ballRectBuilder_ == null) {
+          result.ballRect_ = ballRect_;
+        } else {
+          result.ballRect_ = ballRectBuilder_.build();
+        }
+        if (ballCentroidBuilder_ == null) {
+          result.ballCentroid_ = ballCentroid_;
+        } else {
+          result.ballCentroid_ = ballCentroidBuilder_.build();
+        }
+        result.fps_ = fps_;
+        result.frameWidth_ = frameWidth_;
+        result.frameHeight_ = frameHeight_;
+        if (cropRectBuilder_ == null) {
+          result.cropRect_ = cropRect_;
+        } else {
+          result.cropRect_ = cropRectBuilder_.build();
+        }
+        if (linePointsBuilder_ == null) {
+          if (((bitField0_ & 0x00000200) == 0x00000200)) {
+            linePoints_ = java.util.Collections.unmodifiableList(linePoints_);
+            bitField0_ = (bitField0_ & ~0x00000200);
+          }
+          result.linePoints_ = linePoints_;
+        } else {
+          result.linePoints_ = linePointsBuilder_.build();
+        }
+        result.mirrorRadius_ = mirrorRadius_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -454,6 +2890,53 @@ public final class RemoteDebug {
         if (other.getTemperature() != 0F) {
           setTemperature(other.getTemperature());
         }
+        if (other.hasBallRect()) {
+          mergeBallRect(other.getBallRect());
+        }
+        if (other.hasBallCentroid()) {
+          mergeBallCentroid(other.getBallCentroid());
+        }
+        if (other.getFps() != 0) {
+          setFps(other.getFps());
+        }
+        if (other.getFrameWidth() != 0) {
+          setFrameWidth(other.getFrameWidth());
+        }
+        if (other.getFrameHeight() != 0) {
+          setFrameHeight(other.getFrameHeight());
+        }
+        if (other.hasCropRect()) {
+          mergeCropRect(other.getCropRect());
+        }
+        if (linePointsBuilder_ == null) {
+          if (!other.linePoints_.isEmpty()) {
+            if (linePoints_.isEmpty()) {
+              linePoints_ = other.linePoints_;
+              bitField0_ = (bitField0_ & ~0x00000200);
+            } else {
+              ensureLinePointsIsMutable();
+              linePoints_.addAll(other.linePoints_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.linePoints_.isEmpty()) {
+            if (linePointsBuilder_.isEmpty()) {
+              linePointsBuilder_.dispose();
+              linePointsBuilder_ = null;
+              linePoints_ = other.linePoints_;
+              bitField0_ = (bitField0_ & ~0x00000200);
+              linePointsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getLinePointsFieldBuilder() : null;
+            } else {
+              linePointsBuilder_.addAllMessages(other.linePoints_);
+            }
+          }
+        }
+        if (other.getMirrorRadius() != 0) {
+          setMirrorRadius(other.getMirrorRadius());
+        }
         onChanged();
         return this;
       }
@@ -479,6 +2962,7 @@ public final class RemoteDebug {
         }
         return this;
       }
+      private int bitField0_;
 
       private com.google.protobuf.ByteString defaultImage_ = com.google.protobuf.ByteString.EMPTY;
       /**
@@ -524,7 +3008,7 @@ public final class RemoteDebug {
       private com.google.protobuf.ByteString ballThreshImage_ = com.google.protobuf.ByteString.EMPTY;
       /**
        * <pre>
-       * the zlib encoded buffer of the ball's binary threshold image
+       * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional bytes ballThreshImage = 2;</code>
@@ -534,7 +3018,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the zlib encoded buffer of the ball's binary threshold image
+       * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional bytes ballThreshImage = 2;</code>
@@ -550,7 +3034,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the zlib encoded buffer of the ball's binary threshold image
+       * the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
        * </pre>
        *
        * <code>optional bytes ballThreshImage = 2;</code>
@@ -565,7 +3049,7 @@ public final class RemoteDebug {
       private float temperature_ ;
       /**
        * <pre>
-       * the temperature of the CPU on the Pi
+       * the temperature of the CPU on the SBC
        * </pre>
        *
        * <code>optional float temperature = 3;</code>
@@ -575,7 +3059,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the temperature of the CPU on the Pi
+       * the temperature of the CPU on the SBC
        * </pre>
        *
        * <code>optional float temperature = 3;</code>
@@ -588,7 +3072,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * the temperature of the CPU on the Pi
+       * the temperature of the CPU on the SBC
        * </pre>
        *
        * <code>optional float temperature = 3;</code>
@@ -596,6 +3080,929 @@ public final class RemoteDebug {
       public Builder clearTemperature() {
         
         temperature_ = 0F;
+        onChanged();
+        return this;
+      }
+
+      private RemoteDebug.RDRect ballRect_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder> ballRectBuilder_;
+      /**
+       * <pre>
+       * the bounding box of the object (not the ball, kept for legacy reasons)
+       * </pre>
+       *
+       * <code>optional .RDRect ballRect = 4;</code>
+       */
+      public boolean hasBallRect() {
+        return ballRectBuilder_ != null || ballRect_ != null;
+      }
+      /**
+       * <pre>
+       * the bounding box of the object (not the ball, kept for legacy reasons)
+       * </pre>
+       *
+       * <code>optional .RDRect ballRect = 4;</code>
+       */
+      public RemoteDebug.RDRect getBallRect() {
+        if (ballRectBuilder_ == null) {
+          return ballRect_ == null ? RemoteDebug.RDRect.getDefaultInstance() : ballRect_;
+        } else {
+          return ballRectBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * the bounding box of the object (not the ball, kept for legacy reasons)
+       * </pre>
+       *
+       * <code>optional .RDRect ballRect = 4;</code>
+       */
+      public Builder setBallRect(RemoteDebug.RDRect value) {
+        if (ballRectBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ballRect_ = value;
+          onChanged();
+        } else {
+          ballRectBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the bounding box of the object (not the ball, kept for legacy reasons)
+       * </pre>
+       *
+       * <code>optional .RDRect ballRect = 4;</code>
+       */
+      public Builder setBallRect(
+          RemoteDebug.RDRect.Builder builderForValue) {
+        if (ballRectBuilder_ == null) {
+          ballRect_ = builderForValue.build();
+          onChanged();
+        } else {
+          ballRectBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the bounding box of the object (not the ball, kept for legacy reasons)
+       * </pre>
+       *
+       * <code>optional .RDRect ballRect = 4;</code>
+       */
+      public Builder mergeBallRect(RemoteDebug.RDRect value) {
+        if (ballRectBuilder_ == null) {
+          if (ballRect_ != null) {
+            ballRect_ =
+              RemoteDebug.RDRect.newBuilder(ballRect_).mergeFrom(value).buildPartial();
+          } else {
+            ballRect_ = value;
+          }
+          onChanged();
+        } else {
+          ballRectBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the bounding box of the object (not the ball, kept for legacy reasons)
+       * </pre>
+       *
+       * <code>optional .RDRect ballRect = 4;</code>
+       */
+      public Builder clearBallRect() {
+        if (ballRectBuilder_ == null) {
+          ballRect_ = null;
+          onChanged();
+        } else {
+          ballRect_ = null;
+          ballRectBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the bounding box of the object (not the ball, kept for legacy reasons)
+       * </pre>
+       *
+       * <code>optional .RDRect ballRect = 4;</code>
+       */
+      public RemoteDebug.RDRect.Builder getBallRectBuilder() {
+        
+        onChanged();
+        return getBallRectFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * the bounding box of the object (not the ball, kept for legacy reasons)
+       * </pre>
+       *
+       * <code>optional .RDRect ballRect = 4;</code>
+       */
+      public RemoteDebug.RDRectOrBuilder getBallRectOrBuilder() {
+        if (ballRectBuilder_ != null) {
+          return ballRectBuilder_.getMessageOrBuilder();
+        } else {
+          return ballRect_ == null ?
+              RemoteDebug.RDRect.getDefaultInstance() : ballRect_;
+        }
+      }
+      /**
+       * <pre>
+       * the bounding box of the object (not the ball, kept for legacy reasons)
+       * </pre>
+       *
+       * <code>optional .RDRect ballRect = 4;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder> 
+          getBallRectFieldBuilder() {
+        if (ballRectBuilder_ == null) {
+          ballRectBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder>(
+                  getBallRect(),
+                  getParentForChildren(),
+                  isClean());
+          ballRect_ = null;
+        }
+        return ballRectBuilder_;
+      }
+
+      private RemoteDebug.RDPoint ballCentroid_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> ballCentroidBuilder_;
+      /**
+       * <pre>
+       * the centroid of the ball
+       * </pre>
+       *
+       * <code>optional .RDPoint ballCentroid = 5;</code>
+       */
+      public boolean hasBallCentroid() {
+        return ballCentroidBuilder_ != null || ballCentroid_ != null;
+      }
+      /**
+       * <pre>
+       * the centroid of the ball
+       * </pre>
+       *
+       * <code>optional .RDPoint ballCentroid = 5;</code>
+       */
+      public RemoteDebug.RDPoint getBallCentroid() {
+        if (ballCentroidBuilder_ == null) {
+          return ballCentroid_ == null ? RemoteDebug.RDPoint.getDefaultInstance() : ballCentroid_;
+        } else {
+          return ballCentroidBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * the centroid of the ball
+       * </pre>
+       *
+       * <code>optional .RDPoint ballCentroid = 5;</code>
+       */
+      public Builder setBallCentroid(RemoteDebug.RDPoint value) {
+        if (ballCentroidBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ballCentroid_ = value;
+          onChanged();
+        } else {
+          ballCentroidBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the centroid of the ball
+       * </pre>
+       *
+       * <code>optional .RDPoint ballCentroid = 5;</code>
+       */
+      public Builder setBallCentroid(
+          RemoteDebug.RDPoint.Builder builderForValue) {
+        if (ballCentroidBuilder_ == null) {
+          ballCentroid_ = builderForValue.build();
+          onChanged();
+        } else {
+          ballCentroidBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the centroid of the ball
+       * </pre>
+       *
+       * <code>optional .RDPoint ballCentroid = 5;</code>
+       */
+      public Builder mergeBallCentroid(RemoteDebug.RDPoint value) {
+        if (ballCentroidBuilder_ == null) {
+          if (ballCentroid_ != null) {
+            ballCentroid_ =
+              RemoteDebug.RDPoint.newBuilder(ballCentroid_).mergeFrom(value).buildPartial();
+          } else {
+            ballCentroid_ = value;
+          }
+          onChanged();
+        } else {
+          ballCentroidBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the centroid of the ball
+       * </pre>
+       *
+       * <code>optional .RDPoint ballCentroid = 5;</code>
+       */
+      public Builder clearBallCentroid() {
+        if (ballCentroidBuilder_ == null) {
+          ballCentroid_ = null;
+          onChanged();
+        } else {
+          ballCentroid_ = null;
+          ballCentroidBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the centroid of the ball
+       * </pre>
+       *
+       * <code>optional .RDPoint ballCentroid = 5;</code>
+       */
+      public RemoteDebug.RDPoint.Builder getBallCentroidBuilder() {
+        
+        onChanged();
+        return getBallCentroidFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * the centroid of the ball
+       * </pre>
+       *
+       * <code>optional .RDPoint ballCentroid = 5;</code>
+       */
+      public RemoteDebug.RDPointOrBuilder getBallCentroidOrBuilder() {
+        if (ballCentroidBuilder_ != null) {
+          return ballCentroidBuilder_.getMessageOrBuilder();
+        } else {
+          return ballCentroid_ == null ?
+              RemoteDebug.RDPoint.getDefaultInstance() : ballCentroid_;
+        }
+      }
+      /**
+       * <pre>
+       * the centroid of the ball
+       * </pre>
+       *
+       * <code>optional .RDPoint ballCentroid = 5;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> 
+          getBallCentroidFieldBuilder() {
+        if (ballCentroidBuilder_ == null) {
+          ballCentroidBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder>(
+                  getBallCentroid(),
+                  getParentForChildren(),
+                  isClean());
+          ballCentroid_ = null;
+        }
+        return ballCentroidBuilder_;
+      }
+
+      private int fps_ ;
+      /**
+       * <pre>
+       * the current FPS of the camera
+       * </pre>
+       *
+       * <code>optional int32 fps = 6;</code>
+       */
+      public int getFps() {
+        return fps_;
+      }
+      /**
+       * <pre>
+       * the current FPS of the camera
+       * </pre>
+       *
+       * <code>optional int32 fps = 6;</code>
+       */
+      public Builder setFps(int value) {
+        
+        fps_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * the current FPS of the camera
+       * </pre>
+       *
+       * <code>optional int32 fps = 6;</code>
+       */
+      public Builder clearFps() {
+        
+        fps_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int frameWidth_ ;
+      /**
+       * <pre>
+       * width of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameWidth = 7;</code>
+       */
+      public int getFrameWidth() {
+        return frameWidth_;
+      }
+      /**
+       * <pre>
+       * width of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameWidth = 7;</code>
+       */
+      public Builder setFrameWidth(int value) {
+        
+        frameWidth_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * width of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameWidth = 7;</code>
+       */
+      public Builder clearFrameWidth() {
+        
+        frameWidth_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int frameHeight_ ;
+      /**
+       * <pre>
+       * height of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameHeight = 8;</code>
+       */
+      public int getFrameHeight() {
+        return frameHeight_;
+      }
+      /**
+       * <pre>
+       * height of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameHeight = 8;</code>
+       */
+      public Builder setFrameHeight(int value) {
+        
+        frameHeight_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * height of both frames
+       * </pre>
+       *
+       * <code>optional int32 frameHeight = 8;</code>
+       */
+      public Builder clearFrameHeight() {
+        
+        frameHeight_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private RemoteDebug.RDRect cropRect_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder> cropRectBuilder_;
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public boolean hasCropRect() {
+        return cropRectBuilder_ != null || cropRect_ != null;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public RemoteDebug.RDRect getCropRect() {
+        if (cropRectBuilder_ == null) {
+          return cropRect_ == null ? RemoteDebug.RDRect.getDefaultInstance() : cropRect_;
+        } else {
+          return cropRectBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public Builder setCropRect(RemoteDebug.RDRect value) {
+        if (cropRectBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          cropRect_ = value;
+          onChanged();
+        } else {
+          cropRectBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public Builder setCropRect(
+          RemoteDebug.RDRect.Builder builderForValue) {
+        if (cropRectBuilder_ == null) {
+          cropRect_ = builderForValue.build();
+          onChanged();
+        } else {
+          cropRectBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public Builder mergeCropRect(RemoteDebug.RDRect value) {
+        if (cropRectBuilder_ == null) {
+          if (cropRect_ != null) {
+            cropRect_ =
+              RemoteDebug.RDRect.newBuilder(cropRect_).mergeFrom(value).buildPartial();
+          } else {
+            cropRect_ = value;
+          }
+          onChanged();
+        } else {
+          cropRectBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public Builder clearCropRect() {
+        if (cropRectBuilder_ == null) {
+          cropRect_ = null;
+          onChanged();
+        } else {
+          cropRect_ = null;
+          cropRectBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public RemoteDebug.RDRect.Builder getCropRectBuilder() {
+        
+        onChanged();
+        return getCropRectFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      public RemoteDebug.RDRectOrBuilder getCropRectOrBuilder() {
+        if (cropRectBuilder_ != null) {
+          return cropRectBuilder_.getMessageOrBuilder();
+        } else {
+          return cropRect_ == null ?
+              RemoteDebug.RDRect.getDefaultInstance() : cropRect_;
+        }
+      }
+      /**
+       * <pre>
+       * the crop rectangle, or all zeroes if cropping is disabled
+       * </pre>
+       *
+       * <code>optional .RDRect cropRect = 9;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder> 
+          getCropRectFieldBuilder() {
+        if (cropRectBuilder_ == null) {
+          cropRectBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDRect, RemoteDebug.RDRect.Builder, RemoteDebug.RDRectOrBuilder>(
+                  getCropRect(),
+                  getParentForChildren(),
+                  isClean());
+          cropRect_ = null;
+        }
+        return cropRectBuilder_;
+      }
+
+      private java.util.List<RemoteDebug.RDPoint> linePoints_ =
+        java.util.Collections.emptyList();
+      private void ensureLinePointsIsMutable() {
+        if (!((bitField0_ & 0x00000200) == 0x00000200)) {
+          linePoints_ = new java.util.ArrayList<RemoteDebug.RDPoint>(linePoints_);
+          bitField0_ |= 0x00000200;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> linePointsBuilder_;
+
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public java.util.List<RemoteDebug.RDPoint> getLinePointsList() {
+        if (linePointsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(linePoints_);
+        } else {
+          return linePointsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public int getLinePointsCount() {
+        if (linePointsBuilder_ == null) {
+          return linePoints_.size();
+        } else {
+          return linePointsBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPoint getLinePoints(int index) {
+        if (linePointsBuilder_ == null) {
+          return linePoints_.get(index);
+        } else {
+          return linePointsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder setLinePoints(
+          int index, RemoteDebug.RDPoint value) {
+        if (linePointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureLinePointsIsMutable();
+          linePoints_.set(index, value);
+          onChanged();
+        } else {
+          linePointsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder setLinePoints(
+          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          linePoints_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          linePointsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addLinePoints(RemoteDebug.RDPoint value) {
+        if (linePointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureLinePointsIsMutable();
+          linePoints_.add(value);
+          onChanged();
+        } else {
+          linePointsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addLinePoints(
+          int index, RemoteDebug.RDPoint value) {
+        if (linePointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureLinePointsIsMutable();
+          linePoints_.add(index, value);
+          onChanged();
+        } else {
+          linePointsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addLinePoints(
+          RemoteDebug.RDPoint.Builder builderForValue) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          linePoints_.add(builderForValue.build());
+          onChanged();
+        } else {
+          linePointsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addLinePoints(
+          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          linePoints_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          linePointsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder addAllLinePoints(
+          java.lang.Iterable<? extends RemoteDebug.RDPoint> values) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, linePoints_);
+          onChanged();
+        } else {
+          linePointsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder clearLinePoints() {
+        if (linePointsBuilder_ == null) {
+          linePoints_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000200);
+          onChanged();
+        } else {
+          linePointsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public Builder removeLinePoints(int index) {
+        if (linePointsBuilder_ == null) {
+          ensureLinePointsIsMutable();
+          linePoints_.remove(index);
+          onChanged();
+        } else {
+          linePointsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPoint.Builder getLinePointsBuilder(
+          int index) {
+        return getLinePointsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPointOrBuilder getLinePointsOrBuilder(
+          int index) {
+        if (linePointsBuilder_ == null) {
+          return linePoints_.get(index);  } else {
+          return linePointsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+           getLinePointsOrBuilderList() {
+        if (linePointsBuilder_ != null) {
+          return linePointsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(linePoints_);
+        }
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPoint.Builder addLinePointsBuilder() {
+        return getLinePointsFieldBuilder().addBuilder(
+            RemoteDebug.RDPoint.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public RemoteDebug.RDPoint.Builder addLinePointsBuilder(
+          int index) {
+        return getLinePointsFieldBuilder().addBuilder(
+            index, RemoteDebug.RDPoint.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * line points from localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint linePoints = 10;</code>
+       */
+      public java.util.List<RemoteDebug.RDPoint.Builder> 
+           getLinePointsBuilderList() {
+        return getLinePointsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> 
+          getLinePointsFieldBuilder() {
+        if (linePointsBuilder_ == null) {
+          linePointsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder>(
+                  linePoints_,
+                  ((bitField0_ & 0x00000200) == 0x00000200),
+                  getParentForChildren(),
+                  isClean());
+          linePoints_ = null;
+        }
+        return linePointsBuilder_;
+      }
+
+      private int mirrorRadius_ ;
+      /**
+       * <pre>
+       * mirror radius used by localiser
+       * </pre>
+       *
+       * <code>optional int32 mirrorRadius = 11;</code>
+       */
+      public int getMirrorRadius() {
+        return mirrorRadius_;
+      }
+      /**
+       * <pre>
+       * mirror radius used by localiser
+       * </pre>
+       *
+       * <code>optional int32 mirrorRadius = 11;</code>
+       */
+      public Builder setMirrorRadius(int value) {
+        
+        mirrorRadius_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * mirror radius used by localiser
+       * </pre>
+       *
+       * <code>optional int32 mirrorRadius = 11;</code>
+       */
+      public Builder clearMirrorRadius() {
+        
+        mirrorRadius_ = 0;
         onChanged();
         return this;
       }
@@ -655,9 +4062,18 @@ public final class RemoteDebug {
     /**
      * <pre>
      * List of commands:
-     * CMD_POWER_OFF: power off the camera module, equivalent to sudo shutdown now
-     * CMD_POWER_REBOOT: reboot the camera module, equivalent to sudo reboot now
+     * CMD_OK: the last command completed successfully
+     * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+     * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
+     * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
+     * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
+     * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+     * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
      * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
+     * CMD_MOVE_RESET: move to starting position
+     * CMD_MOVE_HALT: stops the robot in place, braking
+     * CMD_MOVE_RESUME: allows the robot to move again
+     * CMD_MOVE_ORIENT: orient to a specific direction
      * </pre>
      *
      * <code>optional int32 messageId = 1;</code>
@@ -667,20 +4083,133 @@ public final class RemoteDebug {
     /**
      * <pre>
      * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
      * </pre>
      *
-     * <code>optional int32 coordX = 2;</code>
+     * <code>optional .RDPoint coords = 2;</code>
      */
-    int getCoordX();
+    boolean hasCoords();
+    /**
+     * <pre>
+     * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
+     * </pre>
+     *
+     * <code>optional .RDPoint coords = 2;</code>
+     */
+    RemoteDebug.RDPoint getCoords();
+    /**
+     * <pre>
+     * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
+     * </pre>
+     *
+     * <code>optional .RDPoint coords = 2;</code>
+     */
+    RemoteDebug.RDPointOrBuilder getCoordsOrBuilder();
 
     /**
-     * <code>optional int32 coordY = 3;</code>
+     * <pre>
+     * may be set if CMD_MOVE_ORIENT is the messageId
+     * contains the 0-360 degree orientation the robot should turn to
+     * </pre>
+     *
+     * <code>optional float orientation = 3;</code>
      */
-    int getCoordY();
+    float getOrientation();
+
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    java.util.List<RemoteDebug.RDThreshold> 
+        getAllThresholdsList();
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    RemoteDebug.RDThreshold getAllThresholds(int index);
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    int getAllThresholdsCount();
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    java.util.List<? extends RemoteDebug.RDThresholdOrBuilder> 
+        getAllThresholdsOrBuilderList();
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    RemoteDebug.RDThresholdOrBuilder getAllThresholdsOrBuilder(
+        int index);
+
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
+     * </pre>
+     *
+     * <code>optional int32 objectId = 5;</code>
+     */
+    int getObjectId();
+
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+     * </pre>
+     *
+     * <code>optional bool minMax = 6;</code>
+     */
+    boolean getMinMax();
+
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+     * </pre>
+     *
+     * <code>optional int32 colourChannel = 7;</code>
+     */
+    int getColourChannel();
+
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLD_SET is the messageId
+     * would be the value of the threshold
+     * </pre>
+     *
+     * <code>optional int32 value = 8;</code>
+     */
+    int getValue();
   }
   /**
    * <pre>
-   * A message sent by the Omicontrol app to Omicam containing a command and some data
+   * This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
    * </pre>
    *
    * Protobuf type {@code DebugCommand}
@@ -695,8 +4224,12 @@ public final class RemoteDebug {
     }
     private DebugCommand() {
       messageId_ = 0;
-      coordX_ = 0;
-      coordY_ = 0;
+      orientation_ = 0F;
+      allThresholds_ = java.util.Collections.emptyList();
+      objectId_ = 0;
+      minMax_ = false;
+      colourChannel_ = 0;
+      value_ = 0;
     }
 
     @java.lang.Override
@@ -729,14 +4262,51 @@ public final class RemoteDebug {
               messageId_ = input.readInt32();
               break;
             }
-            case 16: {
+            case 18: {
+              RemoteDebug.RDPoint.Builder subBuilder = null;
+              if (coords_ != null) {
+                subBuilder = coords_.toBuilder();
+              }
+              coords_ = input.readMessage(RemoteDebug.RDPoint.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(coords_);
+                coords_ = subBuilder.buildPartial();
+              }
 
-              coordX_ = input.readInt32();
               break;
             }
-            case 24: {
+            case 29: {
 
-              coordY_ = input.readInt32();
+              orientation_ = input.readFloat();
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+                allThresholds_ = new java.util.ArrayList<RemoteDebug.RDThreshold>();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              allThresholds_.add(
+                  input.readMessage(RemoteDebug.RDThreshold.parser(), extensionRegistry));
+              break;
+            }
+            case 40: {
+
+              objectId_ = input.readInt32();
+              break;
+            }
+            case 48: {
+
+              minMax_ = input.readBool();
+              break;
+            }
+            case 56: {
+
+              colourChannel_ = input.readInt32();
+              break;
+            }
+            case 64: {
+
+              value_ = input.readInt32();
               break;
             }
           }
@@ -747,6 +4317,9 @@ public final class RemoteDebug {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+          allThresholds_ = java.util.Collections.unmodifiableList(allThresholds_);
+        }
         makeExtensionsImmutable();
       }
     }
@@ -762,14 +4335,24 @@ public final class RemoteDebug {
               RemoteDebug.DebugCommand.class, RemoteDebug.DebugCommand.Builder.class);
     }
 
+    private int bitField0_;
     public static final int MESSAGEID_FIELD_NUMBER = 1;
     private int messageId_;
     /**
      * <pre>
      * List of commands:
-     * CMD_POWER_OFF: power off the camera module, equivalent to sudo shutdown now
-     * CMD_POWER_REBOOT: reboot the camera module, equivalent to sudo reboot now
+     * CMD_OK: the last command completed successfully
+     * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+     * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
+     * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
+     * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
+     * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+     * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
      * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
+     * CMD_MOVE_RESET: move to starting position
+     * CMD_MOVE_HALT: stops the robot in place, braking
+     * CMD_MOVE_RESUME: allows the robot to move again
+     * CMD_MOVE_ORIENT: orient to a specific direction
      * </pre>
      *
      * <code>optional int32 messageId = 1;</code>
@@ -778,26 +4361,170 @@ public final class RemoteDebug {
       return messageId_;
     }
 
-    public static final int COORDX_FIELD_NUMBER = 2;
-    private int coordX_;
+    public static final int COORDS_FIELD_NUMBER = 2;
+    private RemoteDebug.RDPoint coords_;
     /**
      * <pre>
      * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
      * </pre>
      *
-     * <code>optional int32 coordX = 2;</code>
+     * <code>optional .RDPoint coords = 2;</code>
      */
-    public int getCoordX() {
-      return coordX_;
+    public boolean hasCoords() {
+      return coords_ != null;
+    }
+    /**
+     * <pre>
+     * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
+     * </pre>
+     *
+     * <code>optional .RDPoint coords = 2;</code>
+     */
+    public RemoteDebug.RDPoint getCoords() {
+      return coords_ == null ? RemoteDebug.RDPoint.getDefaultInstance() : coords_;
+    }
+    /**
+     * <pre>
+     * may be set if CMD_MOVE_TO_XY is the messageId
+     * contains the field coordinates that the robot should move to
+     * </pre>
+     *
+     * <code>optional .RDPoint coords = 2;</code>
+     */
+    public RemoteDebug.RDPointOrBuilder getCoordsOrBuilder() {
+      return getCoords();
     }
 
-    public static final int COORDY_FIELD_NUMBER = 3;
-    private int coordY_;
+    public static final int ORIENTATION_FIELD_NUMBER = 3;
+    private float orientation_;
     /**
-     * <code>optional int32 coordY = 3;</code>
+     * <pre>
+     * may be set if CMD_MOVE_ORIENT is the messageId
+     * contains the 0-360 degree orientation the robot should turn to
+     * </pre>
+     *
+     * <code>optional float orientation = 3;</code>
      */
-    public int getCoordY() {
-      return coordY_;
+    public float getOrientation() {
+      return orientation_;
+    }
+
+    public static final int ALLTHRESHOLDS_FIELD_NUMBER = 4;
+    private java.util.List<RemoteDebug.RDThreshold> allThresholds_;
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    public java.util.List<RemoteDebug.RDThreshold> getAllThresholdsList() {
+      return allThresholds_;
+    }
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    public java.util.List<? extends RemoteDebug.RDThresholdOrBuilder> 
+        getAllThresholdsOrBuilderList() {
+      return allThresholds_;
+    }
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    public int getAllThresholdsCount() {
+      return allThresholds_.size();
+    }
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    public RemoteDebug.RDThreshold getAllThresholds(int index) {
+      return allThresholds_.get(index);
+    }
+    /**
+     * <pre>
+     * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+     * contains an array of all the thresholds values in the camera currently
+     * </pre>
+     *
+     * <code>repeated .RDThreshold allThresholds = 4;</code>
+     */
+    public RemoteDebug.RDThresholdOrBuilder getAllThresholdsOrBuilder(
+        int index) {
+      return allThresholds_.get(index);
+    }
+
+    public static final int OBJECTID_FIELD_NUMBER = 5;
+    private int objectId_;
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
+     * </pre>
+     *
+     * <code>optional int32 objectId = 5;</code>
+     */
+    public int getObjectId() {
+      return objectId_;
+    }
+
+    public static final int MINMAX_FIELD_NUMBER = 6;
+    private boolean minMax_;
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+     * </pre>
+     *
+     * <code>optional bool minMax = 6;</code>
+     */
+    public boolean getMinMax() {
+      return minMax_;
+    }
+
+    public static final int COLOURCHANNEL_FIELD_NUMBER = 7;
+    private int colourChannel_;
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLDS_SELECT is the messageId
+     * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+     * </pre>
+     *
+     * <code>optional int32 colourChannel = 7;</code>
+     */
+    public int getColourChannel() {
+      return colourChannel_;
+    }
+
+    public static final int VALUE_FIELD_NUMBER = 8;
+    private int value_;
+    /**
+     * <pre>
+     * may be set if CMD_THRESHOLD_SET is the messageId
+     * would be the value of the threshold
+     * </pre>
+     *
+     * <code>optional int32 value = 8;</code>
+     */
+    public int getValue() {
+      return value_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -815,11 +4542,26 @@ public final class RemoteDebug {
       if (messageId_ != 0) {
         output.writeInt32(1, messageId_);
       }
-      if (coordX_ != 0) {
-        output.writeInt32(2, coordX_);
+      if (coords_ != null) {
+        output.writeMessage(2, getCoords());
       }
-      if (coordY_ != 0) {
-        output.writeInt32(3, coordY_);
+      if (orientation_ != 0F) {
+        output.writeFloat(3, orientation_);
+      }
+      for (int i = 0; i < allThresholds_.size(); i++) {
+        output.writeMessage(4, allThresholds_.get(i));
+      }
+      if (objectId_ != 0) {
+        output.writeInt32(5, objectId_);
+      }
+      if (minMax_ != false) {
+        output.writeBool(6, minMax_);
+      }
+      if (colourChannel_ != 0) {
+        output.writeInt32(7, colourChannel_);
+      }
+      if (value_ != 0) {
+        output.writeInt32(8, value_);
       }
     }
 
@@ -832,13 +4574,33 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(1, messageId_);
       }
-      if (coordX_ != 0) {
+      if (coords_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(2, coordX_);
+          .computeMessageSize(2, getCoords());
       }
-      if (coordY_ != 0) {
+      if (orientation_ != 0F) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, coordY_);
+          .computeFloatSize(3, orientation_);
+      }
+      for (int i = 0; i < allThresholds_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, allThresholds_.get(i));
+      }
+      if (objectId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(5, objectId_);
+      }
+      if (minMax_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(6, minMax_);
+      }
+      if (colourChannel_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(7, colourChannel_);
+      }
+      if (value_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(8, value_);
       }
       memoizedSize = size;
       return size;
@@ -858,10 +4620,25 @@ public final class RemoteDebug {
       boolean result = true;
       result = result && (getMessageId()
           == other.getMessageId());
-      result = result && (getCoordX()
-          == other.getCoordX());
-      result = result && (getCoordY()
-          == other.getCoordY());
+      result = result && (hasCoords() == other.hasCoords());
+      if (hasCoords()) {
+        result = result && getCoords()
+            .equals(other.getCoords());
+      }
+      result = result && (
+          java.lang.Float.floatToIntBits(getOrientation())
+          == java.lang.Float.floatToIntBits(
+              other.getOrientation()));
+      result = result && getAllThresholdsList()
+          .equals(other.getAllThresholdsList());
+      result = result && (getObjectId()
+          == other.getObjectId());
+      result = result && (getMinMax()
+          == other.getMinMax());
+      result = result && (getColourChannel()
+          == other.getColourChannel());
+      result = result && (getValue()
+          == other.getValue());
       return result;
     }
 
@@ -874,10 +4651,26 @@ public final class RemoteDebug {
       hash = (19 * hash) + getDescriptorForType().hashCode();
       hash = (37 * hash) + MESSAGEID_FIELD_NUMBER;
       hash = (53 * hash) + getMessageId();
-      hash = (37 * hash) + COORDX_FIELD_NUMBER;
-      hash = (53 * hash) + getCoordX();
-      hash = (37 * hash) + COORDY_FIELD_NUMBER;
-      hash = (53 * hash) + getCoordY();
+      if (hasCoords()) {
+        hash = (37 * hash) + COORDS_FIELD_NUMBER;
+        hash = (53 * hash) + getCoords().hashCode();
+      }
+      hash = (37 * hash) + ORIENTATION_FIELD_NUMBER;
+      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+          getOrientation());
+      if (getAllThresholdsCount() > 0) {
+        hash = (37 * hash) + ALLTHRESHOLDS_FIELD_NUMBER;
+        hash = (53 * hash) + getAllThresholdsList().hashCode();
+      }
+      hash = (37 * hash) + OBJECTID_FIELD_NUMBER;
+      hash = (53 * hash) + getObjectId();
+      hash = (37 * hash) + MINMAX_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getMinMax());
+      hash = (37 * hash) + COLOURCHANNEL_FIELD_NUMBER;
+      hash = (53 * hash) + getColourChannel();
+      hash = (37 * hash) + VALUE_FIELD_NUMBER;
+      hash = (53 * hash) + getValue();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -962,7 +4755,7 @@ public final class RemoteDebug {
     }
     /**
      * <pre>
-     * A message sent by the Omicontrol app to Omicam containing a command and some data
+     * This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
      * </pre>
      *
      * Protobuf type {@code DebugCommand}
@@ -996,15 +4789,34 @@ public final class RemoteDebug {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
+          getAllThresholdsFieldBuilder();
         }
       }
       public Builder clear() {
         super.clear();
         messageId_ = 0;
 
-        coordX_ = 0;
+        if (coordsBuilder_ == null) {
+          coords_ = null;
+        } else {
+          coords_ = null;
+          coordsBuilder_ = null;
+        }
+        orientation_ = 0F;
 
-        coordY_ = 0;
+        if (allThresholdsBuilder_ == null) {
+          allThresholds_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+        } else {
+          allThresholdsBuilder_.clear();
+        }
+        objectId_ = 0;
+
+        minMax_ = false;
+
+        colourChannel_ = 0;
+
+        value_ = 0;
 
         return this;
       }
@@ -1028,9 +4840,29 @@ public final class RemoteDebug {
 
       public RemoteDebug.DebugCommand buildPartial() {
         RemoteDebug.DebugCommand result = new RemoteDebug.DebugCommand(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
         result.messageId_ = messageId_;
-        result.coordX_ = coordX_;
-        result.coordY_ = coordY_;
+        if (coordsBuilder_ == null) {
+          result.coords_ = coords_;
+        } else {
+          result.coords_ = coordsBuilder_.build();
+        }
+        result.orientation_ = orientation_;
+        if (allThresholdsBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
+            allThresholds_ = java.util.Collections.unmodifiableList(allThresholds_);
+            bitField0_ = (bitField0_ & ~0x00000008);
+          }
+          result.allThresholds_ = allThresholds_;
+        } else {
+          result.allThresholds_ = allThresholdsBuilder_.build();
+        }
+        result.objectId_ = objectId_;
+        result.minMax_ = minMax_;
+        result.colourChannel_ = colourChannel_;
+        result.value_ = value_;
+        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
@@ -1075,11 +4907,49 @@ public final class RemoteDebug {
         if (other.getMessageId() != 0) {
           setMessageId(other.getMessageId());
         }
-        if (other.getCoordX() != 0) {
-          setCoordX(other.getCoordX());
+        if (other.hasCoords()) {
+          mergeCoords(other.getCoords());
         }
-        if (other.getCoordY() != 0) {
-          setCoordY(other.getCoordY());
+        if (other.getOrientation() != 0F) {
+          setOrientation(other.getOrientation());
+        }
+        if (allThresholdsBuilder_ == null) {
+          if (!other.allThresholds_.isEmpty()) {
+            if (allThresholds_.isEmpty()) {
+              allThresholds_ = other.allThresholds_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+            } else {
+              ensureAllThresholdsIsMutable();
+              allThresholds_.addAll(other.allThresholds_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.allThresholds_.isEmpty()) {
+            if (allThresholdsBuilder_.isEmpty()) {
+              allThresholdsBuilder_.dispose();
+              allThresholdsBuilder_ = null;
+              allThresholds_ = other.allThresholds_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+              allThresholdsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getAllThresholdsFieldBuilder() : null;
+            } else {
+              allThresholdsBuilder_.addAllMessages(other.allThresholds_);
+            }
+          }
+        }
+        if (other.getObjectId() != 0) {
+          setObjectId(other.getObjectId());
+        }
+        if (other.getMinMax() != false) {
+          setMinMax(other.getMinMax());
+        }
+        if (other.getColourChannel() != 0) {
+          setColourChannel(other.getColourChannel());
+        }
+        if (other.getValue() != 0) {
+          setValue(other.getValue());
         }
         onChanged();
         return this;
@@ -1106,14 +4976,24 @@ public final class RemoteDebug {
         }
         return this;
       }
+      private int bitField0_;
 
       private int messageId_ ;
       /**
        * <pre>
        * List of commands:
-       * CMD_POWER_OFF: power off the camera module, equivalent to sudo shutdown now
-       * CMD_POWER_REBOOT: reboot the camera module, equivalent to sudo reboot now
+       * CMD_OK: the last command completed successfully
+       * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+       * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
+       * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
+       * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
+       * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+       * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
        * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
+       * CMD_MOVE_RESET: move to starting position
+       * CMD_MOVE_HALT: stops the robot in place, braking
+       * CMD_MOVE_RESUME: allows the robot to move again
+       * CMD_MOVE_ORIENT: orient to a specific direction
        * </pre>
        *
        * <code>optional int32 messageId = 1;</code>
@@ -1124,9 +5004,18 @@ public final class RemoteDebug {
       /**
        * <pre>
        * List of commands:
-       * CMD_POWER_OFF: power off the camera module, equivalent to sudo shutdown now
-       * CMD_POWER_REBOOT: reboot the camera module, equivalent to sudo reboot now
+       * CMD_OK: the last command completed successfully
+       * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+       * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
+       * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
+       * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
+       * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+       * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
        * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
+       * CMD_MOVE_RESET: move to starting position
+       * CMD_MOVE_HALT: stops the robot in place, braking
+       * CMD_MOVE_RESUME: allows the robot to move again
+       * CMD_MOVE_ORIENT: orient to a specific direction
        * </pre>
        *
        * <code>optional int32 messageId = 1;</code>
@@ -1140,9 +5029,18 @@ public final class RemoteDebug {
       /**
        * <pre>
        * List of commands:
-       * CMD_POWER_OFF: power off the camera module, equivalent to sudo shutdown now
-       * CMD_POWER_REBOOT: reboot the camera module, equivalent to sudo reboot now
+       * CMD_OK: the last command completed successfully
+       * CMD_POWER_OFF: ask Omicam to shutdown the SBC
+       * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
+       * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
+       * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
+       * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+       * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
        * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
+       * CMD_MOVE_RESET: move to starting position
+       * CMD_MOVE_HALT: stops the robot in place, braking
+       * CMD_MOVE_RESUME: allows the robot to move again
+       * CMD_MOVE_ORIENT: orient to a specific direction
        * </pre>
        *
        * <code>optional int32 messageId = 1;</code>
@@ -1154,66 +5052,699 @@ public final class RemoteDebug {
         return this;
       }
 
-      private int coordX_ ;
+      private RemoteDebug.RDPoint coords_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> coordsBuilder_;
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
-       * <code>optional int32 coordX = 2;</code>
+       * <code>optional .RDPoint coords = 2;</code>
        */
-      public int getCoordX() {
-        return coordX_;
+      public boolean hasCoords() {
+        return coordsBuilder_ != null || coords_ != null;
       }
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
-       * <code>optional int32 coordX = 2;</code>
+       * <code>optional .RDPoint coords = 2;</code>
        */
-      public Builder setCoordX(int value) {
-        
-        coordX_ = value;
-        onChanged();
+      public RemoteDebug.RDPoint getCoords() {
+        if (coordsBuilder_ == null) {
+          return coords_ == null ? RemoteDebug.RDPoint.getDefaultInstance() : coords_;
+        } else {
+          return coordsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
+       * </pre>
+       *
+       * <code>optional .RDPoint coords = 2;</code>
+       */
+      public Builder setCoords(RemoteDebug.RDPoint value) {
+        if (coordsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          coords_ = value;
+          onChanged();
+        } else {
+          coordsBuilder_.setMessage(value);
+        }
+
         return this;
       }
       /**
        * <pre>
        * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
        * </pre>
        *
-       * <code>optional int32 coordX = 2;</code>
+       * <code>optional .RDPoint coords = 2;</code>
        */
-      public Builder clearCoordX() {
+      public Builder setCoords(
+          RemoteDebug.RDPoint.Builder builderForValue) {
+        if (coordsBuilder_ == null) {
+          coords_ = builderForValue.build();
+          onChanged();
+        } else {
+          coordsBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
+       * </pre>
+       *
+       * <code>optional .RDPoint coords = 2;</code>
+       */
+      public Builder mergeCoords(RemoteDebug.RDPoint value) {
+        if (coordsBuilder_ == null) {
+          if (coords_ != null) {
+            coords_ =
+              RemoteDebug.RDPoint.newBuilder(coords_).mergeFrom(value).buildPartial();
+          } else {
+            coords_ = value;
+          }
+          onChanged();
+        } else {
+          coordsBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
+       * </pre>
+       *
+       * <code>optional .RDPoint coords = 2;</code>
+       */
+      public Builder clearCoords() {
+        if (coordsBuilder_ == null) {
+          coords_ = null;
+          onChanged();
+        } else {
+          coords_ = null;
+          coordsBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
+       * </pre>
+       *
+       * <code>optional .RDPoint coords = 2;</code>
+       */
+      public RemoteDebug.RDPoint.Builder getCoordsBuilder() {
         
-        coordX_ = 0;
+        onChanged();
+        return getCoordsFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
+       * </pre>
+       *
+       * <code>optional .RDPoint coords = 2;</code>
+       */
+      public RemoteDebug.RDPointOrBuilder getCoordsOrBuilder() {
+        if (coordsBuilder_ != null) {
+          return coordsBuilder_.getMessageOrBuilder();
+        } else {
+          return coords_ == null ?
+              RemoteDebug.RDPoint.getDefaultInstance() : coords_;
+        }
+      }
+      /**
+       * <pre>
+       * may be set if CMD_MOVE_TO_XY is the messageId
+       * contains the field coordinates that the robot should move to
+       * </pre>
+       *
+       * <code>optional .RDPoint coords = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> 
+          getCoordsFieldBuilder() {
+        if (coordsBuilder_ == null) {
+          coordsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder>(
+                  getCoords(),
+                  getParentForChildren(),
+                  isClean());
+          coords_ = null;
+        }
+        return coordsBuilder_;
+      }
+
+      private float orientation_ ;
+      /**
+       * <pre>
+       * may be set if CMD_MOVE_ORIENT is the messageId
+       * contains the 0-360 degree orientation the robot should turn to
+       * </pre>
+       *
+       * <code>optional float orientation = 3;</code>
+       */
+      public float getOrientation() {
+        return orientation_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_MOVE_ORIENT is the messageId
+       * contains the 0-360 degree orientation the robot should turn to
+       * </pre>
+       *
+       * <code>optional float orientation = 3;</code>
+       */
+      public Builder setOrientation(float value) {
+        
+        orientation_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_MOVE_ORIENT is the messageId
+       * contains the 0-360 degree orientation the robot should turn to
+       * </pre>
+       *
+       * <code>optional float orientation = 3;</code>
+       */
+      public Builder clearOrientation() {
+        
+        orientation_ = 0F;
         onChanged();
         return this;
       }
 
-      private int coordY_ ;
+      private java.util.List<RemoteDebug.RDThreshold> allThresholds_ =
+        java.util.Collections.emptyList();
+      private void ensureAllThresholdsIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          allThresholds_ = new java.util.ArrayList<RemoteDebug.RDThreshold>(allThresholds_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDThreshold, RemoteDebug.RDThreshold.Builder, RemoteDebug.RDThresholdOrBuilder> allThresholdsBuilder_;
+
       /**
-       * <code>optional int32 coordY = 3;</code>
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
        */
-      public int getCoordY() {
-        return coordY_;
+      public java.util.List<RemoteDebug.RDThreshold> getAllThresholdsList() {
+        if (allThresholdsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(allThresholds_);
+        } else {
+          return allThresholdsBuilder_.getMessageList();
+        }
       }
       /**
-       * <code>optional int32 coordY = 3;</code>
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
        */
-      public Builder setCoordY(int value) {
+      public int getAllThresholdsCount() {
+        if (allThresholdsBuilder_ == null) {
+          return allThresholds_.size();
+        } else {
+          return allThresholdsBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public RemoteDebug.RDThreshold getAllThresholds(int index) {
+        if (allThresholdsBuilder_ == null) {
+          return allThresholds_.get(index);
+        } else {
+          return allThresholdsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public Builder setAllThresholds(
+          int index, RemoteDebug.RDThreshold value) {
+        if (allThresholdsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAllThresholdsIsMutable();
+          allThresholds_.set(index, value);
+          onChanged();
+        } else {
+          allThresholdsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public Builder setAllThresholds(
+          int index, RemoteDebug.RDThreshold.Builder builderForValue) {
+        if (allThresholdsBuilder_ == null) {
+          ensureAllThresholdsIsMutable();
+          allThresholds_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          allThresholdsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public Builder addAllThresholds(RemoteDebug.RDThreshold value) {
+        if (allThresholdsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAllThresholdsIsMutable();
+          allThresholds_.add(value);
+          onChanged();
+        } else {
+          allThresholdsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public Builder addAllThresholds(
+          int index, RemoteDebug.RDThreshold value) {
+        if (allThresholdsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureAllThresholdsIsMutable();
+          allThresholds_.add(index, value);
+          onChanged();
+        } else {
+          allThresholdsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public Builder addAllThresholds(
+          RemoteDebug.RDThreshold.Builder builderForValue) {
+        if (allThresholdsBuilder_ == null) {
+          ensureAllThresholdsIsMutable();
+          allThresholds_.add(builderForValue.build());
+          onChanged();
+        } else {
+          allThresholdsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public Builder addAllThresholds(
+          int index, RemoteDebug.RDThreshold.Builder builderForValue) {
+        if (allThresholdsBuilder_ == null) {
+          ensureAllThresholdsIsMutable();
+          allThresholds_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          allThresholdsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public Builder addAllAllThresholds(
+          java.lang.Iterable<? extends RemoteDebug.RDThreshold> values) {
+        if (allThresholdsBuilder_ == null) {
+          ensureAllThresholdsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, allThresholds_);
+          onChanged();
+        } else {
+          allThresholdsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public Builder clearAllThresholds() {
+        if (allThresholdsBuilder_ == null) {
+          allThresholds_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+          onChanged();
+        } else {
+          allThresholdsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public Builder removeAllThresholds(int index) {
+        if (allThresholdsBuilder_ == null) {
+          ensureAllThresholdsIsMutable();
+          allThresholds_.remove(index);
+          onChanged();
+        } else {
+          allThresholdsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public RemoteDebug.RDThreshold.Builder getAllThresholdsBuilder(
+          int index) {
+        return getAllThresholdsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public RemoteDebug.RDThresholdOrBuilder getAllThresholdsOrBuilder(
+          int index) {
+        if (allThresholdsBuilder_ == null) {
+          return allThresholds_.get(index);  } else {
+          return allThresholdsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public java.util.List<? extends RemoteDebug.RDThresholdOrBuilder> 
+           getAllThresholdsOrBuilderList() {
+        if (allThresholdsBuilder_ != null) {
+          return allThresholdsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(allThresholds_);
+        }
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public RemoteDebug.RDThreshold.Builder addAllThresholdsBuilder() {
+        return getAllThresholdsFieldBuilder().addBuilder(
+            RemoteDebug.RDThreshold.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public RemoteDebug.RDThreshold.Builder addAllThresholdsBuilder(
+          int index) {
+        return getAllThresholdsFieldBuilder().addBuilder(
+            index, RemoteDebug.RDThreshold.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+       * contains an array of all the thresholds values in the camera currently
+       * </pre>
+       *
+       * <code>repeated .RDThreshold allThresholds = 4;</code>
+       */
+      public java.util.List<RemoteDebug.RDThreshold.Builder> 
+           getAllThresholdsBuilderList() {
+        return getAllThresholdsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDThreshold, RemoteDebug.RDThreshold.Builder, RemoteDebug.RDThresholdOrBuilder> 
+          getAllThresholdsFieldBuilder() {
+        if (allThresholdsBuilder_ == null) {
+          allThresholdsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              RemoteDebug.RDThreshold, RemoteDebug.RDThreshold.Builder, RemoteDebug.RDThresholdOrBuilder>(
+                  allThresholds_,
+                  ((bitField0_ & 0x00000008) == 0x00000008),
+                  getParentForChildren(),
+                  isClean());
+          allThresholds_ = null;
+        }
+        return allThresholdsBuilder_;
+      }
+
+      private int objectId_ ;
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
+       * </pre>
+       *
+       * <code>optional int32 objectId = 5;</code>
+       */
+      public int getObjectId() {
+        return objectId_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
+       * </pre>
+       *
+       * <code>optional int32 objectId = 5;</code>
+       */
+      public Builder setObjectId(int value) {
         
-        coordY_ = value;
+        objectId_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 coordY = 3;</code>
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
+       * </pre>
+       *
+       * <code>optional int32 objectId = 5;</code>
        */
-      public Builder clearCoordY() {
+      public Builder clearObjectId() {
         
-        coordY_ = 0;
+        objectId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private boolean minMax_ ;
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+       * </pre>
+       *
+       * <code>optional bool minMax = 6;</code>
+       */
+      public boolean getMinMax() {
+        return minMax_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+       * </pre>
+       *
+       * <code>optional bool minMax = 6;</code>
+       */
+      public Builder setMinMax(boolean value) {
+        
+        minMax_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+       * </pre>
+       *
+       * <code>optional bool minMax = 6;</code>
+       */
+      public Builder clearMinMax() {
+        
+        minMax_ = false;
+        onChanged();
+        return this;
+      }
+
+      private int colourChannel_ ;
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+       * </pre>
+       *
+       * <code>optional int32 colourChannel = 7;</code>
+       */
+      public int getColourChannel() {
+        return colourChannel_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+       * </pre>
+       *
+       * <code>optional int32 colourChannel = 7;</code>
+       */
+      public Builder setColourChannel(int value) {
+        
+        colourChannel_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLDS_SELECT is the messageId
+       * contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+       * </pre>
+       *
+       * <code>optional int32 colourChannel = 7;</code>
+       */
+      public Builder clearColourChannel() {
+        
+        colourChannel_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int value_ ;
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLD_SET is the messageId
+       * would be the value of the threshold
+       * </pre>
+       *
+       * <code>optional int32 value = 8;</code>
+       */
+      public int getValue() {
+        return value_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLD_SET is the messageId
+       * would be the value of the threshold
+       * </pre>
+       *
+       * <code>optional int32 value = 8;</code>
+       */
+      public Builder setValue(int value) {
+        
+        value_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_THRESHOLD_SET is the messageId
+       * would be the value of the threshold
+       * </pre>
+       *
+       * <code>optional int32 value = 8;</code>
+       */
+      public Builder clearValue() {
+        
+        value_ = 0;
         onChanged();
         return this;
       }
@@ -1266,6 +5797,866 @@ public final class RemoteDebug {
 
   }
 
+  public interface RDMsgFrameOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RDMsgFrame)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    boolean hasFrame();
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    RemoteDebug.DebugFrame getFrame();
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    RemoteDebug.DebugFrameOrBuilder getFrameOrBuilder();
+
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    boolean hasCommand();
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    RemoteDebug.DebugCommand getCommand();
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    RemoteDebug.DebugCommandOrBuilder getCommandOrBuilder();
+
+    /**
+     * <pre>
+     * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+     * </pre>
+     *
+     * <code>optional int32 whichMessage = 3;</code>
+     */
+    int getWhichMessage();
+  }
+  /**
+   * <pre>
+   * Container for messages, contains exactly one sub message
+   * </pre>
+   *
+   * Protobuf type {@code RDMsgFrame}
+   */
+  public  static final class RDMsgFrame extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:RDMsgFrame)
+      RDMsgFrameOrBuilder {
+    // Use RDMsgFrame.newBuilder() to construct.
+    private RDMsgFrame(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RDMsgFrame() {
+      whichMessage_ = 0;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private RDMsgFrame(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              RemoteDebug.DebugFrame.Builder subBuilder = null;
+              if (frame_ != null) {
+                subBuilder = frame_.toBuilder();
+              }
+              frame_ = input.readMessage(RemoteDebug.DebugFrame.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(frame_);
+                frame_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 18: {
+              RemoteDebug.DebugCommand.Builder subBuilder = null;
+              if (command_ != null) {
+                subBuilder = command_.toBuilder();
+              }
+              command_ = input.readMessage(RemoteDebug.DebugCommand.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(command_);
+                command_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 24: {
+
+              whichMessage_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RemoteDebug.internal_static_RDMsgFrame_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RemoteDebug.internal_static_RDMsgFrame_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RemoteDebug.RDMsgFrame.class, RemoteDebug.RDMsgFrame.Builder.class);
+    }
+
+    public static final int FRAME_FIELD_NUMBER = 1;
+    private RemoteDebug.DebugFrame frame_;
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    public boolean hasFrame() {
+      return frame_ != null;
+    }
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    public RemoteDebug.DebugFrame getFrame() {
+      return frame_ == null ? RemoteDebug.DebugFrame.getDefaultInstance() : frame_;
+    }
+    /**
+     * <code>optional .DebugFrame frame = 1;</code>
+     */
+    public RemoteDebug.DebugFrameOrBuilder getFrameOrBuilder() {
+      return getFrame();
+    }
+
+    public static final int COMMAND_FIELD_NUMBER = 2;
+    private RemoteDebug.DebugCommand command_;
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    public boolean hasCommand() {
+      return command_ != null;
+    }
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    public RemoteDebug.DebugCommand getCommand() {
+      return command_ == null ? RemoteDebug.DebugCommand.getDefaultInstance() : command_;
+    }
+    /**
+     * <code>optional .DebugCommand command = 2;</code>
+     */
+    public RemoteDebug.DebugCommandOrBuilder getCommandOrBuilder() {
+      return getCommand();
+    }
+
+    public static final int WHICHMESSAGE_FIELD_NUMBER = 3;
+    private int whichMessage_;
+    /**
+     * <pre>
+     * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+     * </pre>
+     *
+     * <code>optional int32 whichMessage = 3;</code>
+     */
+    public int getWhichMessage() {
+      return whichMessage_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (frame_ != null) {
+        output.writeMessage(1, getFrame());
+      }
+      if (command_ != null) {
+        output.writeMessage(2, getCommand());
+      }
+      if (whichMessage_ != 0) {
+        output.writeInt32(3, whichMessage_);
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (frame_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getFrame());
+      }
+      if (command_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getCommand());
+      }
+      if (whichMessage_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, whichMessage_);
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RemoteDebug.RDMsgFrame)) {
+        return super.equals(obj);
+      }
+      RemoteDebug.RDMsgFrame other = (RemoteDebug.RDMsgFrame) obj;
+
+      boolean result = true;
+      result = result && (hasFrame() == other.hasFrame());
+      if (hasFrame()) {
+        result = result && getFrame()
+            .equals(other.getFrame());
+      }
+      result = result && (hasCommand() == other.hasCommand());
+      if (hasCommand()) {
+        result = result && getCommand()
+            .equals(other.getCommand());
+      }
+      result = result && (getWhichMessage()
+          == other.getWhichMessage());
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasFrame()) {
+        hash = (37 * hash) + FRAME_FIELD_NUMBER;
+        hash = (53 * hash) + getFrame().hashCode();
+      }
+      if (hasCommand()) {
+        hash = (37 * hash) + COMMAND_FIELD_NUMBER;
+        hash = (53 * hash) + getCommand().hashCode();
+      }
+      hash = (37 * hash) + WHICHMESSAGE_FIELD_NUMBER;
+      hash = (53 * hash) + getWhichMessage();
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDMsgFrame parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDMsgFrame parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDMsgFrame parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RemoteDebug.RDMsgFrame prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * Container for messages, contains exactly one sub message
+     * </pre>
+     *
+     * Protobuf type {@code RDMsgFrame}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RDMsgFrame)
+        RemoteDebug.RDMsgFrameOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RemoteDebug.internal_static_RDMsgFrame_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RemoteDebug.internal_static_RDMsgFrame_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RemoteDebug.RDMsgFrame.class, RemoteDebug.RDMsgFrame.Builder.class);
+      }
+
+      // Construct using RemoteDebug.RDMsgFrame.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (frameBuilder_ == null) {
+          frame_ = null;
+        } else {
+          frame_ = null;
+          frameBuilder_ = null;
+        }
+        if (commandBuilder_ == null) {
+          command_ = null;
+        } else {
+          command_ = null;
+          commandBuilder_ = null;
+        }
+        whichMessage_ = 0;
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RemoteDebug.internal_static_RDMsgFrame_descriptor;
+      }
+
+      public RemoteDebug.RDMsgFrame getDefaultInstanceForType() {
+        return RemoteDebug.RDMsgFrame.getDefaultInstance();
+      }
+
+      public RemoteDebug.RDMsgFrame build() {
+        RemoteDebug.RDMsgFrame result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RemoteDebug.RDMsgFrame buildPartial() {
+        RemoteDebug.RDMsgFrame result = new RemoteDebug.RDMsgFrame(this);
+        if (frameBuilder_ == null) {
+          result.frame_ = frame_;
+        } else {
+          result.frame_ = frameBuilder_.build();
+        }
+        if (commandBuilder_ == null) {
+          result.command_ = command_;
+        } else {
+          result.command_ = commandBuilder_.build();
+        }
+        result.whichMessage_ = whichMessage_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RemoteDebug.RDMsgFrame) {
+          return mergeFrom((RemoteDebug.RDMsgFrame)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RemoteDebug.RDMsgFrame other) {
+        if (other == RemoteDebug.RDMsgFrame.getDefaultInstance()) return this;
+        if (other.hasFrame()) {
+          mergeFrame(other.getFrame());
+        }
+        if (other.hasCommand()) {
+          mergeCommand(other.getCommand());
+        }
+        if (other.getWhichMessage() != 0) {
+          setWhichMessage(other.getWhichMessage());
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RemoteDebug.RDMsgFrame parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RemoteDebug.RDMsgFrame) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private RemoteDebug.DebugFrame frame_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.DebugFrame, RemoteDebug.DebugFrame.Builder, RemoteDebug.DebugFrameOrBuilder> frameBuilder_;
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public boolean hasFrame() {
+        return frameBuilder_ != null || frame_ != null;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public RemoteDebug.DebugFrame getFrame() {
+        if (frameBuilder_ == null) {
+          return frame_ == null ? RemoteDebug.DebugFrame.getDefaultInstance() : frame_;
+        } else {
+          return frameBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public Builder setFrame(RemoteDebug.DebugFrame value) {
+        if (frameBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          frame_ = value;
+          onChanged();
+        } else {
+          frameBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public Builder setFrame(
+          RemoteDebug.DebugFrame.Builder builderForValue) {
+        if (frameBuilder_ == null) {
+          frame_ = builderForValue.build();
+          onChanged();
+        } else {
+          frameBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public Builder mergeFrame(RemoteDebug.DebugFrame value) {
+        if (frameBuilder_ == null) {
+          if (frame_ != null) {
+            frame_ =
+              RemoteDebug.DebugFrame.newBuilder(frame_).mergeFrom(value).buildPartial();
+          } else {
+            frame_ = value;
+          }
+          onChanged();
+        } else {
+          frameBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public Builder clearFrame() {
+        if (frameBuilder_ == null) {
+          frame_ = null;
+          onChanged();
+        } else {
+          frame_ = null;
+          frameBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public RemoteDebug.DebugFrame.Builder getFrameBuilder() {
+        
+        onChanged();
+        return getFrameFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      public RemoteDebug.DebugFrameOrBuilder getFrameOrBuilder() {
+        if (frameBuilder_ != null) {
+          return frameBuilder_.getMessageOrBuilder();
+        } else {
+          return frame_ == null ?
+              RemoteDebug.DebugFrame.getDefaultInstance() : frame_;
+        }
+      }
+      /**
+       * <code>optional .DebugFrame frame = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.DebugFrame, RemoteDebug.DebugFrame.Builder, RemoteDebug.DebugFrameOrBuilder> 
+          getFrameFieldBuilder() {
+        if (frameBuilder_ == null) {
+          frameBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.DebugFrame, RemoteDebug.DebugFrame.Builder, RemoteDebug.DebugFrameOrBuilder>(
+                  getFrame(),
+                  getParentForChildren(),
+                  isClean());
+          frame_ = null;
+        }
+        return frameBuilder_;
+      }
+
+      private RemoteDebug.DebugCommand command_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.DebugCommand, RemoteDebug.DebugCommand.Builder, RemoteDebug.DebugCommandOrBuilder> commandBuilder_;
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public boolean hasCommand() {
+        return commandBuilder_ != null || command_ != null;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public RemoteDebug.DebugCommand getCommand() {
+        if (commandBuilder_ == null) {
+          return command_ == null ? RemoteDebug.DebugCommand.getDefaultInstance() : command_;
+        } else {
+          return commandBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public Builder setCommand(RemoteDebug.DebugCommand value) {
+        if (commandBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          command_ = value;
+          onChanged();
+        } else {
+          commandBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public Builder setCommand(
+          RemoteDebug.DebugCommand.Builder builderForValue) {
+        if (commandBuilder_ == null) {
+          command_ = builderForValue.build();
+          onChanged();
+        } else {
+          commandBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public Builder mergeCommand(RemoteDebug.DebugCommand value) {
+        if (commandBuilder_ == null) {
+          if (command_ != null) {
+            command_ =
+              RemoteDebug.DebugCommand.newBuilder(command_).mergeFrom(value).buildPartial();
+          } else {
+            command_ = value;
+          }
+          onChanged();
+        } else {
+          commandBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public Builder clearCommand() {
+        if (commandBuilder_ == null) {
+          command_ = null;
+          onChanged();
+        } else {
+          command_ = null;
+          commandBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public RemoteDebug.DebugCommand.Builder getCommandBuilder() {
+        
+        onChanged();
+        return getCommandFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      public RemoteDebug.DebugCommandOrBuilder getCommandOrBuilder() {
+        if (commandBuilder_ != null) {
+          return commandBuilder_.getMessageOrBuilder();
+        } else {
+          return command_ == null ?
+              RemoteDebug.DebugCommand.getDefaultInstance() : command_;
+        }
+      }
+      /**
+       * <code>optional .DebugCommand command = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.DebugCommand, RemoteDebug.DebugCommand.Builder, RemoteDebug.DebugCommandOrBuilder> 
+          getCommandFieldBuilder() {
+        if (commandBuilder_ == null) {
+          commandBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.DebugCommand, RemoteDebug.DebugCommand.Builder, RemoteDebug.DebugCommandOrBuilder>(
+                  getCommand(),
+                  getParentForChildren(),
+                  isClean());
+          command_ = null;
+        }
+        return commandBuilder_;
+      }
+
+      private int whichMessage_ ;
+      /**
+       * <pre>
+       * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+       * </pre>
+       *
+       * <code>optional int32 whichMessage = 3;</code>
+       */
+      public int getWhichMessage() {
+        return whichMessage_;
+      }
+      /**
+       * <pre>
+       * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+       * </pre>
+       *
+       * <code>optional int32 whichMessage = 3;</code>
+       */
+      public Builder setWhichMessage(int value) {
+        
+        whichMessage_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+       * </pre>
+       *
+       * <code>optional int32 whichMessage = 3;</code>
+       */
+      public Builder clearWhichMessage() {
+        
+        whichMessage_ = 0;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:RDMsgFrame)
+    }
+
+    // @@protoc_insertion_point(class_scope:RDMsgFrame)
+    private static final RemoteDebug.RDMsgFrame DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RemoteDebug.RDMsgFrame();
+    }
+
+    public static RemoteDebug.RDMsgFrame getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RDMsgFrame>
+        PARSER = new com.google.protobuf.AbstractParser<RDMsgFrame>() {
+      public RDMsgFrame parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new RDMsgFrame(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RDMsgFrame> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RDMsgFrame> getParserForType() {
+      return PARSER;
+    }
+
+    public RemoteDebug.RDMsgFrame getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RDRect_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_RDRect_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RDPoint_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_RDPoint_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RDThreshold_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_RDThreshold_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_DebugFrame_descriptor;
   private static final 
@@ -1276,6 +6667,11 @@ public final class RemoteDebug {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_DebugCommand_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RDMsgFrame_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_RDMsgFrame_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -1285,11 +6681,25 @@ public final class RemoteDebug {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\021RemoteDebug.proto\"P\n\nDebugFrame\022\024\n\014def" +
-      "aultImage\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014" +
-      "\022\023\n\013temperature\030\003 \001(\002\"A\n\014DebugCommand\022\021\n" +
-      "\tmessageId\030\001 \001(\005\022\016\n\006coordX\030\002 \001(\005\022\016\n\006coor" +
-      "dY\030\003 \001(\005b\006proto3"
+      "\n\021RemoteDebug.proto\"=\n\006RDRect\022\t\n\001x\030\001 \001(\005" +
+      "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
+      "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\'\n\013R" +
+      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\220\002\n" +
+      "\nDebugFrame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017bal" +
+      "lThreshImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022" +
+      "\031\n\010ballRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentro" +
+      "id\030\005 \001(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframe" +
+      "Width\030\007 \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010crop" +
+      "Rect\030\t \001(\0132\007.RDRect\022\034\n\nlinePoints\030\n \003(\0132",
+      "\010.RDPoint\022\024\n\014mirrorRadius\030\013 \001(\005\"\275\001\n\014Debu" +
+      "gCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords\030\002 " +
+      "\001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n\ral" +
+      "lThresholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010objec" +
+      "tId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourChann" +
+      "el\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\"^\n\nRDMsgFrame\022\032\n" +
+      "\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001" +
+      "(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 \001(\005b" +
+      "\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -1303,18 +6713,42 @@ public final class RemoteDebug {
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
         }, assigner);
-    internal_static_DebugFrame_descriptor =
+    internal_static_RDRect_descriptor =
       getDescriptor().getMessageTypes().get(0);
+    internal_static_RDRect_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_RDRect_descriptor,
+        new java.lang.String[] { "X", "Y", "Width", "Height", });
+    internal_static_RDPoint_descriptor =
+      getDescriptor().getMessageTypes().get(1);
+    internal_static_RDPoint_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_RDPoint_descriptor,
+        new java.lang.String[] { "X", "Y", });
+    internal_static_RDThreshold_descriptor =
+      getDescriptor().getMessageTypes().get(2);
+    internal_static_RDThreshold_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_RDThreshold_descriptor,
+        new java.lang.String[] { "Min", "Max", });
+    internal_static_DebugFrame_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "LinePoints", "MirrorRadius", });
     internal_static_DebugCommand_descriptor =
-      getDescriptor().getMessageTypes().get(1);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_DebugCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugCommand_descriptor,
-        new java.lang.String[] { "MessageId", "CoordX", "CoordY", });
+        new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "ObjectId", "MinMax", "ColourChannel", "Value", });
+    internal_static_RDMsgFrame_descriptor =
+      getDescriptor().getMessageTypes().get(5);
+    internal_static_RDMsgFrame_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_RDMsgFrame_descriptor,
+        new java.lang.String[] { "Frame", "Command", "WhichMessage", });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

@@ -1,8 +1,14 @@
-# Teensy PlatformIO project
-This directory contains all the code which runs on our Teensy slave for running light sensors and controlling motors.
+# Teensy project
+This is the PlatformIO project that runs on our Teensy 4.0 slave device, which handles the light sensors and LRFs.
 
-As opposed to the ESP project in the root directory which uses CMake and ESP-IDF, this uses PlatformIO.
+Credits:
+- Ethan Lo: I2C code, LRF code and main programmer
+- Lachlan Ellis: light sensor code
 
-The main source code is in "src", while all the external libraries live in "lib".
+## Features list
+- Efficient and robust cluster-based light senor processing algorithm to detect the line
+- Process LRF data
+- Process and send messages using Protocol Buffers to ESP32
 
-This is all written by Ethan (except for the Protobuf decoder which was written by Matt).
+## Building and running
+Install the PlatformIO extension in VSCode, then import this folder.

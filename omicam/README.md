@@ -1,76 +1,83 @@
 # Omicam
+Omicam is Team Omicron's custom, high-performance vision and localisation application that runs on a single board computer.
 
-This is the custom vision system for Team Omicron, to be deployed in the 2020 Internationals. 
-The production setup uses a Raspberry Pi Compute Module 3+ with a Pi Camera v2.
-For the full technical writeup on our custom vision pipeline, please see, docs/DESCRIPTION.md.
+For the full technical writeup on our vision pipeline, please see docs/OMICAM_DESIGN_DOC.md or our website.
 
-Omicam is built and maintained by Matt Young, so if you have any questions, please contact: 25070@bbc.qld.edu.au
+**Credits:**
+- Matt Young: main C/C++ programmer, Markdown docs, project maintainer
+- Ethan Lo: field file generator, localisation research & assistance
+
+**Special thanks:**
+- Tom Fraser: assistance with OpenCV CUDA performance debugging (when it was being used), help with selecting the best
+  single board computer and overall enthusiasm and support :)
 
 ## Features list
-- GPU accelerated camera decoding using Broadcom's MMAL libraries, capable of 720p 60fps
-- Custom designed multi-threaded colour segmentation with linear threads vs. framerate relationship
-- **(WIP)** Highly optimal CPU connected-component labelling (blob detection) based on recent state-of-the-art papers
-- **(WIP)** Advanced localisation by way of non-linear optimisation (Nelder-Mead simplex method provided by NLopt)
-- Wireless, multi-threaded frame streaming using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app
-    - Network protocol uses TCP socket and Protocol Buffers
-- Uses less than 5% of the Pi's RAM in release mode (sanitizers disabled)
-- **(WIP)** Transmits data to main ESP32 microcontroller via Protocol Buffers over 115200 baud UART
-- Well-documented C and associated design documents (see docs folder and inline comments).
+- Efficient camera decoding using GStreamer and V4L2
+- State of the art, multi-threaded, SIMD accelerated image processing using OpenCV 4
+- Highly advanced, centimetre accurate, custom localisation algorithm using novel non-linear optimisation methods
+- Asynchronous, wireless frame streaming using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app
+    - Network protocol uses TCP socket and Protocol Buffers with zlib compression (low bandwidth requirements)
+    - Also transmits misc. data like temperature of the Jetson
+- Written mostly in C11 (just a little C++ for interfacing with OpenCV)
+- Well-documented code and design document
 
 ## Building and running
-JetBrains CLion is the only supported IDE for working with Omicam. We use CLion's full remote mode to work with the Pi.
-
 ### Instructions
-Firstly, you'll need a board compatible with the Raspi Compute Module 3+ and Pi Cam v2.1. I use a Raspi 3 Model B and
-Pi Cam v1.3.
+While Omicam should in theory work on any single board computer with a bit of effort, we use a LattePanda Delta 432
+running Xubuntu 18.04. It will only work under Linux.
 
-Flash your Pi's SD card with Raspbian Lite, boot and update it, then install the following packages:
-- CMake: `sudo apt install cmake`
-- Clang and lldb: `sudo apt install clang lldb`
-- NLopt: follow the instructions linked [here](https://NLopt.readthedocs.io/en/latest/)
-- libjpeg-turbo: `sudo apt install libturbojpeg0 libturbojpeg0-dev`
-- SDL2: `sudo apt install libsdl2-2.0.0 libsdl2-2.0-0-dbgsym libsdl2-dev libsdl2-doc`
+Boot and install any Debian-based Linux distro to your SBC, then install the following extra packages:
 
-**Note on SDL:** can also be compiled from source (most tutorials do this). libsdl2-dev installs the broken mesa-common-dev
-packages, so if you're experiencing EGL or OpenGL errors in external applications build it instead. I'd advise against
-getting the pre-compiled releases from the website because following their instructions will _permanently break_ the file
-permissions of your system.
+- CMake: To work around various issues (see below), a newer version of CMake than the one provided by the Ubuntu repos is provided.
+  The easiest way to install the latest CMake, in my opinion, is to [add the PPA](https://apt.kitware.com/) and then just 
+  `sudo apt install cmake`.
+- Ninja: `sudo apt install ninja-build`
+- Clang & LLVM: `sudo apt install clang lldb llvm libasan5 libasan5-dbg`
+- NLopt: `sudo apt install libnlopt-dev libnlopt0`
+- libjpeg-turbo: `sudo apt install libturbojpeg libturbojpeg0-dev`
+- gstreamer: [see here](https://gstreamer.freedesktop.org/documentation/installing/on-linux.html) and also 
+  `sudo apt install libgstreamer-opencv1.0-0 libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev`
+- ffmpeg: `sudo apt install ffmpeg libavformat-dev libavcodec-dev libswscale-dev libavresample-dev`
+- GTK devlopment files: `sudo apt install libgtk2.0-dev`
+- create_ap: follow [these instructions](https://github.com/oblique/create_ap). Then, use
+  [this information](https://github.com/oblique/create_ap/issues/238#issuecomment-292175855) to create a permanent WiFi
+  service that starts on boot. Generally you'll want to call the hotspot "Omicam01" and "Omicam02" for each robot.
+- OpenCV: You have to build from source, [see here](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html).
+  Pro tip: if your host computer is Linux-based, use `ssh -Y <username>@<domain>` so you can run cmake-gui remotely.
 
-**FIXME: talk about how to add optimisations to the NLopt build (adding O3 and hard FPU, etc)**
+**Note:** It may be advisable to remove a bunch of the useless packages Ubuntu installs by default such as LibreOffice.
 
-Import the project into CLion on your host computer and follow the 
-[instructions provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to setup a remote toolchain
-and run configuration. The remote settings should be synced in Git, but you may need to modify the IP address to that of your
-local Pi. For some reason it doesn't seem that `raspberrypi.local` works.
+We exclusively use CLion to develop Omicam. Import the project into CLion on your host computer and follow the 
+[instructions provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to configure a 
+remote toolchain, deployment and run configuration. The IP should be the IP of your SBC, check your router or use nmap
+if you're unsure what this is. You'll probably also want to enable auto upload to remote.
 
-To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion will handle the rest for you. 
+Under Build, Execution & Deployment in CMake, for your Debug and Release configurations add "-G Ninja" to
+the CMake options section to use Ninja as your build runner.
 
-#### Known issues
-- **It is extremely important that you compile with Clang, NOT gcc** as it appears that gcc's implementation 
-of Address Sanitizer doesn't work (only Clang's does). You can do this by changing the compiler path from the default gcc 
-to /usr/bin/clang in CLion's toolchain settings. You should be able to compile with gcc for release mode as ASan isn't
-used but it's not recommended. While ASan is a vital tool for debugging, if you are only building for release you
-can use GCC if you want.
+To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion will (mostly) handle syncing to the remote
+by itself.
 
-- Currently you should leave the debugger as the default gdb because it seems lldb doesn't work, and you won't notice a
-difference in CLion. 
+### Known issues
+- **Clang is the only supported compiler** as it appears that gcc's implementation 
+of Google's Sanitizers doesn't work. You can do this by changing the compiler path from the default gcc 
+to /usr/bin/clang in CLion's toolchain settings.
+- If lldb is broken, try using gdb instead (it doesn't matter that you're compiling with Clang, both will work fine).
+- You will need to disable the visual Address Sanitizer output in CLion as that is also broken.
+- If you install a new library on the SBC, you will need run Tools->"Resync with remote hosts" to get the new headers.
+- CLion's remote upload occasionally (a few times per full day of work) fails temporarily, just ignore it and try again.
 
-- You will need to disable the visual Address Sanitizer output as that is also broken.
-
-- If you install a new library on the Pi, you will need run Tools->Resync with remote hosts to update the new headers.
-
-- CLion's remote upload occasionally (few times per full day of work) fails temporarily, just ignore it and try again.
-
-## License
-Omicam is available under the main project license, see LICENSE.txt in this directory or the root directory.
+## Licence
+Omicam is available under the same licence of the whole Team Omicron repo, see LICENSE.txt in the root directory. 
 
 ## Libraries and licenses
 - [log.c](https://github.com/rxi/log.c): MIT license
+- [map](https://github.com/rxi/map): MIT license
 - [iniparser](https://github.com/ndevilla/iniparser): MIT license
 - [nanopb](https://github.com/nanopb/nanopb): Zlib license
-- [raspicam (MMAL)](https://github.com/raspberrypi/userland/tree/master/host_applications/linux/apps/raspicam): BSD 3-Clause
 - [DG_dynarr](https://github.com/DanielGibson/Snippets/blob/master/DG_dynarr.h): Public Domain
 - [rpa_queue](https://github.com/chrismerck/rpa_queue): Apache 2
 - [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo): Various BSD and Zlib
-- [NLopt](https://github.com/stevengj/nlopt): MIT, as no LGPL code is used
-- [SDL](https://www.libsdl.org/): Zlib license
+- [NLopt](https://github.com/stevengj/nlopt): MIT license
+- [OpenCV](https://opencv.org/): BSD 3-Clause
+- [mathc](https://github.com/felselva/mathc): Zlib license

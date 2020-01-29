@@ -1,67 +1,31 @@
 #include <Arduino.h>
 #include "Utils.h"
 #include "Config.h"
-#include "Move.h"
-#include "LightSensorArray.h"
-#include "IMU.h"
+#include "LightSensorController.h"
+#include "LRF.h"
 #include "Timer.h"
-#include "I2C.h"
-#include <i2c_t3.h>
+#include "pb_common.h"
 #include "pb_decode.h"
 #include "pb_encode.h"
 #include "i2c.pb.h"
-#include "Cam.h"
-#include "Playmode.h"
-#include "PID.h"
-#include "Vector.h"
+
+// IMPORTANT: WE ARE USING UART FOR PROTOBUF NOT I2C, WE ARE JUST TOO LAZY TO RENAME STUFF
 
 typedef enum {
-    MSG_PUSH_I2C_SLAVE = 0, // as the I2C slave, I'm providing data to the I2C master
-    MSG_PUSH_I2C_MASTER, // as the I2C master, I'm providing data to the I2C slave
-    MSG_PULL_I2C_SLAVE, // requesting data from the I2C slave
+    MSG_ANY = 0
 } msg_type_t;
 
 static I2CMasterProvide lastMasterProvide = I2CMasterProvide_init_zero;
 
-IMU imu;
-LightSensorArray ls;
-Move move;
-Camera cam;
-Playmode playmode;
+LRF lrfs;
+LightSensorController ls;
 
-// PIDs
-PID headingPID(HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION);
-PID goalPID(GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION);
-PID goaliePID(GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX);
+Vector lineAvoid = Vector(0, 0);
 
 // LED Stuff
-Timer lineLedTimer(200000); // LED timer when attacking
-Timer movingLedTimer(500000); // LED timer when defending
 Timer idleLedTimer(1000000); // LED timer when idling
-Timer batteryLedTimer(10000); // LED timer when low battery
 bool ledOn;
-
-// Timeout for when ball is not visible
-Timer noBallTimer(500000); // LED timer when line avoiding or surging or whatnot
-
-// Acceleration
-Timer accelTimer(ACCEL_TIME_STEP);
-
-float targetDirection;
-float targetSpeed;
-
-// Variables which i couldn't be bothered to find a good place for
-float batteryVoltage;
 double heading;
-
-float ballAngle;
-bool ballVisible;
-
-int direction;
-int speed;
-float orientation;
-
-Vector current;
 
 /** decode protobuf over UART from ESP **/
 static void decodeProtobuf(void){
@@ -101,7 +65,7 @@ static void decodeProtobuf(void){
 
         // assign destination struct based on message ID
         switch (msgId){
-            case MSG_PUSH_I2C_MASTER:
+            case MSG_ESP_TO_TEENSY:
                 dest = (void*) &lastMasterProvide;
                 msgFields = (void*) &I2CMasterProvide_fields;
                 break;
@@ -124,17 +88,6 @@ static void decodeProtobuf(void){
     }
 }
 
-void calculateAcceleration(){
-    Vector target = Vector(speed, direction);
-    Vector output = current * (1 - MAX_ACCELERATION) + target * MAX_ACCELERATION;
-    current = output;
-
-    speed = output.mag;
-    direction = output.arg;
-
-    // Serial.printf("Speed %d, Direction %d", speed, direction);
-}
-
 void setup() {
     // Put other setup stuff here
     Serial.begin(115200);
@@ -142,88 +95,41 @@ void setup() {
 
     #if LS_ON
         // Init light sensors
-        ls.init();
-        ls.calibrate();
+        ls.setup();
+        //ls.calibrate if request here
+        ls.setThresholds();
     #endif
 
-    playmode.init();
-    move.set();
+    #if LRFS_ON
+        // Init LRFs
+        lrfs.init();
+    #endif    
+
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop() {
-    // Measure battery voltage
-    batteryVoltage = get_battery_voltage();
-
+    // Poll UART and decode incoming protobuf message
     decodeProtobuf();
+    
 
-    // Update variables
-    direction = lastMasterProvide.direction;
-    speed = int((lastMasterProvide.speed/100) * 255);
-    orientation = float((lastMasterProvide.orientation/100) * 255);
-    heading = lastMasterProvide.heading;
-
-    // Serial.printf("direction: %f, speed: %f, orientation: %f, heading: %f\n", direction, speed, orientation, heading);
-
-    // Do line avoidance calcs
     #if LS_ON
         // Update line data
-        ls.read();
-        ls.fillInSensors();
-        // ls.calculateClusters();
-        ls.calculateLine();
+        lineAvoid = ls.update(heading);
 
-        playmode.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
-        playmode.calculateLineAvoidance(heading);
-        // playmode.crapLineAvoid(heading);
+        // (ETHAN) NOTE TO SELF: RETURN LINEANGLE, LINEDISTANCE AND ISOUT
     #endif
 
-    calculateAcceleration();
-
-    // if(playmode.lineAvoiding()){
-    //     direction = playmode.getDirection();
-    //     speed = playmode.getSpeed();
-    // }
-
-    if(!playmode.onField){
-        direction = playmode.getDirection();
-        speed = playmode.getSpeed();
-    }
-
-    // Serial.printf("BEFORE || Speed %d, Direction %d\t", speed, direction);
-
-    // Update motors
-    move.motorCalc(direction, orientation, speed);
-    move.go(false);
-    // move.motorTest(255);
-
-    // Serial.printf("AFTER || Speed %d, Direction %d", speed, direction);
-
-    Serial.println();
+    #if LRFS_ON
+        // Update LRFs
+        lrfs.read();
+    #endif
 
     #if LED_ON
-        // Blinky LED stuff :D
-        if(batteryVoltage < V_BAT_MIN){
-            if(batteryLedTimer.timeHasPassed()){
-                digitalWrite(LED_BUILTIN, ledOn);
-                ledOn = !ledOn;
-            }
-        } else if(ls.isOnLine || ls.lineOver){
-            if(lineLedTimer.timeHasPassed()){
-                digitalWrite(LED_BUILTIN, ledOn);
-                ledOn = !ledOn;
-            }
-        } else if(speed >= IDLE_MIN_SPEED){
-            if(movingLedTimer.timeHasPassed()){
-                digitalWrite(LED_BUILTIN, ledOn);
-                ledOn = !ledOn;
-            }
-        } else {
-            if(idleLedTimer.timeHasPassed()){
-                digitalWrite(LED_BUILTIN, ledOn);
-                ledOn = !ledOn;
-            }
+        if(idleLedTimer.timeHasPassed()){
+            digitalWrite(LED_BUILTIN, ledOn);
+            ledOn = !ledOn;
         }
     #endif
 }

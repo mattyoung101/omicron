@@ -18,11 +18,12 @@ class Styles : Stylesheet() {
 
     init {
         label {
-            fontSize = 20.px
+            fontSize = 18.px
         }
 
         bigLabel {
             fontSize = 22.px
+            fontWeight = FontWeight.BOLD
         }
 
         button {

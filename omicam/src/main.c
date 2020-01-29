@@ -1,9 +1,10 @@
 #define DG_DYNARR_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
 #include "DG_dynarr.h"
-#include "stb_image.h"
-#undef STB_IMAGE_IMPLEMENTATION
 #undef DG_DYNARR_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+#undef STB_IMAGE_WRITE_IMPLEMENTATION
+
 #include <stdio.h>
 #include "log/log.h"
 #include "iniparser/iniparser.h"
@@ -13,13 +14,12 @@
 #include "defines.h"
 #include <math.h>
 #include <pthread.h>
-#include "camera_manager.h"
+#include <pwd.h>
 #include "remote_debug.h"
 #include "utils.h"
-#include "blob_detection.h"
-#include "alloc_pool.h"
-
-#define OMICAM_VERSION "0.1"
+#include "computer_vision.hpp"
+#include "localisation.h"
+#include "comms_uart.h"
 
 static FILE *logFile = NULL;
 static pthread_mutex_t logLock;
@@ -27,10 +27,10 @@ static pthread_mutex_t logLock;
 /** free resources allocated by the app **/
 static void disposeResources(){
     log_trace("Disposing resources");
-    camera_manager_dispose();
+    vision_dispose();
     remote_debug_dispose();
-    blob_detector_dispose();
-    alp_free_pool(FRAME_POOL);
+    localiser_dispose();
+    comms_uart_dispose();
     log_trace("Closing log file, goodbye!");
     fflush(logFile);
     fclose(logFile);
@@ -41,23 +41,18 @@ static void disposeResources(){
 static void signal_handler(int sig){
     log_info("Received signal %s, terminating capture", strsignal(sig));
     disposeResources();
+    // FIXME due to threading fuckery this is still required
     exit(EXIT_SUCCESS);
 }
 
 /** lock the logger to prevent malformed prints across threads **/
-static void log_lock_func(GCC_UNUSED void *userdata, int lock){
+static void log_lock_func(void *userdata, int lock){
     if (lock){
         pthread_mutex_lock(&logLock);
     } else {
         pthread_mutex_unlock(&logLock);
     }
 }
-
-#if BLOB_USE_NEON
-#define PRE & // the NEON function takes a pointer to an uint8x8_t
-#else
-#define PRE // the scalar function just takes an array via a pointer
-#endif
 
 int main() {
     signal(SIGINT, signal_handler);
@@ -72,14 +67,20 @@ int main() {
 #endif
     pthread_mutex_init(&logLock, NULL);
     log_set_lock(log_lock_func);
-    logFile = fopen("/home/pi/omicam.log", "w");
+
+    struct passwd *pw = getpwuid(getuid());
+    char *homedir = pw->pw_dir;
+    // FIXME this will fail if the directory doesn't exist!
+    logFile = fopen(strcat(homedir, "/Documents/TeamOmicron/Omicam/omicam.log"), "wb");
     if (logFile != NULL){
         log_set_fp(logFile);
     } else {
         fprintf(stderr, "Failed to open log file: %s\n", strerror(errno));
+        fprintf(stderr, "ATTENTION: Due to a current bug, you need to make the file ~/Documents/TeamOmicron/Omicam/omicam.log manually"
+                        " for logging to work properly.\n");
     }
-    log_info("Omicam v%s - Copyright (c) 2019 Team Omicron. All rights reserved.", OMICAM_VERSION);
-    log_debug("Last full rebuild: %s %s (%d)", __DATE__, __TIME__);
+    log_info("Omicam v%s - Copyright (c) 2019-2020 Team Omicron.", OMICAM_VERSION);
+    log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);
 
     log_debug("Loading and parsing config...");
     dictionary *config = iniparser_load("../omicam.ini");
@@ -88,40 +89,62 @@ int main() {
         return EXIT_FAILURE;
     }
 
-//    puts("Quick test of alloc pool");
-//    alp_create("Test");
-//    uint8_t *data = alp_malloc("Test", 420);
-//    memset(data, 0, 69);
-//    uint8_t *data2 = alp_malloc("Test", 32);
-//    memset(data2, 3, 4);
-//    uint8_t *fuckYou = malloc(4096);
-//    fuckYou[0] = 1;
-//    puts("test passed successfully");
-    alp_create(FRAME_POOL);
-
     char *minBallStr = (char*) iniparser_getstring(config, "Thresholds:minBall", "0,0,0");
     char *maxBallStr = (char*) iniparser_getstring(config, "Thresholds:maxBall", "0,0,0");
-    blob_detector_parse_thresh(minBallStr, PRE minBallData);
-    blob_detector_parse_thresh(maxBallStr, PRE maxBallData);
+    utils_parse_thresh(minBallStr, minBallData);
+    utils_parse_thresh(maxBallStr, maxBallData);
+    log_trace("Min ball threshold: (%d,%d,%d), Max ball threshold: (%d,%d,%d)", minBallData[0], minBallData[1], minBallData[2],
+            maxBallData[0], maxBallData[1], maxBallData[2]);
 
     char *minLineStr = (char*) iniparser_getstring(config, "Thresholds:minLine", "0,0,0");
     char *maxLineStr = (char*) iniparser_getstring(config, "Thresholds:maxLine", "0,0,0");
-    blob_detector_parse_thresh(minLineStr, PRE minLineData);
-    blob_detector_parse_thresh(maxLineStr, PRE maxLineData);
+    utils_parse_thresh(minLineStr, minLineData);
+    utils_parse_thresh(maxLineStr, maxLineData);
 
     char *minBlueStr = (char*) iniparser_getstring(config, "Thresholds:minBlue", "0,0,0");
     char *maxBlueStr = (char*) iniparser_getstring(config, "Thresholds:maxBlue", "0,0,0");
-    blob_detector_parse_thresh(minBlueStr, PRE minBlueData);
-    blob_detector_parse_thresh(maxBlueStr, PRE maxBlueData);
+    utils_parse_thresh(minBlueStr, minBlueData);
+    utils_parse_thresh(maxBlueStr, maxBlueData);
 
     char *minYellowStr = (char*) iniparser_getstring(config, "Thresholds:minYellow", "0,0,0");
     char *maxYellowStr = (char*) iniparser_getstring(config, "Thresholds:maxYellow", "0,0,0");
-    blob_detector_parse_thresh(minYellowStr, PRE minYellowData);
-    blob_detector_parse_thresh(maxYellowStr, PRE maxYellowData);
+    utils_parse_thresh(minYellowStr, minYellowData);
+    utils_parse_thresh(maxYellowStr, maxYellowData);
 
-    camera_manager_init(config);
+    int32_t width = iniparser_getint(config, "VideoSettings:width", 1280);
+    int32_t height = iniparser_getint(config, "VideoSettings:height", 720);
+    videoWidth = width;
+    videoHeight = height;
+
+    visionRobotMaskRadius = iniparser_getint(config, "Vision:robotMaskRadius", 64);
+    visionMirrorRadius = iniparser_getint(config, "Vision:mirrorRadius", 256);
+    char *rectStr = (char*) iniparser_getstring(config, "Vision:cropRect", "0,0,1280,720");
+    log_trace("Vision crop rect: %s", rectStr);
+    utils_parse_rect(rectStr, visionCropRect);
+
+    char *fieldFile = (char*) iniparser_getstring(config, "Localiser:fieldFile", "../fields/Ints_StandardField.ff");
+
+#if CRANK_THE_MFIN_HOG
+    log_warn("Forcing high-performance CPU governing and disabling thermal throttling service (source: CRANK_THE_MFIN_HOG=1)");
+    log_warn("This may cause the SBC to overheat! Changes will persist until the next reboot. Monitor thermals carefully.");
+    // execute "sudo cpupower frequency-set -g performance" here
+    // also execute "sudo systemctl stop thermald"
+    // then if they both return successfully print:
+    log_debug("Maximum hog cranking configured successfully");
+    // otherwise print:
+    // log_warn("Failed to crank the mfin hog: %s. Please make sure you've configured password-free sudo access.");
+#endif
+
+    // initialise all the things
+    remote_debug_init(width, height);
+    localiser_init(fieldFile);
+    comms_uart_init();
+
+    fflush(stdout);
+    fflush(logFile);
     iniparser_freedict(config);
 
-    // this will block the main thread
-    camera_manager_capture();
+    vision_init();
+
+    log_debug("Omicam terminating through main loop exit");
 }

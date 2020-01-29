@@ -2,24 +2,86 @@ syntax = "proto3";
 
 // This file contains all the messages we send/receive with Omicontrol over TCP
 
+message RDRect {
+    int32 x = 1;
+    int32 y = 2;
+    int32 width = 3;
+    int32 height = 4;
+}
+
+message RDPoint {
+    int32 x = 1;
+    int32 y = 2;
+}
+
+// Contains the colour channel values for the min and max of a particular threshold
+message RDThreshold {
+    repeated int32 min = 2;
+    repeated int32 max = 3;
+}
+
 // Whenever a debug frame is encoded, this is sent to the remote client to be rendered over a TCP socket.
 // It may also include geometries that the remote client is instructed to draw such as rectangles or circles
 // (this is because it's much easier to get the remote JavaFX app to draw geometries than to do it manually on a JPEG buffer)
 message DebugFrame {
     bytes defaultImage = 1; // the encoded image of just the normal view from the camera
-    bytes ballThreshImage = 2; // the zlib encoded buffer of the ball's binary threshold image
-    float temperature = 3; // the temperature of the CPU on the Pi
+    bytes ballThreshImage = 2; // the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
+    float temperature = 3; // the temperature of the CPU on the SBC
+    RDRect ballRect = 4; // the bounding box of the object (not the ball, kept for legacy reasons)
+    RDPoint ballCentroid = 5; // the centroid of the ball
+    int32 fps = 6; // the current FPS of the camera
+    int32 frameWidth = 7; // width of both frames
+    int32 frameHeight = 8; // height of both frames
+    RDRect cropRect = 9; // the crop rectangle, or all zeroes if cropping is disabled
+    repeated RDPoint linePoints = 10; // line points from localiser
+    int32 mirrorRadius = 11; // mirror radius used by localiser
 }
 
-// A message sent by the Omicontrol app to Omicam containing a command and some data
+// This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
 message DebugCommand {
     // List of commands:
-    // CMD_POWER_OFF: power off the camera module, equivalent to sudo shutdown now
-    // CMD_POWER_REBOOT: reboot the camera module, equivalent to sudo reboot now
+    // CMD_OK: the last command completed successfully
+    // CMD_POWER_OFF: ask Omicam to shutdown the SBC
+    // CMD_POWER_REBOOT: ask Omicam to reboot the SBC
+    // CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
+    // CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
+    // CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
+    // CMD_THRESHOLDS_SELECT: select the particular threshold to stream
     // CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
+    // CMD_MOVE_RESET: move to starting position
+    // CMD_MOVE_HALT: stops the robot in place, braking
+    // CMD_MOVE_RESUME: allows the robot to move again
+    // CMD_MOVE_ORIENT: orient to a specific direction
     int32 messageId = 1;
 
     // may be set if CMD_MOVE_TO_XY is the messageId
-    int32 coordX = 2;
-    int32 coordY = 3;
+    // contains the field coordinates that the robot should move to
+    RDPoint coords = 2;
+    // may be set if CMD_MOVE_ORIENT is the messageId
+    // contains the 0-360 degree orientation the robot should turn to
+    float orientation = 3;
+    // may be sent if CMD_THRESHOLDS_GET_ALL is the messageId
+    // contains an array of all the thresholds values in the camera currently
+    repeated RDThreshold allThresholds = 4;
+    // may be set if CMD_THRESHOLDS_SELECT is the messageId
+    // contains the ID of the field object (eg BALL, YELLOW_GOAL) that this message is referring to
+    int32 objectId = 5;
+    // may be set if CMD_THRESHOLDS_SELECT is the messageId
+    // contains whether or not this threshold is for the minimum or maximum (true if min, false if max)
+    bool minMax = 6;
+    // may be set if CMD_THRESHOLDS_SELECT is the messageId
+    // contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
+    int32 colourChannel = 7;
+    // may be set if CMD_THRESHOLD_SET is the messageId
+    // would be the value of the threshold
+    int32 value = 8;
+}
+
+// Container for messages, contains exactly one sub message
+message RDMsgFrame {
+    DebugFrame frame = 1;
+    DebugCommand command = 2;
+
+    // hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+    int32 whichMessage = 3;
 }
