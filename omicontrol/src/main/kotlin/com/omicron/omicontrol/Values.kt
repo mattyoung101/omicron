@@ -14,8 +14,9 @@ import java.util.concurrent.atomic.AtomicLong
  * 1.2a: works with Omicam cropping and downscaling
  * 2.2a: added support for camera calibration
  * 2.3a: added sleep mode
+ * 3.3a: (WIP) added field display screen
  */
-const val OMICONTROL_VERSION = "2.3a"
+const val OMICONTROL_VERSION = "3.3a"
 const val REMOTE_IP = "monkeyonkeyboard.ddns.net"
 const val REMOTE_PORT = 42708
 val CONNECTION_MANAGER = ConnectionManager()
