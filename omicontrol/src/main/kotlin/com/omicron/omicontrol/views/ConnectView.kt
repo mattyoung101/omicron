@@ -78,7 +78,7 @@ class ConnectView : View() {
                     viewBox = combobox {
                         items = FXCollections.observableArrayList(
                             "Camera view",
-                            "Robot view",
+                            "Field view",
                             "Calibration view")
                         selectionModel.selectFirst()
                     }
@@ -105,6 +105,7 @@ class ConnectView : View() {
                                 when (viewBox.value){
                                     "Camera view" -> Utils.transitionMetro(this@ConnectView, CameraView())
                                     "Calibration view" -> Utils.transitionMetro(this@ConnectView, CalibrationView())
+                                    "Field view" -> Utils.transitionMetro(this@ConnectView, FieldView())
                                     else -> Logger.error("Unsupported view: ${viewBox.value}")
                                 }
 

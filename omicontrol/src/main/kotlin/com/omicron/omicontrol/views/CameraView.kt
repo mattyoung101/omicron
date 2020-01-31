@@ -510,7 +510,13 @@ class CameraView : View() {
         vbox {
             paddingTop = 25.0
             alignment = Pos.CENTER
-            button("Switch to robot view")
+            button("Switch to field view"){
+                setOnAction {
+                    Logger.debug("Changing views")
+                    EVENT_BUS.unregister(this@CameraView)
+                    Utils.transitionMetro(this@CameraView, FieldView())
+                }
+            }
         }
 
         @Suppress("ConstantConditionIf")

@@ -14,11 +14,16 @@ class Styles : Stylesheet() {
         val rect by cssclass()
         val paddedBox by cssclass()
         val bigLabel by cssclass()
+        val boldLabel by cssclass()
     }
 
     init {
         label {
             fontSize = 18.px
+        }
+
+        boldLabel {
+            fontWeight = FontWeight.BOLD
         }
 
         bigLabel {
@@ -36,7 +41,7 @@ class Styles : Stylesheet() {
             padding = box(5.px)
         }
 
-        titleLabel{
+        titleLabel {
             fontSize = 36.px
             fontWeight = FontWeight.EXTRA_BOLD
         }

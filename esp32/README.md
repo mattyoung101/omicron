@@ -23,6 +23,9 @@ Firstly, you'll need to the ESP32 toolchain for your platform. Please
 on how to install this. **Please observe the important workaround for Windows:** you need to make the default program to open
 .py files the Python 2 interpreter in order for "idf.py" to work properly.
 
+Once you've installed the toolchain, you need to open a terminal in the "esp32" directory and run `idf.py build` to 
+generate the initial build.
+
 Once that's done, install the C/C++ extension for VSCode and open this folder ("esp32"). When (or if) it prompts you if you'd 
 like to configure C/C++ automatically using compile_commands.json, select "yes" and choose the one that's **NOT**
 the bootloader project. 

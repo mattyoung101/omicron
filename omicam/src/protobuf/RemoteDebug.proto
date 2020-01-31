@@ -39,19 +39,7 @@ message DebugFrame {
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
 message DebugCommand {
-    // List of commands:
-    // CMD_OK: the last command completed successfully
-    // CMD_POWER_OFF: ask Omicam to shutdown the SBC
-    // CMD_POWER_REBOOT: ask Omicam to reboot the SBC
-    // CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
-    // CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
-    // CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
-    // CMD_THRESHOLDS_SELECT: select the particular threshold to stream
-    // CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
-    // CMD_MOVE_RESET: move to starting position
-    // CMD_MOVE_HALT: stops the robot in place, braking
-    // CMD_MOVE_RESUME: allows the robot to move again
-    // CMD_MOVE_ORIENT: orient to a specific direction
+    // For a list of commands, see the enums in defines.h or Values.kt
     int32 messageId = 1;
 
     // may be set if CMD_MOVE_TO_XY is the messageId
@@ -72,9 +60,12 @@ message DebugCommand {
     // may be set if CMD_THRESHOLDS_SELECT is the messageId
     // contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
     int32 colourChannel = 7;
-    // may be set if CMD_THRESHOLD_SET is the messageId
-    // would be the value of the threshold
+    // may be set if CMD_THRESHOLD_SET or CMD_FRAME_INTERVAL_SET is the messageId
+    // would be the value of the threshold or the remote debug frame interval
     int32 value = 8;
+    // may be set if any of the CMD_MOVE are set
+    // if <= -1 it applies to all robots, otherwise it is the robot id of the target robot
+    int32 target = 9;
 }
 
 // Container for messages, contains exactly one sub message

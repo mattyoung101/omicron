@@ -41,6 +41,7 @@ typedef enum {
     CMD_MOVE_HALT, // stops the robot in place, braking
     CMD_MOVE_RESUME, // allows the robot to move again
     CMD_MOVE_ORIENT, // orient to a specific direction
+    CMD_FRAME_INTERVAL_SET, // set the remote debug frame interval
 } debug_commands_t;
 typedef enum {
     OBJ_NONE = 0,

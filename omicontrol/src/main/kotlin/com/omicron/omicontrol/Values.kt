@@ -23,6 +23,8 @@ val CONNECTION_MANAGER = ConnectionManager()
 val EVENT_BUS = EventBus.getDefault()!!
 val CANVAS_WIDTH = if (SystemUtils.IS_OS_MAC) 1280.0 * 0.90 else 1280.0
 val CANVAS_HEIGHT = if (SystemUtils.IS_OS_MAC) 720.0 * 0.90 else 720.0
+val FIELD_CANVAS_WIDTH = if (SystemUtils.IS_OS_MAC) 1280.0 * 0.9 * 0.90 else 1280.0 * 0.9
+val FIELD_CANVAS_HEIGHT = if (SystemUtils.IS_OS_MAC) 958.0 * 0.9 * 0.90 else 958.0 * 0.9
 const val DEBUG_CAMERA_VIEW = false
 val COLOURS = listOf("R", "G", "B")
 var lastPingLabel: Label? = null
@@ -43,6 +45,7 @@ enum class DebugCommands {
     CMD_MOVE_HALT, // stops the robot in place, braking
     CMD_MOVE_RESUME, // allows the robot to move again
     CMD_MOVE_ORIENT, // orient to a specific direction
+    CMD_FRAME_INTERVAL_SET, // set the remote debug frame interval
 }
 
 /** objects on the field **/
