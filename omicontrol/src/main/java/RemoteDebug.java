@@ -4061,19 +4061,7 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * List of commands:
-     * CMD_OK: the last command completed successfully
-     * CMD_POWER_OFF: ask Omicam to shutdown the SBC
-     * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
-     * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
-     * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
-     * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
-     * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
-     * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
-     * CMD_MOVE_RESET: move to starting position
-     * CMD_MOVE_HALT: stops the robot in place, braking
-     * CMD_MOVE_RESUME: allows the robot to move again
-     * CMD_MOVE_ORIENT: orient to a specific direction
+     * For a list of commands, see the enums in defines.h or Values.kt
      * </pre>
      *
      * <code>optional int32 messageId = 1;</code>
@@ -4199,13 +4187,32 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * may be set if CMD_THRESHOLD_SET is the messageId
+     * may be set if CMD_THRESHOLD_SET
      * would be the value of the threshold
      * </pre>
      *
      * <code>optional int32 value = 8;</code>
      */
     int getValue();
+
+    /**
+     * <pre>
+     * may be set if any of the CMD_MOVE are set
+     * if &lt;= -1 it applies to all robots, otherwise it is the robot id of the target robot
+     * </pre>
+     *
+     * <code>optional int32 robotId = 9;</code>
+     */
+    int getRobotId();
+
+    /**
+     * <pre>
+     * may be set if CMD_SET_SEND_FRAMES is the messageId
+     * </pre>
+     *
+     * <code>optional bool isEnabled = 10;</code>
+     */
+    boolean getIsEnabled();
   }
   /**
    * <pre>
@@ -4230,6 +4237,8 @@ public final class RemoteDebug {
       minMax_ = false;
       colourChannel_ = 0;
       value_ = 0;
+      robotId_ = 0;
+      isEnabled_ = false;
     }
 
     @java.lang.Override
@@ -4309,6 +4318,16 @@ public final class RemoteDebug {
               value_ = input.readInt32();
               break;
             }
+            case 72: {
+
+              robotId_ = input.readInt32();
+              break;
+            }
+            case 80: {
+
+              isEnabled_ = input.readBool();
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -4340,19 +4359,7 @@ public final class RemoteDebug {
     private int messageId_;
     /**
      * <pre>
-     * List of commands:
-     * CMD_OK: the last command completed successfully
-     * CMD_POWER_OFF: ask Omicam to shutdown the SBC
-     * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
-     * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
-     * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
-     * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
-     * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
-     * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
-     * CMD_MOVE_RESET: move to starting position
-     * CMD_MOVE_HALT: stops the robot in place, braking
-     * CMD_MOVE_RESUME: allows the robot to move again
-     * CMD_MOVE_ORIENT: orient to a specific direction
+     * For a list of commands, see the enums in defines.h or Values.kt
      * </pre>
      *
      * <code>optional int32 messageId = 1;</code>
@@ -4517,7 +4524,7 @@ public final class RemoteDebug {
     private int value_;
     /**
      * <pre>
-     * may be set if CMD_THRESHOLD_SET is the messageId
+     * may be set if CMD_THRESHOLD_SET
      * would be the value of the threshold
      * </pre>
      *
@@ -4525,6 +4532,33 @@ public final class RemoteDebug {
      */
     public int getValue() {
       return value_;
+    }
+
+    public static final int ROBOTID_FIELD_NUMBER = 9;
+    private int robotId_;
+    /**
+     * <pre>
+     * may be set if any of the CMD_MOVE are set
+     * if &lt;= -1 it applies to all robots, otherwise it is the robot id of the target robot
+     * </pre>
+     *
+     * <code>optional int32 robotId = 9;</code>
+     */
+    public int getRobotId() {
+      return robotId_;
+    }
+
+    public static final int ISENABLED_FIELD_NUMBER = 10;
+    private boolean isEnabled_;
+    /**
+     * <pre>
+     * may be set if CMD_SET_SEND_FRAMES is the messageId
+     * </pre>
+     *
+     * <code>optional bool isEnabled = 10;</code>
+     */
+    public boolean getIsEnabled() {
+      return isEnabled_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -4562,6 +4596,12 @@ public final class RemoteDebug {
       }
       if (value_ != 0) {
         output.writeInt32(8, value_);
+      }
+      if (robotId_ != 0) {
+        output.writeInt32(9, robotId_);
+      }
+      if (isEnabled_ != false) {
+        output.writeBool(10, isEnabled_);
       }
     }
 
@@ -4602,6 +4642,14 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(8, value_);
       }
+      if (robotId_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(9, robotId_);
+      }
+      if (isEnabled_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(10, isEnabled_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -4639,6 +4687,10 @@ public final class RemoteDebug {
           == other.getColourChannel());
       result = result && (getValue()
           == other.getValue());
+      result = result && (getRobotId()
+          == other.getRobotId());
+      result = result && (getIsEnabled()
+          == other.getIsEnabled());
       return result;
     }
 
@@ -4671,6 +4723,11 @@ public final class RemoteDebug {
       hash = (53 * hash) + getColourChannel();
       hash = (37 * hash) + VALUE_FIELD_NUMBER;
       hash = (53 * hash) + getValue();
+      hash = (37 * hash) + ROBOTID_FIELD_NUMBER;
+      hash = (53 * hash) + getRobotId();
+      hash = (37 * hash) + ISENABLED_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getIsEnabled());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -4818,6 +4875,10 @@ public final class RemoteDebug {
 
         value_ = 0;
 
+        robotId_ = 0;
+
+        isEnabled_ = false;
+
         return this;
       }
 
@@ -4862,6 +4923,8 @@ public final class RemoteDebug {
         result.minMax_ = minMax_;
         result.colourChannel_ = colourChannel_;
         result.value_ = value_;
+        result.robotId_ = robotId_;
+        result.isEnabled_ = isEnabled_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4951,6 +5014,12 @@ public final class RemoteDebug {
         if (other.getValue() != 0) {
           setValue(other.getValue());
         }
+        if (other.getRobotId() != 0) {
+          setRobotId(other.getRobotId());
+        }
+        if (other.getIsEnabled() != false) {
+          setIsEnabled(other.getIsEnabled());
+        }
         onChanged();
         return this;
       }
@@ -4981,19 +5050,7 @@ public final class RemoteDebug {
       private int messageId_ ;
       /**
        * <pre>
-       * List of commands:
-       * CMD_OK: the last command completed successfully
-       * CMD_POWER_OFF: ask Omicam to shutdown the SBC
-       * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
-       * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
-       * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
-       * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
-       * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
-       * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
-       * CMD_MOVE_RESET: move to starting position
-       * CMD_MOVE_HALT: stops the robot in place, braking
-       * CMD_MOVE_RESUME: allows the robot to move again
-       * CMD_MOVE_ORIENT: orient to a specific direction
+       * For a list of commands, see the enums in defines.h or Values.kt
        * </pre>
        *
        * <code>optional int32 messageId = 1;</code>
@@ -5003,19 +5060,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * List of commands:
-       * CMD_OK: the last command completed successfully
-       * CMD_POWER_OFF: ask Omicam to shutdown the SBC
-       * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
-       * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
-       * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
-       * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
-       * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
-       * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
-       * CMD_MOVE_RESET: move to starting position
-       * CMD_MOVE_HALT: stops the robot in place, braking
-       * CMD_MOVE_RESUME: allows the robot to move again
-       * CMD_MOVE_ORIENT: orient to a specific direction
+       * For a list of commands, see the enums in defines.h or Values.kt
        * </pre>
        *
        * <code>optional int32 messageId = 1;</code>
@@ -5028,19 +5073,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * List of commands:
-       * CMD_OK: the last command completed successfully
-       * CMD_POWER_OFF: ask Omicam to shutdown the SBC
-       * CMD_POWER_REBOOT: ask Omicam to reboot the SBC
-       * CMD_THRESHOLDS_GET_ALL: return the current thresholds for all object
-       * CMD_THRESHOLDS_SET: set the specified object's threshold to the given value
-       * CMD_THRESHOLDS_WRITE_DISK: writes the current thresholds to the INI file and then to disk
-       * CMD_THRESHOLDS_SELECT: select the particular threshold to stream
-       * CMD_MOVE_TO_XY: move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
-       * CMD_MOVE_RESET: move to starting position
-       * CMD_MOVE_HALT: stops the robot in place, braking
-       * CMD_MOVE_RESUME: allows the robot to move again
-       * CMD_MOVE_ORIENT: orient to a specific direction
+       * For a list of commands, see the enums in defines.h or Values.kt
        * </pre>
        *
        * <code>optional int32 messageId = 1;</code>
@@ -5711,7 +5744,7 @@ public final class RemoteDebug {
       private int value_ ;
       /**
        * <pre>
-       * may be set if CMD_THRESHOLD_SET is the messageId
+       * may be set if CMD_THRESHOLD_SET
        * would be the value of the threshold
        * </pre>
        *
@@ -5722,7 +5755,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * may be set if CMD_THRESHOLD_SET is the messageId
+       * may be set if CMD_THRESHOLD_SET
        * would be the value of the threshold
        * </pre>
        *
@@ -5736,7 +5769,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * may be set if CMD_THRESHOLD_SET is the messageId
+       * may be set if CMD_THRESHOLD_SET
        * would be the value of the threshold
        * </pre>
        *
@@ -5745,6 +5778,85 @@ public final class RemoteDebug {
       public Builder clearValue() {
         
         value_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int robotId_ ;
+      /**
+       * <pre>
+       * may be set if any of the CMD_MOVE are set
+       * if &lt;= -1 it applies to all robots, otherwise it is the robot id of the target robot
+       * </pre>
+       *
+       * <code>optional int32 robotId = 9;</code>
+       */
+      public int getRobotId() {
+        return robotId_;
+      }
+      /**
+       * <pre>
+       * may be set if any of the CMD_MOVE are set
+       * if &lt;= -1 it applies to all robots, otherwise it is the robot id of the target robot
+       * </pre>
+       *
+       * <code>optional int32 robotId = 9;</code>
+       */
+      public Builder setRobotId(int value) {
+        
+        robotId_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if any of the CMD_MOVE are set
+       * if &lt;= -1 it applies to all robots, otherwise it is the robot id of the target robot
+       * </pre>
+       *
+       * <code>optional int32 robotId = 9;</code>
+       */
+      public Builder clearRobotId() {
+        
+        robotId_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private boolean isEnabled_ ;
+      /**
+       * <pre>
+       * may be set if CMD_SET_SEND_FRAMES is the messageId
+       * </pre>
+       *
+       * <code>optional bool isEnabled = 10;</code>
+       */
+      public boolean getIsEnabled() {
+        return isEnabled_;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_SET_SEND_FRAMES is the messageId
+       * </pre>
+       *
+       * <code>optional bool isEnabled = 10;</code>
+       */
+      public Builder setIsEnabled(boolean value) {
+        
+        isEnabled_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * may be set if CMD_SET_SEND_FRAMES is the messageId
+       * </pre>
+       *
+       * <code>optional bool isEnabled = 10;</code>
+       */
+      public Builder clearIsEnabled() {
+        
+        isEnabled_ = false;
         onChanged();
         return this;
       }
@@ -6691,15 +6803,16 @@ public final class RemoteDebug {
       "id\030\005 \001(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframe" +
       "Width\030\007 \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010crop" +
       "Rect\030\t \001(\0132\007.RDRect\022\034\n\nlinePoints\030\n \003(\0132",
-      "\010.RDPoint\022\024\n\014mirrorRadius\030\013 \001(\005\"\275\001\n\014Debu" +
+      "\010.RDPoint\022\024\n\014mirrorRadius\030\013 \001(\005\"\341\001\n\014Debu" +
       "gCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords\030\002 " +
       "\001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n\ral" +
       "lThresholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010objec" +
       "tId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourChann" +
-      "el\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\"^\n\nRDMsgFrame\022\032\n" +
-      "\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001" +
-      "(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 \001(\005b" +
-      "\006proto3"
+      "el\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robotId\030\t \001(\005" +
+      "\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005fra" +
+      "me\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r" +
+      ".DebugCommand\022\024\n\014whichMessage\030\003 \001(\005b\006pro" +
+      "to3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -6742,7 +6855,7 @@ public final class RemoteDebug {
     internal_static_DebugCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugCommand_descriptor,
-        new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "ObjectId", "MinMax", "ColourChannel", "Value", });
+        new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "ObjectId", "MinMax", "ColourChannel", "Value", "RobotId", "IsEnabled", });
     internal_static_RDMsgFrame_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_RDMsgFrame_fieldAccessorTable = new

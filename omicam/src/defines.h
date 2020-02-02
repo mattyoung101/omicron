@@ -18,7 +18,7 @@
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
-#define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
+#define VISION_DIAGNOSTICS 0 // enable or disable performance (i.e. FPS) diagnostics
 #define VISION_DRAW_ROBOT_MASK 0 // whether or not to draw the robot mask
 
 #define REMOTE_JPEG_QUALITY 40 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
@@ -41,7 +41,7 @@ typedef enum {
     CMD_MOVE_HALT, // stops the robot in place, braking
     CMD_MOVE_RESUME, // allows the robot to move again
     CMD_MOVE_ORIENT, // orient to a specific direction
-    CMD_FRAME_INTERVAL_SET, // set the remote debug frame interval
+    CMD_SET_SEND_FRAMES, // set whether or not to send frames (useful for saving data in the field view)
 } debug_commands_t;
 typedef enum {
     OBJ_NONE = 0,

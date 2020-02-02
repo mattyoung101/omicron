@@ -154,6 +154,12 @@ static void read_remote_messages(void){
                 client_disconnected();
                 break;
             }
+            case CMD_SET_SEND_FRAMES: {
+                log_debug("Received CMD_SET_SEND_FRAMES with value: %s", message.isEnabled ? "true" : "false");
+                sendDebugFrames = message.isEnabled;
+                RD_SEND_OK_RESPONSE;
+                break;
+            }
             default: {
                 log_warn("Unhandled debug message id: %d", message.messageId);
                 break;
@@ -174,10 +180,15 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     pb_ostream_t stream = pb_ostream_from_buffer(buf, bufSize);
 
     // fill the protocol buffer with data
-    memcpy(msg.defaultImage.bytes, camImg, camImgSize);
-    memcpy(msg.ballThreshImage.bytes, threshImg, threshImgSize);
-    msg.defaultImage.size = camImgSize;
-    msg.ballThreshImage.size = threshImgSize;
+    if (sendDebugFrames) {
+        memcpy(msg.defaultImage.bytes, camImg, camImgSize);
+        memcpy(msg.ballThreshImage.bytes, threshImg, threshImgSize);
+        msg.defaultImage.size = camImgSize;
+        msg.ballThreshImage.size = threshImgSize;
+    } else {
+        msg.defaultImage.size = 0;
+        msg.ballThreshImage.size = 0;
+    }
     msg.temperature = (float) cpuTemperature;
     msg.ballCentroid = entry->ballCentroid;
     msg.ballRect = entry->ballRect;

@@ -3,33 +3,40 @@ package com.omicron.omicontrol.views
 import com.omicron.omicontrol.*
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
-import javafx.scene.Parent
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.Alert
-import javafx.scene.control.Label
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
-import javafx.stage.FileChooser
-import net.objecthunter.exp4j.Expression
-import net.objecthunter.exp4j.ExpressionBuilder
 import org.greenrobot.eventbus.Subscribe
 import org.tinylog.kotlin.Logger
 import tornadofx.*
-import java.io.ByteArrayInputStream
-import java.io.FileWriter
-import java.nio.file.Paths
 import kotlin.system.exitProcess
+import com.omicron.omicontrol.field.Ball
+import com.omicron.omicontrol.field.Robot
+import javafx.scene.control.Label
+import org.apache.commons.io.FileUtils
 
 /**
  * This screen displays the localised positions of the robots on a virtual field and allows you to control them
  */
 class FieldView : View() {
     private lateinit var display: GraphicsContext
+    private lateinit var bandwidthLabel: Label
     private val fieldImage = Image("field_cropped_scaled.png")
+    private val targetIcon = Image("target.png")
+    private val robotImage = Image("robot.png")
+    private val robots = listOf(
+        Robot(),
+        Robot()
+    )
+    private var selectedRobot: Robot? = null
+    private var targetPos: Point2D? = null
+    private val ball = Ball()
+    private var bandwidthRecordingBegin = System.currentTimeMillis()
 
     init {
         reloadStylesheetsOnFocus()
@@ -39,10 +46,41 @@ class FieldView : View() {
     @ExperimentalUnsignedTypes
     @Subscribe
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
-        // FIXME decode the data and check if display exists first?
-        display.fill = Color.BLACK
-        display.fillRect(0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
-        display.drawImage(fieldImage, 0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
+        // TODO set robot positions and ball position
+
+        runLater {
+            display.fill = Color.BLACK
+            display.fillRect(0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
+            display.drawImage(fieldImage, 0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
+
+            // render robots
+            for (robot in robots) {
+                if (robot.isPositionKnown) {
+                    val half = ROBOT_CANVAS_DIAMETER / 2.0
+                    val pos = robot.position.toCanvasPosition()
+                    display.drawImage(robotImage, pos.x - half, pos.y - half, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
+                }
+            }
+
+            // render ball
+            if (ball.isPositionKnown) {
+                display.fill = Color.ORANGE
+                val pos = ball.position.toCanvasPosition()
+                display.fillOval(pos.x, pos.y, BALL_CANVAS_DIAMETER, BALL_CANVAS_DIAMETER)
+            }
+
+            // render target
+            if (targetPos != null) {
+                display.drawImage(targetIcon, targetPos!!.x - 16, targetPos!!.y - 16, 48.0, 48.0)
+            }
+
+            // update labels
+            if (System.currentTimeMillis() - bandwidthRecordingBegin >= 1000) {
+                bandwidthLabel.text = "Bandwidth: ${FileUtils.byteCountToDisplaySize(BANDWIDTH)}/s"
+                bandwidthRecordingBegin = System.currentTimeMillis()
+                BANDWIDTH = 0
+            }
+        }
     }
 
     @Subscribe
@@ -53,20 +91,24 @@ class FieldView : View() {
                 Alert.AlertType.ERROR, "The remote connection has unexpectedly terminated.\n" +
                         "Please check Omicam is still running and try again.\n\nError description: Protobuf message was null",
                 "Connection error")
-            disconnect()
+            Utils.disconnect(this@FieldView)
         }
     }
 
-    private fun disconnect(){
-        Logger.debug("Disconnecting...")
-        CONNECTION_MANAGER.disconnect()
-        EVENT_BUS.unregister(this@FieldView)
-        Utils.transitionMetro(this@FieldView, ConnectView())
+    /** checks that a robot is currently selected **/
+    private fun checkSelected(): Boolean {
+        return if (selectedRobot == null){
+            Utils.showGenericAlert(Alert.AlertType.ERROR, "Please select a robot first.", "No robot selected")
+            false
+        } else {
+            true
+        }
     }
 
     override val root = vbox {
         setPrefSize(1600.0, 1000.0)
         EVENT_BUS.register(this@FieldView)
+        setSendFrames(false)
 
         menubar {
             menu("File") {
@@ -80,7 +122,7 @@ class FieldView : View() {
             menu("Connection") {
                 item("Disconnect"){
                     setOnAction {
-                        disconnect()
+                        Utils.disconnect(this@FieldView)
                     }
                     accelerator = KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)
                 }
@@ -99,7 +141,7 @@ class FieldView : View() {
                                     "Omicam has entered a low power sleep state.\n\nVision will not be functional until" +
                                             " you reconnect, which automatically exits sleep mode.", "Sleep mode"
                                 )
-                                disconnect()
+                                Utils.disconnect(this@FieldView)
                             }
                         })
                     }
@@ -119,6 +161,17 @@ class FieldView : View() {
             vbox {
                 canvas(FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT) {
                     display = graphicsContext2D
+
+                    setOnMouseClicked {
+                        val fieldCanvasPos = Point2D(it.x, it.y)
+                        val fieldRealPos = fieldCanvasPos.toRealPosition()
+                        Logger.info("Mouse clicked at real: $fieldRealPos, canvas: $fieldCanvasPos, back to canvas: ${fieldRealPos.toCanvasPosition()}")
+
+                        // behaviour for this:
+                        // if clicking on the currently selected robot, deselect it
+                        // if robot is currently selected and clicked on field, set a target to that position and move there
+                        targetPos = Point2D(it.x, it.y)
+                    }
                 }
                 alignment = Pos.TOP_RIGHT
             }
@@ -136,7 +189,7 @@ class FieldView : View() {
                 form {
                     fieldset {
                         field {
-                            label("Selected robot: "){ addClass(Styles.boldLabel) }
+                            label("Selected robot:"){ addClass(Styles.boldLabel) }
                             label("None")
                         }
                     }
@@ -165,30 +218,91 @@ class FieldView : View() {
 
                     fieldset {
                         field {
+                            bandwidthLabel = label("Packet size: None recorded")
+                        }
+                    }
+
+                    fieldset {
+                        field {
                             label("Actions:"){ addClass(Styles.boldLabel) }
                         }
 
                         field {
-                            button("Halt ALL robots")
-                            button("Resume ALL robots")
+                            button("Halt ALL robots"){
+                                setOnAction {
+                                    val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
+                                        messageId = DebugCommands.CMD_MOVE_HALT.ordinal
+                                        robotId = -1 // target all
+                                    }.build()
+                                    CONNECTION_MANAGER.dispatchCommand(cmd)
+                                }
+                            }
+                            button("Resume ALL robots"){
+                                setOnAction {
+                                    val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
+                                        messageId = DebugCommands.CMD_MOVE_RESUME.ordinal
+                                        robotId = -1 // target all
+                                    }.build()
+                                    CONNECTION_MANAGER.dispatchCommand(cmd)
+                                }
+                            }
                         }
 
                         field {
-                            button("Halt selected")
-                            button("Resume selected")
+                            button("Halt selected"){
+                                setOnAction {
+                                    if (checkSelected()){
+                                        val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
+                                            messageId = DebugCommands.CMD_MOVE_HALT.ordinal
+                                            robotId = robots.indexOf(selectedRobot)
+                                        }.build()
+                                        CONNECTION_MANAGER.dispatchCommand(cmd)
+                                    }
+                                }
+                            }
+                            button("Resume selected"){
+                                setOnAction {
+                                    if (checkSelected()){
+                                        val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
+                                            messageId = DebugCommands.CMD_MOVE_RESUME.ordinal
+                                            robotId = robots.indexOf(selectedRobot)
+                                        }.build()
+                                        CONNECTION_MANAGER.dispatchCommand(cmd)
+                                    }
+                                }
+                            }
                         }
 
                         field {
-                            button("Orient selected")
+                            button("Orient selected"){
+                                setOnAction {
+                                    if (checkSelected()){
+                                        // FIXME ask for orientation here
+                                        val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
+                                            messageId = DebugCommands.CMD_MOVE_ORIENT.ordinal
+                                            robotId = robots.indexOf(selectedRobot)
+                                            orientation = 0.0f
+                                        }.build()
+                                        CONNECTION_MANAGER.dispatchCommand(cmd)
+                                    }
+                                }
+                            }
                         }
 
                         field {
-                            button("Reset ALL")
+                            button("Reset ALL"){
+                                setOnAction {
+                                    val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
+                                        messageId = DebugCommands.CMD_MOVE_HALT.ordinal
+                                        robotId = -1 // target all
+                                    }.build()
+                                    CONNECTION_MANAGER.dispatchCommand(cmd)
+                                }
+                            }
                         }
 
                         field {
                             button("Switch to camera view"){
-
                                 setOnAction {
                                     Logger.debug("Changing views")
                                     EVENT_BUS.unregister(this@FieldView)

@@ -23,6 +23,7 @@ char *fieldObjToString[] = {"OBJ_NONE", "OBJ_BALL", "OBJ_GOAL_YELLOW", "OBJ_GOAL
 bool sleeping;
 pthread_cond_t sleepCond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t sleepMutex = PTHREAD_MUTEX_INITIALIZER;
+bool sendDebugFrames = true;
 
 // https://stackoverflow.com/a/1726321/5007892
 static void remove_spaces(char* s) {

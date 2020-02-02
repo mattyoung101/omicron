@@ -24,17 +24,28 @@ message RDThreshold {
 // It may also include geometries that the remote client is instructed to draw such as rectangles or circles
 // (this is because it's much easier to get the remote JavaFX app to draw geometries than to do it manually on a JPEG buffer)
 message DebugFrame {
-    bytes defaultImage = 1; // the encoded image of just the normal view from the camera
-    bytes ballThreshImage = 2; // the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
-    float temperature = 3; // the temperature of the CPU on the SBC
-    RDRect ballRect = 4; // the bounding box of the object (not the ball, kept for legacy reasons)
-    RDPoint ballCentroid = 5; // the centroid of the ball
-    int32 fps = 6; // the current FPS of the camera
-    int32 frameWidth = 7; // width of both frames
-    int32 frameHeight = 8; // height of both frames
-    RDRect cropRect = 9; // the crop rectangle, or all zeroes if cropping is disabled
-    repeated RDPoint linePoints = 10; // line points from localiser
-    int32 mirrorRadius = 11; // mirror radius used by localiser
+    // the encoded image of just the normal view from the camera
+    bytes defaultImage = 1;
+    // the zlib encoded buffer of the threshold image (not the ball, kept for legacy reasons)
+    bytes ballThreshImage = 2;
+    // the temperature of the CPU on the SBC
+    float temperature = 3;
+    // the bounding box of the object (not the ball, kept for legacy reasons)
+    RDRect ballRect = 4;
+    // the centroid of the ball
+    RDPoint ballCentroid = 5;
+    // the current FPS of the camera
+    int32 fps = 6;
+    // width of both frames
+    int32 frameWidth = 7;
+    // height of both frames
+    int32 frameHeight = 8;
+    // the crop rectangle, or all zeroes if cropping is disabled
+    RDRect cropRect = 9;
+    // line points from localiser
+    repeated RDPoint linePoints = 10;
+    // mirror radius used by localiser
+    int32 mirrorRadius = 11;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
@@ -60,12 +71,14 @@ message DebugCommand {
     // may be set if CMD_THRESHOLDS_SELECT is the messageId
     // contains the index of the colour channel (e.g. 0 = R, 1 = G, 2 = B)
     int32 colourChannel = 7;
-    // may be set if CMD_THRESHOLD_SET or CMD_FRAME_INTERVAL_SET is the messageId
-    // would be the value of the threshold or the remote debug frame interval
+    // may be set if CMD_THRESHOLD_SET
+    // would be the value of the threshold
     int32 value = 8;
     // may be set if any of the CMD_MOVE are set
     // if <= -1 it applies to all robots, otherwise it is the robot id of the target robot
-    int32 target = 9;
+    int32 robotId = 9;
+    // may be set if CMD_SET_SEND_FRAMES is the messageId
+    bool isEnabled = 10;
 }
 
 // Container for messages, contains exactly one sub message

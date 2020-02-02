@@ -16,6 +16,7 @@ extern int32_t visionCropRect[4];
 extern bool sleeping;
 extern pthread_cond_t sleepCond;
 extern pthread_mutex_t sleepMutex;
+extern bool sendDebugFrames;
 
 #ifdef __cplusplus
 extern "C" {

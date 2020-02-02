@@ -104,7 +104,7 @@ class ConnectionManager {
             synchronized(cmdReceivedToken) { cmdReceivedToken.wait(5000) }
 
             if (receivedCmd == null){
-                if (!ignoreErrors) Logger.warn("Received null/invalid response from Omicontrol")
+                if (!ignoreErrors) Logger.warn("Received null/invalid response from Omicontrol for command: $command")
                 runLater { onError() }
             } else {
                 // Logger.trace("Received OK response from Omicontrol!")

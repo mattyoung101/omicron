@@ -145,19 +145,20 @@ class CalibrationView : View() {
     private fun updateModel(function: String){
         // parse the expression
         Logger.debug("Setting model to: $function")
-        val tmpModel = ExpressionBuilder(function).variables("x").build()
 
         try {
+            val tmpModel = ExpressionBuilder(function).variables("x").build()
+            // evaluate a simple test case to make sure it actually works
             tmpModel.setVariable("x", 1.0).evaluate()
             model = tmpModel
             loadedModel = true
             ghostPoints.clear()
             Logger.debug("Model seems to be valid")
         } catch (e: Exception){
-            Logger.error("Model appears to be invalid")
+            Logger.error("Model appears to be invalid!")
             Logger.error(e)
-            Utils.showGenericAlert(Alert.AlertType.ERROR, "Details: $e",
-                "Model \"$function\" appears to be invalid.")
+            Utils.showGenericAlert(Alert.AlertType.ERROR, "Details: $e\n\nPlease check function arguments and" +
+                    " syntax are correct.", "Model \"$function\" appears to be invalid.")
             return
         }
     }
@@ -165,6 +166,7 @@ class CalibrationView : View() {
     override val root = vbox {
         setPrefSize(1600.0, 900.0)
         EVENT_BUS.register(this@CalibrationView)
+        setSendFrames(true)
 
         menubar {
             menu("File") {

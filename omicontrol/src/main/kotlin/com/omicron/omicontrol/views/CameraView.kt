@@ -259,6 +259,9 @@ class CameraView : View() {
 
                 selectBox.isDisable = false
             }, {
+                Utils.showGenericAlert(Alert.AlertType.ERROR, "Failed to update to new selected object.\n" +
+                        "If this persists please restart the SBC and try again.",
+                    "Communication failure")
                 selectBox.isDisable = false
             })
         }
@@ -351,6 +354,7 @@ class CameraView : View() {
     override val root = vbox {
         setPrefSize(1600.0, 900.0)
         EVENT_BUS.register(this@CameraView)
+        setSendFrames(true)
         
         menubar {
             menu("File") {
@@ -386,6 +390,13 @@ class CameraView : View() {
                         })
                     }
                     accelerator = KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN)
+                }
+                item("Calibrate camera"){
+                    setOnAction {
+                        Logger.info("Changing to camera calibration screen")
+                        EVENT_BUS.unregister(this@CameraView)
+                        Utils.transitionMetro(this@CameraView, CalibrationView())
+                    }
                 }
                 item("Save config"){
                     accelerator = KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN)
@@ -512,7 +523,7 @@ class CameraView : View() {
             alignment = Pos.CENTER
             button("Switch to field view"){
                 setOnAction {
-                    Logger.debug("Changing views")
+                    Logger.debug("Switching to field view")
                     EVENT_BUS.unregister(this@CameraView)
                     Utils.transitionMetro(this@CameraView, FieldView())
                 }
