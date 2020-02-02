@@ -1,6 +1,9 @@
 DebugFrame.defaultImage max_size:96000
 DebugFrame.ballThreshImage max_size:96000
 DebugFrame.linePoints max_count:512
+DebugFrame.dewarpedLinePoints max_count:512
+DebugFrame.robotPositions max_count:2
+DebugFrame.robotOrientations max_count:2
 DebugCommand.allThresholds max_count:5 fixed_count:true
 RDThreshold.min max_count:3 fixed_count:true
 RDThreshold.max max_count:3 fixed_count:true

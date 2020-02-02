@@ -18,6 +18,7 @@ import kotlin.system.exitProcess
 import com.omicron.omicontrol.field.Ball
 import com.omicron.omicontrol.field.Robot
 import javafx.scene.control.Label
+import javafx.scene.shape.Circle
 import org.apache.commons.io.FileUtils
 
 /**
@@ -26,14 +27,21 @@ import org.apache.commons.io.FileUtils
 class FieldView : View() {
     private lateinit var display: GraphicsContext
     private lateinit var bandwidthLabel: Label
+    private lateinit var selectedRobotLabel: Label
     private val fieldImage = Image("field_cropped_scaled.png")
     private val targetIcon = Image("target.png")
     private val robotImage = Image("robot.png")
+    private val robotUnknown = Image("robot_unknown.png")
+    private val robotSelected = Image("robot_selected.png")
     private val robots = listOf(
-        Robot(),
-        Robot()
+        Robot(0),
+        Robot(1)
     )
     private var selectedRobot: Robot? = null
+        set(value) {
+            selectedRobotLabel.text = value?.id?.toString() ?: "None"
+            field = value
+        }
     private var targetPos: Point2D? = null
     private val ball = Ball()
     private var bandwidthRecordingBegin = System.currentTimeMillis()
@@ -41,12 +49,13 @@ class FieldView : View() {
     init {
         reloadStylesheetsOnFocus()
         title = "Field View | Omicontrol"
+        robots[1].position = robots[1].position.add(30.0, 0.0)
     }
 
     @ExperimentalUnsignedTypes
     @Subscribe
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
-        // TODO set robot positions and ball position
+        BANDWIDTH += message.serializedSize
 
         runLater {
             display.fill = Color.BLACK
@@ -55,23 +64,31 @@ class FieldView : View() {
 
             // render robots
             for (robot in robots) {
-                if (robot.isPositionKnown) {
-                    val half = ROBOT_CANVAS_DIAMETER / 2.0
-                    val pos = robot.position.toCanvasPosition()
-                    display.drawImage(robotImage, pos.x - half, pos.y - half, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
-                }
+                val half = ROBOT_CANVAS_DIAMETER / 2.0
+                val pos = robot.position.toCanvasPosition()
+                val sprite = if (selectedRobot == robot) robotSelected else if (robot.isPositionKnown) robotImage else robotUnknown
+                display.drawImage(sprite, pos.x - half, pos.y - half, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
             }
 
             // render ball
-            if (ball.isPositionKnown) {
-                display.fill = Color.ORANGE
-                val pos = ball.position.toCanvasPosition()
-                display.fillOval(pos.x, pos.y, BALL_CANVAS_DIAMETER, BALL_CANVAS_DIAMETER)
-            }
+            display.fill = if (ball.isPositionKnown) Color.ORANGE else Color.GREY
+            val pos = ball.position.toCanvasPosition()
+            val half = BALL_CANVAS_DIAMETER / 2.0
+            display.fillOval(pos.x - half, pos.y - half, BALL_CANVAS_DIAMETER, BALL_CANVAS_DIAMETER)
 
             // render target
             if (targetPos != null) {
                 display.drawImage(targetIcon, targetPos!!.x - 16, targetPos!!.y - 16, 48.0, 48.0)
+            }
+
+            // draw line points
+            // TODO add raycast debug
+            for (point in message.dewarpedLinePointsList.take(message.dewarpedLinePointsCount)) {
+                display.lineWidth = 2.0
+                display.fill = Color.WHITE
+                val fieldPoint = Point2D(point.x.toDouble(), point.y.toDouble()).toCanvasPosition()
+                display.fillOval(fieldPoint.x, fieldPoint.y, 10.0, 10.0)
+                display.strokeOval(fieldPoint.x, fieldPoint.y, 10.0, 10.0)
             }
 
             // update labels
@@ -165,12 +182,34 @@ class FieldView : View() {
                     setOnMouseClicked {
                         val fieldCanvasPos = Point2D(it.x, it.y)
                         val fieldRealPos = fieldCanvasPos.toRealPosition()
-                        Logger.info("Mouse clicked at real: $fieldRealPos, canvas: $fieldCanvasPos, back to canvas: ${fieldRealPos.toCanvasPosition()}")
+                        Logger.info("Mouse clicked at real: $fieldRealPos, canvas: $fieldCanvasPos")
 
-                        // behaviour for this:
-                        // if clicking on the currently selected robot, deselect it
-                        // if robot is currently selected and clicked on field, set a target to that position and move there
-                        targetPos = Point2D(it.x, it.y)
+                        for (robot in robots.reversed()){
+                            val half = ROBOT_CANVAS_DIAMETER / 2.0
+                            val pos = robot.position.toCanvasPosition()
+
+                            if (pointInCircle(fieldCanvasPos, pos, half)){
+                                Logger.trace("Clicked on robot ${robot.id}")
+
+                                selectedRobot = if (selectedRobot == robot){
+                                    Logger.trace("Deselecting robot")
+                                    null
+                                } else {
+                                    Logger.trace("Selecting robot")
+                                    robot
+                                }
+                                return@setOnMouseClicked
+                            }
+                        }
+
+                        targetPos = if (targetPos != null && targetPos!!.distance(fieldCanvasPos) <= 16.0){
+                            // user clicked on the same position, deslect target
+                            null
+                        } else {
+                            // new position to move target to
+                            fieldCanvasPos
+                        }
+
                     }
                 }
                 alignment = Pos.TOP_RIGHT
@@ -190,7 +229,7 @@ class FieldView : View() {
                     fieldset {
                         field {
                             label("Selected robot:"){ addClass(Styles.boldLabel) }
-                            label("None")
+                            selectedRobotLabel = label("None")
                         }
                     }
                     fieldset {
@@ -254,7 +293,7 @@ class FieldView : View() {
                                     if (checkSelected()){
                                         val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
                                             messageId = DebugCommands.CMD_MOVE_HALT.ordinal
-                                            robotId = robots.indexOf(selectedRobot)
+                                            robotId = selectedRobot!!.id
                                         }.build()
                                         CONNECTION_MANAGER.dispatchCommand(cmd)
                                     }
@@ -265,7 +304,7 @@ class FieldView : View() {
                                     if (checkSelected()){
                                         val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
                                             messageId = DebugCommands.CMD_MOVE_RESUME.ordinal
-                                            robotId = robots.indexOf(selectedRobot)
+                                            robotId = selectedRobot!!.id
                                         }.build()
                                         CONNECTION_MANAGER.dispatchCommand(cmd)
                                     }
@@ -280,7 +319,7 @@ class FieldView : View() {
                                         // FIXME ask for orientation here
                                         val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
                                             messageId = DebugCommands.CMD_MOVE_ORIENT.ordinal
-                                            robotId = robots.indexOf(selectedRobot)
+                                            robotId = selectedRobot!!.id
                                             orientation = 0.0f
                                         }.build()
                                         CONNECTION_MANAGER.dispatchCommand(cmd)
@@ -304,7 +343,7 @@ class FieldView : View() {
                         field {
                             button("Switch to camera view"){
                                 setOnAction {
-                                    Logger.debug("Changing views")
+                                    Logger.debug("Changing views to CameraView via button")
                                     EVENT_BUS.unregister(this@FieldView)
                                     Utils.transitionMetro(this@FieldView, CameraView())
                                 }

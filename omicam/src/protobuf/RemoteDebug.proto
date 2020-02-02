@@ -46,6 +46,12 @@ message DebugFrame {
     repeated RDPoint linePoints = 10;
     // mirror radius used by localiser
     int32 mirrorRadius = 11;
+    // position of robots on the field
+    repeated RDPoint robotPositions = 12;
+    // orientations of robots on the field
+    repeated float robotOrientations = 13;
+    // dewarped line points from the localiser
+    repeated RDPoint dewarpedLinePoints = 14;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

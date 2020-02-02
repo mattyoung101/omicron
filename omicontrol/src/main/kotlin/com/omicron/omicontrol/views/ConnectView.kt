@@ -14,6 +14,7 @@ import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import org.tinylog.kotlin.Logger
 import tornadofx.*
+import java.util.prefs.Preferences
 import kotlin.system.exitProcess
 
 class ConnectView : View() {
@@ -22,6 +23,7 @@ class ConnectView : View() {
         reloadStylesheetsOnFocus()
         title = "Connect to Robot | Omicontrol"
     }
+    private val prefs = Preferences.userRoot().node("Omicontrol")
 
     override val root = vbox {
         setPrefSize(1600.0, 900.0)
@@ -80,7 +82,8 @@ class ConnectView : View() {
                             "Camera view",
                             "Field view",
                             "Calibration view")
-                        selectionModel.selectFirst()
+                        val last = prefs.get("LastViewSelected", "Camera view")
+                        selectionModel.select(last)
                     }
                     alignment = Pos.CENTER
                 }
@@ -101,6 +104,7 @@ class ConnectView : View() {
                         setOnAction {
                             try {
                                 CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
+                                prefs.put("LastViewSelected", viewBox.value)
 
                                 when (viewBox.value){
                                     "Camera view" -> Utils.transitionMetro(this@ConnectView, CameraView())

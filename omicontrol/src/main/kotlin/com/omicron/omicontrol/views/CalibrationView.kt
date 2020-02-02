@@ -323,7 +323,7 @@ class CalibrationView : View() {
             button("Switch to camera view"){
 
                 setOnAction {
-                    Logger.debug("Changing views")
+                    Logger.debug("Changing views to CameraView via button")
                     EVENT_BUS.unregister(this@CalibrationView)
                     Utils.transitionMetro(this@CalibrationView, CameraView())
                 }

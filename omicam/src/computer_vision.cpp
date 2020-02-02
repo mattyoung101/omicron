@@ -117,7 +117,7 @@ static auto cv_thread(void *arg) -> void *{
     uint32_t frameCounter = 0;
     log_trace("Vision thread started");
 
-    Mat ogFrame = imread("../field.png");
+    Mat ogFrame = imread("../field4.png");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");

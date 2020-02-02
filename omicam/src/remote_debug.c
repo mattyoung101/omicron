@@ -201,8 +201,10 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     RDRect cropRect = {0, 0, videoWidth, videoHeight};
 #endif
     msg.cropRect = cropRect;
-    uint32_t linePointsSize = localiser_remote_get_points(msg.linePoints, 512);
+    uint32_t linePointsSize = localiser_remote_get_points(msg.linePoints, 512, false);
+    uint32_t dewarpedLineSize = localiser_remote_get_points(msg.dewarpedLinePoints, 512, true);
     msg.linePoints_count = linePointsSize;
+    msg.dewarpedLinePoints_count = dewarpedLineSize;
     msg.mirrorRadius = visionMirrorRadius;
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;

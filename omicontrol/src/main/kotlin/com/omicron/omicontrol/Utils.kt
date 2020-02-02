@@ -1,5 +1,6 @@
 package com.omicron.omicontrol
 
+import RemoteDebug
 import com.omicron.omicontrol.views.ConnectView
 import javafx.application.Platform
 import javafx.geometry.Point2D
@@ -15,7 +16,7 @@ import tornadofx.ViewTransition
 // TODO remove this class and just put all methods in the global scope
 object Utils {
     fun transitionMetro(from: View, to: View) {
-        from.replaceWith(to, transition = ViewTransition.Metro(Duration.seconds(1.2)))
+        from.replaceWith(to, transition = ViewTransition.Metro(Duration.seconds(1.0)))
     }
 
     fun showGenericAlert(alertType: Alert.AlertType, contentText: String, headerText: String, titleText: String = "Omicontrol"){
@@ -79,14 +80,6 @@ object Utils {
         EVENT_BUS.unregister(currentView)
         transitionMetro(currentView, ConnectView())
     }
-
-    /**
-     * Converts a field measurement in cm to a screen pixels one for the canvas
-     */
-    fun fieldToScreen(measurement: Double): Double {
-        // TODO MAKE THIS PIECE OF FUCKING SHIT WORK
-        return 0.0
-    }
 }
 
 /**
@@ -120,4 +113,10 @@ fun setSendFrames(sendFrames: Boolean){
         isEnabled = sendFrames
     }.build()
     CONNECTION_MANAGER.dispatchCommand(msg)
+}
+
+fun pointInCircle(point: Point2D, circlePos: Point2D, circleRadius: Double): Boolean {
+    val dx = circlePos.x - point.x
+    val dy = circlePos.y - point.y
+    return dx * dx + dy * dy <= circleRadius * circleRadius
 }

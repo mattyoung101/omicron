@@ -2026,6 +2026,119 @@ public final class RemoteDebug {
      * <code>optional int32 mirrorRadius = 11;</code>
      */
     int getMirrorRadius();
+
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    java.util.List<RemoteDebug.RDPoint> 
+        getRobotPositionsList();
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    RemoteDebug.RDPoint getRobotPositions(int index);
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    int getRobotPositionsCount();
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+        getRobotPositionsOrBuilderList();
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    RemoteDebug.RDPointOrBuilder getRobotPositionsOrBuilder(
+        int index);
+
+    /**
+     * <pre>
+     * orientations of robots on the field
+     * </pre>
+     *
+     * <code>repeated float robotOrientations = 13;</code>
+     */
+    java.util.List<java.lang.Float> getRobotOrientationsList();
+    /**
+     * <pre>
+     * orientations of robots on the field
+     * </pre>
+     *
+     * <code>repeated float robotOrientations = 13;</code>
+     */
+    int getRobotOrientationsCount();
+    /**
+     * <pre>
+     * orientations of robots on the field
+     * </pre>
+     *
+     * <code>repeated float robotOrientations = 13;</code>
+     */
+    float getRobotOrientations(int index);
+
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    java.util.List<RemoteDebug.RDPoint> 
+        getDewarpedLinePointsList();
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    RemoteDebug.RDPoint getDewarpedLinePoints(int index);
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    int getDewarpedLinePointsCount();
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+        getDewarpedLinePointsOrBuilderList();
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    RemoteDebug.RDPointOrBuilder getDewarpedLinePointsOrBuilder(
+        int index);
   }
   /**
    * <pre>
@@ -2053,6 +2166,9 @@ public final class RemoteDebug {
       frameHeight_ = 0;
       linePoints_ = java.util.Collections.emptyList();
       mirrorRadius_ = 0;
+      robotPositions_ = java.util.Collections.emptyList();
+      robotOrientations_ = java.util.Collections.emptyList();
+      dewarpedLinePoints_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -2163,6 +2279,45 @@ public final class RemoteDebug {
               mirrorRadius_ = input.readInt32();
               break;
             }
+            case 98: {
+              if (!((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
+                robotPositions_ = new java.util.ArrayList<RemoteDebug.RDPoint>();
+                mutable_bitField0_ |= 0x00000800;
+              }
+              robotPositions_.add(
+                  input.readMessage(RemoteDebug.RDPoint.parser(), extensionRegistry));
+              break;
+            }
+            case 109: {
+              if (!((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+                robotOrientations_ = new java.util.ArrayList<java.lang.Float>();
+                mutable_bitField0_ |= 0x00001000;
+              }
+              robotOrientations_.add(input.readFloat());
+              break;
+            }
+            case 106: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00001000) == 0x00001000) && input.getBytesUntilLimit() > 0) {
+                robotOrientations_ = new java.util.ArrayList<java.lang.Float>();
+                mutable_bitField0_ |= 0x00001000;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                robotOrientations_.add(input.readFloat());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 114: {
+              if (!((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
+                dewarpedLinePoints_ = new java.util.ArrayList<RemoteDebug.RDPoint>();
+                mutable_bitField0_ |= 0x00002000;
+              }
+              dewarpedLinePoints_.add(
+                  input.readMessage(RemoteDebug.RDPoint.parser(), extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -2173,6 +2328,15 @@ public final class RemoteDebug {
       } finally {
         if (((mutable_bitField0_ & 0x00000200) == 0x00000200)) {
           linePoints_ = java.util.Collections.unmodifiableList(linePoints_);
+        }
+        if (((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
+          robotPositions_ = java.util.Collections.unmodifiableList(robotPositions_);
+        }
+        if (((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
+          robotOrientations_ = java.util.Collections.unmodifiableList(robotOrientations_);
+        }
+        if (((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
+          dewarpedLinePoints_ = java.util.Collections.unmodifiableList(dewarpedLinePoints_);
         }
         makeExtensionsImmutable();
       }
@@ -2435,6 +2599,151 @@ public final class RemoteDebug {
       return mirrorRadius_;
     }
 
+    public static final int ROBOTPOSITIONS_FIELD_NUMBER = 12;
+    private java.util.List<RemoteDebug.RDPoint> robotPositions_;
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    public java.util.List<RemoteDebug.RDPoint> getRobotPositionsList() {
+      return robotPositions_;
+    }
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+        getRobotPositionsOrBuilderList() {
+      return robotPositions_;
+    }
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    public int getRobotPositionsCount() {
+      return robotPositions_.size();
+    }
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    public RemoteDebug.RDPoint getRobotPositions(int index) {
+      return robotPositions_.get(index);
+    }
+    /**
+     * <pre>
+     * position of robots on the field
+     * </pre>
+     *
+     * <code>repeated .RDPoint robotPositions = 12;</code>
+     */
+    public RemoteDebug.RDPointOrBuilder getRobotPositionsOrBuilder(
+        int index) {
+      return robotPositions_.get(index);
+    }
+
+    public static final int ROBOTORIENTATIONS_FIELD_NUMBER = 13;
+    private java.util.List<java.lang.Float> robotOrientations_;
+    /**
+     * <pre>
+     * orientations of robots on the field
+     * </pre>
+     *
+     * <code>repeated float robotOrientations = 13;</code>
+     */
+    public java.util.List<java.lang.Float>
+        getRobotOrientationsList() {
+      return robotOrientations_;
+    }
+    /**
+     * <pre>
+     * orientations of robots on the field
+     * </pre>
+     *
+     * <code>repeated float robotOrientations = 13;</code>
+     */
+    public int getRobotOrientationsCount() {
+      return robotOrientations_.size();
+    }
+    /**
+     * <pre>
+     * orientations of robots on the field
+     * </pre>
+     *
+     * <code>repeated float robotOrientations = 13;</code>
+     */
+    public float getRobotOrientations(int index) {
+      return robotOrientations_.get(index);
+    }
+    private int robotOrientationsMemoizedSerializedSize = -1;
+
+    public static final int DEWARPEDLINEPOINTS_FIELD_NUMBER = 14;
+    private java.util.List<RemoteDebug.RDPoint> dewarpedLinePoints_;
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    public java.util.List<RemoteDebug.RDPoint> getDewarpedLinePointsList() {
+      return dewarpedLinePoints_;
+    }
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+        getDewarpedLinePointsOrBuilderList() {
+      return dewarpedLinePoints_;
+    }
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    public int getDewarpedLinePointsCount() {
+      return dewarpedLinePoints_.size();
+    }
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    public RemoteDebug.RDPoint getDewarpedLinePoints(int index) {
+      return dewarpedLinePoints_.get(index);
+    }
+    /**
+     * <pre>
+     * dewarped line points from the localiser
+     * </pre>
+     *
+     * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+     */
+    public RemoteDebug.RDPointOrBuilder getDewarpedLinePointsOrBuilder(
+        int index) {
+      return dewarpedLinePoints_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2447,6 +2756,7 @@ public final class RemoteDebug {
 
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
+      getSerializedSize();
       if (!defaultImage_.isEmpty()) {
         output.writeBytes(1, defaultImage_);
       }
@@ -2479,6 +2789,19 @@ public final class RemoteDebug {
       }
       if (mirrorRadius_ != 0) {
         output.writeInt32(11, mirrorRadius_);
+      }
+      for (int i = 0; i < robotPositions_.size(); i++) {
+        output.writeMessage(12, robotPositions_.get(i));
+      }
+      if (getRobotOrientationsList().size() > 0) {
+        output.writeUInt32NoTag(106);
+        output.writeUInt32NoTag(robotOrientationsMemoizedSerializedSize);
+      }
+      for (int i = 0; i < robotOrientations_.size(); i++) {
+        output.writeFloatNoTag(robotOrientations_.get(i));
+      }
+      for (int i = 0; i < dewarpedLinePoints_.size(); i++) {
+        output.writeMessage(14, dewarpedLinePoints_.get(i));
       }
     }
 
@@ -2531,6 +2854,25 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(11, mirrorRadius_);
       }
+      for (int i = 0; i < robotPositions_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(12, robotPositions_.get(i));
+      }
+      {
+        int dataSize = 0;
+        dataSize = 4 * getRobotOrientationsList().size();
+        size += dataSize;
+        if (!getRobotOrientationsList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        robotOrientationsMemoizedSerializedSize = dataSize;
+      }
+      for (int i = 0; i < dewarpedLinePoints_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(14, dewarpedLinePoints_.get(i));
+      }
       memoizedSize = size;
       return size;
     }
@@ -2580,6 +2922,12 @@ public final class RemoteDebug {
           .equals(other.getLinePointsList());
       result = result && (getMirrorRadius()
           == other.getMirrorRadius());
+      result = result && getRobotPositionsList()
+          .equals(other.getRobotPositionsList());
+      result = result && getRobotOrientationsList()
+          .equals(other.getRobotOrientationsList());
+      result = result && getDewarpedLinePointsList()
+          .equals(other.getDewarpedLinePointsList());
       return result;
     }
 
@@ -2621,6 +2969,18 @@ public final class RemoteDebug {
       }
       hash = (37 * hash) + MIRRORRADIUS_FIELD_NUMBER;
       hash = (53 * hash) + getMirrorRadius();
+      if (getRobotPositionsCount() > 0) {
+        hash = (37 * hash) + ROBOTPOSITIONS_FIELD_NUMBER;
+        hash = (53 * hash) + getRobotPositionsList().hashCode();
+      }
+      if (getRobotOrientationsCount() > 0) {
+        hash = (37 * hash) + ROBOTORIENTATIONS_FIELD_NUMBER;
+        hash = (53 * hash) + getRobotOrientationsList().hashCode();
+      }
+      if (getDewarpedLinePointsCount() > 0) {
+        hash = (37 * hash) + DEWARPEDLINEPOINTS_FIELD_NUMBER;
+        hash = (53 * hash) + getDewarpedLinePointsList().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2742,6 +3102,8 @@ public final class RemoteDebug {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getLinePointsFieldBuilder();
+          getRobotPositionsFieldBuilder();
+          getDewarpedLinePointsFieldBuilder();
         }
       }
       public Builder clear() {
@@ -2784,6 +3146,20 @@ public final class RemoteDebug {
         }
         mirrorRadius_ = 0;
 
+        if (robotPositionsBuilder_ == null) {
+          robotPositions_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000800);
+        } else {
+          robotPositionsBuilder_.clear();
+        }
+        robotOrientations_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00001000);
+        if (dewarpedLinePointsBuilder_ == null) {
+          dewarpedLinePoints_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00002000);
+        } else {
+          dewarpedLinePointsBuilder_.clear();
+        }
         return this;
       }
 
@@ -2839,6 +3215,29 @@ public final class RemoteDebug {
           result.linePoints_ = linePointsBuilder_.build();
         }
         result.mirrorRadius_ = mirrorRadius_;
+        if (robotPositionsBuilder_ == null) {
+          if (((bitField0_ & 0x00000800) == 0x00000800)) {
+            robotPositions_ = java.util.Collections.unmodifiableList(robotPositions_);
+            bitField0_ = (bitField0_ & ~0x00000800);
+          }
+          result.robotPositions_ = robotPositions_;
+        } else {
+          result.robotPositions_ = robotPositionsBuilder_.build();
+        }
+        if (((bitField0_ & 0x00001000) == 0x00001000)) {
+          robotOrientations_ = java.util.Collections.unmodifiableList(robotOrientations_);
+          bitField0_ = (bitField0_ & ~0x00001000);
+        }
+        result.robotOrientations_ = robotOrientations_;
+        if (dewarpedLinePointsBuilder_ == null) {
+          if (((bitField0_ & 0x00002000) == 0x00002000)) {
+            dewarpedLinePoints_ = java.util.Collections.unmodifiableList(dewarpedLinePoints_);
+            bitField0_ = (bitField0_ & ~0x00002000);
+          }
+          result.dewarpedLinePoints_ = dewarpedLinePoints_;
+        } else {
+          result.dewarpedLinePoints_ = dewarpedLinePointsBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -2936,6 +3335,68 @@ public final class RemoteDebug {
         }
         if (other.getMirrorRadius() != 0) {
           setMirrorRadius(other.getMirrorRadius());
+        }
+        if (robotPositionsBuilder_ == null) {
+          if (!other.robotPositions_.isEmpty()) {
+            if (robotPositions_.isEmpty()) {
+              robotPositions_ = other.robotPositions_;
+              bitField0_ = (bitField0_ & ~0x00000800);
+            } else {
+              ensureRobotPositionsIsMutable();
+              robotPositions_.addAll(other.robotPositions_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.robotPositions_.isEmpty()) {
+            if (robotPositionsBuilder_.isEmpty()) {
+              robotPositionsBuilder_.dispose();
+              robotPositionsBuilder_ = null;
+              robotPositions_ = other.robotPositions_;
+              bitField0_ = (bitField0_ & ~0x00000800);
+              robotPositionsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getRobotPositionsFieldBuilder() : null;
+            } else {
+              robotPositionsBuilder_.addAllMessages(other.robotPositions_);
+            }
+          }
+        }
+        if (!other.robotOrientations_.isEmpty()) {
+          if (robotOrientations_.isEmpty()) {
+            robotOrientations_ = other.robotOrientations_;
+            bitField0_ = (bitField0_ & ~0x00001000);
+          } else {
+            ensureRobotOrientationsIsMutable();
+            robotOrientations_.addAll(other.robotOrientations_);
+          }
+          onChanged();
+        }
+        if (dewarpedLinePointsBuilder_ == null) {
+          if (!other.dewarpedLinePoints_.isEmpty()) {
+            if (dewarpedLinePoints_.isEmpty()) {
+              dewarpedLinePoints_ = other.dewarpedLinePoints_;
+              bitField0_ = (bitField0_ & ~0x00002000);
+            } else {
+              ensureDewarpedLinePointsIsMutable();
+              dewarpedLinePoints_.addAll(other.dewarpedLinePoints_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.dewarpedLinePoints_.isEmpty()) {
+            if (dewarpedLinePointsBuilder_.isEmpty()) {
+              dewarpedLinePointsBuilder_.dispose();
+              dewarpedLinePointsBuilder_ = null;
+              dewarpedLinePoints_ = other.dewarpedLinePoints_;
+              bitField0_ = (bitField0_ & ~0x00002000);
+              dewarpedLinePointsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getDewarpedLinePointsFieldBuilder() : null;
+            } else {
+              dewarpedLinePointsBuilder_.addAllMessages(other.dewarpedLinePoints_);
+            }
+          }
         }
         onChanged();
         return this;
@@ -4005,6 +4466,724 @@ public final class RemoteDebug {
         mirrorRadius_ = 0;
         onChanged();
         return this;
+      }
+
+      private java.util.List<RemoteDebug.RDPoint> robotPositions_ =
+        java.util.Collections.emptyList();
+      private void ensureRobotPositionsIsMutable() {
+        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
+          robotPositions_ = new java.util.ArrayList<RemoteDebug.RDPoint>(robotPositions_);
+          bitField0_ |= 0x00000800;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> robotPositionsBuilder_;
+
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public java.util.List<RemoteDebug.RDPoint> getRobotPositionsList() {
+        if (robotPositionsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(robotPositions_);
+        } else {
+          return robotPositionsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public int getRobotPositionsCount() {
+        if (robotPositionsBuilder_ == null) {
+          return robotPositions_.size();
+        } else {
+          return robotPositionsBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public RemoteDebug.RDPoint getRobotPositions(int index) {
+        if (robotPositionsBuilder_ == null) {
+          return robotPositions_.get(index);
+        } else {
+          return robotPositionsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public Builder setRobotPositions(
+          int index, RemoteDebug.RDPoint value) {
+        if (robotPositionsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRobotPositionsIsMutable();
+          robotPositions_.set(index, value);
+          onChanged();
+        } else {
+          robotPositionsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public Builder setRobotPositions(
+          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+        if (robotPositionsBuilder_ == null) {
+          ensureRobotPositionsIsMutable();
+          robotPositions_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          robotPositionsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public Builder addRobotPositions(RemoteDebug.RDPoint value) {
+        if (robotPositionsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRobotPositionsIsMutable();
+          robotPositions_.add(value);
+          onChanged();
+        } else {
+          robotPositionsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public Builder addRobotPositions(
+          int index, RemoteDebug.RDPoint value) {
+        if (robotPositionsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureRobotPositionsIsMutable();
+          robotPositions_.add(index, value);
+          onChanged();
+        } else {
+          robotPositionsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public Builder addRobotPositions(
+          RemoteDebug.RDPoint.Builder builderForValue) {
+        if (robotPositionsBuilder_ == null) {
+          ensureRobotPositionsIsMutable();
+          robotPositions_.add(builderForValue.build());
+          onChanged();
+        } else {
+          robotPositionsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public Builder addRobotPositions(
+          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+        if (robotPositionsBuilder_ == null) {
+          ensureRobotPositionsIsMutable();
+          robotPositions_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          robotPositionsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public Builder addAllRobotPositions(
+          java.lang.Iterable<? extends RemoteDebug.RDPoint> values) {
+        if (robotPositionsBuilder_ == null) {
+          ensureRobotPositionsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, robotPositions_);
+          onChanged();
+        } else {
+          robotPositionsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public Builder clearRobotPositions() {
+        if (robotPositionsBuilder_ == null) {
+          robotPositions_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000800);
+          onChanged();
+        } else {
+          robotPositionsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public Builder removeRobotPositions(int index) {
+        if (robotPositionsBuilder_ == null) {
+          ensureRobotPositionsIsMutable();
+          robotPositions_.remove(index);
+          onChanged();
+        } else {
+          robotPositionsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public RemoteDebug.RDPoint.Builder getRobotPositionsBuilder(
+          int index) {
+        return getRobotPositionsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public RemoteDebug.RDPointOrBuilder getRobotPositionsOrBuilder(
+          int index) {
+        if (robotPositionsBuilder_ == null) {
+          return robotPositions_.get(index);  } else {
+          return robotPositionsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+           getRobotPositionsOrBuilderList() {
+        if (robotPositionsBuilder_ != null) {
+          return robotPositionsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(robotPositions_);
+        }
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public RemoteDebug.RDPoint.Builder addRobotPositionsBuilder() {
+        return getRobotPositionsFieldBuilder().addBuilder(
+            RemoteDebug.RDPoint.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public RemoteDebug.RDPoint.Builder addRobotPositionsBuilder(
+          int index) {
+        return getRobotPositionsFieldBuilder().addBuilder(
+            index, RemoteDebug.RDPoint.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * position of robots on the field
+       * </pre>
+       *
+       * <code>repeated .RDPoint robotPositions = 12;</code>
+       */
+      public java.util.List<RemoteDebug.RDPoint.Builder> 
+           getRobotPositionsBuilderList() {
+        return getRobotPositionsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> 
+          getRobotPositionsFieldBuilder() {
+        if (robotPositionsBuilder_ == null) {
+          robotPositionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder>(
+                  robotPositions_,
+                  ((bitField0_ & 0x00000800) == 0x00000800),
+                  getParentForChildren(),
+                  isClean());
+          robotPositions_ = null;
+        }
+        return robotPositionsBuilder_;
+      }
+
+      private java.util.List<java.lang.Float> robotOrientations_ = java.util.Collections.emptyList();
+      private void ensureRobotOrientationsIsMutable() {
+        if (!((bitField0_ & 0x00001000) == 0x00001000)) {
+          robotOrientations_ = new java.util.ArrayList<java.lang.Float>(robotOrientations_);
+          bitField0_ |= 0x00001000;
+         }
+      }
+      /**
+       * <pre>
+       * orientations of robots on the field
+       * </pre>
+       *
+       * <code>repeated float robotOrientations = 13;</code>
+       */
+      public java.util.List<java.lang.Float>
+          getRobotOrientationsList() {
+        return java.util.Collections.unmodifiableList(robotOrientations_);
+      }
+      /**
+       * <pre>
+       * orientations of robots on the field
+       * </pre>
+       *
+       * <code>repeated float robotOrientations = 13;</code>
+       */
+      public int getRobotOrientationsCount() {
+        return robotOrientations_.size();
+      }
+      /**
+       * <pre>
+       * orientations of robots on the field
+       * </pre>
+       *
+       * <code>repeated float robotOrientations = 13;</code>
+       */
+      public float getRobotOrientations(int index) {
+        return robotOrientations_.get(index);
+      }
+      /**
+       * <pre>
+       * orientations of robots on the field
+       * </pre>
+       *
+       * <code>repeated float robotOrientations = 13;</code>
+       */
+      public Builder setRobotOrientations(
+          int index, float value) {
+        ensureRobotOrientationsIsMutable();
+        robotOrientations_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * orientations of robots on the field
+       * </pre>
+       *
+       * <code>repeated float robotOrientations = 13;</code>
+       */
+      public Builder addRobotOrientations(float value) {
+        ensureRobotOrientationsIsMutable();
+        robotOrientations_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * orientations of robots on the field
+       * </pre>
+       *
+       * <code>repeated float robotOrientations = 13;</code>
+       */
+      public Builder addAllRobotOrientations(
+          java.lang.Iterable<? extends java.lang.Float> values) {
+        ensureRobotOrientationsIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, robotOrientations_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * orientations of robots on the field
+       * </pre>
+       *
+       * <code>repeated float robotOrientations = 13;</code>
+       */
+      public Builder clearRobotOrientations() {
+        robotOrientations_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00001000);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<RemoteDebug.RDPoint> dewarpedLinePoints_ =
+        java.util.Collections.emptyList();
+      private void ensureDewarpedLinePointsIsMutable() {
+        if (!((bitField0_ & 0x00002000) == 0x00002000)) {
+          dewarpedLinePoints_ = new java.util.ArrayList<RemoteDebug.RDPoint>(dewarpedLinePoints_);
+          bitField0_ |= 0x00002000;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> dewarpedLinePointsBuilder_;
+
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public java.util.List<RemoteDebug.RDPoint> getDewarpedLinePointsList() {
+        if (dewarpedLinePointsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(dewarpedLinePoints_);
+        } else {
+          return dewarpedLinePointsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public int getDewarpedLinePointsCount() {
+        if (dewarpedLinePointsBuilder_ == null) {
+          return dewarpedLinePoints_.size();
+        } else {
+          return dewarpedLinePointsBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public RemoteDebug.RDPoint getDewarpedLinePoints(int index) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          return dewarpedLinePoints_.get(index);
+        } else {
+          return dewarpedLinePointsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public Builder setDewarpedLinePoints(
+          int index, RemoteDebug.RDPoint value) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDewarpedLinePointsIsMutable();
+          dewarpedLinePoints_.set(index, value);
+          onChanged();
+        } else {
+          dewarpedLinePointsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public Builder setDewarpedLinePoints(
+          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          ensureDewarpedLinePointsIsMutable();
+          dewarpedLinePoints_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          dewarpedLinePointsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public Builder addDewarpedLinePoints(RemoteDebug.RDPoint value) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDewarpedLinePointsIsMutable();
+          dewarpedLinePoints_.add(value);
+          onChanged();
+        } else {
+          dewarpedLinePointsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public Builder addDewarpedLinePoints(
+          int index, RemoteDebug.RDPoint value) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureDewarpedLinePointsIsMutable();
+          dewarpedLinePoints_.add(index, value);
+          onChanged();
+        } else {
+          dewarpedLinePointsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public Builder addDewarpedLinePoints(
+          RemoteDebug.RDPoint.Builder builderForValue) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          ensureDewarpedLinePointsIsMutable();
+          dewarpedLinePoints_.add(builderForValue.build());
+          onChanged();
+        } else {
+          dewarpedLinePointsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public Builder addDewarpedLinePoints(
+          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          ensureDewarpedLinePointsIsMutable();
+          dewarpedLinePoints_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          dewarpedLinePointsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public Builder addAllDewarpedLinePoints(
+          java.lang.Iterable<? extends RemoteDebug.RDPoint> values) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          ensureDewarpedLinePointsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, dewarpedLinePoints_);
+          onChanged();
+        } else {
+          dewarpedLinePointsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public Builder clearDewarpedLinePoints() {
+        if (dewarpedLinePointsBuilder_ == null) {
+          dewarpedLinePoints_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00002000);
+          onChanged();
+        } else {
+          dewarpedLinePointsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public Builder removeDewarpedLinePoints(int index) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          ensureDewarpedLinePointsIsMutable();
+          dewarpedLinePoints_.remove(index);
+          onChanged();
+        } else {
+          dewarpedLinePointsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public RemoteDebug.RDPoint.Builder getDewarpedLinePointsBuilder(
+          int index) {
+        return getDewarpedLinePointsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public RemoteDebug.RDPointOrBuilder getDewarpedLinePointsOrBuilder(
+          int index) {
+        if (dewarpedLinePointsBuilder_ == null) {
+          return dewarpedLinePoints_.get(index);  } else {
+          return dewarpedLinePointsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+           getDewarpedLinePointsOrBuilderList() {
+        if (dewarpedLinePointsBuilder_ != null) {
+          return dewarpedLinePointsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(dewarpedLinePoints_);
+        }
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public RemoteDebug.RDPoint.Builder addDewarpedLinePointsBuilder() {
+        return getDewarpedLinePointsFieldBuilder().addBuilder(
+            RemoteDebug.RDPoint.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public RemoteDebug.RDPoint.Builder addDewarpedLinePointsBuilder(
+          int index) {
+        return getDewarpedLinePointsFieldBuilder().addBuilder(
+            index, RemoteDebug.RDPoint.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * dewarped line points from the localiser
+       * </pre>
+       *
+       * <code>repeated .RDPoint dewarpedLinePoints = 14;</code>
+       */
+      public java.util.List<RemoteDebug.RDPoint.Builder> 
+           getDewarpedLinePointsBuilderList() {
+        return getDewarpedLinePointsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> 
+          getDewarpedLinePointsFieldBuilder() {
+        if (dewarpedLinePointsBuilder_ == null) {
+          dewarpedLinePointsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder>(
+                  dewarpedLinePoints_,
+                  ((bitField0_ & 0x00002000) == 0x00002000),
+                  getParentForChildren(),
+                  isClean());
+          dewarpedLinePoints_ = null;
+        }
+        return dewarpedLinePointsBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -6796,23 +7975,25 @@ public final class RemoteDebug {
       "\n\021RemoteDebug.proto\"=\n\006RDRect\022\t\n\001x\030\001 \001(\005" +
       "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
       "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\'\n\013R" +
-      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\220\002\n" +
+      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\363\002\n" +
       "\nDebugFrame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017bal" +
       "lThreshImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022" +
       "\031\n\010ballRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentro" +
       "id\030\005 \001(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframe" +
       "Width\030\007 \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010crop" +
       "Rect\030\t \001(\0132\007.RDRect\022\034\n\nlinePoints\030\n \003(\0132",
-      "\010.RDPoint\022\024\n\014mirrorRadius\030\013 \001(\005\"\341\001\n\014Debu" +
-      "gCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords\030\002 " +
-      "\001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n\ral" +
-      "lThresholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010objec" +
-      "tId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourChann" +
-      "el\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robotId\030\t \001(\005" +
-      "\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005fra" +
-      "me\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r" +
-      ".DebugCommand\022\024\n\014whichMessage\030\003 \001(\005b\006pro" +
-      "to3"
+      "\010.RDPoint\022\024\n\014mirrorRadius\030\013 \001(\005\022 \n\016robot" +
+      "Positions\030\014 \003(\0132\010.RDPoint\022\031\n\021robotOrient" +
+      "ations\030\r \003(\002\022$\n\022dewarpedLinePoints\030\016 \003(\013" +
+      "2\010.RDPoint\"\341\001\n\014DebugCommand\022\021\n\tmessageId" +
+      "\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orie" +
+      "ntation\030\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.R" +
+      "DThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006" +
+      " \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001" +
+      "(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^" +
+      "\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame",
+      "\022\036\n\007command\030\002 \001(\0132\r.DebugCommand\022\024\n\014whic" +
+      "hMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -6849,7 +8030,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "LinePoints", "MirrorRadius", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "LinePoints", "MirrorRadius", "RobotPositions", "RobotOrientations", "DewarpedLinePoints", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(4);
     internal_static_DebugCommand_fieldAccessorTable = new

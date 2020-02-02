@@ -147,10 +147,11 @@ static void *work_thread(void *arg){
         // 2. dewarp points based on calculated mirror model to get cm field coord, then rotate based on robot's real orientation
         for (size_t i = 0; i < da_count(linePoints); i++){
             struct vec2 point = da_get(linePoints, i);
+            point.x -= entry->width / 2.0;
+            point.y -= entry->height / 2.0;
 
             // 2.1. convert the point to polar coordinates to apply dewarp
-            struct vec2 origin = {entry->width / 2.0, entry->height / 2.0}; // centre of robot on image in pixel coords
-            double r = utils_camera_dewarp(svec2_distance(origin, point));
+            double r = utils_camera_dewarp(svec2_length(point));
             double theta = svec2_angle(point);
 
             // 2.2. convert back to cartesian and rotate
@@ -239,16 +240,18 @@ void localiser_post(uint8_t *frame, int32_t width, int32_t height){
     }
 }
 
-uint32_t localiser_remote_get_points(RDPoint *array, size_t arraySize){
-    if (da_count(linePoints) > arraySize){
+uint32_t localiser_remote_get_points(RDPoint *array, size_t arraySize, bool dewarped){
+    vec2_array_t arr = dewarped ? correctedLinePoints : linePoints;
+
+    if (da_count(arr) > arraySize){
         log_warn("Line points size overflow. Please increase the max_count for linePoints in RemoteDebug.options.");
     }
 
     // this is to stop it from overflowing the Protobuf fixed size buffer
-    int32_t size = MIN(arraySize, da_count(linePoints));
+    int32_t size = MIN(arraySize, da_count(arr));
 
     for (int i = 0; i < size; i++){
-        struct vec2 point = da_get(linePoints, i);
+        struct vec2 point = da_get(arr, i);
         array[i].x = ROUND2INT(point.x);
         array[i].y = ROUND2INT(point.y);
     }
