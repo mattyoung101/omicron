@@ -151,6 +151,8 @@ static auto cv_thread(void *arg) -> void *{
     log_info("Frame size: %dx%d (cropping enabled: %s)", videoWidth, videoHeight, VISION_CROP_ENABLED ? "YES" : "NO");
     log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
+    auto clahe = createCLAHE();
+
     while (true){
         // handle threading crap before beginning with the vision
         pthread_testcancel();
@@ -184,10 +186,22 @@ static auto cv_thread(void *arg) -> void *{
 #if VISION_CROP_ENABLED
         frame = frame(Rect(cropRect));
 #endif
+        // apply CLAHE normalisation if requested, source: https://stackoverflow.com/a/47370615/5007892
+#if VISION_APPLY_CLAHE
+        Mat labImage;
+        cvtColor(frame, labImage, COLOR_RGB2Lab);
+        Mat labPlanes[3];
+        split(labImage, labPlanes);
+        clahe->apply(labPlanes[0], labPlanes[0]);
+        Mat labFinal;
+        merge(labPlanes, 3, labFinal);
+        cvtColor(labFinal, frame, COLOR_Lab2RGB);
+#endif
         // mask out the robot
 #if VISION_DRAW_ROBOT_MASK
         circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius, Scalar(0, 0, 0), FILLED);
 #endif
+
         // downscale for goal detection (and possibly initial ball pass)
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 

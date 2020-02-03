@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <nlopt.h>
 
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
@@ -24,6 +25,7 @@ bool sleeping;
 pthread_cond_t sleepCond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t sleepMutex = PTHREAD_MUTEX_INITIALIZER;
 bool sendDebugFrames = true;
+struct vec2 localisedPosition = {0};
 
 // https://stackoverflow.com/a/1726321/5007892
 static void remove_spaces(char* s) {
@@ -215,4 +217,28 @@ double utils_time_millis(){
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC_RAW, &time);
     return (time.tv_sec) * 1000.0 + (time.tv_nsec / 1000.0) / 1000.0; // convert tv_sec & tv_usec to millisecond
+}
+
+double utils_lerp(double fromValue, double toValue, double progress){
+    return fromValue + (toValue - fromValue) * progress;
+}
+
+// backported function from new NLopt
+const char *nlopt_result_to_string(nlopt_result result)
+{
+    switch(result)
+    {
+        case NLOPT_FAILURE: return "FAILURE";
+        case NLOPT_INVALID_ARGS: return "INVALID_ARGS";
+        case NLOPT_OUT_OF_MEMORY: return "OUT_OF_MEMORY";
+        case NLOPT_ROUNDOFF_LIMITED: return "ROUNDOFF_LIMITED";
+        case NLOPT_FORCED_STOP: return "FORCED_STOP";
+        case NLOPT_SUCCESS: return "SUCCESS";
+        case NLOPT_STOPVAL_REACHED: return "STOPVAL_REACHED";
+        case NLOPT_FTOL_REACHED: return "FTOL_REACHED";
+        case NLOPT_XTOL_REACHED: return "XTOL_REACHED";
+        case NLOPT_MAXEVAL_REACHED: return "MAXEVAL_REACHED";
+        case NLOPT_MAXTIME_REACHED: return "MAXTIME_REACHED";
+    }
+    return NULL;
 }

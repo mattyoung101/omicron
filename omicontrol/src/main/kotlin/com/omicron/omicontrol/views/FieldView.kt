@@ -57,6 +57,16 @@ class FieldView : View() {
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
         BANDWIDTH += message.serializedSize
 
+        // update data
+        for (robot in robots){
+            // assume unknown first, update later if true
+            robot.isPositionKnown = false
+        }
+        for ((i, robot) in message.robotPositionsList.take(message.robotPositionsCount).withIndex()){
+            robots[i].position = Point2D(robot.x.toDouble(), robot.y.toDouble())
+            robots[0].isPositionKnown = true
+        }
+
         runLater {
             display.fill = Color.BLACK
             display.fillRect(0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
@@ -68,6 +78,9 @@ class FieldView : View() {
                 val pos = robot.position.toCanvasPosition()
                 val sprite = if (selectedRobot == robot) robotSelected else if (robot.isPositionKnown) robotImage else robotUnknown
                 display.drawImage(sprite, pos.x - half, pos.y - half, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
+
+                display.fill = Color.WHITE
+                display.fillText(robot.id.toString(), pos.x - (half / 2.0), pos.y + (half / 2.0))
             }
 
             // render ball
@@ -86,7 +99,8 @@ class FieldView : View() {
             for (point in message.dewarpedLinePointsList.take(message.dewarpedLinePointsCount)) {
                 display.lineWidth = 2.0
                 display.fill = Color.WHITE
-                val fieldPoint = Point2D(point.x.toDouble(), point.y.toDouble()).toCanvasPosition()
+                // FIXME dirty hack
+                val fieldPoint = Point2D(point.x.toDouble() + robots[0].position.x, point.y.toDouble() + robots[0].position.y).toCanvasPosition()
                 display.fillOval(fieldPoint.x, fieldPoint.y, 10.0, 10.0)
                 display.strokeOval(fieldPoint.x, fieldPoint.y, 10.0, 10.0)
             }

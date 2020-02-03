@@ -206,6 +206,9 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.linePoints_count = linePointsSize;
     msg.dewarpedLinePoints_count = dewarpedLineSize;
     msg.mirrorRadius = visionMirrorRadius;
+    msg.robotPositions[0].x = localisedPosition.x;
+    msg.robotPositions[0].y = localisedPosition.y;
+    msg.robotPositions_count = 1;
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.frame = msg;

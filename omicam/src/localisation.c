@@ -19,7 +19,7 @@ DA_TYPEDEF(struct vec2, vec2_array_t);
 
 static nlopt_opt optimiser;
 static pthread_t workThread;
-static FieldFile field = FieldFile_init_zero;
+static FieldFile field = {0};
 // we could probably just handle this with a single pthread condition and mutex, but just in case the localiser is too slow
 // I want it to be able to support a backlog as well (otherwise we'd have to block the main thread until the last frame
 // finishes optimising)
@@ -40,6 +40,66 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     }
 }
 
+/** Renders the objective function for the whole field and then quits the application **/
+static void render_test_image(){
+    uint8_t *image = malloc(field.width * field.length);
+    double *data = malloc(field.width * field.length * sizeof(double));
+
+    // calculate objective function for all data points
+    for (int32_t y = 0; y < field.width; y++){
+        for (int32_t x = 0; x < field.length; x++){
+            double totalError = 0.0;
+            for (size_t i = 0; i < da_count(correctedLinePoints); i++){
+                struct vec2 point = da_get(correctedLinePoints, i);
+
+                // translate coordinate to localiser guessed position
+                point.x += x;
+                point.y += y;
+
+                // convert to field file coordinates and sum
+                int32_t fx = constrain(ROUND2INT(point.x + (field.length / 2.0)), 0, field.length);
+                int32_t fy = constrain(ROUND2INT(point.y + (field.width / 2.0)), 0, field.width);
+                int32_t index = (int32_t) (fx + (field.width / field.unitDistance) * fy);
+                totalError += field.data[index];
+            }
+
+            data[x + field.length * y] = totalError;
+        }
+    }
+
+    // find min and max of array
+    double currentMin = INT32_MAX; // worst possible
+    double currentMax = INT32_MIN; // worst possible
+    for (int32_t i = 0; i < (field.width * field.length); i++){
+        if (data[i] < currentMin){
+            currentMin = data[i];
+        } else if (data[i] > currentMax){
+            currentMax = data[i];
+        }
+    }
+    log_trace("currentMin: %.2f, currentMax: %.2f", currentMin, currentMax);
+
+    // scale each value
+//    for (int32_t i = 0; i < (field.width * field.length); i++){
+//        double val = data[i];
+//        double scaled = (val - currentMin) / (currentMax - currentMin);
+//        image[i] = (uint8_t) (scaled * 255);
+//    }
+    for (int32_t y = 0; y < field.width; y++){
+        for (int32_t x = 0; x < field.length; x++) {
+            int32_t index = x + field.length * y;
+            double val = data[index];
+            double scaled = (val - currentMin) / (currentMax - currentMin);
+            image[index] = (uint8_t) (scaled * 255);
+        }
+    }
+
+    // render image
+    stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, image);
+
+    exit(EXIT_SUCCESS);
+}
+
 /**
  * This function will be minimised by the Subplex optimiser. Based on pseudocode, research and field files by Ethan.
  * Poorly documented because it's complicated :(
@@ -50,17 +110,19 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
  * @return a score of how close the estimated position is to the real position
  */
 static double objective_function(unsigned n, const double* x, double* grad, void* f_data){
-    // convert to field file array coords
-    int32_t ix = ROUND2INT(x[0] + (field.length / 2.0));
-    int32_t iy = ROUND2INT(x[1] + (field.width / 2.0));
-    int32_t fx = constrain(ix, 0, field.length);
-    int32_t fy = constrain(iy, 0, field.width);
-
-    // sum the error
-    double totalError = 3.0;
+    double totalError = 0.0;
     for (size_t i = 0; i < da_count(correctedLinePoints); i++){
-        // runningTotal += output[constrain(int(round(point.y + fieldLength / 2 + y)), 0, fieldLength - 1)]
-        // [constrain(int(round(point.x + fieldWidth / 2 + x)), 0, fieldWidth - 1)]
+        struct vec2 point = da_get(correctedLinePoints, i);
+
+        // translate coordinate to localiser guessed position
+        point.x += x[0];
+        point.y += x[1];
+
+        // convert to field file coordinates and sum
+        int32_t fx = constrain(ROUND2INT(point.x + (field.length / 2.0)), 0, field.length);
+        int32_t fy = constrain(ROUND2INT(point.y + (field.width / 2.0)), 0, field.width);
+        int32_t index = (int32_t) (fx + (field.width / field.unitDistance) * fy);
+        totalError += field.data[index];
     }
 
     return totalError;
@@ -162,15 +224,19 @@ static void *work_thread(void *arg){
 
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
-        /*double resultCoord[2] = {0.0, 0.0}; // TODO use last mouse sensor coordinate to seed optimisation
+        double resultCoord[2] = {0.0, 0.0}; // TODO use last mouse sensor coordinate to seed optimisation
         double resultError = 0.0;
         nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
         if (result < 0){
             // seem as though we've been stitched up and the NLopt version Ubuntu ships doesn't support nlopt_result_to_string()
             log_warn("The optimiser may have failed to converge on a solution: code %d", result);
         }
-        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %d\n", resultCoord[0], resultCoord[1],
-               resultError, result);*/
+        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
+               resultError, nlopt_result_to_string(result));
+        localisedPosition.x = resultCoord[0];
+        localisedPosition.y = resultCoord[1];
+
+        render_test_image();
 
         // TODO post results with uart and also send it to the performance evaluator (like the FPS logger but for optimiser)
 
@@ -234,7 +300,7 @@ void localiser_post(uint8_t *frame, int32_t width, int32_t height){
     entry->width = width;
     entry->height = height;
     if (!rpa_queue_trypush(queue, entry)){
-        log_warn("Failed to push new localisation entry to queue. This likely indicates a performance or hang in the optimiser.");
+        // log_warn("Failed to push new localisation entry to queue. This likely indicates a performance or hang in the optimiser.");
         free(frame);
         free(entry);
     }

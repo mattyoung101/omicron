@@ -4,6 +4,8 @@
 #include "defines.h"
 #include "protobuf/UART.pb.h"
 #include <pthread.h>
+#include <nlopt.h>
+#include "mathc.h"
 
 // Globals
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
@@ -17,6 +19,7 @@ extern bool sleeping;
 extern pthread_cond_t sleepCond;
 extern pthread_mutex_t sleepMutex;
 extern bool sendDebugFrames;
+extern struct vec2 localisedPosition;
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +48,8 @@ double utils_camera_dewarp(double x);
 void utils_sleep_enter(void);
 /** Exits sleep mode (low power mode). Does nothing if already awake. */
 void utils_sleep_exit(void);
+double utils_lerp(double fromValue, double toValue, double progress);
+const char *nlopt_result_to_string(nlopt_result result);
 
 #ifdef __cplusplus
 }
