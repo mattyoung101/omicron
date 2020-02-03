@@ -1,5 +1,5 @@
 W (22436) I2CReceiveTask: Invalid buffer, first byte is: 0xC0, previous good packets: 64
-D (25453) DefendDefend: Switching to surge, angle: 350.182281, strength: 147.057571, goal length: 39
+D (25453) DefendDefend: Switching to surge, angle: 350.182281, distance: 147.057571, goal length: 39
 I (25453) FSM: Switching states from DefenceDefend to DefenceSurge
 I (25467) CreateTimer: Creating timer: SurgeCanKick
 I (25915) CanKick: In surge for long enough, kicking now

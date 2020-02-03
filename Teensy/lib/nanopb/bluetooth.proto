@@ -8,7 +8,7 @@ message BTProvide {
     bool onLine = 4;
     bool switchOk = 5;
     float goalLength = 6;
-    float ballStrength = 7;
+    float ballDistance = 7;
     float ballAngle = 8;
 }
 

@@ -22,7 +22,7 @@ typedef struct _BTProvide {
     bool onLine;
     bool switchOk;
     float goalLength;
-    float ballStrength;
+    float ballDistance;
     float ballAngle;
 /* @@protoc_insertion_point(struct:BTProvide) */
 } BTProvide;
@@ -40,7 +40,7 @@ typedef struct _BTProvide {
 #define BTProvide_onLine_tag                     4
 #define BTProvide_switchOk_tag                   5
 #define BTProvide_goalLength_tag                 6
-#define BTProvide_ballStrength_tag               7
+#define BTProvide_ballDistance_tag               7
 #define BTProvide_ballAngle_tag                  8
 
 /* Struct field encoding specification for nanopb */
