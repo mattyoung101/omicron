@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicLong
  * 3.3a: (WIP) added field display screen
  */
 const val OMICONTROL_VERSION = "3.3a"
-const val REMOTE_IP = "monkeyonkeyboard.ddns.net"
+const val REMOTE_IP = "192.168.12.1"
 const val REMOTE_PORT = 42708
 
 const val FIELD_LENGTH_CM = 243 // long side, the top and bottom

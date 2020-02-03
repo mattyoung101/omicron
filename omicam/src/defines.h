@@ -14,16 +14,16 @@
 #define OMICAM_VERSION "2.4a"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
-#define DEWARP_MODEL (4.96776 * exp(0.0123892 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
+#define DEWARP_MODEL (3.6353 * exp(0.0098 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
-#define VISION_DIAGNOSTICS 0 // enable or disable performance (i.e. FPS) diagnostics
+#define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 #define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
 
+#define REMOTE_FRAME_INTERVAL 2 // send a debug frame every N real frames
 #define REMOTE_JPEG_QUALITY 40 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
-#define REMOTE_FRAME_INTERVAL 3 // send a debug frame every N real frames
 #define REMOTE_PORT 42708 // which port the remote debug TCP server runs on
 #define REMOTE_ENABLED 1 // whether or not remote debug is enabled
 #define REMOTE_ALWAYS_SEND 0 // if true, ignore whether or not a connection exists and always send debug frames

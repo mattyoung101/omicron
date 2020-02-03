@@ -244,7 +244,7 @@ uint32_t localiser_remote_get_points(RDPoint *array, size_t arraySize, bool dewa
     vec2_array_t arr = dewarped ? correctedLinePoints : linePoints;
 
     if (da_count(arr) > arraySize){
-        log_warn("Line points size overflow. Please increase the max_count for linePoints in RemoteDebug.options.");
+        //log_warn("Line points size overflow. Please increase the max_count for linePoints in RemoteDebug.options.");
     }
 
     // this is to stop it from overflowing the Protobuf fixed size buffer

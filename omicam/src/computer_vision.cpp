@@ -117,9 +117,8 @@ static auto cv_thread(void *arg) -> void *{
     uint32_t frameCounter = 0;
     log_trace("Vision thread started");
 
-    Mat ogFrame = imread("../field4.png");
-
 #if BUILD_TARGET == BUILD_TARGET_PC
+    Mat ogFrame = imread("../field4.png");
     log_trace("Build target is PC, using test data");
     VideoCapture cap("../test_footage_2.m4v");
     if (!cap.isOpened()) {
@@ -131,8 +130,8 @@ static auto cv_thread(void *arg) -> void *{
 #else
     log_trace("Build target is SBC, initialising VideoCapture");
     // TODO make the width be "videoWidth" and the height also be "videoHeight"
-    VideoCapture cap("v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720 ! jpegdec ! videoconvert "
-                     "! appsink drop=true", CAP_GSTREAMER);
+    VideoCapture cap("v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720 ! jpegdec ! videoconvert"
+                     " ! appsink drop=true", CAP_GSTREAMER);
     if (!cap.isOpened()){
         log_error("Failed to open OpenCV capture device. Impossible to continue running Omicam.");
         fflush(stdout);
@@ -160,12 +159,14 @@ static auto cv_thread(void *arg) -> void *{
             pthread_cond_wait(&sleepCond, &sleepMutex);
         }
         pthread_mutex_unlock(&sleepMutex);
-
         double begin = utils_time_millis();
 
         Mat frame, frameScaled;
-//        cap.read(frame);
+#if BUILD_TARGET == BUILD_TARGET_SBC
+        cap.read(frame);
+#else
         ogFrame.copyTo(frame);
+#endif
 
         if (frame.empty()){
 #if BUILD_TARGET == BUILD_TARGET_PC
