@@ -53,6 +53,7 @@ class CalibrationView : View() {
         }
     private var ghostPoints = mutableListOf<Point2D>()
     private var model: Expression? = null
+    private var snapInitialPoint = false
 
     init {
         reloadStylesheetsOnFocus()
@@ -201,8 +202,15 @@ class CalibrationView : View() {
 
                     setOnMouseClicked {
                         if (!selecting){
+                            // FIXME untested
+                            origin = if (snapInitialPoint && cropRect != null){
+                                val centreX = cropRect!!.x + (cropRect!!.width / 2.0)
+                                val centreY = cropRect!!.y + (cropRect!!.height / 2.0)
+                                Point2D(centreX, centreY)
+                            } else {
+                                Point2D(it.x, it.y)
+                            }
                             selecting = true
-                            origin = Point2D(it.x, it.y)
                             end = null
                         } else {
                             selecting = false
@@ -249,6 +257,17 @@ class CalibrationView : View() {
                                     }
                                 }
                                 columnResizePolicy = SmartResize.POLICY
+                            }
+                        }
+                    }
+
+                    fieldset {
+                        field {
+                            label("Snap initial point to centre")
+                            checkbox{
+                                selectedProperty().addListener { _, _, newValue ->
+                                    snapInitialPoint = newValue
+                                }
                             }
                         }
                     }

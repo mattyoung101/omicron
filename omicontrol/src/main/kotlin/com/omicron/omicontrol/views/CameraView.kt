@@ -21,10 +21,14 @@ import javafx.scene.control.Slider
 import javafx.scene.image.WritableImage
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
+import javafx.stage.FileChooser
 import org.apache.commons.io.FileUtils
 import org.greenrobot.eventbus.Subscribe
 import org.tinylog.kotlin.Logger
+import java.io.FileOutputStream
+import java.nio.file.Paths
 import java.util.*
+import javax.imageio.ImageIO
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
 
@@ -49,6 +53,7 @@ class CameraView : View() {
     private var grabSendTimer: Timer? = null
     /** when the last second recording began in system time **/
     private var bandwidthRecordingBegin = System.currentTimeMillis()
+    private var saveNextToDisk = false
 
     init {
         reloadStylesheetsOnFocus()
@@ -64,6 +69,21 @@ class CameraView : View() {
         val outBuf = ByteArray(1024 * 1024) // 1 megabyte (in binary bytes)
         val bytes = compressor.inflate(outBuf)
         val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
+
+        // FIXME untested
+        val chooser = FileChooser().apply {
+            initialDirectory = Paths.get(".").toFile()
+            extensionFilters.add(FileChooser.ExtensionFilter("JPEG images", "*.jpg"))
+        }
+        val imageOut = chooser.showSaveDialog(currentWindow)
+        if (imageOut != null){
+            FileOutputStream(imageOut).use {
+                // in theory, since we receive a full jpeg image, we should just be able to write it directly to disk
+                // and it should be able to be picked up correctly
+                it.write(message.defaultImage.toByteArray())
+            }
+            saveNextToDisk = false
+        }
 
         // display megabits per second of bandwidth used by the app
         BANDWIDTH += message.serializedSize
@@ -396,6 +416,11 @@ class CameraView : View() {
                         Logger.info("Changing to camera calibration screen")
                         EVENT_BUS.unregister(this@CameraView)
                         Utils.transitionMetro(this@CameraView, CalibrationView())
+                    }
+                }
+                item("Save next frame to disk"){
+                    setOnAction {
+                        saveNextToDisk = true
                     }
                 }
                 item("Save config"){
