@@ -153,11 +153,11 @@ void orbit(robot_state_t *robotState){
 
     // I hate to do this but...
     if(robotState->inRobotId == 0){
-        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
+        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the distance on the sides cos it's too low
         
         float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
-        float strengthFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.08 * strengthFactor * powf(E, 3.8 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale distance between 0 and 1
+        float distanceMultiplier = constrain(0.08 * distanceFactor * powf(E, 3.8 * distanceFactor), 0, 1); // Use that to make another exponential function based on distance
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -165,11 +165,11 @@ void orbit(robot_state_t *robotState){
         robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
         // printf("tempStrength: %f\n", tempStrength);
     } else {
-        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
+        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the distance on the sides cos it's too low
         
         float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
-        float strengthFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.08 * strengthFactor * powf(E, 3.8 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale distance between 0 and 1
+        float distanceMultiplier = constrain(0.08 * distanceFactor * powf(E, 3.8 * distanceFactor), 0, 1); // Use that to make another exponential function based on distance
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -179,8 +179,8 @@ void orbit(robot_state_t *robotState){
     }
 
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
-    // printf("ballAngleDifference: %f, strengthFactor: %f, distanceMultiplier: %f, angleAddition: %f\n", ballAngleDifference, 
-    // strengthFactor, distanceMultiplier, angleAddition);
+    // printf("ballAngleDifference: %f, distanceFactor: %f, distanceMultiplier: %f, angleAddition: %f\n", ballAngleDifference, 
+    // distanceFactor, distanceMultiplier, angleAddition);
 }
 
 void position(robot_state_t *robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed) {
@@ -304,7 +304,7 @@ void i2c_scanner(i2c_port_t port){
 
 void print_ball_data(robot_state_t *robotState){
     static const char *TAG = "BallDebug";
-    ESP_LOGD(TAG, "Ball angle: %f, Ball strength: %f", robotState->inBallAngle, robotState->inBallDistance);
+    ESP_LOGD(TAG, "Ball angle: %f, Ball distance: %f", robotState->inBallAngle, robotState->inBallDistance);
 }
 
 void print_line_data(robot_state_t *robotState){

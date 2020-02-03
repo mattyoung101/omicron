@@ -120,7 +120,7 @@ And that is it. The plan's size will be returned in *plansz* which is not necess
 
 To build, use a C99 compliant C compiler. You can invoke with: `$ gcc -std=c99 astar.c goap.c main.c`
 
-The strength of GPGOAP is that the API is very generic: both world state and actions are solely described with C strings and booleans. No game specific enums end up in the API. With this power comes responsibility: do not make typos in the action names or atom names. They will end up representing different atoms if you do.
+The distance of GPGOAP is that the API is very generic: both world state and actions are solely described with C strings and booleans. No game specific enums end up in the API. With this power comes responsibility: do not make typos in the action names or atom names. They will end up representing different atoms if you do.
 
 For performance, all the tags for the world state atoms are converted to an entry in a bit field. This bit field is implemented as a 'long long int', which typically is 8 bytes or 64 bits. This means that you cannot use more than 64 atoms to describe the world and the actions to the planner. When using multiple NPCs in your game, I suggest using separate planners for them, so that if two NPCs have different action sets, you don't end up combining their atom name space and exceeding 64 tags.
 

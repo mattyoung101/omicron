@@ -55,7 +55,7 @@ static void can_kick_callback(TimerHandle_t timer){
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } else if (is_angle_between(rs.inBallAngle, SURGEON_ANGLE_MIN, SURGEON_ANGLE_MAX) 
                 && rs.inBallDistance <= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
-        LOG_ONCE(TAG, "Switching to surge, angle: %f, strength: %f, goal length: %d",
+        LOG_ONCE(TAG, "Switching to surge, angle: %f, distance: %f, goal length: %d",
                 robotState.inBallAngle, robotState.inBallDistance, rs.inGoalLength);
         FSM_CHANGE_STATE_DEFENCE(Surge);
     }

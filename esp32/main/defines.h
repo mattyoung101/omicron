@@ -202,7 +202,7 @@ extern uint8_t SURGE_STRENGTH;
 #define DEFEND_MIN_STRENGTH 60
 #define DEFEND_MAX_ANGLE 120
 #define DEFEND_MIN_ANGLE 250
-#define KICKER_STRENGTH 100 // if ball strength greater than this, kick
+#define KICKER_STRENGTH 100 // if ball distance greater than this, kick
 #define SURGEON_ANGLE_MIN 20 // angles to surge between
 #define SURGEON_ANGLE_MAX 340
 #define SURGE_CAN_KICK_TIMEOUT 500 // ms to be in surge for before we can kick

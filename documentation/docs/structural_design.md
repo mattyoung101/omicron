@@ -17,7 +17,7 @@ The following are the major hardware improvements that have occurred this year:
 Omni-directional wheels (also referred to as *omniwheels*) are specially designed to give robots full freedom of 
 motion, enabling them to travel in any direction without turning. The downside to these wheels is the relative lack 
 of tracktion and robustness when compared to conventional tires due to the individual rollers. As such, the primary 
-goal of new iterations is to increase the grip and strength of the wheels.
+goal of new iterations is to increase the grip and distance of the wheels.
 
 The following image shows the development of the omniwheel used throughout the years of competition with the rightmost 
 being the latest design:

@@ -17,8 +17,8 @@ const pb_field_t BTProvide_fields[9] = {
     PB_FIELD(  4, BOOL    , SINGULAR, STATIC  , OTHER, BTProvide, onLine, robotY, 0),
     PB_FIELD(  5, BOOL    , SINGULAR, STATIC  , OTHER, BTProvide, switchOk, onLine, 0),
     PB_FIELD(  6, FLOAT   , SINGULAR, STATIC  , OTHER, BTProvide, goalLength, switchOk, 0),
-    PB_FIELD(  7, FLOAT   , SINGULAR, STATIC  , OTHER, BTProvide, ballStrength, goalLength, 0),
-    PB_FIELD(  8, FLOAT   , SINGULAR, STATIC  , OTHER, BTProvide, ballAngle, ballStrength, 0),
+    PB_FIELD(  7, FLOAT   , SINGULAR, STATIC  , OTHER, BTProvide, ballDistance, goalLength, 0),
+    PB_FIELD(  8, FLOAT   , SINGULAR, STATIC  , OTHER, BTProvide, ballAngle, ballDistance, 0),
     PB_LAST_FIELD
 };
 

@@ -83,11 +83,11 @@ void state_attack_pursue_update(state_machine_t *fsm){
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallDistance >= ORBIT_DIST){
         if (is_angle_between(rs.inBallAngle, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
-            LOG_ONCE(TAG, "Ball close enough and ball is in forward range, switching to front orbit, strength: %f, orbit dist thresh: %d, angle: %f", 
+            LOG_ONCE(TAG, "Ball close enough and ball is in forward range, switching to front orbit, distance: %f, orbit dist thresh: %d, angle: %f", 
             rs.inBallDistance, ORBIT_DIST, rs.inBallAngle);
             FSM_CHANGE_STATE(FrontOrbit);
         } else {
-            LOG_ONCE(TAG, "Ball close enough and ball is in back range, switching to reverse orbit, strength: %f, orbit dist thresh: %d, angle: %f", 
+            LOG_ONCE(TAG, "Ball close enough and ball is in back range, switching to reverse orbit, distance: %f, orbit dist thresh: %d, angle: %f", 
             rs.inBallDistance, ORBIT_DIST, rs.inBallAngle);
             FSM_CHANGE_STATE(ReverseOrbit);
         }
@@ -113,7 +113,7 @@ void state_attack_frontorbit_update(state_machine_t *fsm){
     timer_check();
 
     if (rs.inBallDistance <= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
-        LOG_ONCE(TAG, "Ball and angle in correct spot, changing intro dribble, strength: %f, angle: %f, orbit dist thresh: %d"
+        LOG_ONCE(TAG, "Ball and angle in correct spot, changing intro dribble, distance: %f, angle: %f, orbit dist thresh: %d"
                 " angle range: %d-%d", robotState.inBallDistance, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
                 IN_FRONT_MAX_ANGLE);
         accelBegin = rs.outSpeed;
@@ -123,11 +123,11 @@ void state_attack_frontorbit_update(state_machine_t *fsm){
     // Check criteria:
     // Ball too far away, Ball too close and angle good (go to yeet), Ball too far (revert)
     if (!orangeBall.exists){
-        LOG_ONCE(TAG, "Ball not visible, starting idle timer, strength: %f", robotState.inBallDistance);
+        LOG_ONCE(TAG, "Ball not visible, starting idle timer, distance: %f", robotState.inBallDistance);
         om_timer_start(&noBallTimer);
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallDistance < ORBIT_DIST){
-        LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, orbit dist thresh: %d", robotState.inBallDistance,
+        LOG_ONCE(TAG, "Ball too far away, reverting, distance: %f, orbit dist thresh: %d", robotState.inBallDistance,
                  ORBIT_DIST);
         FSM_REVERT;
     } else if (!is_angle_between(rs.inBallAngle, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
@@ -152,11 +152,11 @@ void state_attack_reverseorbit_update(state_machine_t *fsm){
 
     // Check criteria:
     if (!orangeBall.exists){
-        LOG_ONCE(TAG, "Ball not visible, starting idle timer, strength: %f", robotState.inBallDistance);
+        LOG_ONCE(TAG, "Ball not visible, starting idle timer, distance: %f", robotState.inBallDistance);
         om_timer_start(&noBallTimer);
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallDistance < ORBIT_DIST){
-        LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, orbit dist thresh: %d", robotState.inBallDistance,
+        LOG_ONCE(TAG, "Ball too far away, reverting, distance: %f, orbit dist thresh: %d", robotState.inBallDistance,
                  ORBIT_DIST);
         FSM_REVERT;
     } else if (is_angle_between(rs.inBallAngle, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
@@ -193,7 +193,7 @@ void state_attack_yeet_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball in capture zone and facing goal and shoot permitted, shooting, angle: %d, range: %d", rs.inGoalAngle, rs.inGoalLength);
         FSM_CHANGE_STATE_GENERAL(Shoot); // TODO: use real world units
     } else if (!orangeBall.exists && !rs.inFrontGate){
-        LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallDistance);
+        LOG_ONCE(TAG, "Ball not visible, braking, distance: %f", robotState.inBallDistance);
         om_timer_start(&noBallTimer);
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallAngle > IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER && rs.inBallAngle < IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER){

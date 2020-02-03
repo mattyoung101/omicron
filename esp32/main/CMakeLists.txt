@@ -17,7 +17,7 @@ set(COMPONENT_SRCS "defines.c"
                    "bluetooth_manager.c"
                    "comms_uart.c"
                    "path_following.c"
-                   "lstemp.c"
+                   "lsavoid.c"
                    "buzzer.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)
