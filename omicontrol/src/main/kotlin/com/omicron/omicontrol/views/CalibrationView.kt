@@ -186,6 +186,13 @@ class CalibrationView : View() {
                     accelerator = KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)
                 }
             }
+            menu("Settings"){
+                checkmenuitem("Snap initial point to centre"){
+                    selectedProperty().addListener { _, _, newValue ->
+                        snapInitialPoint = newValue
+                    }
+                }
+            }
             menu("Help") {
                 item("About").setOnAction {
                     Utils.showGenericAlert(
@@ -202,7 +209,6 @@ class CalibrationView : View() {
 
                     setOnMouseClicked {
                         if (!selecting){
-                            // FIXME untested
                             origin = if (snapInitialPoint && cropRect != null){
                                 val centreX = cropRect!!.x + (cropRect!!.width / 2.0)
                                 val centreY = cropRect!!.y + (cropRect!!.height / 2.0)
@@ -263,17 +269,6 @@ class CalibrationView : View() {
 
                     fieldset {
                         field {
-                            label("Snap initial point to centre")
-                            checkbox{
-                                selectedProperty().addListener { _, _, newValue ->
-                                    snapInitialPoint = newValue
-                                }
-                            }
-                        }
-                    }
-
-                    fieldset {
-                        field {
                             button("Clear"){
                                 setOnAction {
                                     measurements.clear()
@@ -327,9 +322,21 @@ class CalibrationView : View() {
                             modelStatusLabel = label("Model status: Not loaded")
                         }
                     }
+
+//                    fieldset {
+//                        field {
+//                            label("Snap initial point to centre")
+//                            checkbox{
+//                                selectedProperty().addListener { _, _, newValue ->
+//                                    snapInitialPoint = newValue
+//                                }
+//                            }
+//                        }
+//                    }
                 }
 
                 hgrow = Priority.ALWAYS
+                vgrow = Priority.ALWAYS
                 alignment = Pos.TOP_LEFT
             }
 

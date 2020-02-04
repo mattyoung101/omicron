@@ -70,25 +70,29 @@ class CameraView : View() {
         val bytes = compressor.inflate(outBuf)
         val img = Image(ByteArrayInputStream(message.defaultImage.toByteArray()))
 
-        // FIXME untested
-        val chooser = FileChooser().apply {
-            initialDirectory = Paths.get(".").toFile()
-            extensionFilters.add(FileChooser.ExtensionFilter("JPEG images", "*.jpg"))
-        }
-        val imageOut = chooser.showSaveDialog(currentWindow)
-        if (imageOut != null){
-            FileOutputStream(imageOut).use {
-                // in theory, since we receive a full jpeg image, we should just be able to write it directly to disk
-                // and it should be able to be picked up correctly
-                it.write(message.defaultImage.toByteArray())
-            }
-            saveNextToDisk = false
-        }
-
         // display megabits per second of bandwidth used by the app
         BANDWIDTH += message.serializedSize
 
         runLater {
+            if (saveNextToDisk) {
+                val chooser = FileChooser().apply {
+                    initialDirectory = Paths.get(".").toFile()
+                    extensionFilters.add(FileChooser.ExtensionFilter("JPEG images", "*.jpg"))
+                }
+                val imageOut = chooser.showSaveDialog(currentWindow)
+                if (imageOut != null) {
+                    FileOutputStream(imageOut).use {
+                        // in theory, since we receive a full jpeg image, we should just be able to write it directly to disk
+                        // and it should be able to be picked up correctly
+                        it.write(message.defaultImage.toByteArray())
+                    }
+                    Utils.showGenericAlert(Alert.AlertType.INFORMATION, "Saved to: $imageOut",
+                        "Saved image to disk successfully")
+                    Logger.debug("Written frame to disk as $imageOut")
+                }
+                saveNextToDisk = false
+            }
+
             val temp = message.temperature
             temperatureLabel.text = "Temperature: ${String.format("%.2f", temp)}°C"
             when {

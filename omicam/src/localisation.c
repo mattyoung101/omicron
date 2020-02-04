@@ -59,7 +59,7 @@ static void render_test_image(){
                 // convert to field file coordinates and sum
                 int32_t fx = constrain(ROUND2INT(point.x + (field.length / 2.0)), 0, field.length);
                 int32_t fy = constrain(ROUND2INT(point.y + (field.width / 2.0)), 0, field.width);
-                int32_t index = (int32_t) (fx + (field.width / field.unitDistance) * fy);
+                int32_t index = (int32_t) (fy + (field.width / field.unitDistance) * fx);
                 totalError += field.data[index];
             }
 
