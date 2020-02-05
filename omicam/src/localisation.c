@@ -14,6 +14,7 @@
 #include "mathc.h"
 #include "stb_image_write.h"
 #include <sys/param.h>
+#include "map.h"
 
 DA_TYPEDEF(struct vec2, vec2_array_t);
 
@@ -26,6 +27,7 @@ static FieldFile field = {0};
 static rpa_queue_t *queue;
 static vec2_array_t linePoints = {0};
 static vec2_array_t correctedLinePoints = {0};
+static vec2_array_t objectivePoints = {0};
 //static uint8_t *outImage = NULL;
 _Atomic bool localiserDone = false;
 static double orientation = 0.0; // last received orientation from ESP32
@@ -40,99 +42,12 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     }
 }
 
-/** Renders the objective function for the whole field and then quits the application **/
-static void render_test_image(){
-    uint8_t *image = malloc(field.width * field.length);
-    double *data = malloc(field.width * field.length * sizeof(double));
-
-    // calculate objective function for all data points
-    for (int32_t y = 0; y < field.width; y++){
-        for (int32_t x = 0; x < field.length; x++){
-            double totalError = 0.0;
-            for (size_t i = 0; i < da_count(correctedLinePoints); i++){
-                struct vec2 point = da_get(correctedLinePoints, i);
-
-                // translate coordinate to localiser guessed position
-                point.x += x;
-                point.y += y;
-
-                // convert to field file coordinates and sum
-                int32_t fx = constrain(ROUND2INT(point.x + (field.length / 2.0)), 0, field.length);
-                int32_t fy = constrain(ROUND2INT(point.y + (field.width / 2.0)), 0, field.width);
-                int32_t index = (int32_t) (fy + (field.width / field.unitDistance) * fx);
-                totalError += field.data[index];
-            }
-
-            data[x + field.length * y] = totalError;
-        }
-    }
-
-    // find min and max of array
-    double currentMin = INT32_MAX; // worst possible
-    double currentMax = INT32_MIN; // worst possible
-    for (int32_t i = 0; i < (field.width * field.length); i++){
-        if (data[i] < currentMin){
-            currentMin = data[i];
-        } else if (data[i] > currentMax){
-            currentMax = data[i];
-        }
-    }
-    log_trace("currentMin: %.2f, currentMax: %.2f", currentMin, currentMax);
-
-    // scale each value
-//    for (int32_t i = 0; i < (field.width * field.length); i++){
-//        double val = data[i];
-//        double scaled = (val - currentMin) / (currentMax - currentMin);
-//        image[i] = (uint8_t) (scaled * 255);
-//    }
-    for (int32_t y = 0; y < field.width; y++){
-        for (int32_t x = 0; x < field.length; x++) {
-            int32_t index = x + field.length * y;
-            double val = data[index];
-            double scaled = (val - currentMin) / (currentMax - currentMin);
-            image[index] = (uint8_t) (scaled * 255);
-        }
-    }
-
-    // render image
-    stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, image);
-
-    exit(EXIT_SUCCESS);
-}
-
 /**
- * This function will be minimised by the Subplex optimiser. Based on pseudocode, research and field files by Ethan.
- * Poorly documented because it's complicated :(
- * @param n the number of dimensions, should be always 2
- * @param x an N dimensional array containing the input values
- * @param grad the gradient, ignored as we're using a derivative-free optimisation algorithm
- * @param f_data user data, ignored
- * @return a score of how close the estimated position is to the real position
- */
-static double objective_function(unsigned n, const double* x, double* grad, void* f_data){
-    double totalError = 0.0;
-    for (size_t i = 0; i < da_count(correctedLinePoints); i++){
-        struct vec2 point = da_get(correctedLinePoints, i);
-
-        // translate coordinate to localiser guessed position
-        point.x += x[0];
-        point.y += x[1];
-
-        // convert to field file coordinates and sum
-        int32_t fx = constrain(ROUND2INT(point.x + (field.length / 2.0)), 0, field.length);
-        int32_t fy = constrain(ROUND2INT(point.y + (field.width / 2.0)), 0, field.width);
-        int32_t index = (int32_t) (fx + (field.width / field.unitDistance) * fy);
-        totalError += field.data[index];
-    }
-
-    return totalError;
-}
-
-/**
- * Uses Bresenham's line algorithm to draw a line from (x0, y0) to (x1, y1), adding a line point to the linked list at
- * the start and end of each white object.
- */
-static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t imageWidth){
+* Uses Bresenham's line algorithm to draw a line from (x0, y0) to (x1, y1), adding a line point to the linked list at
+* the start and end of each white object.
+*/
+static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t imageWidth, struct vec2 minCorner,
+        struct vec2 maxCorner, vec2_array_t *array){
     bool wasLine = false; // true if the last pixel we accessed was on the line
 
     // source: https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C
@@ -142,18 +57,23 @@ static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, in
     int32_t e2;
 
     while (true){
+        if (x0 < minCorner.x || y0 < minCorner.y || x0 > maxCorner.x || y0 > maxCorner.y){
+            //log_warn("Raycasting out of bounds at %d,%d", x0, y0);
+            return;
+        }
+
         int32_t i = x0 + imageWidth * y0;
         bool isLine = image[i] != 0;
 
         if (isLine && !wasLine){
             // we just entered the line so add a point
             struct vec2 pos = {(double) x0, (double) y0};
-            da_push(linePoints, pos);
+            da_push(*array, pos);
             wasLine = true;
         } else if (!isLine && wasLine){
             // we just exited the line so add a point
             struct vec2 pos = {(double) x0, (double) y0};
-            da_push(linePoints, pos);
+            da_push(*array, pos);
             wasLine = false;
         }
 
@@ -168,6 +88,87 @@ static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, in
             y0 += sy;
         }
     }
+}
+
+/**
+ * This function will be minimised by the Subplex optimiser. Based on research by Ethan and inefficient algorithm impl
+ * by Matt.
+ * @param x the guessed x position in field coordinates
+ * @param y the guessed y position in field coordinates
+ * @return a score of how close the estimated position is to the real position
+ */
+static inline double objective_func_impl(double x, double y){
+    // 1. raycast out from the guessed x and y on the field file
+    da_clear(objectivePoints);
+
+    double interval = PI2 / LOCALISER_NUM_RAYS;
+    double x0 = x;
+    double y0 = y;
+    double maxDist = sqrt(field.width * field.width + field.length * field.length);
+
+    // note that these are in field file coordinates
+    struct vec2 minCoord = {0, 0};
+    struct vec2 maxCoord = {field.length, field.width};
+
+    // 1.2. loop over the points and raycast (NOLINTNEXTLINE)
+    for (double angle = 0.0; angle < PI2; angle += interval){
+        double r = maxDist;
+        double x1 = x0 + (r * cos(angle));
+        double y1 = y0 + (r * sin(angle));
+        raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), X_TO_FF(x1), Y_TO_FF(y1), field.length, minCoord, maxCoord, &objectivePoints);
+    }
+
+    return (double) da_count(objectivePoints);
+}
+
+/** Renders the objective function for the whole field and then quits the application **/
+static void render_test_image(){
+    uint8_t *image = malloc(field.width * field.length);
+    double *data = malloc(field.width * field.length * sizeof(double));
+
+    // calculate objective function for all data points
+    for (int32_t y = 0; y < field.width; y++){
+        for (int32_t x = 0; x < field.length; x++){
+            data[x + field.length * y] = objective_func_impl((double) x, (double) y);
+        }
+    }
+
+    // find min and max of array, starting with worst possible values
+    double currentMin = HUGE_VAL;
+    double currentMax = -HUGE_VAL;
+    for (int32_t i = 0; i < (field.width * field.length); i++){
+        if (data[i] < currentMin){
+            currentMin = data[i];
+        } else if (data[i] > currentMax){
+            currentMax = data[i];
+        }
+    }
+    log_trace("currentMin: %.2f, currentMax: %.2f", currentMin, currentMax);
+
+    // scale each value
+    for (int32_t i = 0; i < (field.width * field.length); i++){
+        double val = data[i];
+        double scaled = (val - currentMin) / (currentMax - currentMin);
+        image[i] = (uint8_t) (scaled * 255);
+    }
+
+    // render image
+    stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, image);
+
+    exit(EXIT_SUCCESS);
+}
+
+/**
+ * This function is just a wrapper which internally calls objective_func_impl() so that it can be used in both the
+ * optimiser and the objective function renderer.
+ * @param n the number of dimensions, should be always 2
+ * @param x an N dimensional array containing the input values
+ * @param grad the gradient, ignored as we're using a derivative-free optimisation algorithm
+ * @param f_data user data, ignored
+ * @return a score of how close the estimated position is to the real position
+ */
+static double objective_function(unsigned n, const double* x, double* grad, void* f_data){
+    return objective_func_impl(x[0], x[1]);
 }
 
 /** The worker thread for the localiser, basically just calls nlopt_optimize() and transmits the result */
@@ -191,13 +192,15 @@ static void *work_thread(void *arg){
         double interval = PI2 / LOCALISER_NUM_RAYS;
         double x0 = entry->width / 2.0;
         double y0 = entry->height / 2.0;
+        struct vec2 frameMin = {0, 0};
+        struct vec2 frameMax = {entry->width, entry->height};
 
         // 1.1. cast line segments from the centre of the mirror to the edge of it, to calculate the line points (NOLINTNEXTLINE)
         for (double angle = 0.0; angle < PI2; angle += interval){
             double r = (double) visionMirrorRadius;
             double x1 = x0 + (r * cos(angle));
             double y1 = y0 + (r * sin(angle));
-            raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), ROUND2INT(x1), ROUND2INT(y1), entry->width);
+            raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), ROUND2INT(x1), ROUND2INT(y1), entry->width, frameMin, frameMax, &linePoints);
         }
 
         // don't bother localising if no lines are present
@@ -206,7 +209,7 @@ static void *work_thread(void *arg){
         }
 
         // image normalisation
-        // 2. dewarp points based on calculated mirror model to get cm field coord, then rotate based on robot's real orientation
+        // 2. dewarp points based on calculated mirror model to get centimetre field coordinates, then rotate based on robot's real orientation
         for (size_t i = 0; i < da_count(linePoints); i++){
             struct vec2 point = da_get(linePoints, i);
             point.x -= entry->width / 2.0;
@@ -224,21 +227,21 @@ static void *work_thread(void *arg){
 
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
-        double resultCoord[2] = {0.0, 0.0}; // TODO use last mouse sensor coordinate to seed optimisation
-        double resultError = 0.0;
-        nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
-        if (result < 0){
-            // seem as though we've been stitched up and the NLopt version Ubuntu ships doesn't support nlopt_result_to_string()
-            log_warn("The optimiser may have failed to converge on a solution: code %d", result);
-        }
-        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
-               resultError, nlopt_result_to_string(result));
-        localisedPosition.x = resultCoord[0];
-        localisedPosition.y = resultCoord[1];
+//        double resultCoord[2] = {0.0, 0.0}; // TODO use last mouse sensor coordinate to seed optimisation
+//        double resultError = 0.0;
+//        nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
+//        if (result < 0){
+//            // seem as though we've been stitched up and the NLopt version Ubuntu ships doesn't support nlopt_result_to_string()
+//            log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
+//        }
+//        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
+//               resultError, nlopt_result_to_string(result));
+//        localisedPosition.x = resultCoord[0];
+//        localisedPosition.y = resultCoord[1];
 
+
+        puts("calculating...");
         render_test_image();
-
-        // TODO post results with uart and also send it to the performance evaluator (like the FPS logger but for optimiser)
 
         cleanup:
         free(entry->frame);

@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='FieldFile.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n\x0f\x46ieldFile.proto\"a\n\tFieldFile\x12\x14\n\x0cunitDistance\x18\x01 \x01(\x05\x12\x11\n\tcellCount\x18\x02 \x01(\x05\x12\x0e\n\x06length\x18\x03 \x01(\x05\x12\r\n\x05width\x18\x04 \x01(\x05\x12\x0c\n\x04\x64\x61ta\x18\x05 \x03(\x02\x62\x06proto3')
+  serialized_pb=_b('\n\x0f\x46ieldFile.proto\"a\n\tFieldFile\x12\x14\n\x0cunitDistance\x18\x01 \x01(\x05\x12\x11\n\tcellCount\x18\x02 \x01(\x05\x12\x0e\n\x06length\x18\x03 \x01(\x05\x12\r\n\x05width\x18\x04 \x01(\x05\x12\x0c\n\x04\x64\x61ta\x18\x05 \x01(\x0c\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -63,8 +63,8 @@ _FIELDFILE = _descriptor.Descriptor(
       options=None),
     _descriptor.FieldDescriptor(
       name='data', full_name='FieldFile.data', index=4,
-      number=5, type=2, cpp_type=6, label=3,
-      has_default_value=False, default_value=[],
+      number=5, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),

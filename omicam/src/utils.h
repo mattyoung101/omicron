@@ -55,16 +55,25 @@ const char *nlopt_result_to_string(nlopt_result result);
 }
 #endif
 
-/** first 8 bits of unsigned 16 bit int **/
+/** first 8 bits of unsigned 16 bit int */
 #define HIGH_BYTE_16(num) ((uint8_t) ((num >> 8) & 0xFF))
-/** second 8 bits of unsigned 16 bit int **/
+/** second 8 bits of unsigned 16 bit int */
 #define LOW_BYTE_16(num)  ((uint8_t) ((num & 0xFF)))
-/** unpack two 8 bit integers into a 16 bit integer **/
+/** unpack two 8 bit integers into a 16 bit integer */
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
+/** forces GCC to keep a variable */
 #define KEEP_VAR __attribute__((used))
+/** returns true if the object is a goal and would have been rescaled */
+#define VISION_IS_RESCALED (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW)
+#define ROUND2INT(x) ((int32_t) round(x))
+/** converts real field X coordinate into field file coordinate */
+#define X_TO_FF(x) (constrain(ROUND2INT(x), 0, field.length))
+/** converts real field Y coordinate into field file coordinate */
+#define Y_TO_FF(y) (constrain(ROUND2INT(y), 0, field.width))
+
+// note: put all your shit above this line because CLion fucks the indent of anything below this macro
+/** sends a response indicating OK to Omicontrol */
 #define RD_SEND_OK_RESPONSE do { \
     DebugCommand response = DebugCommand_init_zero; \
     response.messageId = CMD_OK; \
-    send_response(response); } while (0)
-#define VISION_IS_RESCALED (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW)
-#define ROUND2INT(x) ((int32_t) round(x))
+    send_response(response); } while (0);

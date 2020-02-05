@@ -55,16 +55,16 @@ output = list(itertools.chain(*output))
 
 img = Image.new('L', (fieldLength, fieldWidth))
 img.putdata(output)
-img.save("field.bmp")
+img.save("field_img.bmp")
 img.show()
 
-# message = pb.FieldFile()
-# message.unitDistance = 1
-# message.cellCount = int(fieldLength * fieldWidth)
-# message.fieldWidth = int(fieldWidth)
-# message.fieldHeight = int(fieldLength)
-# message.data.extend(output)
-#
-# with open("../../fields/Ints_StandardField.ff", "wb") as file:
-#     serialised = message.SerializeToString()
-#     file.write(serialised)
+message = pb.FieldFile()
+message.unitDistance = 1
+message.cellCount = int(fieldLength * fieldWidth)
+message.length = int(fieldLength)
+message.width = int(fieldWidth)
+message.data = bytes(output)
+
+with open("field.ff", "wb") as file:
+    serialised = message.SerializeToString()
+    file.write(serialised)
