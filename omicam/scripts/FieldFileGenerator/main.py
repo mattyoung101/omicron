@@ -10,7 +10,7 @@ import FieldFile_pb2 as pb
 
 fieldLength = 243 # cm
 fieldWidth = 182
-lineWidth = 2 # width of field lines in cm
+lineWidth = 1 # field lines are 2cm but it's 1cm each side of the line
 
 output = [[None for x in range(fieldLength)] for y in range(fieldWidth)] # Note: notation is output[y][x]
 whiteLines = [

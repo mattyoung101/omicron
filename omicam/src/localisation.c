@@ -31,6 +31,7 @@ static vec2_array_t objectivePoints = {0};
 //static uint8_t *outImage = NULL;
 _Atomic bool localiserDone = false;
 static double orientation = 0.0; // last received orientation from ESP32
+static uint8_t *outImage = NULL;
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -46,7 +47,7 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
 * Uses Bresenham's line algorithm to draw a line from (x0, y0) to (x1, y1), adding a line point to the linked list at
 * the start and end of each white object.
 */
-static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t imageWidth, struct vec2 minCorner,
+static inline void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t imageWidth, struct vec2 minCorner,
         struct vec2 maxCorner, vec2_array_t *array){
     bool wasLine = false; // true if the last pixel we accessed was on the line
 
@@ -98,15 +99,15 @@ static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, in
  * @return a score of how close the estimated position is to the real position
  */
 static inline double objective_func_impl(double x, double y){
-    // 1. raycast out from the guessed x and y on the field file
     da_clear(objectivePoints);
 
+    // 1. raycast out from the guessed x and y on the field file
     double interval = PI2 / LOCALISER_NUM_RAYS;
     double x0 = x;
     double y0 = y;
     double maxDist = sqrt(field.width * field.width + field.length * field.length);
 
-    // note that these are in field file coordinates
+    // note that these are in field file coordinates, not localiser coordinates (the ones with 0,0 as the field centre)
     struct vec2 minCoord = {0, 0};
     struct vec2 maxCoord = {field.length, field.width};
 
@@ -118,13 +119,25 @@ static inline double objective_func_impl(double x, double y){
         raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), X_TO_FF(x1), Y_TO_FF(y1), field.length, minCoord, maxCoord, &objectivePoints);
     }
 
+//    // draw line points (instead of scaling values) - not particularly useful, just for making cool art
+//    for (size_t i = 0; i < da_count(objectivePoints); i++){
+//        struct vec2 point = da_get(objectivePoints, i);
+//        image[(int32_t) (point.x + field.length * point.y)] = (uint8_t) rand();
+//    }
+
+    // 2. similarity calculation: the actual bread and butter of the objective function
+    // now that we've determined what it should look like if the robot was in the guessed position, we need to compare
+    // it to what we actually observed - which we calculated below
+
+    // pick the biggest set, etc, let's go
+
     return (double) da_count(objectivePoints);
 }
 
 /** Renders the objective function for the whole field and then quits the application **/
 static void render_test_image(){
-    uint8_t *image = malloc(field.width * field.length);
-    double *data = malloc(field.width * field.length * sizeof(double));
+    outImage = calloc(field.width * field.length, sizeof(uint8_t));
+    double *data = calloc(field.width * field.length, sizeof(double));
 
     // calculate objective function for all data points
     for (int32_t y = 0; y < field.width; y++){
@@ -149,12 +162,13 @@ static void render_test_image(){
     for (int32_t i = 0; i < (field.width * field.length); i++){
         double val = data[i];
         double scaled = (val - currentMin) / (currentMax - currentMin);
-        image[i] = (uint8_t) (scaled * 255);
+        outImage[i] = (uint8_t) (scaled * 255);
     }
 
     // render image
-    stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, image);
+    stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, outImage);
 
+    puts("written image, quitting");
     exit(EXIT_SUCCESS);
 }
 
@@ -337,4 +351,5 @@ void localiser_dispose(void){
     rpa_queue_destroy(queue);
     da_free(linePoints);
     da_free(correctedLinePoints);
+    da_free(objectivePoints);
 }
