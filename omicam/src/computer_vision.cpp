@@ -246,6 +246,13 @@ static auto cv_thread(void *arg) -> void *{
             }
         }, 4);
 
+        // FIXME just for testing: force thread to sleep to give localiser more time to work
+        pthread_mutex_lock(&sleepMutex);
+        while (true){
+            pthread_cond_wait(&sleepCond, &sleepMutex);
+        }
+        pthread_mutex_unlock(&sleepMutex);
+
         // process all our field objects
         int32_t realWidth = frame.cols;
         int32_t realHeight = frame.rows;

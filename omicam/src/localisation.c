@@ -32,6 +32,8 @@ static vec2_array_t objectivePoints = {0};
 _Atomic bool localiserDone = false;
 static double orientation = 0.0; // last received orientation from ESP32
 static uint8_t *outImage = NULL;
+static uint32_t totalPoints = 0;
+static map_double_t minDistMap = {0};
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -47,7 +49,7 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
 * Uses Bresenham's line algorithm to draw a line from (x0, y0) to (x1, y1), adding a line point to the linked list at
 * the start and end of each white object.
 */
-static inline void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t imageWidth, struct vec2 minCorner,
+static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t imageWidth, struct vec2 minCorner,
         struct vec2 maxCorner, vec2_array_t *array){
     bool wasLine = false; // true if the last pixel we accessed was on the line
 
@@ -91,6 +93,27 @@ static inline void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t
     }
 }
 
+static int minimum_dist_cmp(const void *a, const void *b){
+    struct vec2 avec = *(struct vec2*) a;
+    struct vec2 bvec = *(struct vec2*) b;
+
+    // lookup avec and bvec in the hashmap
+    char akey[64];
+    char bkey[64];
+    sprintf(akey, "%.2f,%.2f", avec.x, avec.y);
+    sprintf(bkey, "%.2f,%.2f", bvec.x, bvec.y);
+
+    double *adist = map_get(&minDistMap, akey);
+    double *bdist = map_get(&minDistMap, bkey);
+
+    if (adist == NULL || bdist == NULL){
+        log_warn("Either %s or %s not found in map!", akey, bkey);
+        return 0;
+    }
+
+    return (adist > bdist) - (adist < bdist);
+}
+
 /**
  * This function will be minimised by the Subplex optimiser. Based on research by Ethan and inefficient algorithm impl
  * by Matt.
@@ -100,6 +123,8 @@ static inline void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t
  */
 static inline double objective_func_impl(double x, double y){
     da_clear(objectivePoints);
+    map_init(&minDistMap);
+    double begin = utils_time_millis();
 
     // 1. raycast out from the guessed x and y on the field file
     double interval = PI2 / LOCALISER_NUM_RAYS;
@@ -119,18 +144,44 @@ static inline double objective_func_impl(double x, double y){
         raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), X_TO_FF(x1), Y_TO_FF(y1), field.length, minCoord, maxCoord, &objectivePoints);
     }
 
-//    // draw line points (instead of scaling values) - not particularly useful, just for making cool art
-//    for (size_t i = 0; i < da_count(objectivePoints); i++){
-//        struct vec2 point = da_get(objectivePoints, i);
-//        image[(int32_t) (point.x + field.length * point.y)] = (uint8_t) rand();
-//    }
+    // FIXME should have a check to see if there's no points return a really large value
 
     // 2. similarity calculation: the actual bread and butter of the objective function
     // now that we've determined what it should look like if the robot was in the guessed position, we need to compare
-    // it to what we actually observed - which we calculated below
+    // it to what we actually observed - which we calculated earlier outside the objective function
 
-    // pick the biggest set, etc, let's go
+    // set B will always be larger than set A
+    vec2_array_t setA = da_count(objectivePoints) > da_count(correctedLinePoints) ? correctedLinePoints : objectivePoints;
+    vec2_array_t setB = da_count(objectivePoints) >= da_count(correctedLinePoints) ? objectivePoints : correctedLinePoints;
 
+    // 2.1. for each point in set B, calculate the minimum distance to any point in set A and store it in a lookup table
+    for (size_t i = 0; i < da_count(setB); i++){
+        struct vec2 bpoint = da_get(setB, i);
+
+        // loop through and find the smallest distance from this point to the one in set A
+        double minDist = HUGE_VAL;
+        for (size_t j = 0; j < da_count(setA); j++){
+            struct vec2 apoint = da_get(setA, j);
+            double dist = svec2_distance(apoint, bpoint);
+            if (dist < minDist){
+                minDist = dist;
+            }
+        }
+
+        // add to hashmap
+        char key[64];
+        sprintf(key, "%.2f,%.2f", bpoint.x, bpoint.y);
+        map_set(&minDistMap, key, minDist);
+    }
+
+    // 2.2 sort set B based on LUT
+    da_sort(setB, minimum_dist_cmp);
+
+    // 3. pick the top N and sum them and return
+
+    // printf("took: %2.f ms with %zu points\n", utils_time_millis() - begin, da_count(objectivePoints));
+    map_deinit(&minDistMap);
+    totalPoints += da_count(objectivePoints);
     return (double) da_count(objectivePoints);
 }
 
@@ -168,6 +219,7 @@ static void render_test_image(){
     // render image
     stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, outImage);
 
+    printf("total points: %d\n", totalPoints);
     puts("written image, quitting");
     exit(EXIT_SUCCESS);
 }
