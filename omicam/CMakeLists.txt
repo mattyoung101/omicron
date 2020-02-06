@@ -41,7 +41,7 @@ add_executable(omicam src/main.c
         lib/iniparser/dictionary.h
         lib/iniparser/iniparser.c
         lib/iniparser/iniparser.h src/utils.h src/localisation.c src/localisation.h
-        src/defines.h src/utils.c
+        src/defines.h src/utils.c lib/kdtree.c lib/kdtree.h
         src/remote_debug.c src/remote_debug.h lib/DG_dynarr.h lib/rpa_queue.c lib/rpa_queue.h
         lib/nanopb/pb_common.c lib/nanopb/pb_decode.c lib/nanopb/pb_encode.c
         src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h lib/map.c lib/map.h

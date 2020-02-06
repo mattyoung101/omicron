@@ -154,15 +154,16 @@ static inline double objective_func_impl(double x, double y){
     vec2_array_t setA = da_count(objectivePoints) > da_count(correctedLinePoints) ? correctedLinePoints : objectivePoints;
     vec2_array_t setB = da_count(objectivePoints) >= da_count(correctedLinePoints) ? objectivePoints : correctedLinePoints;
 
-    // 2.1. for each point in set B, calculate the minimum distance to any point in set A and store it in a lookup table
+    // 2.1. for each point in set B, calculate the minimum distance to any point in set A and store it in the hashmap
     for (size_t i = 0; i < da_count(setB); i++){
         struct vec2 bpoint = da_get(setB, i);
 
         // loop through and find the smallest distance from this point to the one in set A
+        // TODO flaw is here
         double minDist = HUGE_VAL;
         for (size_t j = 0; j < da_count(setA); j++){
             struct vec2 apoint = da_get(setA, j);
-            double dist = svec2_distance(apoint, bpoint);
+            double dist = fabs(svec2_distance(apoint, bpoint));
             if (dist < minDist){
                 minDist = dist;
             }
@@ -178,18 +179,13 @@ static inline double objective_func_impl(double x, double y){
     da_sort(setB, minimum_dist_cmp);
 
     // 3. pick the top N and sum them and return the sum
-    double totalError = 0.0f;
+    // TODO can't use hashmap
+    double totalError = 0.0;
     for (size_t i = 0; i < da_count(setA); i++){
-        struct vec2 point = da_get(setB, i);
-        char key[64];
-        sprintf(key, "%.2f,%.2f", point.x, point.y);
+        struct vec2 pointA = da_get(setA, i);
+        struct vec2 pointB = da_get(setB, i);
 
-        double *dist = map_get(&minDistMap, key);
-        if (dist == NULL){
-            log_warn("Key %s not found in map", key);
-            continue;
-        }
-        totalError += *dist;
+        totalError += fabs(svec2_distance(pointA, pointB));
     }
 
     // printf("took: %2.f ms with %zu points\n", utils_time_millis() - begin, da_count(objectivePoints));
