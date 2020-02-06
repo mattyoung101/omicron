@@ -177,12 +177,26 @@ static inline double objective_func_impl(double x, double y){
     // 2.2 sort set B based on LUT
     da_sort(setB, minimum_dist_cmp);
 
-    // 3. pick the top N and sum them and return
+    // 3. pick the top N and sum them and return the sum
+    double totalError = 0.0f;
+    for (size_t i = 0; i < da_count(setA); i++){
+        struct vec2 point = da_get(setB, i);
+        char key[64];
+        sprintf(key, "%.2f,%.2f", point.x, point.y);
+
+        double *dist = map_get(&minDistMap, key);
+        if (dist == NULL){
+            log_warn("Key %s not found in map", key);
+            continue;
+        }
+        totalError += *dist;
+    }
 
     // printf("took: %2.f ms with %zu points\n", utils_time_millis() - begin, da_count(objectivePoints));
     map_deinit(&minDistMap);
     totalPoints += da_count(objectivePoints);
-    return (double) da_count(objectivePoints);
+    //return (double) da_count(objectivePoints);
+    return totalError;
 }
 
 /** Renders the objective function for the whole field and then quits the application **/
