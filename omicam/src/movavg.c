@@ -20,6 +20,7 @@ void movavg_free(movavg_t *mov_avg){
 }
 
 void movavg_push(movavg_t *mov_avg, double value){
+    if (mov_avg->counter + 1 >= mov_avg->size) return; // don't add if out of bounds
     mov_avg->items[mov_avg->counter++ % mov_avg->size] = value;
 }
 

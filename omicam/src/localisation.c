@@ -15,6 +15,8 @@
 #include "stb_image_write.h"
 #include <sys/param.h>
 #include "map.h"
+#include "kdtree.h"
+#include "qdbmp.h"
 
 DA_TYPEDEF(struct vec2, vec2_array_t);
 
@@ -33,7 +35,8 @@ _Atomic bool localiserDone = false;
 static double orientation = 0.0; // last received orientation from ESP32
 static uint8_t *outImage = NULL;
 static uint32_t totalPoints = 0;
-static map_double_t minDistMap = {0};
+static struct kdtree *kdtree = NULL;
+static BMP *bmp = NULL;
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -80,6 +83,10 @@ static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, in
             wasLine = false;
         }
 
+        if (bmp != NULL){
+//            BMP_SetPixelRGB(bmp, x0, y0, 255, 255, 255);
+        }
+
         if (x0 == x1 && y0 == y1) break;
         e2 = err;
         if (e2 > -dx){
@@ -93,27 +100,6 @@ static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, in
     }
 }
 
-static int minimum_dist_cmp(const void *a, const void *b){
-    struct vec2 avec = *(struct vec2*) a;
-    struct vec2 bvec = *(struct vec2*) b;
-
-    // lookup avec and bvec in the hashmap
-    char akey[64];
-    char bkey[64];
-    sprintf(akey, "%.2f,%.2f", avec.x, avec.y);
-    sprintf(bkey, "%.2f,%.2f", bvec.x, bvec.y);
-
-    double *adist = map_get(&minDistMap, akey);
-    double *bdist = map_get(&minDistMap, bkey);
-
-    if (adist == NULL || bdist == NULL){
-        log_warn("Either %s or %s not found in map!", akey, bkey);
-        return 0;
-    }
-
-    return (adist > bdist) - (adist < bdist);
-}
-
 /**
  * This function will be minimised by the Subplex optimiser. Based on research by Ethan and inefficient algorithm impl
  * by Matt.
@@ -123,14 +109,14 @@ static int minimum_dist_cmp(const void *a, const void *b){
  */
 static inline double objective_func_impl(double x, double y){
     da_clear(objectivePoints);
-    map_init(&minDistMap);
+    kd_clear(kdtree);
     double begin = utils_time_millis();
 
     // 1. raycast out from the guessed x and y on the field file
     double interval = PI2 / LOCALISER_NUM_RAYS;
     double x0 = x;
     double y0 = y;
-    double maxDist = sqrt(field.width * field.width + field.length * field.length);
+    double maxLength = sqrt(field.length * field.length + field.width * field.width);
 
     // note that these are in field file coordinates, not localiser coordinates (the ones with 0,0 as the field centre)
     struct vec2 minCoord = {0, 0};
@@ -138,60 +124,83 @@ static inline double objective_func_impl(double x, double y){
 
     // 1.2. loop over the points and raycast (NOLINTNEXTLINE)
     for (double angle = 0.0; angle < PI2; angle += interval){
-        double r = maxDist;
+        double r = 150;
         double x1 = x0 + (r * cos(angle));
         double y1 = y0 + (r * sin(angle));
         raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), X_TO_FF(x1), Y_TO_FF(y1), field.length, minCoord, maxCoord, &objectivePoints);
     }
 
-    // FIXME should have a check to see if there's no points return a really large value
+    printf("observed points: %zu, expected points: %zu\n", da_count(correctedLinePoints), da_count(objectivePoints));
+
+    // write out original points in red
+    for (size_t b = 0; b < da_count(correctedLinePoints); b++){
+        struct vec2 point = da_get(correctedLinePoints, b);
+        BMP_SetPixelRGB(bmp, (unsigned long) ROUND2INT(point.x + field.length / 2.0), (unsigned long) ROUND2INT(point.y + field.width / 2.0), 255, 0, 0);
+    }
+
+    // write out expected points in green
+    for (size_t c = 0; c < da_count(objectivePoints); c++){
+        struct vec2 point = da_get(objectivePoints, c);
+        printf("drawing expected at %.2f,%.2f\n", point.x, point.y);
+        BMP_SetPixelRGB(bmp, (unsigned long) ROUND2INT(point.x), (unsigned long) ROUND2INT(point.y), 0, 0, 255);
+    }
+
+    return 0.0;
+
+    // some thoughts here, randomly, because why not:
+    // tomorrow: render the expected points at FIELD coords (0,0) compared to the real points
+    // use this: http://qdbmp.sourceforge.net/
+    // FIXME maybe the problem is we need to convert them back to field coordinates? since the kd-tree is in field coords
+
+    // 1.3. add points to kd-tree
+    for (size_t i = 0; i < da_count(objectivePoints); i++){
+        struct vec2 point = da_get(objectivePoints, i);
+        double a[2] = {point.x, point.y};
+        kd_insert(kdtree, a, NULL);
+    }
 
     // 2. similarity calculation: the actual bread and butter of the objective function
     // now that we've determined what it should look like if the robot was in the guessed position, we need to compare
     // it to what we actually observed - which we calculated earlier outside the objective function
 
-    // set B will always be larger than set A
-    vec2_array_t setA = da_count(objectivePoints) > da_count(correctedLinePoints) ? correctedLinePoints : objectivePoints;
-    vec2_array_t setB = da_count(objectivePoints) >= da_count(correctedLinePoints) ? objectivePoints : correctedLinePoints;
+    vec2_array_t duplicates = {0};
+    // so what we're going to do is for each point in the observed line points, find its neighbours in the objective points
+    // via the kd-tree and sum the errors
+    double totalError = 0;
+    for (size_t i = 0; i < da_count(correctedLinePoints); i++){
+        struct vec2 point = da_get(correctedLinePoints, i);
+        double pos[2] = {point.x, point.y};
 
-    // 2.1. for each point in set B, calculate the minimum distance to any point in set A and store it in the hashmap
-    for (size_t i = 0; i < da_count(setB); i++){
-        struct vec2 bpoint = da_get(setB, i);
+        struct kdres *neighbours = kd_nearest(kdtree, pos); // find neighbours in N centimetre radius
+        while (!kd_res_end(neighbours)){
+            double coord[2] = {0};
+            kd_res_item(neighbours, coord);
 
-        // loop through and find the smallest distance from this point to the one in set A
-        // TODO flaw is here
-        double minDist = HUGE_VAL;
-        for (size_t j = 0; j < da_count(setA); j++){
-            struct vec2 apoint = da_get(setA, j);
-            double dist = fabs(svec2_distance(apoint, bpoint));
-            if (dist < minDist){
-                minDist = dist;
-            }
+//            // find if it's a duplicate
+//            bool isBad = false;
+//            for (size_t j = 0; j < da_count(duplicates); j++) {
+//                struct vec2 item = da_get(duplicates, j);
+//                if (item.x == coord[0] && item.y == coord[1]) {
+//                    isBad = true;
+//                    break;
+//                }
+//            }
+//            if (isBad){
+//                kd_res_next(neighbours);
+//                continue;
+//            }
+
+            struct vec2 coordVec = {coord[0], coord[1]};
+            totalError += fabs(svec2_distance(coordVec, point));
+            kd_res_next(neighbours);
+            da_add(duplicates, coordVec);
         }
-
-        // add to hashmap
-        char key[64];
-        sprintf(key, "%.2f,%.2f", bpoint.x, bpoint.y);
-        map_set(&minDistMap, key, minDist);
+        kd_res_free(neighbours);
     }
-
-    // 2.2 sort set B based on LUT
-    da_sort(setB, minimum_dist_cmp);
-
-    // 3. pick the top N and sum them and return the sum
-    // TODO can't use hashmap
-    double totalError = 0.0;
-    for (size_t i = 0; i < da_count(setA); i++){
-        struct vec2 pointA = da_get(setA, i);
-        struct vec2 pointB = da_get(setB, i);
-
-        totalError += fabs(svec2_distance(pointA, pointB));
-    }
+    da_free(duplicates);
 
     // printf("took: %2.f ms with %zu points\n", utils_time_millis() - begin, da_count(objectivePoints));
-    map_deinit(&minDistMap);
     totalPoints += da_count(objectivePoints);
-    //return (double) da_count(objectivePoints);
     return totalError;
 }
 
@@ -200,38 +209,45 @@ static void render_test_image(){
     outImage = calloc(field.width * field.length, sizeof(uint8_t));
     double *data = calloc(field.width * field.length, sizeof(double));
 
-    // calculate objective function for all data points
-    for (int32_t y = 0; y < field.width; y++){
-        for (int32_t x = 0; x < field.length; x++){
-            data[x + field.length * y] = objective_func_impl((double) x, (double) y);
-        }
-    }
-
-    // find min and max of array, starting with worst possible values
-    double currentMin = HUGE_VAL;
-    double currentMax = -HUGE_VAL;
-    for (int32_t i = 0; i < (field.width * field.length); i++){
-        if (data[i] < currentMin){
-            currentMin = data[i];
-        } else if (data[i] > currentMax){
-            currentMax = data[i];
-        }
-    }
-    log_trace("currentMin: %.2f, currentMax: %.2f", currentMin, currentMax);
-
-    // scale each value
-    for (int32_t i = 0; i < (field.width * field.length); i++){
-        double val = data[i];
-        double scaled = (val - currentMin) / (currentMax - currentMin);
-        outImage[i] = (uint8_t) (scaled * 255);
-    }
-
-    // render image
-    stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, outImage);
-
-    printf("total points: %d\n", totalPoints);
-    puts("written image, quitting");
+    // in this case we're just testing the image
+    bmp = BMP_Create(field.length, field.width, 24);
+    objective_func_impl(field.length / 2.0, field.width / 2.0);
+//    objective_func_impl(100.0, 100.0);
+    BMP_WriteFile(bmp, "../testing.bmp");
     exit(EXIT_SUCCESS);
+
+//    // calculate objective function for all data points
+//    for (int32_t y = 0; y < field.width; y++){
+//        for (int32_t x = 0; x < field.length; x++){
+//            data[x + field.length * y] = objective_func_impl((double) x, (double) y);
+//        }
+//    }
+//
+//    // find min and max of array, starting with worst possible values
+//    double currentMin = HUGE_VAL;
+//    double currentMax = -HUGE_VAL;
+//    for (int32_t i = 0; i < (field.width * field.length); i++){
+//        if (data[i] < currentMin){
+//            currentMin = data[i];
+//        } else if (data[i] > currentMax){
+//            currentMax = data[i];
+//        }
+//    }
+//    log_trace("currentMin: %.2f, currentMax: %.2f", currentMin, currentMax);
+//
+//    // scale each value
+//    for (int32_t i = 0; i < (field.width * field.length); i++){
+//        double val = data[i];
+//        double scaled = (val - currentMin) / (currentMax - currentMin);
+//        outImage[i] = 255 - (uint8_t) (scaled * 255);
+//    }
+//
+//    // render image
+//    stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, outImage);
+//
+//    printf("total points: %d\n", totalPoints);
+//    puts("written image, quitting");
+//    exit(EXIT_SUCCESS);
 }
 
 /**
@@ -315,7 +331,6 @@ static void *work_thread(void *arg){
 //        localisedPosition.x = resultCoord[0];
 //        localisedPosition.y = resultCoord[1];
 
-
         puts("calculating...");
         render_test_image();
 
@@ -369,6 +384,8 @@ void localiser_init(char *fieldFile){
         pthread_setname_np(workThread, "Localiser Thrd");
     }
 
+    kdtree = kd_create(2);
+
     free(data);
     pthread_testcancel();
 }
@@ -414,4 +431,5 @@ void localiser_dispose(void){
     da_free(linePoints);
     da_free(correctedLinePoints);
     da_free(objectivePoints);
+    kd_free(kdtree);
 }
