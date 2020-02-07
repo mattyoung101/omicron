@@ -30,13 +30,12 @@ static rpa_queue_t *queue;
 static vec2_array_t linePoints = {0};
 static vec2_array_t correctedLinePoints = {0};
 static vec2_array_t objectivePoints = {0};
-//static uint8_t *outImage = NULL;
 _Atomic bool localiserDone = false;
 static double orientation = 0.0; // last received orientation from ESP32
-static uint8_t *outImage = NULL;
 static uint32_t totalPoints = 0;
 static struct kdtree *kdtree = NULL;
 static BMP *bmp = NULL;
+static int32_t observedRays[LOCALISER_NUM_RAYS] = {0};
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -49,53 +48,41 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
 }
 
 /**
-* Uses Bresenham's line algorithm to draw a line from (x0, y0) to (x1, y1), adding a line point to the linked list at
-* the start and end of each white object.
+ * Uses trigonometry to cast a ray from (x0, y0) until it either goes out of bounds (via minCorner, maxCorner or earlyStop) or
+ * when it hits a line.
+ * @param image the dataset we're raycasting on, assuming 0 is a line and anything not 0 is a line
+ * @param x0 the origin x to start the ray from
+ * @param y0 the origin y to start the ray from
+ * @param theta angle in radians to cast ray along
+ * @param imageWidth width of one line in the image
+ * @param earlyStop if not -1, stop the raycasting early when the length exceeds this value (useful for stopping on mirror)
+ * @param minCorner bottom left corner of image bounds rectangle
+ * @param maxCorner top right corner of image bounds rectangle
+ * @return the length of the ray
 */
-static void raycast(const uint8_t *image, int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t imageWidth, struct vec2 minCorner,
-        struct vec2 maxCorner, vec2_array_t *array){
-    bool wasLine = false; // true if the last pixel we accessed was on the line
-
-    // source: https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C
-    int32_t dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
-    int32_t dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
-    int32_t err = (dx > dy ? dx : -dy) / 2;
-    int32_t e2;
+static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double theta, int32_t imageWidth, int32_t earlyStop, struct vec2 minCorner, struct vec2 maxCorner){
+    int32_t dist = 0;
 
     while (true){
+        int32_t rx = ROUND2INT(x0 + (dist * sin(theta)));
+        int32_t ry = ROUND2INT(y0 + (dist * cos(theta)));
+
+        // return if going to be out of bounds
         if (x0 < minCorner.x || y0 < minCorner.y || x0 > maxCorner.x || y0 > maxCorner.y){
-            //log_warn("Raycasting out of bounds at %d,%d", x0, y0);
-            return;
+            return dist;
         }
 
-        int32_t i = x0 + imageWidth * y0;
-        bool isLine = image[i] != 0;
-
-        if (isLine && !wasLine){
-            // we just entered the line so add a point
-            struct vec2 pos = {(double) x0, (double) y0};
-            da_push(*array, pos);
-            wasLine = true;
-        } else if (!isLine && wasLine){
-            // we just exited the line so add a point
-            struct vec2 pos = {(double) x0, (double) y0};
-            da_push(*array, pos);
-            wasLine = false;
-        }
-
+        // draw to debug
         if (bmp != NULL){
-//            BMP_SetPixelRGB(bmp, x0, y0, 255, 255, 255);
+            BMP_SetPixelRGB(bmp, rx, ry, 255, 255, 255);
         }
 
-        if (x0 == x1 && y0 == y1) break;
-        e2 = err;
-        if (e2 > -dx){
-            err -= dy;
-            x0 += sx;
-        }
-        if (e2 < dy) {
-            err += dx;
-            y0 += sy;
+        // also return if we touche a line, or exited the early stop bounds
+        int32_t i = rx + imageWidth * ry;
+        if (image[i] != 0 || (earlyStop != -1 && dist > earlyStop)){
+            return dist;
+        } else {
+            dist++;
         }
     }
 }
@@ -116,7 +103,6 @@ static inline double objective_func_impl(double x, double y){
     double interval = PI2 / LOCALISER_NUM_RAYS;
     double x0 = x;
     double y0 = y;
-    double maxLength = sqrt(field.length * field.length + field.width * field.width);
 
     // note that these are in field file coordinates, not localiser coordinates (the ones with 0,0 as the field centre)
     struct vec2 minCoord = {0, 0};
@@ -124,10 +110,7 @@ static inline double objective_func_impl(double x, double y){
 
     // 1.2. loop over the points and raycast (NOLINTNEXTLINE)
     for (double angle = 0.0; angle < PI2; angle += interval){
-        double r = 150;
-        double x1 = x0 + (r * cos(angle));
-        double y1 = y0 + (r * sin(angle));
-        raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), X_TO_FF(x1), Y_TO_FF(y1), field.length, minCoord, maxCoord, &objectivePoints);
+        raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), angle, field.length, -1, minCoord, maxCoord);
     }
 
     printf("observed points: %zu, expected points: %zu\n", da_count(correctedLinePoints), da_count(objectivePoints));
@@ -146,73 +129,23 @@ static inline double objective_func_impl(double x, double y){
     }
 
     return 0.0;
-
-    // some thoughts here, randomly, because why not:
-    // tomorrow: render the expected points at FIELD coords (0,0) compared to the real points
-    // use this: http://qdbmp.sourceforge.net/
-    // FIXME maybe the problem is we need to convert them back to field coordinates? since the kd-tree is in field coords
-
-    // 1.3. add points to kd-tree
-    for (size_t i = 0; i < da_count(objectivePoints); i++){
-        struct vec2 point = da_get(objectivePoints, i);
-        double a[2] = {point.x, point.y};
-        kd_insert(kdtree, a, NULL);
-    }
-
-    // 2. similarity calculation: the actual bread and butter of the objective function
-    // now that we've determined what it should look like if the robot was in the guessed position, we need to compare
-    // it to what we actually observed - which we calculated earlier outside the objective function
-
-    vec2_array_t duplicates = {0};
-    // so what we're going to do is for each point in the observed line points, find its neighbours in the objective points
-    // via the kd-tree and sum the errors
-    double totalError = 0;
-    for (size_t i = 0; i < da_count(correctedLinePoints); i++){
-        struct vec2 point = da_get(correctedLinePoints, i);
-        double pos[2] = {point.x, point.y};
-
-        struct kdres *neighbours = kd_nearest(kdtree, pos); // find neighbours in N centimetre radius
-        while (!kd_res_end(neighbours)){
-            double coord[2] = {0};
-            kd_res_item(neighbours, coord);
-
-//            // find if it's a duplicate
-//            bool isBad = false;
-//            for (size_t j = 0; j < da_count(duplicates); j++) {
-//                struct vec2 item = da_get(duplicates, j);
-//                if (item.x == coord[0] && item.y == coord[1]) {
-//                    isBad = true;
-//                    break;
-//                }
-//            }
-//            if (isBad){
-//                kd_res_next(neighbours);
-//                continue;
-//            }
-
-            struct vec2 coordVec = {coord[0], coord[1]};
-            totalError += fabs(svec2_distance(coordVec, point));
-            kd_res_next(neighbours);
-            da_add(duplicates, coordVec);
-        }
-        kd_res_free(neighbours);
-    }
-    da_free(duplicates);
-
-    // printf("took: %2.f ms with %zu points\n", utils_time_millis() - begin, da_count(objectivePoints));
-    totalPoints += da_count(objectivePoints);
-    return totalError;
 }
 
 /** Renders the objective function for the whole field and then quits the application **/
 static void render_test_image(){
-    outImage = calloc(field.width * field.length, sizeof(uint8_t));
-    double *data = calloc(field.width * field.length, sizeof(double));
-
     // in this case we're just testing the image
     bmp = BMP_Create(field.length, field.width, 24);
-    objective_func_impl(field.length / 2.0, field.width / 2.0);
-//    objective_func_impl(100.0, 100.0);
+    objective_func_impl(120, 120);
+
+    for (int y = 0; y < field.width; y++){
+        for (int x = 0; x < field.length; x++){
+            bool isLine = field.data.bytes[x + field.length * y] != 0;
+            if (isLine){
+                BMP_SetPixelRGB(bmp, x, y, 0, 0, 255);
+            }
+        }
+    }
+
     BMP_WriteFile(bmp, "../testing.bmp");
     exit(EXIT_SUCCESS);
 
@@ -280,26 +213,19 @@ static void *work_thread(void *arg){
         localiserDone = false;
 
         // image analysis
-        // 1. calculate begin points for Bresenham's line algorithm
+        // 1. calculate begin points for rays
         double interval = PI2 / LOCALISER_NUM_RAYS;
         double x0 = entry->width / 2.0;
         double y0 = entry->height / 2.0;
         struct vec2 frameMin = {0, 0};
         struct vec2 frameMax = {entry->width, entry->height};
 
-        // 1.1. cast line segments from the centre of the mirror to the edge of it, to calculate the line points (NOLINTNEXTLINE)
+        // 1.1. cast rays from the centre of the mirror to the edge of it, to calculate the ray lengths (NOLINTNEXTLINE)
         for (double angle = 0.0; angle < PI2; angle += interval){
-            double r = (double) visionMirrorRadius;
-            double x1 = x0 + (r * cos(angle));
-            double y1 = y0 + (r * sin(angle));
-            raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), ROUND2INT(x1), ROUND2INT(y1), entry->width, frameMin, frameMax, &linePoints);
+            raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), angle, entry->width, visionMirrorRadius, frameMin, frameMax);
         }
 
-        // don't bother localising if no lines are present
-        if (da_count(linePoints) == 0){
-            goto cleanup;
-        }
-
+        // TODO what do we do about mirror dewarping here? can we just call utils_vision_dewapr()?
         // image normalisation
         // 2. dewarp points based on calculated mirror model to get centimetre field coordinates, then rotate based on robot's real orientation
         for (size_t i = 0; i < da_count(linePoints); i++){

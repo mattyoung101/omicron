@@ -7,7 +7,7 @@
 	QDBMP - Quick n' Dirty BMP
 
 	v1.0.0 - 2007-04-07
-	http://qdbmp.sourceforge.net
+	https://github.com/cbraudo/qdbmp
 
 
 	The library supports the following BMP variants:
@@ -18,7 +18,7 @@
 	QDBMP is free and open source software, distributed
 	under the MIT licence.
 
-	Copyright (c) 2007 Chai Braudo (braudo@users.sourceforge.net)
+	Copyright (c) 2007 Chai Braudo (braudo@gmail.com)
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -46,15 +46,15 @@
 
 /* Type definitions */
 #ifndef UINT
-	#define UINT	unsigned long int
+#define UINT	unsigned long int
 #endif
 
 #ifndef USHORT
-	#define USHORT	unsigned short
+#define USHORT	unsigned short
 #endif
 
 #ifndef UCHAR
-	#define UCHAR	unsigned char
+#define UCHAR	unsigned char
 #endif
 
 
@@ -67,16 +67,16 @@
 /* Error codes */
 typedef enum
 {
-	BMP_OK = 0,				/* No error */
-	BMP_ERROR,				/* General error */
-	BMP_OUT_OF_MEMORY,		/* Could not allocate enough memory to complete the operation */
-	BMP_IO_ERROR,			/* General input/output error */
-	BMP_FILE_NOT_FOUND,		/* File not found */
-	BMP_FILE_NOT_SUPPORTED,	/* File is not a supported BMP variant */
-	BMP_FILE_INVALID,		/* File is not a BMP image or is an invalid BMP */
-	BMP_INVALID_ARGUMENT,	/* An argument is invalid or out of range */
-	BMP_TYPE_MISMATCH,		/* The requested action is not compatible with the BMP's type */
-	BMP_ERROR_NUM
+    BMP_OK = 0,				/* No error */
+    BMP_ERROR,				/* General error */
+    BMP_OUT_OF_MEMORY,		/* Could not allocate enough memory to complete the operation */
+    BMP_IO_ERROR,			/* General input/output error */
+    BMP_FILE_NOT_FOUND,		/* File not found */
+    BMP_FILE_NOT_SUPPORTED,	/* File is not a supported BMP variant */
+    BMP_FILE_INVALID,		/* File is not a BMP image or is an invalid BMP */
+    BMP_INVALID_ARGUMENT,	/* An argument is invalid or out of range */
+    BMP_TYPE_MISMATCH,		/* The requested action is not compatible with the BMP's type */
+    BMP_ERROR_NUM
 } BMP_STATUS;
 
 
@@ -124,12 +124,10 @@ const char*		BMP_GetErrorDescription		();
 
 /* Useful macro that may be used after each BMP operation to check for an error */
 #define BMP_CHECK_ERROR( output_file, return_value ) \
-	if ( BMP_GetError() != BMP_OK )	\
-	{\
-		fprintf( ( output_file ), "BMP error: %s\n", BMP_GetErrorDescription() );\
-		return( return_value );	\
-	}
+	if ( BMP_GetError() != BMP_OK )													\
+	{																				\
+		fprintf( ( output_file ), "BMP error: %s\n", BMP_GetErrorDescription() );	\
+		return( return_value );														\
+	}																				\
 
-
-//#include"qdbmp.c"
 #endif
