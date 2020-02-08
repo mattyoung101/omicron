@@ -1122,6 +1122,504 @@ public final class RemoteDebug {
 
   }
 
+  public interface RDPointFOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RDPointF)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional float x = 1;</code>
+     */
+    float getX();
+
+    /**
+     * <code>optional float y = 2;</code>
+     */
+    float getY();
+  }
+  /**
+   * Protobuf type {@code RDPointF}
+   */
+  public  static final class RDPointF extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:RDPointF)
+      RDPointFOrBuilder {
+    // Use RDPointF.newBuilder() to construct.
+    private RDPointF(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RDPointF() {
+      x_ = 0F;
+      y_ = 0F;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private RDPointF(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 13: {
+
+              x_ = input.readFloat();
+              break;
+            }
+            case 21: {
+
+              y_ = input.readFloat();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RemoteDebug.internal_static_RDPointF_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RemoteDebug.internal_static_RDPointF_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RemoteDebug.RDPointF.class, RemoteDebug.RDPointF.Builder.class);
+    }
+
+    public static final int X_FIELD_NUMBER = 1;
+    private float x_;
+    /**
+     * <code>optional float x = 1;</code>
+     */
+    public float getX() {
+      return x_;
+    }
+
+    public static final int Y_FIELD_NUMBER = 2;
+    private float y_;
+    /**
+     * <code>optional float y = 2;</code>
+     */
+    public float getY() {
+      return y_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (x_ != 0F) {
+        output.writeFloat(1, x_);
+      }
+      if (y_ != 0F) {
+        output.writeFloat(2, y_);
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (x_ != 0F) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(1, x_);
+      }
+      if (y_ != 0F) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(2, y_);
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RemoteDebug.RDPointF)) {
+        return super.equals(obj);
+      }
+      RemoteDebug.RDPointF other = (RemoteDebug.RDPointF) obj;
+
+      boolean result = true;
+      result = result && (
+          java.lang.Float.floatToIntBits(getX())
+          == java.lang.Float.floatToIntBits(
+              other.getX()));
+      result = result && (
+          java.lang.Float.floatToIntBits(getY())
+          == java.lang.Float.floatToIntBits(
+              other.getY()));
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (37 * hash) + X_FIELD_NUMBER;
+      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+          getX());
+      hash = (37 * hash) + Y_FIELD_NUMBER;
+      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+          getY());
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RemoteDebug.RDPointF parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDPointF parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDPointF parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDPointF parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDPointF parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDPointF parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDPointF parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDPointF parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDPointF parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDPointF parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RemoteDebug.RDPointF prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code RDPointF}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RDPointF)
+        RemoteDebug.RDPointFOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RemoteDebug.internal_static_RDPointF_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RemoteDebug.internal_static_RDPointF_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RemoteDebug.RDPointF.class, RemoteDebug.RDPointF.Builder.class);
+      }
+
+      // Construct using RemoteDebug.RDPointF.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        x_ = 0F;
+
+        y_ = 0F;
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RemoteDebug.internal_static_RDPointF_descriptor;
+      }
+
+      public RemoteDebug.RDPointF getDefaultInstanceForType() {
+        return RemoteDebug.RDPointF.getDefaultInstance();
+      }
+
+      public RemoteDebug.RDPointF build() {
+        RemoteDebug.RDPointF result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RemoteDebug.RDPointF buildPartial() {
+        RemoteDebug.RDPointF result = new RemoteDebug.RDPointF(this);
+        result.x_ = x_;
+        result.y_ = y_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RemoteDebug.RDPointF) {
+          return mergeFrom((RemoteDebug.RDPointF)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RemoteDebug.RDPointF other) {
+        if (other == RemoteDebug.RDPointF.getDefaultInstance()) return this;
+        if (other.getX() != 0F) {
+          setX(other.getX());
+        }
+        if (other.getY() != 0F) {
+          setY(other.getY());
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RemoteDebug.RDPointF parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RemoteDebug.RDPointF) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private float x_ ;
+      /**
+       * <code>optional float x = 1;</code>
+       */
+      public float getX() {
+        return x_;
+      }
+      /**
+       * <code>optional float x = 1;</code>
+       */
+      public Builder setX(float value) {
+        
+        x_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional float x = 1;</code>
+       */
+      public Builder clearX() {
+        
+        x_ = 0F;
+        onChanged();
+        return this;
+      }
+
+      private float y_ ;
+      /**
+       * <code>optional float y = 2;</code>
+       */
+      public float getY() {
+        return y_;
+      }
+      /**
+       * <code>optional float y = 2;</code>
+       */
+      public Builder setY(float value) {
+        
+        y_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional float y = 2;</code>
+       */
+      public Builder clearY() {
+        
+        y_ = 0F;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:RDPointF)
+    }
+
+    // @@protoc_insertion_point(class_scope:RDPointF)
+    private static final RemoteDebug.RDPointF DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RemoteDebug.RDPointF();
+    }
+
+    public static RemoteDebug.RDPointF getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RDPointF>
+        PARSER = new com.google.protobuf.AbstractParser<RDPointF>() {
+      public RDPointF parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new RDPointF(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RDPointF> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RDPointF> getParserForType() {
+      return PARSER;
+    }
+
+    public RemoteDebug.RDPointF getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface RDThresholdOrBuilder extends
       // @@protoc_insertion_point(interface_extends:RDThreshold)
       com.google.protobuf.MessageOrBuilder {
@@ -2038,24 +2536,24 @@ public final class RemoteDebug {
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
-    java.util.List<RemoteDebug.RDPoint> 
+    java.util.List<RemoteDebug.RDPointF> 
         getRobotPositionsList();
     /**
      * <pre>
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
-    RemoteDebug.RDPoint getRobotPositions(int index);
+    RemoteDebug.RDPointF getRobotPositions(int index);
     /**
      * <pre>
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
     int getRobotPositionsCount();
     /**
@@ -2063,18 +2561,18 @@ public final class RemoteDebug {
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
-    java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+    java.util.List<? extends RemoteDebug.RDPointFOrBuilder> 
         getRobotPositionsOrBuilderList();
     /**
      * <pre>
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
-    RemoteDebug.RDPointOrBuilder getRobotPositionsOrBuilder(
+    RemoteDebug.RDPointFOrBuilder getRobotPositionsOrBuilder(
         int index);
 
     /**
@@ -2286,11 +2784,11 @@ public final class RemoteDebug {
             }
             case 106: {
               if (!((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
-                robotPositions_ = new java.util.ArrayList<RemoteDebug.RDPoint>();
+                robotPositions_ = new java.util.ArrayList<RemoteDebug.RDPointF>();
                 mutable_bitField0_ |= 0x00001000;
               }
               robotPositions_.add(
-                  input.readMessage(RemoteDebug.RDPoint.parser(), extensionRegistry));
+                  input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry));
               break;
             }
             case 117: {
@@ -2616,15 +3114,15 @@ public final class RemoteDebug {
     }
 
     public static final int ROBOTPOSITIONS_FIELD_NUMBER = 13;
-    private java.util.List<RemoteDebug.RDPoint> robotPositions_;
+    private java.util.List<RemoteDebug.RDPointF> robotPositions_;
     /**
      * <pre>
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
-    public java.util.List<RemoteDebug.RDPoint> getRobotPositionsList() {
+    public java.util.List<RemoteDebug.RDPointF> getRobotPositionsList() {
       return robotPositions_;
     }
     /**
@@ -2632,9 +3130,9 @@ public final class RemoteDebug {
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
-    public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+    public java.util.List<? extends RemoteDebug.RDPointFOrBuilder> 
         getRobotPositionsOrBuilderList() {
       return robotPositions_;
     }
@@ -2643,7 +3141,7 @@ public final class RemoteDebug {
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
     public int getRobotPositionsCount() {
       return robotPositions_.size();
@@ -2653,9 +3151,9 @@ public final class RemoteDebug {
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
-    public RemoteDebug.RDPoint getRobotPositions(int index) {
+    public RemoteDebug.RDPointF getRobotPositions(int index) {
       return robotPositions_.get(index);
     }
     /**
@@ -2663,9 +3161,9 @@ public final class RemoteDebug {
      * position of robots on the field
      * </pre>
      *
-     * <code>repeated .RDPoint robotPositions = 13;</code>
+     * <code>repeated .RDPointF robotPositions = 13;</code>
      */
-    public RemoteDebug.RDPointOrBuilder getRobotPositionsOrBuilder(
+    public RemoteDebug.RDPointFOrBuilder getRobotPositionsOrBuilder(
         int index) {
       return robotPositions_.get(index);
     }
@@ -4310,26 +4808,26 @@ public final class RemoteDebug {
         return this;
       }
 
-      private java.util.List<RemoteDebug.RDPoint> robotPositions_ =
+      private java.util.List<RemoteDebug.RDPointF> robotPositions_ =
         java.util.Collections.emptyList();
       private void ensureRobotPositionsIsMutable() {
         if (!((bitField0_ & 0x00001000) == 0x00001000)) {
-          robotPositions_ = new java.util.ArrayList<RemoteDebug.RDPoint>(robotPositions_);
+          robotPositions_ = new java.util.ArrayList<RemoteDebug.RDPointF>(robotPositions_);
           bitField0_ |= 0x00001000;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> robotPositionsBuilder_;
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> robotPositionsBuilder_;
 
       /**
        * <pre>
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
-      public java.util.List<RemoteDebug.RDPoint> getRobotPositionsList() {
+      public java.util.List<RemoteDebug.RDPointF> getRobotPositionsList() {
         if (robotPositionsBuilder_ == null) {
           return java.util.Collections.unmodifiableList(robotPositions_);
         } else {
@@ -4341,7 +4839,7 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
       public int getRobotPositionsCount() {
         if (robotPositionsBuilder_ == null) {
@@ -4355,9 +4853,9 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
-      public RemoteDebug.RDPoint getRobotPositions(int index) {
+      public RemoteDebug.RDPointF getRobotPositions(int index) {
         if (robotPositionsBuilder_ == null) {
           return robotPositions_.get(index);
         } else {
@@ -4369,10 +4867,10 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
       public Builder setRobotPositions(
-          int index, RemoteDebug.RDPoint value) {
+          int index, RemoteDebug.RDPointF value) {
         if (robotPositionsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4390,10 +4888,10 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
       public Builder setRobotPositions(
-          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+          int index, RemoteDebug.RDPointF.Builder builderForValue) {
         if (robotPositionsBuilder_ == null) {
           ensureRobotPositionsIsMutable();
           robotPositions_.set(index, builderForValue.build());
@@ -4408,9 +4906,9 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
-      public Builder addRobotPositions(RemoteDebug.RDPoint value) {
+      public Builder addRobotPositions(RemoteDebug.RDPointF value) {
         if (robotPositionsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4428,10 +4926,10 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
       public Builder addRobotPositions(
-          int index, RemoteDebug.RDPoint value) {
+          int index, RemoteDebug.RDPointF value) {
         if (robotPositionsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4449,10 +4947,10 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
       public Builder addRobotPositions(
-          RemoteDebug.RDPoint.Builder builderForValue) {
+          RemoteDebug.RDPointF.Builder builderForValue) {
         if (robotPositionsBuilder_ == null) {
           ensureRobotPositionsIsMutable();
           robotPositions_.add(builderForValue.build());
@@ -4467,10 +4965,10 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
       public Builder addRobotPositions(
-          int index, RemoteDebug.RDPoint.Builder builderForValue) {
+          int index, RemoteDebug.RDPointF.Builder builderForValue) {
         if (robotPositionsBuilder_ == null) {
           ensureRobotPositionsIsMutable();
           robotPositions_.add(index, builderForValue.build());
@@ -4485,10 +4983,10 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
       public Builder addAllRobotPositions(
-          java.lang.Iterable<? extends RemoteDebug.RDPoint> values) {
+          java.lang.Iterable<? extends RemoteDebug.RDPointF> values) {
         if (robotPositionsBuilder_ == null) {
           ensureRobotPositionsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -4504,7 +5002,7 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
       public Builder clearRobotPositions() {
         if (robotPositionsBuilder_ == null) {
@@ -4521,7 +5019,7 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
       public Builder removeRobotPositions(int index) {
         if (robotPositionsBuilder_ == null) {
@@ -4538,9 +5036,9 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
-      public RemoteDebug.RDPoint.Builder getRobotPositionsBuilder(
+      public RemoteDebug.RDPointF.Builder getRobotPositionsBuilder(
           int index) {
         return getRobotPositionsFieldBuilder().getBuilder(index);
       }
@@ -4549,9 +5047,9 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
-      public RemoteDebug.RDPointOrBuilder getRobotPositionsOrBuilder(
+      public RemoteDebug.RDPointFOrBuilder getRobotPositionsOrBuilder(
           int index) {
         if (robotPositionsBuilder_ == null) {
           return robotPositions_.get(index);  } else {
@@ -4563,9 +5061,9 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
-      public java.util.List<? extends RemoteDebug.RDPointOrBuilder> 
+      public java.util.List<? extends RemoteDebug.RDPointFOrBuilder> 
            getRobotPositionsOrBuilderList() {
         if (robotPositionsBuilder_ != null) {
           return robotPositionsBuilder_.getMessageOrBuilderList();
@@ -4578,41 +5076,41 @@ public final class RemoteDebug {
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
-      public RemoteDebug.RDPoint.Builder addRobotPositionsBuilder() {
+      public RemoteDebug.RDPointF.Builder addRobotPositionsBuilder() {
         return getRobotPositionsFieldBuilder().addBuilder(
-            RemoteDebug.RDPoint.getDefaultInstance());
+            RemoteDebug.RDPointF.getDefaultInstance());
       }
       /**
        * <pre>
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
-      public RemoteDebug.RDPoint.Builder addRobotPositionsBuilder(
+      public RemoteDebug.RDPointF.Builder addRobotPositionsBuilder(
           int index) {
         return getRobotPositionsFieldBuilder().addBuilder(
-            index, RemoteDebug.RDPoint.getDefaultInstance());
+            index, RemoteDebug.RDPointF.getDefaultInstance());
       }
       /**
        * <pre>
        * position of robots on the field
        * </pre>
        *
-       * <code>repeated .RDPoint robotPositions = 13;</code>
+       * <code>repeated .RDPointF robotPositions = 13;</code>
        */
-      public java.util.List<RemoteDebug.RDPoint.Builder> 
+      public java.util.List<RemoteDebug.RDPointF.Builder> 
            getRobotPositionsBuilderList() {
         return getRobotPositionsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder> 
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
           getRobotPositionsFieldBuilder() {
         if (robotPositionsBuilder_ == null) {
           robotPositionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              RemoteDebug.RDPoint, RemoteDebug.RDPoint.Builder, RemoteDebug.RDPointOrBuilder>(
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
                   robotPositions_,
                   ((bitField0_ & 0x00001000) == 0x00001000),
                   getParentForChildren(),
@@ -7512,6 +8010,11 @@ public final class RemoteDebug {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_RDPoint_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RDPointF_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_RDPointF_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_RDThreshold_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -7542,26 +8045,27 @@ public final class RemoteDebug {
     java.lang.String[] descriptorData = {
       "\n\021RemoteDebug.proto\"=\n\006RDRect\022\t\n\001x\030\001 \001(\005" +
       "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
-      "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\"\'\n\013R" +
-      "DThreshold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\350\002\n" +
-      "\nDebugFrame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017bal" +
-      "lThreshImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022" +
-      "\031\n\010ballRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentro" +
-      "id\030\005 \001(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframe" +
-      "Width\030\007 \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010crop" +
-      "Rect\030\t \001(\0132\007.RDRect\022\014\n\004rays\030\n \003(\001\022\024\n\014dew",
-      "arpedRays\030\013 \003(\001\022\024\n\014mirrorRadius\030\014 \001(\005\022 \n" +
-      "\016robotPositions\030\r \003(\0132\010.RDPoint\022\031\n\021robot" +
-      "Orientations\030\016 \003(\002\022\023\n\013rayInterval\030\017 \001(\002\"" +
-      "\341\001\n\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006c" +
-      "oords\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001" +
-      "(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold\022" +
-      "\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcol" +
-      "ourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robot" +
-      "Id\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFram" +
-      "e\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command",
-      "\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 " +
-      "\001(\005b\006proto3"
+      "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\" \n\010R" +
+      "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
+      "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\351\002\n\nDebug" +
+      "Frame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017ballThres" +
+      "hImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022\031\n\010bal" +
+      "lRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentroid\030\005 \001" +
+      "(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframeWidth\030" +
+      "\007 \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010cropRect\030\t",
+      " \001(\0132\007.RDRect\022\014\n\004rays\030\n \003(\001\022\024\n\014dewarpedR" +
+      "ays\030\013 \003(\001\022\024\n\014mirrorRadius\030\014 \001(\005\022!\n\016robot" +
+      "Positions\030\r \003(\0132\t.RDPointF\022\031\n\021robotOrien" +
+      "tations\030\016 \003(\002\022\023\n\013rayInterval\030\017 \001(\002\"\341\001\n\014D" +
+      "ebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords" +
+      "\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n" +
+      "\rallThresholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010ob" +
+      "jectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourCh" +
+      "annel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robotId\030\t " +
+      "\001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005",
+      "frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001(" +
+      "\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 \001(\005b\006" +
+      "proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -7587,26 +8091,32 @@ public final class RemoteDebug {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RDPoint_descriptor,
         new java.lang.String[] { "X", "Y", });
-    internal_static_RDThreshold_descriptor =
+    internal_static_RDPointF_descriptor =
       getDescriptor().getMessageTypes().get(2);
+    internal_static_RDPointF_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_RDPointF_descriptor,
+        new java.lang.String[] { "X", "Y", });
+    internal_static_RDThreshold_descriptor =
+      getDescriptor().getMessageTypes().get(3);
     internal_static_RDThreshold_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RDThreshold_descriptor,
         new java.lang.String[] { "Min", "Max", });
     internal_static_DebugFrame_descriptor =
-      getDescriptor().getMessageTypes().get(3);
+      getDescriptor().getMessageTypes().get(4);
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
         new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", });
     internal_static_DebugCommand_descriptor =
-      getDescriptor().getMessageTypes().get(4);
+      getDescriptor().getMessageTypes().get(5);
     internal_static_DebugCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugCommand_descriptor,
         new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "ObjectId", "MinMax", "ColourChannel", "Value", "RobotId", "IsEnabled", });
     internal_static_RDMsgFrame_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_RDMsgFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RDMsgFrame_descriptor,

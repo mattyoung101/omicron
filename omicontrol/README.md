@@ -78,8 +78,9 @@ workaround is not required, and actually makes things worse (blurry).
 ## License
 Omicontrol is available under the license of the whole Team Omicron repo, see LICENSE.txt in the root directory. 
 
-## Libraries and licenses
+## Open source libraries used
 - [Protocol Buffers](https://github.com/protocolbuffers/protobuf): BSD 3-clause
 - [TornadoFX](https://github.com/edvin/tornadofx): Apache 2
 - [Apache Commons](https://commons.apache.org/): Apache 2
 - [GreenRobot EventBus](https://github.com/greenrobot/EventBus): Apache 2
+- [Google Guava](https://github.com/google/guava): Apache 2

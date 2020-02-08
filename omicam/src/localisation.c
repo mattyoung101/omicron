@@ -14,11 +14,9 @@
 #include "mathc.h"
 #include "stb_image_write.h"
 #include <sys/param.h>
-#include "map.h"
-#include "kdtree.h"
 #include "qdbmp.h"
-
-DA_TYPEDEF(struct vec2, vec2_array_t);
+#include "movavg.h"
+#include "remote_debug.h"
 
 static nlopt_opt optimiser;
 static pthread_t workThread;
@@ -27,15 +25,16 @@ static FieldFile field = {0};
 // I want it to be able to support a backlog as well (otherwise we'd have to block the main thread until the last frame
 // finishes optimising)
 static rpa_queue_t *queue;
-static vec2_array_t linePoints = {0};
-static vec2_array_t correctedLinePoints = {0};
-static vec2_array_t objectivePoints = {0};
 _Atomic bool localiserDone = false;
 static double orientation = 0.0; // last received orientation from ESP32
 static BMP *bmp = NULL;
 double observedRays[LOCALISER_NUM_RAYS] = {0};
 double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
 double expectedRays[LOCALISER_NUM_RAYS] = {0};
+static pthread_t perfThread;
+static movavg_t *timeAvg = NULL;
+static movavg_t *evalAvg = NULL;
+static int32_t evaluations = 0;
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -62,7 +61,6 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
 */
 static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double theta, int32_t imageWidth, int32_t earlyStop, struct vec2 minCorner, struct vec2 maxCorner){
     int32_t dist = 0;
-    int32_t colour[3] = {rand() % 256, rand() % 256, rand() % 256};
 
     while (true){
         int32_t rx = ROUND2INT(x0 + (dist * sin(theta)));
@@ -76,11 +74,6 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
             return dist;
         }
 
-        // draw to debug
-        if (bmp != NULL){
-            BMP_SetPixelRGB(bmp, rx, ry, colour[0], colour[1], colour[2]);
-        }
-
         // also return if we touch a line, or exited the early stop bounds
         int32_t i = rx + imageWidth * ry;
         if (image[i] != 0 || (earlyStop != -1 && dist > earlyStop)){
@@ -92,15 +85,13 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
 }
 
 /**
- * This function will be minimised by the Subplex optimiser. Based on research by Ethan and inefficient algorithm impl
- * by Matt.
+ * This function will be minimised by the Subplex optimiser. For the given (x,y) coordinate it calculates the difference
+ * between the observed rays and the expected rays at that coordinate.
  * @param x the guessed x position in field coordinates
  * @param y the guessed y position in field coordinates
  * @return a score of how close the estimated position is to the real position
  */
 static inline double objective_func_impl(double x, double y){
-    double begin = utils_time_millis();
-
     // 1. raycast out from the guessed x and y on the field file
     double interval = PI2 / LOCALISER_NUM_RAYS;
     double x0 = x;
@@ -123,13 +114,15 @@ static inline double objective_func_impl(double x, double y){
         double diff = fabs(expectedRays[i] - observedRays[i]);
         totalError += diff;
     }
+    evaluations++;
 
     return totalError;
 }
 
+#if LOCALISER_DEBUG
 /** Renders the objective function for the whole field and then quits the application **/
 static void render_test_image(){
-//    // in this case we're just testing the image
+//    // render raycast
 //    bmp = BMP_Create(field.length, field.width, 24);
 //    objective_func_impl(120.0, 120.0);
 //
@@ -181,6 +174,7 @@ static void render_test_image(){
     puts("written image, quitting");
     exit(EXIT_SUCCESS);
 }
+#endif
 
 /**
  * This function is just a wrapper which internally calls objective_func_impl() so that it can be used in both the
@@ -206,6 +200,7 @@ static void *work_thread(void *arg){
             continue;
         }
 
+        double begin = utils_time_millis();
         localiser_entry_t *entry = (localiser_entry_t*) queueData;
         localiserDone = false;
 
@@ -234,22 +229,30 @@ static void *work_thread(void *arg){
 
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
+        evaluations = 0;
         double resultCoord[2] = {160.0, 96.0};
         double resultError = 0.0;
         nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
         if (result < 0){
-            // seem as though we've been stitched up and the NLopt version Ubuntu ships doesn't support nlopt_result_to_string()
             log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
         }
         resultCoord[0] -= field.length / 2.0;
         resultCoord[1] -= field.width / 2.0;
-//        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
-//               resultError, nlopt_result_to_string(result));
+#if LOCALISER_DEBUG
+        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
+               resultError, nlopt_result_to_string(result));
+#endif
         localisedPosition.x = resultCoord[0];
         localisedPosition.y = resultCoord[1];
 
-//        puts("calculating...");
-//        render_test_image();
+#if LOCALISER_DEBUG
+        log_info("Localisation debug enabled, displaying objective function and quitting...");
+        render_test_image();
+#endif
+
+        double elapsed = utils_time_millis() - begin;
+        movavg_push(timeAvg, elapsed);
+        movavg_push(evalAvg, evaluations);
 
         free(entry->frame);
         free(entry);
@@ -257,6 +260,27 @@ static void *work_thread(void *arg){
         pthread_testcancel();
     }
     return NULL;
+}
+
+static void *perf_thread(void *arg){
+    while (true){
+        sleep(1);
+        double avgTime = movavg_calc(timeAvg);
+        double avgEval = movavg_calc(evalAvg);
+        if (avgTime == 0) continue;
+
+        double rate = (int32_t) (1000.0 / avgTime);
+        movavg_clear(timeAvg);
+        movavg_clear(evalAvg);
+
+#if VISION_DIAGNOSTICS
+        if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){
+            printf("Average localiser time: %.2f ms (rate: %.2f Hz), average evaluations: %d\n", avgTime, rate, ROUND2INT(avgEval));
+            fflush(stdout);
+        }
+#endif
+
+    }
 }
 
 void localiser_init(char *fieldFile){
@@ -280,11 +304,12 @@ void localiser_init(char *fieldFile){
 
     // create a two dimensional Subplex optimiser
     optimiser = nlopt_create(NLOPT_LN_SBPLX, 2);
+    nlopt_set_min_objective(optimiser, objective_function, NULL);
     nlopt_set_stopval(optimiser, LOCALISER_ERROR_TOLERANCE); // stop if we're close enough to a solution
     nlopt_set_ftol_abs(optimiser, LOCALISER_STEP_TOLERANCE); // stop if the last step was too small (we must be going nowhere/solved)
     nlopt_set_maxtime(optimiser, LOCALISER_MAX_EVAL_TIME / 1000.0); // stop if it's taking too long
-    nlopt_set_min_objective(optimiser, objective_function, NULL);
 
+    // note we are in image (top left is 0,0) coordinates, NOT field (centre is 0,0) coordinates
     double minCoord[] = {0.0, 0.0};
     double maxCoord[] = {field.length, field.width};
     log_trace("Min bound: (%.2f,%.2f) Max bound: (%.2f,%.2f)", minCoord[0], minCoord[1], maxCoord[0], maxCoord[1]);
@@ -300,6 +325,16 @@ void localiser_init(char *fieldFile){
         pthread_setname_np(workThread, "Localiser Thrd");
     }
 
+    // create performance monitor thread
+    timeAvg = movavg_create(256);
+    evalAvg = movavg_create(256);
+    err = pthread_create(&perfThread, NULL, perf_thread, NULL);
+    if (err != 0){
+        log_error("Failed to create localiser perf thread: %s", strerror(err));
+    } else {
+        pthread_setname_np(perfThread, "Localiser Perf");
+    }
+
     free(data);
     pthread_testcancel();
 }
@@ -310,39 +345,21 @@ void localiser_post(uint8_t *frame, int32_t width, int32_t height){
     entry->width = width;
     entry->height = height;
     if (!rpa_queue_trypush(queue, entry)){
-        // log_warn("Failed to push new localisation entry to queue. This likely indicates a performance or hang in the optimiser.");
+        // localiser is busy, drop frame
         free(frame);
         free(entry);
     }
 }
 
-uint32_t localiser_remote_get_points(RDPoint *array, size_t arraySize, bool dewarped){
-    vec2_array_t arr = dewarped ? correctedLinePoints : linePoints;
-
-    if (da_count(arr) > arraySize){
-        //log_warn("Line points size overflow. Please increase the max_count for linePoints in RemoteDebug.options.");
-    }
-
-    // this is to stop it from overflowing the Protobuf fixed size buffer
-    int32_t size = MIN(arraySize, da_count(arr));
-
-    for (int i = 0; i < size; i++){
-        struct vec2 point = da_get(arr, i);
-        array[i].x = ROUND2INT(point.x);
-        array[i].y = ROUND2INT(point.y);
-    }
-
-    return size;
-}
-
 void localiser_dispose(void){
     log_trace("Disposing localiser");
     pthread_cancel(workThread);
+    pthread_cancel(perfThread);
     pthread_join(workThread, NULL);
+    pthread_join(perfThread, NULL);
     nlopt_force_stop(optimiser);
     nlopt_destroy(optimiser);
     rpa_queue_destroy(queue);
-    da_free(linePoints);
-    da_free(correctedLinePoints);
-    da_free(objectivePoints);
+    movavg_free(timeAvg);
+    movavg_free(evalAvg);
 }

@@ -26,9 +26,9 @@ we have previously developed.
 Some new innovations we have developed this year include:
 
 - **Omicam**: our advanced, custom-developed vision application designed to replace the OpenMV H7. Written mainly in C, Omicam 
-is capable of 70 FPS field object tracking at 720p (1280x720 pixels), and centimetre accurate robot position estimation 
-(localisation) by solving a multi-variate non-linear optimisation problem in realtime.
-- **Omicontrol**: our custom, wireless, all-in-one robot control software. Written in Kotlin, this program is used to
+is capable of 70 FPS field object tracking at 720p (1280x720 pixels), and 1cm accurate robot position estimation 
+(localisation) by solving a multi-variate non-linear optimisation problem in real time.
+- **Omicontrol**: our custom, wireless/wired, all-in-one robot control software. Written in Kotlin, this program is used to
 tune our cameras, move robots around and visualise sensor data.
 - **Mouse sensor and velocity control**: our robots have fully working PWM-3360 mouse sensors, which we use to accurately
 estimate and control our robot's velocity on the field, in addition to interpolating our localisation data.

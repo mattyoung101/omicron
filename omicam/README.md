@@ -70,14 +70,14 @@ to /usr/bin/clang in CLion's toolchain settings.
 ## Licence
 Omicam is available under the same licence of the whole Team Omicron repo, see LICENSE.txt in the root directory. 
 
-## Libraries and licenses
+## Open source libraries used
 - [log.c](https://github.com/rxi/log.c): MIT license
-- [map](https://github.com/rxi/map): MIT license
 - [iniparser](https://github.com/ndevilla/iniparser): MIT license
 - [nanopb](https://github.com/nanopb/nanopb): Zlib license
 - [DG_dynarr](https://github.com/DanielGibson/Snippets/blob/master/DG_dynarr.h): Public Domain
-- [rpa_queue](https://github.com/chrismerck/rpa_queue): Apache 2
-- [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo): Various BSD and Zlib
+- [rpa_queue](https://github.com/chrismerck/rpa_queue): Apache 2 license
+- [libjpeg-turbo](https://github.com/libjpeg-turbo/libjpeg-turbo): BSD 3-Clause, IJG and Zlib licenses
 - [NLopt](https://github.com/stevengj/nlopt): MIT license
-- [OpenCV](https://opencv.org/): BSD 3-Clause
+- [OpenCV](https://opencv.org/): BSD 3-Clause license
 - [mathc](https://github.com/felselva/mathc): Zlib license
+- [qdbmp](https://github.com/cbraudo/qdbmp): MIT license

@@ -14,6 +14,11 @@ message RDPoint {
     int32 y = 2;
 }
 
+message RDPointF {
+    float x = 1;
+    float y = 2;
+}
+
 // Contains the colour channel values for the min and max of a particular threshold
 message RDThreshold {
     repeated int32 min = 2;
@@ -49,7 +54,7 @@ message DebugFrame {
     // mirror radius used by localiser
     int32 mirrorRadius = 12;
     // position of robots on the field
-    repeated RDPoint robotPositions = 13;
+    repeated RDPointF robotPositions = 13;
     // orientations of robots on the field
     repeated float robotOrientations = 14;
     // distance between rays in radians

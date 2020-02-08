@@ -179,7 +179,9 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     uint8_t *buf = malloc(bufSize); // we'll malloc this since we won't ever send the garbage on the end
     pb_ostream_t stream = pb_ostream_from_buffer(buf, bufSize);
 
-    // fill the protocol buffer with data
+    ///////////////////////////////////////////
+    /// fill the protocol buffer with data  ///
+    //////////////////////////////////////////
     if (sendDebugFrames) {
         memcpy(msg.defaultImage.bytes, camImg, camImgSize);
         memcpy(msg.ballThreshImage.bytes, threshImg, threshImgSize);
@@ -206,8 +208,8 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.rays_count = LOCALISER_NUM_RAYS;
     msg.dewarpedRays_count = LOCALISER_NUM_RAYS;
     msg.mirrorRadius = visionMirrorRadius;
-    msg.robotPositions[0].x = localisedPosition.x;
-    msg.robotPositions[0].y = localisedPosition.y;
+    msg.robotPositions[0].x = (float) localisedPosition.x;
+    msg.robotPositions[0].y = (float) localisedPosition.y;
     msg.robotPositions_count = 1;
     msg.rayInterval = (float) (PI2 / LOCALISER_NUM_RAYS);
 

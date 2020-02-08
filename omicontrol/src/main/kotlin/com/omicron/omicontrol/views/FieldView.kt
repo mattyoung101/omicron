@@ -59,17 +59,18 @@ class FieldView : View() {
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
         BANDWIDTH += message.serializedSize
 
-        // update data
-        for (robot in robots){
-            // assume unknown first, update later if true
-            robot.isPositionKnown = false
-        }
-        for ((i, robot) in message.robotPositionsList.take(message.robotPositionsCount).withIndex()){
-            robots[i].position = Point2D(robot.x.toDouble(), robot.y.toDouble())
-            robots[0].isPositionKnown = true
-        }
-
         runLater {
+            // update data
+            for (robot in robots){
+                // assume unknown first, update later if true
+                robot.isPositionKnown = false
+            }
+            for ((i, robot) in message.robotPositionsList.take(message.robotPositionsCount).withIndex()){
+                robots[i].position = Point2D(robot.x.toDouble(), robot.y.toDouble())
+                robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f)", robot.x, robot.y)
+                robots[i].isPositionKnown = true
+            }
+
             display.fill = Color.BLACK
             display.fillRect(0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
             display.drawImage(fieldImage, 0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
@@ -260,7 +261,7 @@ class FieldView : View() {
                             label("Robot 0:"){ addClass(Styles.boldLabel) }
                         }
                         field {
-                            label("Position: Unknown (accuracy: Unknown)")
+                            robots[0].positionLabel = label("Position: Unknown")
                         }
                         field {
                             label("FSM state: Unknown")
@@ -271,7 +272,7 @@ class FieldView : View() {
                             label("Robot 1:"){ addClass(Styles.boldLabel) }
                         }
                         field {
-                            label("Position: Unknown (accuracy: Unknown)")
+                            robots[1].positionLabel = label("Position: Unknown")
                         }
                         field {
                             label("FSM state: Unknown")

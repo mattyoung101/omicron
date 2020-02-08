@@ -23,11 +23,11 @@ single board computer (SBC). In terms of localisation, in the past we managed to
 a low-fidelity approach based on detecting the goals in the image.
 
 ## Performance and results
-Omicam is capable of detecting 4 field objects at **over 60fps at 720p (1280x720) resolution**. Compared to the previous
+Omicam is capable of detecting 4 field objects at **60-70fps at 720p (1280x720) resolution**. Compared to the previous
 OpenMV H7, this is **23x higher resolution at 3x the framerate.<sup>1</sup>**
 
 In addition, using the novel vision-based localisation algorithm we developed this year, we can now determine the
-robot's position to **~1cm accuracy** at realtime speeds. This is over **5x/25x more accurate<sup>2</sup>** than any previous methods 
+robot's position to **&lt;1cm accuracy** at realtime speeds. This is over **5x/25x more accurate<sup>2</sup>** than any previous methods 
 used at BBC Robotics, and has been shown to be much more reliable and stable.
 
 To achieve this performance, we made heavy use of parallel programming techniques, OpenCV's x86 SIMD CPU optimisations,
@@ -35,7 +35,7 @@ Clang optimiser flags as well as intelligent image downscaling for the goal thre
 In addition, the localisation, vision and remote debug pipelines all run in parallel to each other so the entire application
 is asynchronous.
 
-_<sup>1 results based on mediocre lighting conditions running well optimised OpenMV H7 code at QVGA resolution.</sup>_ 
+_<sup>1 previous results based on mediocre lighting conditions running well optimised OpenMV H7 code at QVGA resolution.</sup>_ 
 
 _<sup>2 depending on whether LRF based/goal based localisation was used.</sup>_
 
@@ -49,8 +49,8 @@ motion JPEG (MJPEG) at 720p 100+ fps.
 
 ## Field object detection
 The primary responsibility of Omicam is to detect the bounding box and centroid of field objects: the ball, goals and also lines. 
-To do this, we use the  popular computer vision library OpenCV (v4.2.0). 
-We use Linux's UVC driver to acquire an MJPEG stream from the USB camera. 
+To do this, we use the popular computer vision library OpenCV (v4.2.0). 
+We use Video4Linux2 (V4L2) to acquire an MJPEG stream from the USB camera, via the popular gstreamer library.
 Then, we apply any pre-processing steps such as downscaling the goal frames and gamma boosting.
 
 Next, we threshold all objects in parallel to make use of our quad-core CPU, using OpenCV's `inRange` thresholder but a custom
@@ -66,10 +66,10 @@ POSIX termios for UART configuration.
 **TODO images and/or video of thresholded field**
 
 ## Localisation
+### Previous methods and background
 Localisation is the problem of detecting where the robot is on the field. This information is essential to know in order
 to develop advanced strategies and precise movement control, instead of just driving directly towards the ball.
 
-### Previous methods
 Currently, teams use three main ways of localisation. Firstly, the simplest approach uses the detected goals
 in the camera to estimate the robot's position. This approach is very inaccurate because of the low resolution of
 most cameras (such as the OpenMV), the fact that there are only two goals to work with as well as the fact that sometimes
@@ -89,17 +89,26 @@ still vulnerable to all the problems the second approach suffers from as well. W
 this as not an ideal approach.
 
 ### Our solution
-This year, Team Omicron presents a novel approach to robot localisation based on a middle-size league paper by Lu, Li, Zhang,
-Hu & Zheng[^2]. We localise using only RGB camera data by solving a multi-variate non-linear optimisation problem using the 
-lines on the playing field, in realtime.
+This year, Team Omicron presents a novel approach to robot localisation based partly on a middle-size league paper by Lu, Li, Zhang,
+Hu & Zheng[^2]. We localise using only RGB camera data by solving a multi-variate non-linear optimisation problem in realtime,
+making inferences from the position of the lines on the game field.
 
 The principle method of operation of our algorithm is that we need to match a virtual model of field geometry to the observed
-one from the camera. If we match the lines so that they align in both the virtual model and real-world model, then we can
-infer that the calculated virtual robot coordinates are the same as the real, unknown robot coordinates. Essentially, we're
+one from the camera, thereby inferring our position. Another way to think of it is we need to generate a transform such that
+a virtual model of the field will align with the real one, thereby also calculating our 2D position.  
+If we match the lines so that they align in both the virtual model and real-world model, then we can infer that the 
+calculated virtual robot coordinates are the same as the real, unknown robot coordinates. Essentially, we're
 taking what we know: the static layout of the field, and observed field geometry at our current position, and using it to
 infer the unknown 2D position vector.
 
-We divide our new localisation method into three main sub-processes:
+This is a form of the orthogonal Procrustes problem, which can be solved through a multitude of approaches such as iterative
+closest point (commonly used with 3D LiDARS), Monte-Carlo localisation via a particle filter or gradient fields. However,
+most of these approaches also consider rotation as a factor. Due to to our use of a high-accuracy BNO-055 IMU, we consider
+rotation to be a non-issue that can be easily corrected for, thereby reducing the complexity of the problem. 
+Thus, we developed a novel three step algorithm involving ray-casting to infer our 2D position, ignoring rotation as a factor 
+to be solved for.
+
+These steps are:
 
 1. Image analysis
 2. Camera normalisation
@@ -109,53 +118,75 @@ We divide our new localisation method into three main sub-processes:
 The localiser's input is a 1-bit mask of pixels that are determined to be on field lines. This is determined by thresholding
 for the colour white, which is handled by the vision pipeline described earlier.
 
-With the input provided, a certain number of rays (usually 64) are casted over the line image using a modified version 
-Bresenham's line algorithm[^3]  to find every time a ray intersects a line (these are called "line points"). We modified 
-Bresenham's original algorithm so that it works with rays instead of lines, and terminates when it reaches the edge of 
-the image instead of when it's finished drawing a line.
+With the input provided, a certain number of rays (usually 128) are emitted from the centre of the line image. A ray
+terminates when it touches a line, reaches the edge of the image or reaches the edge of the mirror (as it would be a
+waste of time to check outside the mirror). The theory of operation behind this is, essentially, for each field position
+each ray should have its own unique distance.
+
+Rays are stored as only a length in a regular C array, as we can infer the angle between each ray as: 2pi / n_rays
+
+![Raycasting](images/raycasting.png)   
+_Figure 1: example of ray casting on field, with a position near to the centre_
 
 #### Camera normalisation
-These points are then dewarped to counter the distortion of the 360 degree mirror. The equation to do so is determined by
-measuring the pixels between points along a ruler and comparing this to the real centimetre distances on the ruler. Using
-a regression software such as Excel or Desmos, an equation can then be calculated to map pixel distances to real distances,
-and thus the mirror distortion can be countered. Below we demonstrate the result of dewarping an entire image (using the
-output of the OpenMV H7), which we deemed to inefficient to run in realtime. This dewarping equation is also used by the 
-vision pipeline to determine the distance to the ball and goals in centimetres.
+These rays are then dewarped to counter the distortion of the 360 degree mirror. The equation to do so is determined by
+measuring the pixels between points along evenly spaced tape placed on the real field, via Omicontrol. Using regression 
+software such as Excel or Desmos, an equation can then be calculated to map pixel distances to real distances. 
+Below we demonstrate the result of dewarping an entire image (using the output of the OpenMV H7), which we deemed too 
+inefficient to run in realtime.  In our case, we simply apply the dewarp function to each ray length instead.
+
+This dewarping equation is also used by the vision pipeline to determine the distance to the ball and goals in centimetres.
 
 ![Dewarped](images/dewarped.png)    
-_Figure 1: example of frame dewarping from the old, low reolution OpenMV H7_
+_Figure 2: example of frame dewarping from the old, low reolution OpenMV H7_
 
-The second phase of the camera normalisation is to rotate the points relative to the robot's heading, using a rotation matrix.
+The second phase of the camera normalisation is to rotate the rays relative to the robot's heading, using a rotation matrix.
 The robot's heading value, which is relative to when it was powered on, is transmitted by the ESP32, again using Protocol Buffers.
 For information about how this value is calculated using the IMU, see the ESP32 and movement code page.
 
+**TODO: explanation on why this is done**
+
 #### Position optimisation
-The main part of our solution is the Subplex local derivative-free non-linear optimiser[^4], re-implemented as 
-part of the NLopt package[^5]. This algorithm essentially acts as an efficiency and stability improvement over the well-known 
+The main part of our solution is the Subplex local derivative-free non-linear optimiser[^3], re-implemented as 
+part of the NLopt package[^4]. This algorithm essentially acts as an efficiency and stability improvement over the well-known 
 Nelder-Mead Simplex algorithm.
 
 The most critical part of this process is the _objective function_, which is a function that takes an N-dimensional vector
 (in our case, an estimated 2D position) and calculates essentially a "score" of how accurate the value is. This
-objective function must be highly optimised as it could be evaluated thousands of times by the optimisation algorithm.
+objective function must be highly optimised as it could be evaluated hundreds of times by the optimisation algorithm.
+
+![Objective function](images/objective_function.png)   
+_Figure 3: map of objective function for a robot placed at the centre of the field. White pixels indicate high accuracy areas_
+_and black pixels indicate less accurate areas._
+
+A naive approach, where every grid cell is evaluated and the lowest value is picked, would require 44,226 objective function
+evaluation which takes about 5 seconds on a fast computer. Using the Subplex optimiser, this can be reduced to just 62
+evaluations for a 1.2mm accurate fix.
+
+**TODO: cover approaches we drafted: line points, etc. Also, use more images in the docs**
 
 We spent a great deal of effort drafting the most efficient objective function, and the approach we present makes heavy use
 of pre-computation via a "field file". This field file is a binary Protcol Buffer file that encodes the geometry of any
-RoboCup field by dividing it into a grid, where each cell contains the distance in centimetres to the closest line. Increasing
+RoboCup field by dividing it into a grid, where each cell is true if on a line, otherwise false. Increasing
 the resolution of the grid will increase its accuracy, but also significantly increase its file size. We use a 1cm grid,
-which stores 44,226 cells and is 172 KiB on disk. This takes about 2 seconds to generate on a fast desktop computer, and
+which stores 44,226 cells and is 42 KiB on disk. This takes about 2 seconds to generate on a fast desktop computer, and
 is copied across to the LattePanda.
 The field file is generated by a Python script which can be easily modified to support an arbitrary number of different 
-field layouts, such as SuperTeam or our regional Australian field.
+field layouts, such as SuperTeam or our regional Australian field. 
 
-The objective function essentially works as follows:
+Although the field file could theoretically be loaded
+via the bitmap image below, images are more difficult to load than Protobuf files and it would not support grid cell sizes
+smaller or larger than 1cm.
 
-1. For each line point, snap it to the nearest grid cell unit and look it up in the field file to determine the error
-   to the real line distance.
-2. Sum all these errors to produce a total error.
+![Field file](images/field_file.png)    
+_Figure 3: bitmap image displaying generated field file. In the original 243x182 image, 1 pixel = 1cm_
 
-By running most computations outside the objective function, we greatly increase the speed of the localisation. As the
-total error approaches zero, the field position becomes more and more accurate. Ideally, an error of 0.0 would mean that
-the estimate is as accurate as possible given the current field file's grid unit.
+The objective function essentially compares the difference between the ray lengths, as follows:
+
+1. Consider the estimated position (eX, eY). Move to (eX, eY) in the field file and raycast out to generate the array
+   `expectedRays`.
+2. For each ray in the dewarped `observedRays` from the camera (which are now in field units, same as `expectedRays`),
+   do the following: `totalError += abs(expectedRays[i] - observedRays[i])`
 
 Although a derivative-based algorithm may be more efficient at solving the problem, we deemed it far too difficult to calculate
 the derivative of the objective function.
@@ -207,8 +238,6 @@ a it's already relatively close to the true position.
 
 [^2]: H. Lu, X. Li, H. Zhang, M. Hu, and Z. Zheng, “Robust and real-time self-localization based on omnidirectional vision for soccer robots,” Adv. Robot., vol. 27, no. 10, pp. 799–811, Jul. 2013, doi: 10.1080/01691864.2013.785473.
 
-[^3]: J. E. Bresenhman, “Algorithm for computer control of a digital plotter,” IBM Syst. J., vol. 4, no. 1, pp. 25–30, 1965.
+[^3]: T. H. Rowan, “Functional stability analysis of numerical algorithms,” Unpuplished Diss., p. 218, 1990.
 
-[^4]: T. H. Rowan, “Functional stability analysis of numerical algorithms,” Unpuplished Diss., p. 218, 1990.
-
-[^5]: Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
+[^4]: Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt

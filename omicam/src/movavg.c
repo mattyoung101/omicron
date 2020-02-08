@@ -2,9 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 
-// Moving average, by Matt Young
-// Licensed into the public domain with the Unlicense.
-
 movavg_t *movavg_create(size_t size){
     movavg_t *movavg = calloc(1, sizeof(movavg_t));
     movavg->size = size;
@@ -20,7 +17,7 @@ void movavg_free(movavg_t *mov_avg){
 }
 
 void movavg_push(movavg_t *mov_avg, double value){
-    if (mov_avg->counter + 1 >= mov_avg->size) return; // don't add if out of bounds
+    if (mov_avg->counter + 1 >= mov_avg->size) return; // this is here to fix a bug which shouldn't exist, TODO remove?
     mov_avg->items[mov_avg->counter++ % mov_avg->size] = value;
 }
 

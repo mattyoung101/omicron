@@ -237,7 +237,7 @@ static auto cv_thread(void *arg) -> void *{
             Scalar maxScalar = Scalar(max[2], max[1], max[0]);
             inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar, thresholded[object]);
 
-            // dispatch the lines immediately to the localiser for processing
+            // dispatch the lines immediately to the localiser for processing to give it a little bit of a head start
             if (object == OBJ_LINES){
                 // note: this assumes we will never scale the line image, otherwise we would have to check and use frameScaled
                 auto *localiserFrame = (uint8_t*) malloc(frame.rows * frame.cols);
@@ -245,13 +245,6 @@ static auto cv_thread(void *arg) -> void *{
                 localiser_post(localiserFrame, frame.cols, frame.rows);
             }
         }, 4);
-
-        // FIXME just for testing: force thread to sleep to give localiser more time to work
-//        pthread_mutex_lock(&sleepMutex);
-//        while (true){
-//            pthread_cond_wait(&sleepCond, &sleepMutex);
-//        }
-//        pthread_mutex_unlock(&sleepMutex);
 
         // process all our field objects
         int32_t realWidth = frame.cols;
@@ -286,7 +279,7 @@ static auto cv_thread(void *arg) -> void *{
             // FIXME make this not a busy loop and use proper threading stuff
             while (!localiserDone){
                 // log_info("Had to wait for localiser before posting to remote debug");
-                nanosleep((const struct timespec[]){{0, 500000L}}, nullptr);
+                nanosleep((const struct timespec[]){{0, 1000000L}}, nullptr);
             }
 
             // ballThresh is just a 1-bit mask so it has only one channel
