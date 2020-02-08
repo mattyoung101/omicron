@@ -234,7 +234,7 @@ static void *work_thread(void *arg){
 
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
-        double resultCoord[2] = {0.0, 0.0};
+        double resultCoord[2] = {160.0, 96.0};
         double resultError = 0.0;
         nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
         if (result < 0){
@@ -243,13 +243,13 @@ static void *work_thread(void *arg){
         }
         resultCoord[0] -= field.length / 2.0;
         resultCoord[1] -= field.width / 2.0;
-        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
-               resultError, nlopt_result_to_string(result));
+//        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
+//               resultError, nlopt_result_to_string(result));
         localisedPosition.x = resultCoord[0];
         localisedPosition.y = resultCoord[1];
 
-        puts("calculating...");
-        render_test_image();
+//        puts("calculating...");
+//        render_test_image();
 
         free(entry->frame);
         free(entry);
@@ -285,8 +285,8 @@ void localiser_init(char *fieldFile){
     nlopt_set_maxtime(optimiser, LOCALISER_MAX_EVAL_TIME / 1000.0); // stop if it's taking too long
     nlopt_set_min_objective(optimiser, objective_function, NULL);
 
-    double minCoord[] = {-field.length / 2.0, -field.width / 2.0};
-    double maxCoord[] = {field.length / 2.0, field.width / 2.0};
+    double minCoord[] = {0.0, 0.0};
+    double maxCoord[] = {field.length, field.width};
     log_trace("Min bound: (%.2f,%.2f) Max bound: (%.2f,%.2f)", minCoord[0], minCoord[1], maxCoord[0], maxCoord[1]);
     nlopt_set_lower_bounds(optimiser, minCoord);
     nlopt_set_upper_bounds(optimiser, maxCoord);
