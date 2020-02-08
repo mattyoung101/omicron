@@ -70,6 +70,9 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
 
         // return if going to be out of bounds
         if (rx < minCorner.x || ry < minCorner.y || rx > maxCorner.x || ry > maxCorner.y){
+            // TODO we actually want to return -1 and set this ray to be ignored then
+            // in case we have a bad track or something in the way or similar to that instead of throwing all
+            // the other readings with a huge value
             return dist;
         }
 
@@ -114,62 +117,69 @@ static inline double objective_func_impl(double x, double y){
         angle += interval;
     }
 
-    // TODO compare rays here basically
+    // 2. compare ray lengths
+    double totalError = 0.0;
+    for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+        double diff = fabs(expectedRays[i] - observedRays[i]);
+        totalError += diff;
+    }
 
-    return 0.0;
+    return totalError;
 }
 
 /** Renders the objective function for the whole field and then quits the application **/
 static void render_test_image(){
-    // in this case we're just testing the image
-    bmp = BMP_Create(field.length, field.width, 24);
-    objective_func_impl(120.0, 120.0);
+//    // in this case we're just testing the image
+//    bmp = BMP_Create(field.length, field.width, 24);
+//    objective_func_impl(120.0, 120.0);
+//
+//    // render the field as well
+//    for (int y = 0; y < field.width; y++){
+//        for (int x = 0; x < field.length; x++){
+//            bool isLine = field.data.bytes[x + field.length * y] != 0;
+//            if (isLine){
+//                BMP_SetPixelRGB(bmp, x, y, 0, 0, 255);
+//            }
+//        }
+//    }
+//
+//    BMP_WriteFile(bmp, "../testing.bmp");
+//    exit(EXIT_SUCCESS);
 
-    // render the field as well
-    for (int y = 0; y < field.width; y++){
-        for (int x = 0; x < field.length; x++){
-            bool isLine = field.data.bytes[x + field.length * y] != 0;
-            if (isLine){
-                BMP_SetPixelRGB(bmp, x, y, 0, 0, 255);
-            }
+    double *data = calloc(field.length * field.width, sizeof(double));
+    uint8_t *outImage = calloc(field.length * field.width, sizeof(uint8_t));
+
+    // calculate objective function for all data points
+    for (int32_t y = 0; y < field.width; y++){
+        for (int32_t x = 0; x < field.length; x++){
+            data[x + field.length * y] = objective_func_impl((double) x, (double) y);
         }
     }
 
-    BMP_WriteFile(bmp, "../testing.bmp");
-    exit(EXIT_SUCCESS);
+    // find min and max of array, starting with worst possible values
+    double currentMin = HUGE_VAL;
+    double currentMax = -HUGE_VAL;
+    for (int32_t i = 0; i < (field.width * field.length); i++){
+        if (data[i] < currentMin){
+            currentMin = data[i];
+        } else if (data[i] > currentMax){
+            currentMax = data[i];
+        }
+    }
+    log_trace("currentMin: %.2f, currentMax: %.2f", currentMin, currentMax);
 
-//    // calculate objective function for all data points
-//    for (int32_t y = 0; y < field.width; y++){
-//        for (int32_t x = 0; x < field.length; x++){
-//            data[x + field.length * y] = objective_func_impl((double) x, (double) y);
-//        }
-//    }
-//
-//    // find min and max of array, starting with worst possible values
-//    double currentMin = HUGE_VAL;
-//    double currentMax = -HUGE_VAL;
-//    for (int32_t i = 0; i < (field.width * field.length); i++){
-//        if (data[i] < currentMin){
-//            currentMin = data[i];
-//        } else if (data[i] > currentMax){
-//            currentMax = data[i];
-//        }
-//    }
-//    log_trace("currentMin: %.2f, currentMax: %.2f", currentMin, currentMax);
-//
-//    // scale each value
-//    for (int32_t i = 0; i < (field.width * field.length); i++){
-//        double val = data[i];
-//        double scaled = (val - currentMin) / (currentMax - currentMin);
-//        outImage[i] = 255 - (uint8_t) (scaled * 255);
-//    }
-//
-//    // render image
-//    stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, outImage);
-//
-//    printf("total points: %d\n", totalPoints);
-//    puts("written image, quitting");
-//    exit(EXIT_SUCCESS);
+    // scale each value
+    for (int32_t i = 0; i < (field.width * field.length); i++){
+        double val = data[i];
+        double scaled = (val - currentMin) / (currentMax - currentMin);
+        outImage[i] = 255 - (uint8_t) (scaled * 255);
+    }
+
+    // render image
+    stbi_write_bmp("../objective_function.bmp", field.length, field.width, 1, outImage);
+
+    puts("written image, quitting");
+    exit(EXIT_SUCCESS);
 }
 
 /**
@@ -224,20 +234,22 @@ static void *work_thread(void *arg){
 
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
-//        double resultCoord[2] = {0.0, 0.0};
-//        double resultError = 0.0;
-//        nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
-//        if (result < 0){
-//            // seem as though we've been stitched up and the NLopt version Ubuntu ships doesn't support nlopt_result_to_string()
-//            log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
-//        }
-//        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
-//               resultError, nlopt_result_to_string(result));
-//        localisedPosition.x = resultCoord[0];
-//        localisedPosition.y = resultCoord[1];
+        double resultCoord[2] = {0.0, 0.0};
+        double resultError = 0.0;
+        nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
+        if (result < 0){
+            // seem as though we've been stitched up and the NLopt version Ubuntu ships doesn't support nlopt_result_to_string()
+            log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
+        }
+        resultCoord[0] -= field.length / 2.0;
+        resultCoord[1] -= field.width / 2.0;
+        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
+               resultError, nlopt_result_to_string(result));
+        localisedPosition.x = resultCoord[0];
+        localisedPosition.y = resultCoord[1];
 
-//        puts("calculating...");
-//        render_test_image();
+        puts("calculating...");
+        render_test_image();
 
         free(entry->frame);
         free(entry);

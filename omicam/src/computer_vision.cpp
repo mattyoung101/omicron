@@ -283,8 +283,9 @@ static auto cv_thread(void *arg) -> void *{
 
             // wait for localisation to finish before dispatching info
             // if performance issue occur, make this mutexes and shit instead of a busy loop - just couldn't be bothered now
+            // FIXME make this not a busy loop and use proper threading stuff
             while (!localiserDone){
-                log_info("Had to wait for localiser before posting to remote debug");
+                // log_info("Had to wait for localiser before posting to remote debug");
                 nanosleep((const struct timespec[]){{0, 500000L}}, nullptr);
             }
 
