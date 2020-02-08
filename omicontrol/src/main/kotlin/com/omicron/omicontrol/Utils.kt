@@ -103,6 +103,10 @@ fun Point2D.toRealPosition(): Point2D {
         y / FIELD_CANVAS_HEIGHT * FIELD_WIDTH_CM - (FIELD_WIDTH_CM / 2.0))
 }
 
+fun toFieldLength(x: Double): Double {
+    return x / FIELD_LENGTH_CM * FIELD_CANVAS_WIDTH
+}
+
 /**
  * Shortcut to send a message to Omicam asking to enable/disable sending images. In the field view, sending images
  * is disabled to save bandwidth.

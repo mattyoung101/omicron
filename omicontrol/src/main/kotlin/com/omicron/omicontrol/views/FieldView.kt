@@ -20,6 +20,8 @@ import com.omicron.omicontrol.field.Robot
 import javafx.scene.control.Label
 import javafx.scene.shape.Circle
 import org.apache.commons.io.FileUtils
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * This screen displays the localised positions of the robots on a virtual field and allows you to control them
@@ -94,15 +96,22 @@ class FieldView : View() {
                 display.drawImage(targetIcon, targetPos!!.x - 16, targetPos!!.y - 16, 48.0, 48.0)
             }
 
-            // draw line points
-            // TODO add raycast debug
-            for (point in message.dewarpedLinePointsList.take(message.dewarpedLinePointsCount)) {
-                display.lineWidth = 2.0
-                display.fill = Color.WHITE
-                // FIXME dirty hack
-                val fieldPoint = Point2D(point.x.toDouble() + robots[0].position.x, point.y.toDouble() + robots[0].position.y).toCanvasPosition()
-                display.fillOval(fieldPoint.x, fieldPoint.y, 10.0, 10.0)
-                display.strokeOval(fieldPoint.x, fieldPoint.y, 10.0, 10.0)
+            // draw rays
+            // TODO somewhat of a hack since it only works for robot 0 right now
+            display.lineWidth = 2.0
+            display.stroke = Color.WHITE
+
+            val original = Point2D(robots[0].position.x, robots[0].position.y).toCanvasPosition()
+            val x0 = original.x
+            val y0 = original.y
+            var angle = 0.0
+
+            for (ray in message.dewarpedRaysList.take(message.dewarpedRaysCount)) {
+                val x1 = x0 + (toFieldLength(ray) * sin(angle))
+                val y1 = y0 + (toFieldLength(ray) * cos(angle))
+
+                display.strokeLine(x0, y0, x1, y1)
+                angle += message.rayInterval
             }
 
             // update labels

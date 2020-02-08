@@ -32,10 +32,10 @@ static vec2_array_t correctedLinePoints = {0};
 static vec2_array_t objectivePoints = {0};
 _Atomic bool localiserDone = false;
 static double orientation = 0.0; // last received orientation from ESP32
-static uint32_t totalPoints = 0;
-static struct kdtree *kdtree = NULL;
 static BMP *bmp = NULL;
-static int32_t observedRays[LOCALISER_NUM_RAYS] = {0};
+double observedRays[LOCALISER_NUM_RAYS] = {0};
+double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
+double expectedRays[LOCALISER_NUM_RAYS] = {0};
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -62,22 +62,23 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
 */
 static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double theta, int32_t imageWidth, int32_t earlyStop, struct vec2 minCorner, struct vec2 maxCorner){
     int32_t dist = 0;
+    int32_t colour[3] = {rand() % 256, rand() % 256, rand() % 256};
 
     while (true){
         int32_t rx = ROUND2INT(x0 + (dist * sin(theta)));
         int32_t ry = ROUND2INT(y0 + (dist * cos(theta)));
 
         // return if going to be out of bounds
-        if (x0 < minCorner.x || y0 < minCorner.y || x0 > maxCorner.x || y0 > maxCorner.y){
+        if (rx < minCorner.x || ry < minCorner.y || rx > maxCorner.x || ry > maxCorner.y){
             return dist;
         }
 
         // draw to debug
         if (bmp != NULL){
-            BMP_SetPixelRGB(bmp, rx, ry, 255, 255, 255);
+            BMP_SetPixelRGB(bmp, rx, ry, colour[0], colour[1], colour[2]);
         }
 
-        // also return if we touche a line, or exited the early stop bounds
+        // also return if we touch a line, or exited the early stop bounds
         int32_t i = rx + imageWidth * ry;
         if (image[i] != 0 || (earlyStop != -1 && dist > earlyStop)){
             return dist;
@@ -95,8 +96,6 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
  * @return a score of how close the estimated position is to the real position
  */
 static inline double objective_func_impl(double x, double y){
-    da_clear(objectivePoints);
-    kd_clear(kdtree);
     double begin = utils_time_millis();
 
     // 1. raycast out from the guessed x and y on the field file
@@ -108,25 +107,14 @@ static inline double objective_func_impl(double x, double y){
     struct vec2 minCoord = {0, 0};
     struct vec2 maxCoord = {field.length, field.width};
 
-    // 1.2. loop over the points and raycast (NOLINTNEXTLINE)
-    for (double angle = 0.0; angle < PI2; angle += interval){
-        raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), angle, field.length, -1, minCoord, maxCoord);
+    // 1.2. loop over the points and raycast
+    double angle = 0.0;
+    for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+        expectedRays[i] = (double) raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), angle, field.length, -1, minCoord, maxCoord);
+        angle += interval;
     }
 
-    printf("observed points: %zu, expected points: %zu\n", da_count(correctedLinePoints), da_count(objectivePoints));
-
-    // write out original points in red
-    for (size_t b = 0; b < da_count(correctedLinePoints); b++){
-        struct vec2 point = da_get(correctedLinePoints, b);
-        BMP_SetPixelRGB(bmp, (unsigned long) ROUND2INT(point.x + field.length / 2.0), (unsigned long) ROUND2INT(point.y + field.width / 2.0), 255, 0, 0);
-    }
-
-    // write out expected points in green
-    for (size_t c = 0; c < da_count(objectivePoints); c++){
-        struct vec2 point = da_get(objectivePoints, c);
-        printf("drawing expected at %.2f,%.2f\n", point.x, point.y);
-        BMP_SetPixelRGB(bmp, (unsigned long) ROUND2INT(point.x), (unsigned long) ROUND2INT(point.y), 0, 0, 255);
-    }
+    // TODO compare rays here basically
 
     return 0.0;
 }
@@ -135,8 +123,9 @@ static inline double objective_func_impl(double x, double y){
 static void render_test_image(){
     // in this case we're just testing the image
     bmp = BMP_Create(field.length, field.width, 24);
-    objective_func_impl(120, 120);
+    objective_func_impl(120.0, 120.0);
 
+    // render the field as well
     for (int y = 0; y < field.width; y++){
         for (int x = 0; x < field.length; x++){
             bool isLine = field.data.bytes[x + field.length * y] != 0;
@@ -208,8 +197,6 @@ static void *work_thread(void *arg){
         }
 
         localiser_entry_t *entry = (localiser_entry_t*) queueData;
-        da_clear(linePoints);
-        da_clear(correctedLinePoints);
         localiserDone = false;
 
         // image analysis
@@ -220,32 +207,24 @@ static void *work_thread(void *arg){
         struct vec2 frameMin = {0, 0};
         struct vec2 frameMax = {entry->width, entry->height};
 
-        // 1.1. cast rays from the centre of the mirror to the edge of it, to calculate the ray lengths (NOLINTNEXTLINE)
-        for (double angle = 0.0; angle < PI2; angle += interval){
-            raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), angle, entry->width, visionMirrorRadius, frameMin, frameMax);
+        // 1.1. cast rays from the centre of the mirror to the edge of it, to calculate the ray lengths
+        double angle = 0.0;
+        for (int32_t i = 0; i < LOCALISER_NUM_RAYS; i++) {
+            observedRaysRaw[i] = (double) raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), angle, entry->width,
+                    visionMirrorRadius, frameMin, frameMax);
+            angle += interval;
         }
 
-        // TODO what do we do about mirror dewarping here? can we just call utils_vision_dewapr()?
         // image normalisation
-        // 2. dewarp points based on calculated mirror model to get centimetre field coordinates, then rotate based on robot's real orientation
-        for (size_t i = 0; i < da_count(linePoints); i++){
-            struct vec2 point = da_get(linePoints, i);
-            point.x -= entry->width / 2.0;
-            point.y -= entry->height / 2.0;
-
-            // 2.1. convert the point to polar coordinates to apply dewarp
-            double r = utils_camera_dewarp(svec2_length(point));
-            double theta = svec2_angle(point);
-
-            // 2.2. convert back to cartesian and rotate
-            struct vec2 dewarped = {r * cos(theta), r * sin(theta)};
-            svec2_rotate(dewarped, orientation);
-            da_add(correctedLinePoints, dewarped);
+        // 2. dewarp ray lengths based on calculated mirror model to get centimetre field coordinates, then rotate based on robot's real orientation
+        for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+            observedRays[i] = utils_camera_dewarp(observedRaysRaw[i]);
         }
+        // TODO somehow we also need to rotate this array based on orientation of robot
 
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
-//        double resultCoord[2] = {0.0, 0.0}; // TODO use last mouse sensor coordinate to seed optimisation
+//        double resultCoord[2] = {0.0, 0.0};
 //        double resultError = 0.0;
 //        nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
 //        if (result < 0){
@@ -257,10 +236,9 @@ static void *work_thread(void *arg){
 //        localisedPosition.x = resultCoord[0];
 //        localisedPosition.y = resultCoord[1];
 
-        puts("calculating...");
-        render_test_image();
+//        puts("calculating...");
+//        render_test_image();
 
-        cleanup:
         free(entry->frame);
         free(entry);
         localiserDone = true;
@@ -310,8 +288,6 @@ void localiser_init(char *fieldFile){
         pthread_setname_np(workThread, "Localiser Thrd");
     }
 
-    kdtree = kd_create(2);
-
     free(data);
     pthread_testcancel();
 }
@@ -357,5 +333,4 @@ void localiser_dispose(void){
     da_free(linePoints);
     da_free(correctedLinePoints);
     da_free(objectivePoints);
-    kd_free(kdtree);
 }

@@ -42,16 +42,18 @@ message DebugFrame {
     int32 frameHeight = 8;
     // the crop rectangle, or all zeroes if cropping is disabled
     RDRect cropRect = 9;
-    // line points from localiser
-    repeated RDPoint linePoints = 10;
+    // non-dewarped rays from localiser
+    repeated double rays = 10;
+    // dewarped rays from localiser
+    repeated double dewarpedRays = 11;
     // mirror radius used by localiser
-    int32 mirrorRadius = 11;
+    int32 mirrorRadius = 12;
     // position of robots on the field
-    repeated RDPoint robotPositions = 12;
+    repeated RDPoint robotPositions = 13;
     // orientations of robots on the field
-    repeated float robotOrientations = 13;
-    // dewarped line points from the localiser
-    repeated RDPoint dewarpedLinePoints = 14;
+    repeated float robotOrientations = 14;
+    // distance between rays in radians
+    float rayInterval = 15;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

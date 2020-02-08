@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include "protobuf/RemoteDebug.pb.h"
+#include "defines.h"
 
 /** An entry submitted to the localisation work queue */
 typedef struct {
@@ -15,7 +16,13 @@ typedef struct {
 
 /** true if the localisation for the last frame has completed */
 extern _Atomic bool localiserDone;
-
+// these need to be declared extern so they can be acessed by the remote debugger
+/** rays that we observed from raycasting on the camera image, no dewarping */
+extern double observedRaysRaw[LOCALISER_NUM_RAYS];
+/** rays that we observed from raycasting on the camera, with dewarping **/
+extern double observedRays[LOCALISER_NUM_RAYS];
+/** rays that we got from raycasting on the field file */
+extern double expectedRays[LOCALISER_NUM_RAYS];
 
 #ifdef __cplusplus
 extern "C" {

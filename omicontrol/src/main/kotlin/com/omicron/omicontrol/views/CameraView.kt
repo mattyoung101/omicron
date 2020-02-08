@@ -31,6 +31,8 @@ import java.util.*
 import javax.imageio.ImageIO
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
+import kotlin.math.cos
+import kotlin.math.sin
 
 class CameraView : View() {
     /** displays the thresh image(s) **/
@@ -170,28 +172,25 @@ class CameraView : View() {
 
             // draw localiser debug
             if (localiserDebug) {
-                display.fill = Color.LIME
-                display.stroke = Color.BLACK
                 display.lineWidth = 2.0
+                display.stroke = Color.WHITE
 
-                val centreX = message.cropRect.x + (message.cropRect.width / 2.0)
-                val centreY = message.cropRect.y + (message.cropRect.height / 2.0)
+                val x0 = message.cropRect.x + (message.cropRect.width / 2.0)
+                val y0 = message.cropRect.y + (message.cropRect.height / 2.0)
+                var angle = 0.0
 
-                for (point in message.linePointsList.take(message.linePointsCount)) {
-                    display.lineWidth = 2.0
-                    val x = point.x.toDouble() + message.cropRect.x
-                    val y = point.y.toDouble() + message.cropRect.y
-                    display.fillOval(x, y, 10.0, 10.0)
-                    display.strokeOval(x, y, 10.0, 10.0)
+                for (ray in message.raysList.take(message.raysCount)) {
+                    val x1 = x0 + (ray * sin(angle))
+                    val y1 = y0 + (ray * cos(angle))
 
-                    display.lineWidth = 1.0
-                    display.strokeLine(centreX, centreY, x, y)
+                    display.strokeLine(x0, y0, x1, y1)
+                    angle += message.rayInterval
                 }
 
                 display.lineWidth = 4.0
                 display.stroke = Color.LIME
                 val diameter = message.mirrorRadius * 2.0
-                display.strokeOval(centreX - message.mirrorRadius, centreY - message.mirrorRadius, diameter, diameter)
+                display.strokeOval(x0 - message.mirrorRadius, y0 - message.mirrorRadius, diameter, diameter)
             }
         }
     }
