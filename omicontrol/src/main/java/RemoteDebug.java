@@ -2339,6 +2339,640 @@ public final class RemoteDebug {
 
   }
 
+  public interface RDRobotOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RDRobot)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .RDPointF position = 1;</code>
+     */
+    boolean hasPosition();
+    /**
+     * <code>optional .RDPointF position = 1;</code>
+     */
+    RemoteDebug.RDPointF getPosition();
+    /**
+     * <code>optional .RDPointF position = 1;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getPositionOrBuilder();
+
+    /**
+     * <code>optional float orientation = 2;</code>
+     */
+    float getOrientation();
+  }
+  /**
+   * <pre>
+   * contains information about a robot
+   * </pre>
+   *
+   * Protobuf type {@code RDRobot}
+   */
+  public  static final class RDRobot extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:RDRobot)
+      RDRobotOrBuilder {
+    // Use RDRobot.newBuilder() to construct.
+    private RDRobot(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RDRobot() {
+      orientation_ = 0F;
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private RDRobot(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (position_ != null) {
+                subBuilder = position_.toBuilder();
+              }
+              position_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(position_);
+                position_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 21: {
+
+              orientation_ = input.readFloat();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RemoteDebug.internal_static_RDRobot_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RemoteDebug.internal_static_RDRobot_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RemoteDebug.RDRobot.class, RemoteDebug.RDRobot.Builder.class);
+    }
+
+    public static final int POSITION_FIELD_NUMBER = 1;
+    private RemoteDebug.RDPointF position_;
+    /**
+     * <code>optional .RDPointF position = 1;</code>
+     */
+    public boolean hasPosition() {
+      return position_ != null;
+    }
+    /**
+     * <code>optional .RDPointF position = 1;</code>
+     */
+    public RemoteDebug.RDPointF getPosition() {
+      return position_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : position_;
+    }
+    /**
+     * <code>optional .RDPointF position = 1;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getPositionOrBuilder() {
+      return getPosition();
+    }
+
+    public static final int ORIENTATION_FIELD_NUMBER = 2;
+    private float orientation_;
+    /**
+     * <code>optional float orientation = 2;</code>
+     */
+    public float getOrientation() {
+      return orientation_;
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (position_ != null) {
+        output.writeMessage(1, getPosition());
+      }
+      if (orientation_ != 0F) {
+        output.writeFloat(2, orientation_);
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (position_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getPosition());
+      }
+      if (orientation_ != 0F) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(2, orientation_);
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RemoteDebug.RDRobot)) {
+        return super.equals(obj);
+      }
+      RemoteDebug.RDRobot other = (RemoteDebug.RDRobot) obj;
+
+      boolean result = true;
+      result = result && (hasPosition() == other.hasPosition());
+      if (hasPosition()) {
+        result = result && getPosition()
+            .equals(other.getPosition());
+      }
+      result = result && (
+          java.lang.Float.floatToIntBits(getOrientation())
+          == java.lang.Float.floatToIntBits(
+              other.getOrientation()));
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasPosition()) {
+        hash = (37 * hash) + POSITION_FIELD_NUMBER;
+        hash = (53 * hash) + getPosition().hashCode();
+      }
+      hash = (37 * hash) + ORIENTATION_FIELD_NUMBER;
+      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+          getOrientation());
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RemoteDebug.RDRobot parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDRobot parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDRobot parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDRobot parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDRobot parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDRobot parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDRobot parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDRobot parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDRobot parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDRobot parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RemoteDebug.RDRobot prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * <pre>
+     * contains information about a robot
+     * </pre>
+     *
+     * Protobuf type {@code RDRobot}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RDRobot)
+        RemoteDebug.RDRobotOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RemoteDebug.internal_static_RDRobot_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RemoteDebug.internal_static_RDRobot_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RemoteDebug.RDRobot.class, RemoteDebug.RDRobot.Builder.class);
+      }
+
+      // Construct using RemoteDebug.RDRobot.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (positionBuilder_ == null) {
+          position_ = null;
+        } else {
+          position_ = null;
+          positionBuilder_ = null;
+        }
+        orientation_ = 0F;
+
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RemoteDebug.internal_static_RDRobot_descriptor;
+      }
+
+      public RemoteDebug.RDRobot getDefaultInstanceForType() {
+        return RemoteDebug.RDRobot.getDefaultInstance();
+      }
+
+      public RemoteDebug.RDRobot build() {
+        RemoteDebug.RDRobot result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RemoteDebug.RDRobot buildPartial() {
+        RemoteDebug.RDRobot result = new RemoteDebug.RDRobot(this);
+        if (positionBuilder_ == null) {
+          result.position_ = position_;
+        } else {
+          result.position_ = positionBuilder_.build();
+        }
+        result.orientation_ = orientation_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RemoteDebug.RDRobot) {
+          return mergeFrom((RemoteDebug.RDRobot)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RemoteDebug.RDRobot other) {
+        if (other == RemoteDebug.RDRobot.getDefaultInstance()) return this;
+        if (other.hasPosition()) {
+          mergePosition(other.getPosition());
+        }
+        if (other.getOrientation() != 0F) {
+          setOrientation(other.getOrientation());
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RemoteDebug.RDRobot parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RemoteDebug.RDRobot) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private RemoteDebug.RDPointF position_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> positionBuilder_;
+      /**
+       * <code>optional .RDPointF position = 1;</code>
+       */
+      public boolean hasPosition() {
+        return positionBuilder_ != null || position_ != null;
+      }
+      /**
+       * <code>optional .RDPointF position = 1;</code>
+       */
+      public RemoteDebug.RDPointF getPosition() {
+        if (positionBuilder_ == null) {
+          return position_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : position_;
+        } else {
+          return positionBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .RDPointF position = 1;</code>
+       */
+      public Builder setPosition(RemoteDebug.RDPointF value) {
+        if (positionBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          position_ = value;
+          onChanged();
+        } else {
+          positionBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF position = 1;</code>
+       */
+      public Builder setPosition(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (positionBuilder_ == null) {
+          position_ = builderForValue.build();
+          onChanged();
+        } else {
+          positionBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF position = 1;</code>
+       */
+      public Builder mergePosition(RemoteDebug.RDPointF value) {
+        if (positionBuilder_ == null) {
+          if (position_ != null) {
+            position_ =
+              RemoteDebug.RDPointF.newBuilder(position_).mergeFrom(value).buildPartial();
+          } else {
+            position_ = value;
+          }
+          onChanged();
+        } else {
+          positionBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF position = 1;</code>
+       */
+      public Builder clearPosition() {
+        if (positionBuilder_ == null) {
+          position_ = null;
+          onChanged();
+        } else {
+          position_ = null;
+          positionBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF position = 1;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getPositionBuilder() {
+        
+        onChanged();
+        return getPositionFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .RDPointF position = 1;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getPositionOrBuilder() {
+        if (positionBuilder_ != null) {
+          return positionBuilder_.getMessageOrBuilder();
+        } else {
+          return position_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : position_;
+        }
+      }
+      /**
+       * <code>optional .RDPointF position = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getPositionFieldBuilder() {
+        if (positionBuilder_ == null) {
+          positionBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getPosition(),
+                  getParentForChildren(),
+                  isClean());
+          position_ = null;
+        }
+        return positionBuilder_;
+      }
+
+      private float orientation_ ;
+      /**
+       * <code>optional float orientation = 2;</code>
+       */
+      public float getOrientation() {
+        return orientation_;
+      }
+      /**
+       * <code>optional float orientation = 2;</code>
+       */
+      public Builder setOrientation(float value) {
+        
+        orientation_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional float orientation = 2;</code>
+       */
+      public Builder clearOrientation() {
+        
+        orientation_ = 0F;
+        onChanged();
+        return this;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:RDRobot)
+    }
+
+    // @@protoc_insertion_point(class_scope:RDRobot)
+    private static final RemoteDebug.RDRobot DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RemoteDebug.RDRobot();
+    }
+
+    public static RemoteDebug.RDRobot getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RDRobot>
+        PARSER = new com.google.protobuf.AbstractParser<RDRobot>() {
+      public RDRobot parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new RDRobot(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RDRobot> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RDRobot> getParserForType() {
+      return PARSER;
+    }
+
+    public RemoteDebug.RDRobot getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface DebugFrameOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DebugFrame)
       com.google.protobuf.MessageOrBuilder {
@@ -2533,6 +3167,7 @@ public final class RemoteDebug {
 
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -2542,6 +3177,7 @@ public final class RemoteDebug {
         getRobotPositionsList();
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -2550,6 +3186,7 @@ public final class RemoteDebug {
     RemoteDebug.RDPointF getRobotPositions(int index);
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -2558,6 +3195,7 @@ public final class RemoteDebug {
     int getRobotPositionsCount();
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -2567,6 +3205,7 @@ public final class RemoteDebug {
         getRobotPositionsOrBuilderList();
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -2608,6 +3247,42 @@ public final class RemoteDebug {
      * <code>optional float rayInterval = 15;</code>
      */
     float getRayInterval();
+
+    /**
+     * <pre>
+     * average number of localiser evaluations
+     * </pre>
+     *
+     * <code>optional int32 localiserEvals = 16;</code>
+     */
+    int getLocaliserEvals();
+
+    /**
+     * <pre>
+     * average time for localiser to run
+     * </pre>
+     *
+     * <code>optional float localiserTime = 17;</code>
+     */
+    float getLocaliserTime();
+
+    /**
+     * <pre>
+     * NLopt returned status, for example, "MAXTIME_REACHED"
+     * </pre>
+     *
+     * <code>optional string localiserStatus = 18;</code>
+     */
+    java.lang.String getLocaliserStatus();
+    /**
+     * <pre>
+     * NLopt returned status, for example, "MAXTIME_REACHED"
+     * </pre>
+     *
+     * <code>optional string localiserStatus = 18;</code>
+     */
+    com.google.protobuf.ByteString
+        getLocaliserStatusBytes();
   }
   /**
    * <pre>
@@ -2639,6 +3314,9 @@ public final class RemoteDebug {
       robotPositions_ = java.util.Collections.emptyList();
       robotOrientations_ = java.util.Collections.emptyList();
       rayInterval_ = 0F;
+      localiserEvals_ = 0;
+      localiserTime_ = 0F;
+      localiserStatus_ = "";
     }
 
     @java.lang.Override
@@ -2815,6 +3493,22 @@ public final class RemoteDebug {
             case 125: {
 
               rayInterval_ = input.readFloat();
+              break;
+            }
+            case 128: {
+
+              localiserEvals_ = input.readInt32();
+              break;
+            }
+            case 141: {
+
+              localiserTime_ = input.readFloat();
+              break;
+            }
+            case 146: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              localiserStatus_ = s;
               break;
             }
           }
@@ -3117,6 +3811,7 @@ public final class RemoteDebug {
     private java.util.List<RemoteDebug.RDPointF> robotPositions_;
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -3127,6 +3822,7 @@ public final class RemoteDebug {
     }
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -3138,6 +3834,7 @@ public final class RemoteDebug {
     }
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -3148,6 +3845,7 @@ public final class RemoteDebug {
     }
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -3158,6 +3856,7 @@ public final class RemoteDebug {
     }
     /**
      * <pre>
+     * TODO use new robot struct instead of these arrays
      * position of robots on the field
      * </pre>
      *
@@ -3214,6 +3913,74 @@ public final class RemoteDebug {
      */
     public float getRayInterval() {
       return rayInterval_;
+    }
+
+    public static final int LOCALISEREVALS_FIELD_NUMBER = 16;
+    private int localiserEvals_;
+    /**
+     * <pre>
+     * average number of localiser evaluations
+     * </pre>
+     *
+     * <code>optional int32 localiserEvals = 16;</code>
+     */
+    public int getLocaliserEvals() {
+      return localiserEvals_;
+    }
+
+    public static final int LOCALISERTIME_FIELD_NUMBER = 17;
+    private float localiserTime_;
+    /**
+     * <pre>
+     * average time for localiser to run
+     * </pre>
+     *
+     * <code>optional float localiserTime = 17;</code>
+     */
+    public float getLocaliserTime() {
+      return localiserTime_;
+    }
+
+    public static final int LOCALISERSTATUS_FIELD_NUMBER = 18;
+    private volatile java.lang.Object localiserStatus_;
+    /**
+     * <pre>
+     * NLopt returned status, for example, "MAXTIME_REACHED"
+     * </pre>
+     *
+     * <code>optional string localiserStatus = 18;</code>
+     */
+    public java.lang.String getLocaliserStatus() {
+      java.lang.Object ref = localiserStatus_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        localiserStatus_ = s;
+        return s;
+      }
+    }
+    /**
+     * <pre>
+     * NLopt returned status, for example, "MAXTIME_REACHED"
+     * </pre>
+     *
+     * <code>optional string localiserStatus = 18;</code>
+     */
+    public com.google.protobuf.ByteString
+        getLocaliserStatusBytes() {
+      java.lang.Object ref = localiserStatus_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        localiserStatus_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
     }
 
     private byte memoizedIsInitialized = -1;
@@ -3285,6 +4052,15 @@ public final class RemoteDebug {
       }
       if (rayInterval_ != 0F) {
         output.writeFloat(15, rayInterval_);
+      }
+      if (localiserEvals_ != 0) {
+        output.writeInt32(16, localiserEvals_);
+      }
+      if (localiserTime_ != 0F) {
+        output.writeFloat(17, localiserTime_);
+      }
+      if (!getLocaliserStatusBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 18, localiserStatus_);
       }
     }
 
@@ -3374,6 +4150,17 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeFloatSize(15, rayInterval_);
       }
+      if (localiserEvals_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(16, localiserEvals_);
+      }
+      if (localiserTime_ != 0F) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(17, localiserTime_);
+      }
+      if (!getLocaliserStatusBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(18, localiserStatus_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -3433,6 +4220,14 @@ public final class RemoteDebug {
           java.lang.Float.floatToIntBits(getRayInterval())
           == java.lang.Float.floatToIntBits(
               other.getRayInterval()));
+      result = result && (getLocaliserEvals()
+          == other.getLocaliserEvals());
+      result = result && (
+          java.lang.Float.floatToIntBits(getLocaliserTime())
+          == java.lang.Float.floatToIntBits(
+              other.getLocaliserTime()));
+      result = result && getLocaliserStatus()
+          .equals(other.getLocaliserStatus());
       return result;
     }
 
@@ -3489,6 +4284,13 @@ public final class RemoteDebug {
       hash = (37 * hash) + RAYINTERVAL_FIELD_NUMBER;
       hash = (53 * hash) + java.lang.Float.floatToIntBits(
           getRayInterval());
+      hash = (37 * hash) + LOCALISEREVALS_FIELD_NUMBER;
+      hash = (53 * hash) + getLocaliserEvals();
+      hash = (37 * hash) + LOCALISERTIME_FIELD_NUMBER;
+      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+          getLocaliserTime());
+      hash = (37 * hash) + LOCALISERSTATUS_FIELD_NUMBER;
+      hash = (53 * hash) + getLocaliserStatus().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -3660,6 +4462,12 @@ public final class RemoteDebug {
         bitField0_ = (bitField0_ & ~0x00002000);
         rayInterval_ = 0F;
 
+        localiserEvals_ = 0;
+
+        localiserTime_ = 0F;
+
+        localiserStatus_ = "";
+
         return this;
       }
 
@@ -3731,6 +4539,9 @@ public final class RemoteDebug {
         }
         result.robotOrientations_ = robotOrientations_;
         result.rayInterval_ = rayInterval_;
+        result.localiserEvals_ = localiserEvals_;
+        result.localiserTime_ = localiserTime_;
+        result.localiserStatus_ = localiserStatus_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -3861,6 +4672,16 @@ public final class RemoteDebug {
         }
         if (other.getRayInterval() != 0F) {
           setRayInterval(other.getRayInterval());
+        }
+        if (other.getLocaliserEvals() != 0) {
+          setLocaliserEvals(other.getLocaliserEvals());
+        }
+        if (other.getLocaliserTime() != 0F) {
+          setLocaliserTime(other.getLocaliserTime());
+        }
+        if (!other.getLocaliserStatus().isEmpty()) {
+          localiserStatus_ = other.localiserStatus_;
+          onChanged();
         }
         onChanged();
         return this;
@@ -4822,6 +5643,7 @@ public final class RemoteDebug {
 
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4836,6 +5658,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4850,6 +5673,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4864,6 +5688,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4885,6 +5710,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4903,6 +5729,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4923,6 +5750,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4944,6 +5772,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4962,6 +5791,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4980,6 +5810,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -4999,6 +5830,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -5016,6 +5848,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -5033,6 +5866,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -5044,6 +5878,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -5058,6 +5893,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -5073,6 +5909,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -5084,6 +5921,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -5096,6 +5934,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
+       * TODO use new robot struct instead of these arrays
        * position of robots on the field
        * </pre>
        *
@@ -5248,6 +6087,171 @@ public final class RemoteDebug {
       public Builder clearRayInterval() {
         
         rayInterval_ = 0F;
+        onChanged();
+        return this;
+      }
+
+      private int localiserEvals_ ;
+      /**
+       * <pre>
+       * average number of localiser evaluations
+       * </pre>
+       *
+       * <code>optional int32 localiserEvals = 16;</code>
+       */
+      public int getLocaliserEvals() {
+        return localiserEvals_;
+      }
+      /**
+       * <pre>
+       * average number of localiser evaluations
+       * </pre>
+       *
+       * <code>optional int32 localiserEvals = 16;</code>
+       */
+      public Builder setLocaliserEvals(int value) {
+        
+        localiserEvals_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * average number of localiser evaluations
+       * </pre>
+       *
+       * <code>optional int32 localiserEvals = 16;</code>
+       */
+      public Builder clearLocaliserEvals() {
+        
+        localiserEvals_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private float localiserTime_ ;
+      /**
+       * <pre>
+       * average time for localiser to run
+       * </pre>
+       *
+       * <code>optional float localiserTime = 17;</code>
+       */
+      public float getLocaliserTime() {
+        return localiserTime_;
+      }
+      /**
+       * <pre>
+       * average time for localiser to run
+       * </pre>
+       *
+       * <code>optional float localiserTime = 17;</code>
+       */
+      public Builder setLocaliserTime(float value) {
+        
+        localiserTime_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * average time for localiser to run
+       * </pre>
+       *
+       * <code>optional float localiserTime = 17;</code>
+       */
+      public Builder clearLocaliserTime() {
+        
+        localiserTime_ = 0F;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object localiserStatus_ = "";
+      /**
+       * <pre>
+       * NLopt returned status, for example, "MAXTIME_REACHED"
+       * </pre>
+       *
+       * <code>optional string localiserStatus = 18;</code>
+       */
+      public java.lang.String getLocaliserStatus() {
+        java.lang.Object ref = localiserStatus_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          localiserStatus_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <pre>
+       * NLopt returned status, for example, "MAXTIME_REACHED"
+       * </pre>
+       *
+       * <code>optional string localiserStatus = 18;</code>
+       */
+      public com.google.protobuf.ByteString
+          getLocaliserStatusBytes() {
+        java.lang.Object ref = localiserStatus_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          localiserStatus_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <pre>
+       * NLopt returned status, for example, "MAXTIME_REACHED"
+       * </pre>
+       *
+       * <code>optional string localiserStatus = 18;</code>
+       */
+      public Builder setLocaliserStatus(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        localiserStatus_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * NLopt returned status, for example, "MAXTIME_REACHED"
+       * </pre>
+       *
+       * <code>optional string localiserStatus = 18;</code>
+       */
+      public Builder clearLocaliserStatus() {
+        
+        localiserStatus_ = getDefaultInstance().getLocaliserStatus();
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * NLopt returned status, for example, "MAXTIME_REACHED"
+       * </pre>
+       *
+       * <code>optional string localiserStatus = 18;</code>
+       */
+      public Builder setLocaliserStatusBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        localiserStatus_ = value;
         onChanged();
         return this;
       }
@@ -8020,6 +9024,11 @@ public final class RemoteDebug {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_RDThreshold_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RDRobot_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_RDRobot_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_DebugFrame_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -8047,25 +9056,28 @@ public final class RemoteDebug {
       "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
       "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\" \n\010R" +
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
-      "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"\351\002\n\nDebug" +
-      "Frame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017ballThres" +
-      "hImage\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022\031\n\010bal" +
-      "lRect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentroid\030\005 \001" +
-      "(\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframeWidth\030" +
-      "\007 \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010cropRect\030\t",
-      " \001(\0132\007.RDRect\022\014\n\004rays\030\n \003(\001\022\024\n\014dewarpedR" +
-      "ays\030\013 \003(\001\022\024\n\014mirrorRadius\030\014 \001(\005\022!\n\016robot" +
-      "Positions\030\r \003(\0132\t.RDPointF\022\031\n\021robotOrien" +
-      "tations\030\016 \003(\002\022\023\n\013rayInterval\030\017 \001(\002\"\341\001\n\014D" +
-      "ebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords" +
-      "\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n" +
-      "\rallThresholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010ob" +
-      "jectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourCh" +
-      "annel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robotId\030\t " +
-      "\001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005",
-      "frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001(" +
-      "\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 \001(\005b\006" +
-      "proto3"
+      "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\";\n\007RDRobo" +
+      "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
+      "ation\030\002 \001(\002\"\261\003\n\nDebugFrame\022\024\n\014defaultIma" +
+      "ge\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013tem" +
+      "perature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RDRec" +
+      "t\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\022\013\n\003fps",
+      "\030\006 \001(\005\022\022\n\nframeWidth\030\007 \001(\005\022\023\n\013frameHeigh" +
+      "t\030\010 \001(\005\022\031\n\010cropRect\030\t \001(\0132\007.RDRect\022\014\n\004ra" +
+      "ys\030\n \003(\001\022\024\n\014dewarpedRays\030\013 \003(\001\022\024\n\014mirror" +
+      "Radius\030\014 \001(\005\022!\n\016robotPositions\030\r \003(\0132\t.R" +
+      "DPointF\022\031\n\021robotOrientations\030\016 \003(\002\022\023\n\013ra" +
+      "yInterval\030\017 \001(\002\022\026\n\016localiserEvals\030\020 \001(\005\022" +
+      "\025\n\rlocaliserTime\030\021 \001(\002\022\027\n\017localiserStatu" +
+      "s\030\022 \001(\t\"\341\001\n\014DebugCommand\022\021\n\tmessageId\030\001 " +
+      "\001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orienta" +
+      "tion\030\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDTh",
+      "reshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(" +
+      "\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022" +
+      "\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nR" +
+      "DMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n" +
+      "\007command\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMe" +
+      "ssage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -8103,20 +9115,26 @@ public final class RemoteDebug {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RDThreshold_descriptor,
         new java.lang.String[] { "Min", "Max", });
-    internal_static_DebugFrame_descriptor =
+    internal_static_RDRobot_descriptor =
       getDescriptor().getMessageTypes().get(4);
+    internal_static_RDRobot_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_RDRobot_descriptor,
+        new java.lang.String[] { "Position", "Orientation", });
+    internal_static_DebugFrame_descriptor =
+      getDescriptor().getMessageTypes().get(5);
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", });
     internal_static_DebugCommand_descriptor =
-      getDescriptor().getMessageTypes().get(5);
+      getDescriptor().getMessageTypes().get(6);
     internal_static_DebugCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugCommand_descriptor,
         new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "ObjectId", "MinMax", "ColourChannel", "Value", "RobotId", "IsEnabled", });
     internal_static_RDMsgFrame_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(7);
     internal_static_RDMsgFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RDMsgFrame_descriptor,

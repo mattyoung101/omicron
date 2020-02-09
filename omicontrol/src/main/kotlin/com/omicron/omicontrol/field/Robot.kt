@@ -5,7 +5,9 @@ import javafx.scene.control.Label
 
 data class Robot(var id: Int,
                  var position: Point2D = Point2D(0.0, 0.0),
+                 var orientation: Float = 0.0f,
                  var isPositionKnown: Boolean = false,
                  var fsmState: String = "Unknown",
-                 var positionLabel: Label? = null) {
+                 var positionLabel: Label? = null,
+                 var isRaycastDebug: Boolean = false) {
 }

@@ -51,7 +51,6 @@ class FieldView : View() {
     init {
         reloadStylesheetsOnFocus()
         title = "Field View | Omicontrol"
-        robots[1].position = robots[1].position.add(30.0, 0.0)
     }
 
     @ExperimentalUnsignedTypes
@@ -67,8 +66,9 @@ class FieldView : View() {
             }
             for ((i, robot) in message.robotPositionsList.take(message.robotPositionsCount).withIndex()){
                 robots[i].position = Point2D(robot.x.toDouble(), robot.y.toDouble())
-                robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f)", robot.x, robot.y)
+                // robots[i].orientation = message.robotOrientationsList[i] // FIXME broken right now
                 robots[i].isPositionKnown = true
+                robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f), %.2f", robot.x, robot.y, robots[i].orientation)
             }
 
             display.fill = Color.BLACK
@@ -97,22 +97,26 @@ class FieldView : View() {
                 display.drawImage(targetIcon, targetPos!!.x - 16, targetPos!!.y - 16, 48.0, 48.0)
             }
 
-            // draw rays
-            // TODO somewhat of a hack since it only works for robot 0 right now
-            display.lineWidth = 2.0
-            display.stroke = Color.WHITE
+            // draw rays if requested
+            // TODO we need to check if the robot is the one we're connected to since we only send rays for connected robot
+            for (robot in robots){
+                if (!robot.isRaycastDebug || !robot.isPositionKnown) continue
 
-            val original = Point2D(robots[0].position.x, robots[0].position.y).toCanvasPosition()
-            val x0 = original.x
-            val y0 = original.y
-            var angle = 0.0
+                display.lineWidth = 2.0
+                display.stroke = Color.WHITE
 
-            for (ray in message.dewarpedRaysList.take(message.dewarpedRaysCount)) {
-                val x1 = x0 + (toFieldLength(ray) * sin(angle))
-                val y1 = y0 + (toFieldLength(ray) * cos(angle))
+                val original = Point2D(robots[robot.id].position.x, robots[robot.id].position.y).toCanvasPosition()
+                val x0 = original.x
+                val y0 = original.y
+                var angle = 0.0
 
-                display.strokeLine(x0, y0, x1, y1)
-                angle += message.rayInterval
+                for (ray in message.dewarpedRaysList.take(message.dewarpedRaysCount)) {
+                    val x1 = x0 + (toFieldLength(ray) * sin(angle))
+                    val y1 = y0 + (toFieldLength(ray) * cos(angle))
+
+                    display.strokeLine(x0, y0, x1, y1)
+                    angle += message.rayInterval
+                }
             }
 
             // update labels
@@ -187,6 +191,20 @@ class FieldView : View() {
                         })
                     }
                     accelerator = KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN)
+                }
+            }
+            menu("Settings"){
+                menu("Raycast debug"){
+                    checkmenuitem("Robot 0"){
+                        selectedProperty().addListener { _, _, value ->
+                            robots[0].isRaycastDebug = value
+                        }
+                    }
+                    checkmenuitem("Robot 1"){
+                        selectedProperty().addListener { _, _, value ->
+                            robots[1].isRaycastDebug = value
+                        }
+                    }
                 }
             }
             menu("Help") {
@@ -276,6 +294,17 @@ class FieldView : View() {
                         }
                         field {
                             label("FSM state: Unknown")
+                        }
+                    }
+
+                    fieldset {
+                        field {
+                            label("Ball:"){ addClass(Styles.boldLabel) }
+                        }
+                        field {
+                            // ball position will always be according to connected robot
+                            label("Position:")
+                            label("Unknown")
                         }
                     }
 

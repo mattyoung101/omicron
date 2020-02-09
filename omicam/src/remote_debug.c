@@ -183,11 +183,13 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     /// fill the protocol buffer with data  ///
     //////////////////////////////////////////
     if (sendDebugFrames) {
+        // we're in the camera view
         memcpy(msg.defaultImage.bytes, camImg, camImgSize);
         memcpy(msg.ballThreshImage.bytes, threshImg, threshImgSize);
         msg.defaultImage.size = camImgSize;
         msg.ballThreshImage.size = threshImgSize;
     } else {
+        // we're in the field view
         msg.defaultImage.size = 0;
         msg.ballThreshImage.size = 0;
     }
@@ -202,11 +204,12 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
 #else
     RDRect cropRect = {0, 0, videoWidth, videoHeight};
 #endif
-    msg.cropRect = cropRect;
     memcpy(msg.rays, observedRaysRaw, LOCALISER_NUM_RAYS * sizeof(double));
     memcpy(msg.dewarpedRays, observedRays, LOCALISER_NUM_RAYS * sizeof(double));
     msg.rays_count = LOCALISER_NUM_RAYS;
     msg.dewarpedRays_count = LOCALISER_NUM_RAYS;
+
+    msg.cropRect = cropRect;
     msg.mirrorRadius = visionMirrorRadius;
     msg.robotPositions[0].x = (float) localisedPosition.x;
     msg.robotPositions[0].y = (float) localisedPosition.y;

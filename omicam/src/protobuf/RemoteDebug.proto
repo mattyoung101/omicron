@@ -25,6 +25,12 @@ message RDThreshold {
     repeated int32 max = 3;
 }
 
+// contains information about a robot
+message RDRobot {
+    RDPointF position = 1;
+    float orientation = 2;
+}
+
 // Whenever a debug frame is encoded, this is sent to the remote client to be rendered over a TCP socket.
 // It may also include geometries that the remote client is instructed to draw such as rectangles or circles
 // (this is because it's much easier to get the remote JavaFX app to draw geometries than to do it manually on a JPEG buffer)
@@ -53,12 +59,21 @@ message DebugFrame {
     repeated double dewarpedRays = 11;
     // mirror radius used by localiser
     int32 mirrorRadius = 12;
+    // TODO use new robot struct instead of these arrays
     // position of robots on the field
     repeated RDPointF robotPositions = 13;
     // orientations of robots on the field
     repeated float robotOrientations = 14;
     // distance between rays in radians
     float rayInterval = 15;
+    // average number of localiser evaluations
+    int32 localiserEvals = 16;
+    // average time for localiser to run
+    float localiserTime = 17;
+    // NLopt returned status, for example, "MAXTIME_REACHED"
+    string localiserStatus = 18;
+    // ball position in field coords
+    RDPointF ballPos = 19;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

@@ -27,7 +27,9 @@ static FieldFile field = {0};
 static rpa_queue_t *queue;
 _Atomic bool localiserDone = false;
 static double orientation = 0.0; // last received orientation from ESP32
+#if LOCALISER_DEBUG
 static BMP *bmp = NULL;
+#endif
 double observedRays[LOCALISER_NUM_RAYS] = {0};
 double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
 double expectedRays[LOCALISER_NUM_RAYS] = {0};
@@ -230,7 +232,7 @@ static void *work_thread(void *arg){
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
         evaluations = 0;
-        double resultCoord[2] = {160.0, 96.0};
+        double resultCoord[2] = {0.0, 0.0};
         double resultError = 0.0;
         nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
         if (result < 0){
@@ -273,13 +275,12 @@ static void *perf_thread(void *arg){
         movavg_clear(timeAvg);
         movavg_clear(evalAvg);
 
-#if VISION_DIAGNOSTICS
+#if LOCALISER_DIAGNOSTICS
         if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){
             printf("Average localiser time: %.2f ms (rate: %.2f Hz), average evaluations: %d\n", avgTime, rate, ROUND2INT(avgEval));
             fflush(stdout);
         }
 #endif
-
     }
 }
 
@@ -302,14 +303,14 @@ void localiser_init(char *fieldFile){
     log_info("Using %d rays (ray interval is %.2f radians or %.2f degrees)", LOCALISER_NUM_RAYS, PI2 / LOCALISER_NUM_RAYS,
             360.0 / LOCALISER_NUM_RAYS);
 
-    // create a two dimensional Subplex optimiser
+    // create a two dimensional minimising Subplex optimiser
     optimiser = nlopt_create(NLOPT_LN_SBPLX, 2);
     nlopt_set_min_objective(optimiser, objective_function, NULL);
-    nlopt_set_stopval(optimiser, LOCALISER_ERROR_TOLERANCE); // stop if we're close enough to a solution
+    nlopt_set_stopval(optimiser, LOCALISER_ERROR_TOLERANCE); // stop if we're close enough to a solution (not very helpful now as error is arbitrary)
     nlopt_set_ftol_abs(optimiser, LOCALISER_STEP_TOLERANCE); // stop if the last step was too small (we must be going nowhere/solved)
     nlopt_set_maxtime(optimiser, LOCALISER_MAX_EVAL_TIME / 1000.0); // stop if it's taking too long
 
-    // note we are in image (top left is 0,0) coordinates, NOT field (centre is 0,0) coordinates
+    // note we are in image coordinates (top left is 0,0), NOT field coordinates (centre is 0,0)
     double minCoord[] = {0.0, 0.0};
     double maxCoord[] = {field.length, field.width};
     log_trace("Min bound: (%.2f,%.2f) Max bound: (%.2f,%.2f)", minCoord[0], minCoord[1], maxCoord[0], maxCoord[1]);

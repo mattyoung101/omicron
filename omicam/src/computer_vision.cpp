@@ -237,6 +237,14 @@ static auto cv_thread(void *arg) -> void *{
             Scalar maxScalar = Scalar(max[2], max[1], max[0]);
             inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar, thresholded[object]);
 
+            // morphology isn't actually very helpful here because lines are too small
+//            if (object == OBJ_LINES){
+//                double morphSize =1;
+//                Mat element = getStructuringElement(MORPH_RECT, Size(2 * morphSize + 1, 2 * morphSize + 1),
+//                        Size(morphSize, morphSize));
+//                morphologyEx(thresholded[object], thresholded[object], MORPH_OPEN, element);
+//            }
+
             // dispatch the lines immediately to the localiser for processing to give it a little bit of a head start
             if (object == OBJ_LINES){
                 // note: this assumes we will never scale the line image, otherwise we would have to check and use frameScaled
@@ -314,8 +322,9 @@ static auto cv_thread(void *arg) -> void *{
         // encode protocol buffer to send to ESP over UART
         ObjectData data = ObjectData_init_zero;
         data.ballExists = ball.exists;
-        data.ballX = ball.centroid.x;
-        data.ballY = ball.centroid.y;
+        // TODO make this work with angle and mag stuff (use vector library probs)
+//        data.ballX = ball.centroid.x;
+//        data.ballY = ball.centroid.y;
         utils_cv_transmit_data(data);
 
 #if BUILD_TARGET == BUILD_TARGET_PC

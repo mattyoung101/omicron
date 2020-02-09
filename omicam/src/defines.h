@@ -9,14 +9,15 @@
  * 1.2a: works on Jetson with optimisation and thresholding for objects
  * 1.3a: cropping (ROI) optimisations, support for goal thresholding at lower resolutions
  * 1.4a: performance optimisations for new SBC, new FPS timing code, fixes
- * 2.4a: (WIP) localisation prototype implemented, sleep mode added
+ * 2.4a: localisation prototype implemented, sleep mode added
+ * 3.4b: (WIP) Omicam enters beta, localiser work continued, UART comms implemented
  */
-#define OMICAM_VERSION "2.4a"
+#define OMICAM_VERSION "3.4b"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
 #define DEWARP_MODEL (4.96776 * exp(0.0123892 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
 
-#define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease imag size
+#define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease image size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 #define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
@@ -54,7 +55,7 @@ typedef enum {
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET BUILD_TARGET_PC // which platform Omicam will be running on
+#define BUILD_TARGET (BUILD_TARGET_PC) // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 1 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.01 // stop optimisation if the last step size was smaller than this in centimetres
