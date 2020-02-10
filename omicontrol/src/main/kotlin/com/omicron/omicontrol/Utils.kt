@@ -127,3 +127,7 @@ fun pointInCircle(point: Point2D, circlePos: Point2D, circleRadius: Double): Boo
     val dy = circlePos.y - point.y
     return dx * dx + dy * dy <= circleRadius * circleRadius
 }
+
+fun lerp(fromValue: Double, toValue: Double, progress: Double): Double {
+    return fromValue + (toValue - fromValue) * progress
+}

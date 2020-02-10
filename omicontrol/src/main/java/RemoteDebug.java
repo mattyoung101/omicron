@@ -3283,6 +3283,75 @@ public final class RemoteDebug {
      */
     com.google.protobuf.ByteString
         getLocaliserStatusBytes();
+
+    /**
+     * <pre>
+     * ball position in field coords
+     * </pre>
+     *
+     * <code>optional .RDPointF ballPos = 19;</code>
+     */
+    boolean hasBallPos();
+    /**
+     * <pre>
+     * ball position in field coords
+     * </pre>
+     *
+     * <code>optional .RDPointF ballPos = 19;</code>
+     */
+    RemoteDebug.RDPointF getBallPos();
+    /**
+     * <pre>
+     * ball position in field coords
+     * </pre>
+     *
+     * <code>optional .RDPointF ballPos = 19;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getBallPosOrBuilder();
+
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    java.util.List<RemoteDebug.RDPointF> 
+        getLocaliserVisitedPointsList();
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    RemoteDebug.RDPointF getLocaliserVisitedPoints(int index);
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    int getLocaliserVisitedPointsCount();
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    java.util.List<? extends RemoteDebug.RDPointFOrBuilder> 
+        getLocaliserVisitedPointsOrBuilderList();
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getLocaliserVisitedPointsOrBuilder(
+        int index);
   }
   /**
    * <pre>
@@ -3317,6 +3386,7 @@ public final class RemoteDebug {
       localiserEvals_ = 0;
       localiserTime_ = 0F;
       localiserStatus_ = "";
+      localiserVisitedPoints_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -3511,6 +3581,28 @@ public final class RemoteDebug {
               localiserStatus_ = s;
               break;
             }
+            case 154: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (ballPos_ != null) {
+                subBuilder = ballPos_.toBuilder();
+              }
+              ballPos_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(ballPos_);
+                ballPos_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 162: {
+              if (!((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
+                localiserVisitedPoints_ = new java.util.ArrayList<RemoteDebug.RDPointF>();
+                mutable_bitField0_ |= 0x00080000;
+              }
+              localiserVisitedPoints_.add(
+                  input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -3530,6 +3622,9 @@ public final class RemoteDebug {
         }
         if (((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
           robotOrientations_ = java.util.Collections.unmodifiableList(robotOrientations_);
+        }
+        if (((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
+          localiserVisitedPoints_ = java.util.Collections.unmodifiableList(localiserVisitedPoints_);
         }
         makeExtensionsImmutable();
       }
@@ -3983,6 +4078,94 @@ public final class RemoteDebug {
       }
     }
 
+    public static final int BALLPOS_FIELD_NUMBER = 19;
+    private RemoteDebug.RDPointF ballPos_;
+    /**
+     * <pre>
+     * ball position in field coords
+     * </pre>
+     *
+     * <code>optional .RDPointF ballPos = 19;</code>
+     */
+    public boolean hasBallPos() {
+      return ballPos_ != null;
+    }
+    /**
+     * <pre>
+     * ball position in field coords
+     * </pre>
+     *
+     * <code>optional .RDPointF ballPos = 19;</code>
+     */
+    public RemoteDebug.RDPointF getBallPos() {
+      return ballPos_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : ballPos_;
+    }
+    /**
+     * <pre>
+     * ball position in field coords
+     * </pre>
+     *
+     * <code>optional .RDPointF ballPos = 19;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getBallPosOrBuilder() {
+      return getBallPos();
+    }
+
+    public static final int LOCALISERVISITEDPOINTS_FIELD_NUMBER = 20;
+    private java.util.List<RemoteDebug.RDPointF> localiserVisitedPoints_;
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    public java.util.List<RemoteDebug.RDPointF> getLocaliserVisitedPointsList() {
+      return localiserVisitedPoints_;
+    }
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    public java.util.List<? extends RemoteDebug.RDPointFOrBuilder> 
+        getLocaliserVisitedPointsOrBuilderList() {
+      return localiserVisitedPoints_;
+    }
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    public int getLocaliserVisitedPointsCount() {
+      return localiserVisitedPoints_.size();
+    }
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    public RemoteDebug.RDPointF getLocaliserVisitedPoints(int index) {
+      return localiserVisitedPoints_.get(index);
+    }
+    /**
+     * <pre>
+     * visited positions by the Subplex optimiser
+     * </pre>
+     *
+     * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getLocaliserVisitedPointsOrBuilder(
+        int index) {
+      return localiserVisitedPoints_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -4061,6 +4244,12 @@ public final class RemoteDebug {
       }
       if (!getLocaliserStatusBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 18, localiserStatus_);
+      }
+      if (ballPos_ != null) {
+        output.writeMessage(19, getBallPos());
+      }
+      for (int i = 0; i < localiserVisitedPoints_.size(); i++) {
+        output.writeMessage(20, localiserVisitedPoints_.get(i));
       }
     }
 
@@ -4161,6 +4350,14 @@ public final class RemoteDebug {
       if (!getLocaliserStatusBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(18, localiserStatus_);
       }
+      if (ballPos_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(19, getBallPos());
+      }
+      for (int i = 0; i < localiserVisitedPoints_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(20, localiserVisitedPoints_.get(i));
+      }
       memoizedSize = size;
       return size;
     }
@@ -4228,6 +4425,13 @@ public final class RemoteDebug {
               other.getLocaliserTime()));
       result = result && getLocaliserStatus()
           .equals(other.getLocaliserStatus());
+      result = result && (hasBallPos() == other.hasBallPos());
+      if (hasBallPos()) {
+        result = result && getBallPos()
+            .equals(other.getBallPos());
+      }
+      result = result && getLocaliserVisitedPointsList()
+          .equals(other.getLocaliserVisitedPointsList());
       return result;
     }
 
@@ -4291,6 +4495,14 @@ public final class RemoteDebug {
           getLocaliserTime());
       hash = (37 * hash) + LOCALISERSTATUS_FIELD_NUMBER;
       hash = (53 * hash) + getLocaliserStatus().hashCode();
+      if (hasBallPos()) {
+        hash = (37 * hash) + BALLPOS_FIELD_NUMBER;
+        hash = (53 * hash) + getBallPos().hashCode();
+      }
+      if (getLocaliserVisitedPointsCount() > 0) {
+        hash = (37 * hash) + LOCALISERVISITEDPOINTS_FIELD_NUMBER;
+        hash = (53 * hash) + getLocaliserVisitedPointsList().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -4412,6 +4624,7 @@ public final class RemoteDebug {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getRobotPositionsFieldBuilder();
+          getLocaliserVisitedPointsFieldBuilder();
         }
       }
       public Builder clear() {
@@ -4468,6 +4681,18 @@ public final class RemoteDebug {
 
         localiserStatus_ = "";
 
+        if (ballPosBuilder_ == null) {
+          ballPos_ = null;
+        } else {
+          ballPos_ = null;
+          ballPosBuilder_ = null;
+        }
+        if (localiserVisitedPointsBuilder_ == null) {
+          localiserVisitedPoints_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00080000);
+        } else {
+          localiserVisitedPointsBuilder_.clear();
+        }
         return this;
       }
 
@@ -4542,6 +4767,20 @@ public final class RemoteDebug {
         result.localiserEvals_ = localiserEvals_;
         result.localiserTime_ = localiserTime_;
         result.localiserStatus_ = localiserStatus_;
+        if (ballPosBuilder_ == null) {
+          result.ballPos_ = ballPos_;
+        } else {
+          result.ballPos_ = ballPosBuilder_.build();
+        }
+        if (localiserVisitedPointsBuilder_ == null) {
+          if (((bitField0_ & 0x00080000) == 0x00080000)) {
+            localiserVisitedPoints_ = java.util.Collections.unmodifiableList(localiserVisitedPoints_);
+            bitField0_ = (bitField0_ & ~0x00080000);
+          }
+          result.localiserVisitedPoints_ = localiserVisitedPoints_;
+        } else {
+          result.localiserVisitedPoints_ = localiserVisitedPointsBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4682,6 +4921,35 @@ public final class RemoteDebug {
         if (!other.getLocaliserStatus().isEmpty()) {
           localiserStatus_ = other.localiserStatus_;
           onChanged();
+        }
+        if (other.hasBallPos()) {
+          mergeBallPos(other.getBallPos());
+        }
+        if (localiserVisitedPointsBuilder_ == null) {
+          if (!other.localiserVisitedPoints_.isEmpty()) {
+            if (localiserVisitedPoints_.isEmpty()) {
+              localiserVisitedPoints_ = other.localiserVisitedPoints_;
+              bitField0_ = (bitField0_ & ~0x00080000);
+            } else {
+              ensureLocaliserVisitedPointsIsMutable();
+              localiserVisitedPoints_.addAll(other.localiserVisitedPoints_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.localiserVisitedPoints_.isEmpty()) {
+            if (localiserVisitedPointsBuilder_.isEmpty()) {
+              localiserVisitedPointsBuilder_.dispose();
+              localiserVisitedPointsBuilder_ = null;
+              localiserVisitedPoints_ = other.localiserVisitedPoints_;
+              bitField0_ = (bitField0_ & ~0x00080000);
+              localiserVisitedPointsBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getLocaliserVisitedPointsFieldBuilder() : null;
+            } else {
+              localiserVisitedPointsBuilder_.addAllMessages(other.localiserVisitedPoints_);
+            }
+          }
         }
         onChanged();
         return this;
@@ -6254,6 +6522,471 @@ public final class RemoteDebug {
         localiserStatus_ = value;
         onChanged();
         return this;
+      }
+
+      private RemoteDebug.RDPointF ballPos_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> ballPosBuilder_;
+      /**
+       * <pre>
+       * ball position in field coords
+       * </pre>
+       *
+       * <code>optional .RDPointF ballPos = 19;</code>
+       */
+      public boolean hasBallPos() {
+        return ballPosBuilder_ != null || ballPos_ != null;
+      }
+      /**
+       * <pre>
+       * ball position in field coords
+       * </pre>
+       *
+       * <code>optional .RDPointF ballPos = 19;</code>
+       */
+      public RemoteDebug.RDPointF getBallPos() {
+        if (ballPosBuilder_ == null) {
+          return ballPos_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : ballPos_;
+        } else {
+          return ballPosBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * ball position in field coords
+       * </pre>
+       *
+       * <code>optional .RDPointF ballPos = 19;</code>
+       */
+      public Builder setBallPos(RemoteDebug.RDPointF value) {
+        if (ballPosBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ballPos_ = value;
+          onChanged();
+        } else {
+          ballPosBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * ball position in field coords
+       * </pre>
+       *
+       * <code>optional .RDPointF ballPos = 19;</code>
+       */
+      public Builder setBallPos(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (ballPosBuilder_ == null) {
+          ballPos_ = builderForValue.build();
+          onChanged();
+        } else {
+          ballPosBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * ball position in field coords
+       * </pre>
+       *
+       * <code>optional .RDPointF ballPos = 19;</code>
+       */
+      public Builder mergeBallPos(RemoteDebug.RDPointF value) {
+        if (ballPosBuilder_ == null) {
+          if (ballPos_ != null) {
+            ballPos_ =
+              RemoteDebug.RDPointF.newBuilder(ballPos_).mergeFrom(value).buildPartial();
+          } else {
+            ballPos_ = value;
+          }
+          onChanged();
+        } else {
+          ballPosBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * ball position in field coords
+       * </pre>
+       *
+       * <code>optional .RDPointF ballPos = 19;</code>
+       */
+      public Builder clearBallPos() {
+        if (ballPosBuilder_ == null) {
+          ballPos_ = null;
+          onChanged();
+        } else {
+          ballPos_ = null;
+          ballPosBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * ball position in field coords
+       * </pre>
+       *
+       * <code>optional .RDPointF ballPos = 19;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getBallPosBuilder() {
+        
+        onChanged();
+        return getBallPosFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * ball position in field coords
+       * </pre>
+       *
+       * <code>optional .RDPointF ballPos = 19;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getBallPosOrBuilder() {
+        if (ballPosBuilder_ != null) {
+          return ballPosBuilder_.getMessageOrBuilder();
+        } else {
+          return ballPos_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : ballPos_;
+        }
+      }
+      /**
+       * <pre>
+       * ball position in field coords
+       * </pre>
+       *
+       * <code>optional .RDPointF ballPos = 19;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getBallPosFieldBuilder() {
+        if (ballPosBuilder_ == null) {
+          ballPosBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getBallPos(),
+                  getParentForChildren(),
+                  isClean());
+          ballPos_ = null;
+        }
+        return ballPosBuilder_;
+      }
+
+      private java.util.List<RemoteDebug.RDPointF> localiserVisitedPoints_ =
+        java.util.Collections.emptyList();
+      private void ensureLocaliserVisitedPointsIsMutable() {
+        if (!((bitField0_ & 0x00080000) == 0x00080000)) {
+          localiserVisitedPoints_ = new java.util.ArrayList<RemoteDebug.RDPointF>(localiserVisitedPoints_);
+          bitField0_ |= 0x00080000;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> localiserVisitedPointsBuilder_;
+
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public java.util.List<RemoteDebug.RDPointF> getLocaliserVisitedPointsList() {
+        if (localiserVisitedPointsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(localiserVisitedPoints_);
+        } else {
+          return localiserVisitedPointsBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public int getLocaliserVisitedPointsCount() {
+        if (localiserVisitedPointsBuilder_ == null) {
+          return localiserVisitedPoints_.size();
+        } else {
+          return localiserVisitedPointsBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public RemoteDebug.RDPointF getLocaliserVisitedPoints(int index) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          return localiserVisitedPoints_.get(index);
+        } else {
+          return localiserVisitedPointsBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public Builder setLocaliserVisitedPoints(
+          int index, RemoteDebug.RDPointF value) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureLocaliserVisitedPointsIsMutable();
+          localiserVisitedPoints_.set(index, value);
+          onChanged();
+        } else {
+          localiserVisitedPointsBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public Builder setLocaliserVisitedPoints(
+          int index, RemoteDebug.RDPointF.Builder builderForValue) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          ensureLocaliserVisitedPointsIsMutable();
+          localiserVisitedPoints_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          localiserVisitedPointsBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public Builder addLocaliserVisitedPoints(RemoteDebug.RDPointF value) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureLocaliserVisitedPointsIsMutable();
+          localiserVisitedPoints_.add(value);
+          onChanged();
+        } else {
+          localiserVisitedPointsBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public Builder addLocaliserVisitedPoints(
+          int index, RemoteDebug.RDPointF value) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureLocaliserVisitedPointsIsMutable();
+          localiserVisitedPoints_.add(index, value);
+          onChanged();
+        } else {
+          localiserVisitedPointsBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public Builder addLocaliserVisitedPoints(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          ensureLocaliserVisitedPointsIsMutable();
+          localiserVisitedPoints_.add(builderForValue.build());
+          onChanged();
+        } else {
+          localiserVisitedPointsBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public Builder addLocaliserVisitedPoints(
+          int index, RemoteDebug.RDPointF.Builder builderForValue) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          ensureLocaliserVisitedPointsIsMutable();
+          localiserVisitedPoints_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          localiserVisitedPointsBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public Builder addAllLocaliserVisitedPoints(
+          java.lang.Iterable<? extends RemoteDebug.RDPointF> values) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          ensureLocaliserVisitedPointsIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, localiserVisitedPoints_);
+          onChanged();
+        } else {
+          localiserVisitedPointsBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public Builder clearLocaliserVisitedPoints() {
+        if (localiserVisitedPointsBuilder_ == null) {
+          localiserVisitedPoints_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00080000);
+          onChanged();
+        } else {
+          localiserVisitedPointsBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public Builder removeLocaliserVisitedPoints(int index) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          ensureLocaliserVisitedPointsIsMutable();
+          localiserVisitedPoints_.remove(index);
+          onChanged();
+        } else {
+          localiserVisitedPointsBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getLocaliserVisitedPointsBuilder(
+          int index) {
+        return getLocaliserVisitedPointsFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getLocaliserVisitedPointsOrBuilder(
+          int index) {
+        if (localiserVisitedPointsBuilder_ == null) {
+          return localiserVisitedPoints_.get(index);  } else {
+          return localiserVisitedPointsBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public java.util.List<? extends RemoteDebug.RDPointFOrBuilder> 
+           getLocaliserVisitedPointsOrBuilderList() {
+        if (localiserVisitedPointsBuilder_ != null) {
+          return localiserVisitedPointsBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(localiserVisitedPoints_);
+        }
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public RemoteDebug.RDPointF.Builder addLocaliserVisitedPointsBuilder() {
+        return getLocaliserVisitedPointsFieldBuilder().addBuilder(
+            RemoteDebug.RDPointF.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public RemoteDebug.RDPointF.Builder addLocaliserVisitedPointsBuilder(
+          int index) {
+        return getLocaliserVisitedPointsFieldBuilder().addBuilder(
+            index, RemoteDebug.RDPointF.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * visited positions by the Subplex optimiser
+       * </pre>
+       *
+       * <code>repeated .RDPointF localiserVisitedPoints = 20;</code>
+       */
+      public java.util.List<RemoteDebug.RDPointF.Builder> 
+           getLocaliserVisitedPointsBuilderList() {
+        return getLocaliserVisitedPointsFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getLocaliserVisitedPointsFieldBuilder() {
+        if (localiserVisitedPointsBuilder_ == null) {
+          localiserVisitedPointsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  localiserVisitedPoints_,
+                  ((bitField0_ & 0x00080000) == 0x00080000),
+                  getParentForChildren(),
+                  isClean());
+          localiserVisitedPoints_ = null;
+        }
+        return localiserVisitedPointsBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -9058,7 +9791,7 @@ public final class RemoteDebug {
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
       "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\";\n\007RDRobo" +
       "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
-      "ation\030\002 \001(\002\"\261\003\n\nDebugFrame\022\024\n\014defaultIma" +
+      "ation\030\002 \001(\002\"\370\003\n\nDebugFrame\022\024\n\014defaultIma" +
       "ge\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013tem" +
       "perature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RDRec" +
       "t\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\022\013\n\003fps",
@@ -9069,15 +9802,17 @@ public final class RemoteDebug {
       "DPointF\022\031\n\021robotOrientations\030\016 \003(\002\022\023\n\013ra" +
       "yInterval\030\017 \001(\002\022\026\n\016localiserEvals\030\020 \001(\005\022" +
       "\025\n\rlocaliserTime\030\021 \001(\002\022\027\n\017localiserStatu" +
-      "s\030\022 \001(\t\"\341\001\n\014DebugCommand\022\021\n\tmessageId\030\001 " +
-      "\001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orienta" +
-      "tion\030\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDTh",
-      "reshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(" +
-      "\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022" +
-      "\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nR" +
-      "DMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n" +
-      "\007command\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMe" +
-      "ssage\030\003 \001(\005b\006proto3"
+      "s\030\022 \001(\t\022\032\n\007ballPos\030\023 \001(\0132\t.RDPointF\022)\n\026l" +
+      "ocaliserVisitedPoints\030\024 \003(\0132\t.RDPointF\"\341" +
+      "\001\n\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006co",
+      "ords\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(" +
+      "\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold\022\020" +
+      "\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolo" +
+      "urChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robotI" +
+      "d\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFrame" +
+      "\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030" +
+      "\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 \001" +
+      "(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -9126,7 +9861,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_DebugCommand_fieldAccessorTable = new

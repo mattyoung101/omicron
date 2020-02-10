@@ -21,6 +21,7 @@ import javafx.scene.control.Label
 import javafx.scene.shape.Circle
 import org.apache.commons.io.FileUtils
 import kotlin.math.cos
+import kotlin.math.roundToInt
 import kotlin.math.sin
 
 /**
@@ -47,6 +48,8 @@ class FieldView : View() {
     private var targetPos: Point2D? = null
     private val ball = Ball()
     private var bandwidthRecordingBegin = System.currentTimeMillis()
+    private var isRaycastDebug = false
+    private var isOptimiserDebug = false
 
     init {
         reloadStylesheetsOnFocus()
@@ -98,14 +101,14 @@ class FieldView : View() {
             }
 
             // draw rays if requested
-            // TODO we need to check if the robot is the one we're connected to since we only send rays for connected robot
-            for (robot in robots){
-                if (!robot.isRaycastDebug || !robot.isPositionKnown) continue
-
+            // TODO instead of picking robot 0, we need to pick the one we're connected to, to debug
+            val connectedRobot = 0
+            if (isRaycastDebug && robots[connectedRobot].isPositionKnown) {
                 display.lineWidth = 2.0
                 display.stroke = Color.WHITE
 
-                val original = Point2D(robots[robot.id].position.x, robots[robot.id].position.y).toCanvasPosition()
+                val original =
+                    Point2D(robots[connectedRobot].position.x, robots[connectedRobot].position.y).toCanvasPosition()
                 val x0 = original.x
                 val y0 = original.y
                 var angle = 0.0
@@ -116,6 +119,25 @@ class FieldView : View() {
 
                     display.strokeLine(x0, y0, x1, y1)
                     angle += message.rayInterval
+                }
+            }
+
+            if (isOptimiserDebug){
+                var lastPoint: Point2D? = null
+                for ((i, point) in message.localiserVisitedPointsList.take(message.localiserVisitedPointsCount).withIndex()) {
+                    val progress = (i / message.localiserVisitedPointsCount.toDouble()) * 255.0
+
+                    val fieldPoint = Point2D(point.x.toDouble(), point.y.toDouble()).toCanvasPosition()
+                    display.fill = Color.rgb(progress.roundToInt(), 0, 0)
+                    display.fillOval(fieldPoint.x - 5.0, fieldPoint.y - 5.0, 10.0, 10.0)
+
+                    if (lastPoint != null) {
+                        // draw arrow
+                        display.stroke = Color.rgb(progress.roundToInt(), 0, 0)
+                        display.lineWidth = 2.0
+                        display.strokeLine(lastPoint.x, lastPoint.y, fieldPoint.x, fieldPoint.y)
+                    }
+                    lastPoint = fieldPoint
                 }
             }
 
@@ -194,16 +216,14 @@ class FieldView : View() {
                 }
             }
             menu("Settings"){
-                menu("Raycast debug"){
-                    checkmenuitem("Robot 0"){
-                        selectedProperty().addListener { _, _, value ->
-                            robots[0].isRaycastDebug = value
-                        }
+                checkmenuitem("Raycast debug"){
+                    selectedProperty().addListener { _, _, value ->
+                        isRaycastDebug = value
                     }
-                    checkmenuitem("Robot 1"){
-                        selectedProperty().addListener { _, _, value ->
-                            robots[1].isRaycastDebug = value
-                        }
+                }
+                checkmenuitem("Optimiser debug"){
+                    selectedProperty().addListener { _, _, value ->
+                        isOptimiserDebug = value
                     }
                 }
             }

@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "protobuf/RemoteDebug.pb.h"
 #include "defines.h"
+#include "DG_dynarr.h"
 
 /** An entry submitted to the localisation work queue */
 typedef struct {
@@ -13,6 +14,13 @@ typedef struct {
     int32_t width;
     int32_t height;
 } localiser_entry_t;
+
+typedef struct {
+    double x, y;
+} localiser_point_t;
+
+/** localiser point list type */
+DA_TYPEDEF(localiser_point_t, lp_list_t)
 
 /** true if the localisation for the last frame has completed */
 extern _Atomic bool localiserDone;
@@ -24,6 +32,8 @@ extern double observedRaysRaw[LOCALISER_NUM_RAYS];
 extern double observedRays[LOCALISER_NUM_RAYS];
 /** rays that we got from raycasting on the field file */
 extern double expectedRays[LOCALISER_NUM_RAYS];
+/** points visited by the Subplex optimiser */
+extern lp_list_t localiserVisitedPoints;
 
 #ifdef __cplusplus
 extern "C" {

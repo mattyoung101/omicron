@@ -74,6 +74,8 @@ message DebugFrame {
     string localiserStatus = 18;
     // ball position in field coords
     RDPointF ballPos = 19;
+    // visited positions by the Subplex optimiser
+    repeated RDPointF localiserVisitedPoints = 20;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

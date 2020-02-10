@@ -18,6 +18,7 @@
 #include "movavg.h"
 #include "remote_debug.h"
 
+lp_list_t localiserVisitedPoints = {0};
 static nlopt_opt optimiser;
 static pthread_t workThread;
 static FieldFile field = {0};
@@ -118,6 +119,9 @@ static inline double objective_func_impl(double x, double y){
     }
     evaluations++;
 
+    localiser_point_t point = {x - field.length / 2.0, y - field.width / 2.0};
+    da_add(localiserVisitedPoints, point);
+
     return totalError;
 }
 
@@ -205,6 +209,7 @@ static void *work_thread(void *arg){
         double begin = utils_time_millis();
         localiser_entry_t *entry = (localiser_entry_t*) queueData;
         localiserDone = false;
+        da_clear(localiserVisitedPoints);
 
         // image analysis
         // 1. calculate begin points for rays
@@ -363,4 +368,5 @@ void localiser_dispose(void){
     rpa_queue_destroy(queue);
     movavg_free(timeAvg);
     movavg_free(evalAvg);
+    da_free(localiserVisitedPoints);
 }

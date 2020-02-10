@@ -8,6 +8,5 @@ data class Robot(var id: Int,
                  var orientation: Float = 0.0f,
                  var isPositionKnown: Boolean = false,
                  var fsmState: String = "Unknown",
-                 var positionLabel: Label? = null,
-                 var isRaycastDebug: Boolean = false) {
+                 var positionLabel: Label? = null) {
 }

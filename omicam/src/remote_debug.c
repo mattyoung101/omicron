@@ -216,6 +216,13 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.robotPositions_count = 1;
     msg.rayInterval = (float) (PI2 / LOCALISER_NUM_RAYS);
 
+    for (size_t i = 0; i < da_count(localiserVisitedPoints); i++){
+        localiser_point_t point = da_get(localiserVisitedPoints, i);
+        msg.localiserVisitedPoints[i].x = (float) point.x;
+        msg.localiserVisitedPoints[i].y = (float) point.y;
+    }
+    msg.localiserVisitedPoints_count = da_count(localiserVisitedPoints);
+
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.frame = msg;
     wrapper.whichMessage = 1;
