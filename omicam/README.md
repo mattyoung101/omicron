@@ -8,16 +8,16 @@ For the full technical writeup on our vision pipeline, please see docs/OMICAM_DE
 - Ethan Lo: field file generator, localisation research & assistance
 
 **Special thanks:**
-- Tom Fraser: assistance with OpenCV CUDA performance debugging (when it was being used), help with selecting the best
-  single board computer and overall enthusiasm and support :)
+- Tom Fraser: assistance with performance debugging, help with selecting the best SBC and camera, as well as overall enthusiasm and support!
 
 ## Features list
-- Efficient camera decoding using GStreamer and V4L2
-- State of the art, multi-threaded, SIMD accelerated image processing using OpenCV 4
-- Highly advanced, centimetre accurate, custom localisation algorithm using novel non-linear optimisation methods
-- Asynchronous, wireless frame streaming using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app
-    - Network protocol uses TCP socket and Protocol Buffers with zlib compression (low bandwidth requirements)
-    - Also transmits misc. data like temperature of the Jetson
+- Efficient camera decoding using V4L2 via the popular GStreamer library
+- State of the art, high-performance image processing using OpenCV 4
+- Advanced custom localisation algorithm using a novel three step non-linear optimisation method, accurate to ~1cm
+- Wireless frame streaming over TCP/IP using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app (Omicontrol)
+    - Custom network protocol uses Protocol Buffers with zlib compression (low bandwidth requirements)
+    - Also transmits misc. data like temperature of the SBC
+- UART comms using termios for communicating to MCU (also using Protocol Buffers)
 - Written mostly in C11 (just a little C++ for interfacing with OpenCV)
 - Well-documented code and design document
 

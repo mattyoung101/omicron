@@ -90,8 +90,8 @@ this as not an ideal approach.
 
 ### Our solution
 This year, Team Omicron presents a novel approach to robot localisation based partly on a middle-size league paper by Lu, Li, Zhang,
-Hu & Zheng[^2]. We localise using only RGB camera data by solving a multi-variate non-linear optimisation problem in realtime,
-making inferences from the position of the lines on the game field.
+Hu & Zheng[^2]. We localise using only RGB camera data by solving a multi-variate optimisation problem in realtime, via the
+Subplex non-linear gradient-free optimisation algorithm.
 
 The principle method of operation of our algorithm is that we need to match a virtual model of field geometry to the observed
 one from the camera, thereby inferring our position. Another way to think of it is we need to generate a transform such that
@@ -132,19 +132,17 @@ _Figure 1: example of ray casting on field, with a position near to the centre_
 These rays are then dewarped to counter the distortion of the 360 degree mirror. The equation to do so is determined by
 measuring the pixels between points along evenly spaced tape placed on the real field, via Omicontrol. Using regression 
 software such as Excel or Desmos, an equation can then be calculated to map pixel distances to real distances. 
-Below we demonstrate the result of dewarping an entire image (using the output of the OpenMV H7), which we deemed too 
-inefficient to run in realtime.  In our case, we simply apply the dewarp function to each ray length instead.
+In our case, we simply apply the dewarp function to each ray length instead, leaving us
+with each ray essentially in field coordinates (or field lengths) rather than camera coordinates.
 
 This dewarping equation is also used by the vision pipeline to determine the distance to the ball and goals in centimetres.
 
 ![Dewarped](images/dewarped.png)    
-_Figure 2: example of frame dewarping from the old, low reolution OpenMV H7_
+_Figure 2: example of applying the dewarp function to an entire image, on the low resolution OpenMV H7._
 
 The second phase of the camera normalisation is to rotate the rays relative to the robot's heading, using a rotation matrix.
 The robot's heading value, which is relative to when it was powered on, is transmitted by the ESP32, again using Protocol Buffers.
 For information about how this value is calculated using the IMU, see the ESP32 and movement code page.
-
-**TODO: explanation on why this is done**
 
 #### Position optimisation
 The main part of our solution is the Subplex local derivative-free non-linear optimiser[^3], re-implemented as 
@@ -204,6 +202,21 @@ the vision based approach.
 It would also be possible to use the distance to the goals as virtual information to supplement a potential lack of line
 data and thus increase accuracy. Other distance sensors such as 360 LiDARS can also be implemented with ease.
 
+### Justification for our approach
+Observant readers will notice that the objective function is technically linear (as it contains no exponentials or powers).
+Hence, it may be observed that linear programming (essentially linear optimisation) could be used to solve the problem. In
+fact, it's very plausible that something like Dantzig's Simplex/criss-cross algorithm or an interior point algorithm could
+locate the optimum far more efficiently than the Subplex/Nelder-Mead simplex optimiser.
+
+However, there is a distinct lack of easy to use and non-restrictively licensed linear optimisers for C. The best candidate
+was probably COIN-OR's CLP or Google's Glop, but both of these methods are quite complex compared to NLopt's Subplex algorithm
+(and also written in C++). We determined that given the performance of the localiser (about 30 Hz maximum) and mouse sensor 
+interpolation, it's not worth switching to a linear optimiser when the non-linear one works fine and fast enough.
+
+Finally, it was brought to our attention that it may be possible to forgo the optimisation process and sum the error of the
+rays in some geometric method to transform the robot's position. While we agree that this may be possible and worth looking into, 
+we believe that optimisation leads to more stable and less error-prone results (though this is not confirmed).
+
 ## Interfacing with Omicontrol
 To interface with our remote management application Omicontrol, Omicam starts a TCP server on port 42708. This server sends
 Protocol Buffer packets containing JPEG encoded frames, zlib compressed threshold data as well as other information such as
@@ -220,8 +233,9 @@ With all these optimisations, even at high framerates (60+ packets per second), 
 
 ## Debugging and performance optimisation
 Low-level compiled languages such as C and C++ are notoriously unstable and difficult to debug. In order to improve the stability of Omicam
-and fix bugs, we used Google's Address Sanitizer to easily find and trace a variety of bugs such as buffer overflows,
-memory leaks and more. In addition, we used the LLVM toolchain's debugger lldb (or just gdb) to analyse the application frequently.
+and fix bugs, we used Google's Address Sanitizer (ASan) and Undefined Behaviour Sanitizer (UBSan) to easily find and trace a variety of 
+bugs such as buffer overflows, memory leaks and more. 
+In addition, we used the LLVM toolchain's debugger lldb (or just gdb) to analyse the application frequently.
 
 To assist in performance evaluation, we used the Linux tool OProfile to determine the slowest method calls in the application.
 Although the Clang compiler may have marginally worse performance than GCC, we chose Clang because it's more modern and has
