@@ -128,22 +128,21 @@ static inline double objective_func_impl(double x, double y){
 #if LOCALISER_DEBUG
 /** Renders the objective function for the whole field and then quits the application **/
 static void render_test_image(){
-//    // render raycast
-//    bmp = BMP_Create(field.length, field.width, 24);
-//    objective_func_impl(120.0, 120.0);
-//
-//    // render the field as well
-//    for (int y = 0; y < field.width; y++){
-//        for (int x = 0; x < field.length; x++){
-//            bool isLine = field.data.bytes[x + field.length * y] != 0;
-//            if (isLine){
-//                BMP_SetPixelRGB(bmp, x, y, 0, 0, 255);
-//            }
-//        }
-//    }
-//
-//    BMP_WriteFile(bmp, "../testing.bmp");
-//    exit(EXIT_SUCCESS);
+    // render raycast
+    bmp = BMP_Create(field.length, field.width, 24);
+    objective_func_impl(120.0, 120.0);
+
+    // render the field as well
+    for (int y = 0; y < field.width; y++){
+        for (int x = 0; x < field.length; x++){
+            bool isLine = field.data.bytes[x + field.length * y] != 0;
+            if (isLine){
+                BMP_SetPixelRGB(bmp, x, y, 0, 0, 255);
+            }
+        }
+    }
+
+    BMP_WriteFile(bmp, "../testing.bmp");
 
     double *data = calloc(field.length * field.width, sizeof(double));
     uint8_t *outImage = calloc(field.length * field.width, sizeof(uint8_t));

@@ -66,6 +66,7 @@ class ConnectView : View() {
                 hbox {
                     label("Remote IP: "){ textFill = Color.WHITE }
                     ipField = textfield(REMOTE_IP)
+                    println("remote ip: $REMOTE_IP")
                     alignment = Pos.CENTER
                 }
 

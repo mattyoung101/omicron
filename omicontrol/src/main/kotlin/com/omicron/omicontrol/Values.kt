@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong
  * 3.4a: (WIP) continue to work on field diplay screen
  */
 const val OMICONTROL_VERSION = "3.4a"
-const val REMOTE_IP = "127.0.0.1"
+const val REMOTE_IP = "192.168.12.1"
 const val REMOTE_PORT = 42708
 
 const val FIELD_LENGTH_CM = 243 // long side, the top and bottom
