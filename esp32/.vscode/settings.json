@@ -14,7 +14,8 @@
         "tsop.h": "c",
         "comms_uart.h": "c",
         "*.txt": "plaintext",
-        "algorithms&stuff.h": "c"
+        "algorithms&stuff.h": "c",
+        "PHONETIC.C": "cpp"
     },
     "cSpell.words": [
         "Bluedroid",

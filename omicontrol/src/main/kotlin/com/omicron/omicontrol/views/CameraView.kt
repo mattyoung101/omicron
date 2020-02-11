@@ -28,6 +28,7 @@ import org.tinylog.kotlin.Logger
 import java.io.FileOutputStream
 import java.nio.file.Paths
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.imageio.ImageIO
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
@@ -56,6 +57,7 @@ class CameraView : View() {
     /** when the last second recording began in system time **/
     private var bandwidthRecordingBegin = System.currentTimeMillis()
     private var saveNextToDisk = false
+    private var savingNextToDisk = AtomicBoolean()
 
     init {
         reloadStylesheetsOnFocus()
@@ -75,8 +77,14 @@ class CameraView : View() {
         // display megabits per second of bandwidth used by the app
         BANDWIDTH += message.serializedSize
 
+        if (savingNextToDisk.get()){
+            return
+        }
+
         runLater {
+            // handle save to disk
             if (saveNextToDisk) {
+                savingNextToDisk.set(true)
                 val chooser = FileChooser().apply {
                     initialDirectory = Paths.get(".").toFile()
                     extensionFilters.add(FileChooser.ExtensionFilter("JPEG images", "*.jpg"))
@@ -93,6 +101,7 @@ class CameraView : View() {
                     Logger.debug("Written frame to disk as $imageOut")
                 }
                 saveNextToDisk = false
+                savingNextToDisk.set(false)
             }
 
             val temp = message.temperature

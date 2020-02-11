@@ -1,16 +1,13 @@
 package com.omicron.omicontrol.views
 
 import com.omicron.omicontrol.*
-import javafx.application.Platform
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
-import javafx.scene.control.ButtonType
 import javafx.scene.control.ComboBox
 import javafx.scene.control.TextField
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority
-import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import org.tinylog.kotlin.Logger
 import tornadofx.*
@@ -65,14 +62,14 @@ class ConnectView : View() {
 
                 hbox {
                     label("Remote IP: "){ textFill = Color.WHITE }
-                    ipField = textfield(REMOTE_IP)
-                    println("remote ip: $REMOTE_IP")
+                    val lastIp = prefs["LastIP", DEFAULT_IP]
+                    ipField = textfield(lastIp)
                     alignment = Pos.CENTER
                 }
 
                 hbox {
                     label("Remote port: "){ textFill = Color.WHITE }
-                    portField = textfield(REMOTE_PORT.toString())
+                    portField = textfield(DEFAULT_PORT.toString())
                     alignment = Pos.CENTER
                 }
 
@@ -83,7 +80,7 @@ class ConnectView : View() {
                             "Camera view",
                             "Field view",
                             "Calibration view")
-                        val last = prefs.get("LastViewSelected", "Camera view")
+                        val last = prefs["LastViewSelected", "Camera view"]
                         selectionModel.select(last)
                     }
                     alignment = Pos.CENTER
@@ -106,6 +103,7 @@ class ConnectView : View() {
                             try {
                                 CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
                                 prefs.put("LastViewSelected", viewBox.value)
+                                prefs.put("LastIP", ipField.text)
 
                                 when (viewBox.value){
                                     "Camera view" -> Utils.transitionMetro(this@ConnectView, CameraView())
