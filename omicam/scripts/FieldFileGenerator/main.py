@@ -18,16 +18,16 @@ whiteLines = [
     linearFunction(-66, 96.5, 66, 96.5),
     linearFunction(66, 96.5, 66, -96.5),
     linearFunction(66, -96.5, -66, -96.5),
-    linearFunction(35, 96.5, 35, 86.5),
-    linearFunction(-35, 96.5, -35, 86.5),
-    linearFunction(35, -96.5, 35, -86.5),
-    linearFunction(-35, -96.5, -35, -86.5),
-    linearFunction(20, 71.5, -20, 71.5),
-    linearFunction(20, -71.5, -20, -71.5),
-    circularFunction(0, radians(90), 15, 20, -86.5),
-    circularFunction(radians(90), radians(180), 15, -20, -86.5),
-    circularFunction(radians(180), radians(270), 15, -20, 86.5),
-    circularFunction(radians(270), radians(360), 15, 20, 86.5)
+    # linearFunction(35, 96.5, 35, 86.5),
+    # linearFunction(-35, 96.5, -35, 86.5),
+    # linearFunction(35, -96.5, 35, -86.5),
+    # linearFunction(-35, -96.5, -35, -86.5),
+    # linearFunction(20, 71.5, -20, 71.5),
+    # linearFunction(20, -71.5, -20, -71.5),
+    # circularFunction(0, radians(90), 15, 20, -86.5),
+    # circularFunction(radians(90), radians(180), 15, -20, -86.5),
+    # circularFunction(radians(180), radians(270), 15, -20, 86.5),
+    # circularFunction(radians(270), radians(360), 15, 20, 86.5)
 ]
 
 robot = virtualRobot(0, 0, 0)
@@ -55,7 +55,7 @@ output = list(itertools.chain(*output))
 
 img = Image.new('L', (fieldLength, fieldWidth))
 img.putdata(output)
-img.save("field_img.bmp")
+img.save("field_img2.bmp")
 img.show()
 
 message = pb.FieldFile()
@@ -65,6 +65,6 @@ message.length = int(fieldLength)
 message.width = int(fieldWidth)
 message.data = bytes(output)
 
-with open("field.ff", "wb") as file:
+with open("badfield.ff", "wb") as file:
     serialised = message.SerializeToString()
     file.write(serialised)
