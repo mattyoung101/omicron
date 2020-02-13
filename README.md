@@ -8,14 +8,8 @@ This repo contains all the hardware (including full PCBs and robot designs), sof
 microcontrollers, our custom robot control software and vision pipeline) and associated documentation that we used to
 compete in the 2020 Bordeaux Internationals in France.
 
-This is an unprecedented amount of information all available under a relatively permissive license (see below for details). 
-We hope this will make an excellent resource for advanced members of the league to study and learn from in the years to
-come. So please, clone the repo, read the docs and get tinkering - and make sure you tell your friends!
-
-If you have any specific questions, please check out the Team Omicron Team Description Paper, our website and feel
-free to contact any team member directly (our info is below, or just use our GitHub profile). Thanks, and have fun!
-
-**we should include how many lines of code we we wrote and perhaps some metric for designs as well!**
+If you have any specific questions, please check out the Team Omicron website and feel free to contact any team member 
+directly (our info is below, or just use our GitHub profile). Thanks, and have fun.
 
 ## About Team Omicron
 Team Omicron was formed in 2019 as a merger between two BBC teams, J-TEC (previously Team APEX) and Team Omicron (previously
@@ -38,7 +32,7 @@ Our team members work on seven main projects:
 | Name       | Path                | Description                                                                   |
 |------------|---------------------|-------------------------------------------------------------------------------|
 | Electrical | /designs/electrical | All the PCBs used in our robots.                                              |
-| Mechanical | /designs/mechanical | All the CAD designs used to construct our robotss.                            |
+| Mechanical | /designs/mechanical | All the CAD designs used to construct our robots.                             |
 | ESP32      | /esp32              | The ESP32 firmware that powers our movement and strategy code.                |
 | ATMega     | /atmega             | The firmware that powers our ATMega328P motor and mouse sensor slave device.  |
 | Teensy     | /teensy             | The firmware that powers our Teensy 4 light sensor and LRF slave device.      |
@@ -46,6 +40,7 @@ Our team members work on seven main projects:
 | Omicontrol | /omicontrol         | Our custom wireless visualisation and debugging application.                  |
 
 ## License
-This code is currently proprietary and confidential to Brisbane Boys' College and Team Omicron. No redistribution or use outside of our team is permitted. 
+These code and design files are currently property of Team Omicron.
+No redistribution or use outside of our team is permitted. 
 
-_Once our competition is done, this code will be released under the MPL 2.0._
+_In the near future, we will change this license to the MPL 2.0._

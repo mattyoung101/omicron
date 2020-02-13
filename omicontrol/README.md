@@ -75,9 +75,6 @@ workaround is not required, and actually makes things worse (blurry).
 - This workaround may be added to Windows if it looks better than completely disabling DPI scaling.
 - Mac OS X is partially supported because only one team member uses a Mac, but should still mostly work.
 
-## License
-Omicontrol is available under the license of the whole Team Omicron repo, see LICENSE.txt in the root directory. 
-
 ## Open source libraries used
 - [Protocol Buffers](https://github.com/protocolbuffers/protobuf): BSD 3-clause
 - [TornadoFX](https://github.com/edvin/tornadofx): Apache 2

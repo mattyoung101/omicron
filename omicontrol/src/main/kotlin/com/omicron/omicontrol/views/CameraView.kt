@@ -58,6 +58,8 @@ class CameraView : View() {
     private var bandwidthRecordingBegin = System.currentTimeMillis()
     private var saveNextToDisk = false
     private var savingNextToDisk = AtomicBoolean()
+    /** if true, when a min/max slider is dragged, it will update the value to all min/max sliders **/
+    private var multiSlide = false
 
     init {
         reloadStylesheetsOnFocus()
@@ -447,6 +449,14 @@ class CameraView : View() {
                             "Config saved successfully"
                             )
                         })
+                    }
+                }
+            }
+            menu("Settings"){
+                checkmenuitem("Multi-slide mode"){
+                    selectedProperty().addListener { _, _, newValue ->
+                        // FIXME finish this off
+                        multiSlide = newValue
                     }
                 }
             }

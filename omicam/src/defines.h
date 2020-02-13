@@ -55,7 +55,7 @@ typedef enum {
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET (BUILD_TARGET_SBC) // which platform Omicam will be running on
+#define BUILD_TARGET (BUILD_TARGET_PC) // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 1 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.01 // stop optimisation if the last step size was smaller than this in centimetres

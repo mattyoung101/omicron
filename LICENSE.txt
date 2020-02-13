@@ -1,2 +1,2 @@
-This code is currently proprietary and confidential to Brisbane Boys' College and Team Omicron. 
+These code and design files are currently property of Team Omicron.
 No redistribution or use outside of our team is permitted. 

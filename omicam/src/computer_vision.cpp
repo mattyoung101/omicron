@@ -118,7 +118,7 @@ static auto cv_thread(void *arg) -> void *{
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-    Mat ogFrame = imread("../field_irl.jpg");
+    Mat ogFrame = imread("../field5.png");
     log_trace("Build target is PC, using test data");
     VideoCapture cap("../test_footage_2.m4v");
     if (!cap.isOpened()) {

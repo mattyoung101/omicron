@@ -10,6 +10,6 @@ to answer any questions you may have about any aspect of our robots!
 You may also be interested in reading our [team description paper](#), although it doesn't contain anything not already 
 listed on our website.
 
-Towards the end of 2020, our entire codebase including mechanical designs, electrical designs and all software
-will become open source for everyone to learn from and study. We hope you'll enjoy this opportunity, so please stay
-tuned.
+Some time in the next year or so (from competition date), our entire codebase including mechanical designs, electrical designs and 
+all software will become open source for everyone to learn from and study. The exact timeframe is still yet to be determined,
+and depends on a variety of factors, so we don't have a particular date in mind right now but we can assure you it will happen. 

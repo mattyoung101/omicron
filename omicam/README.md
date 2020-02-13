@@ -5,10 +5,7 @@ For the full technical writeup on our vision pipeline, please see docs/OMICAM_DE
 
 **Credits:**
 - Matt Young: main C/C++ programmer, Markdown docs, project maintainer
-- Ethan Lo: field file generator, localisation research & assistance
-
-**Special thanks:**
-- Tom Fraser: assistance with performance debugging, help with selecting the best SBC and camera, as well as overall enthusiasm and support!
+- Ethan Lo: field file generator, localisation research, maths assistance
 
 ## Features list
 - Efficient camera decoding using V4L2 via the popular GStreamer library
@@ -67,9 +64,6 @@ to /usr/bin/clang in CLion's toolchain settings.
 - If you install a new library on the SBC, you will need run Tools->"Resync with remote hosts" to get the new headers.
 - CLion's remote upload occasionally (a few times per full day of work) fails temporarily, just ignore it and try again.
 
-## Licence
-Omicam is available under the same licence of the whole Team Omicron repo, see LICENSE.txt in the root directory. 
-
 ## Open source libraries used
 - [log.c](https://github.com/rxi/log.c): MIT license
 - [iniparser](https://github.com/ndevilla/iniparser): MIT license
@@ -81,3 +75,9 @@ Omicam is available under the same licence of the whole Team Omicron repo, see L
 - [OpenCV](https://opencv.org/): BSD 3-Clause license
 - [mathc](https://github.com/felselva/mathc): Zlib license
 - [qdbmp](https://github.com/cbraudo/qdbmp): MIT license
+
+## Special thanks
+- Steven G Johnson, for writing the amazing NLopt library
+- Tom Rowan, author of the Subplex optimisation algorithm
+- Huimin Lu, Xun Li, Hui Zhang, Mei Hu and Zhiqiang Zheng, authors of the paper our localisation algorithm was heavily
+  inspired by
