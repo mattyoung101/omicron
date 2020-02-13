@@ -78,6 +78,7 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
         }
 
         // also return if we touch a line, or exited the early stop bounds
+        // TODO sometimes segfault here?
         int32_t i = rx + imageWidth * ry;
         if (image[i] != 0 || (earlyStop != -1 && dist > earlyStop)){
             return dist;

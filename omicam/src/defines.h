@@ -15,7 +15,7 @@
 #define OMICAM_VERSION "3.4b"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
-#define DEWARP_MODEL (4.96776 * exp(0.0123892 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
+#define DEWARP_MODEL (4.8474 * exp(0.011 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease image size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
@@ -23,8 +23,8 @@
 #define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
 #define VISION_APPLY_CLAHE 0 // enables CLAHE adaptive histogram normalisation to correct dogshit venue lighting, bad for performance
 
-#define REMOTE_FRAME_INTERVAL 2 // send a debug frame every N real frames
-#define REMOTE_JPEG_QUALITY 40 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
+#define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames
+#define REMOTE_JPEG_QUALITY 70 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
 #define REMOTE_PORT 42708 // which port the remote debug TCP server runs on
 #define REMOTE_ENABLED 1 // whether or not remote debug is enabled
@@ -55,7 +55,7 @@ typedef enum {
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET (BUILD_TARGET_PC) // which platform Omicam will be running on
+#define BUILD_TARGET (BUILD_TARGET_SBC) // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 1 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.01 // stop optimisation if the last step size was smaller than this in centimetres
