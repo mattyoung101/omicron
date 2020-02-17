@@ -15,7 +15,7 @@ won't be seeing any proper design patterns like MVC). My apologies in advance!
 - Easy to use UI with built-in tutorials
 - Decode Omicam JPEG/data stream while overlaying threshold information
 - Edit and upload camera thresholds on the fly
-- Control the camera single board computer (reboot, shutdown, halt) and ESP32 (reboot)
+- Lots of useful commands and quality of life things which you'll find beneficial
 - Visualise both robots' localised position on the field
 - Control the robots through a multitude of useful commands including automatically resetting to starting positions
 - Large buttons designed for tablet usage
@@ -34,7 +34,7 @@ It's as simple as:
 You may need to add the OpenJFX directory to IntelliJ if it doesn't pick it up, it should be under /usr/share/openjfx/lib.
 
 ### Mac and Windows
-We recommend using [Amazon Corretto 11](https://aws.amazon.com/corretto/) or [AdotOpenJDK 11](https://adoptopenjdk.net/).
+I recommend using [Amazon Corretto 11](https://aws.amazon.com/corretto/) or [AdotOpenJDK 11](https://adoptopenjdk.net/).
 The Oracle JDKs should also work too, but due to Oracle and its associated licensing garbage I suggest you avoid them.
 
 Next, follow [these instructions](https://developer.tizen.org/development/articles/openjdk-and-openjfx-installation-guide#install_openjfx)
@@ -52,11 +52,12 @@ it will look weird and complain about missing resources, to fix this, edit the r
 in the src/main/resources directory.
 
 ## Compatibility
-Omicontrol has been tested on Windows, Mac OS X and Linux (KDE neon). The application _functions_ on all platforms,
+Omicontrol has been tested on Windows, Mac OS X and Linux. The application _functions_ on all platforms,
 however there are various quirks specific to each one. This is especially the case when using high DPI displays which
 cause all manner of platform specific issues with JavaFX.
 
-### Linux (KDE)
+### Linux
+- OS: KDE neon
 - Tested on a normal DPI monitor, scaling is fine
 - Frequent bug where dialogue boxes will show up incredibly small (with no content). Workaround is to press ALT+F4 and
 try again, it will eventually pop up.
@@ -81,3 +82,4 @@ workaround is not required, and actually makes things worse (blurry).
 - [Apache Commons](https://commons.apache.org/): Apache 2
 - [GreenRobot EventBus](https://github.com/greenrobot/EventBus): Apache 2
 - [Google Guava](https://github.com/google/guava): Apache 2
+- [exp4j](https://www.objecthunter.net/exp4j/): Apache 2
