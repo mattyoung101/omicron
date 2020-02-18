@@ -5,6 +5,61 @@ ball_data_t ballData = {0};
 
 // ================================================== VELOCITY CONTROL MODULE ================================================== //
 
+// void thisisafunctionthatjustcontainslistsofpointstoparseforthestrategies() {
+    //pretext: fuck proper syntax, we out here writing dogshit pseudocode
+    // lineSlide = [[0, -91], [61, -91], [61, 85][35, 85]] || [[0, -91], [-61, -91], [-61, 85][-35, 85]]
+    // turtle = [[0, 0], [0, 61.5]]
+    // zigzag:
+    //     for(i = 0; i <= 8; i++) {
+    //         epicnumber = rand(2) //range 0-2
+    //         if(epicnumber == 0) {
+    //             add [-61, i * 10]
+    //         } else if (epicnumber == 1) {
+    //             add [0, i * 10]
+    //         } else {
+    //             add [61, i*10]
+    //         }
+    //     }
+    //     number2 = rand(2) //0-2 again
+    //     if(epicnumber == 0) {
+    //         add [-62, 85] and [-35, 85]
+    //     } else if (epicnumber == 1) {
+    //         add [0, 61.5]
+    //     } else {
+    //         add [62, 85] and [35, 85]
+    //     }
+    // then also compass correct to [0, 61.5]
+        //and then like rotation shit or something idk ????????????????????/
+// }
+
+vect_2d_t orbit() {
+    tempVect = subtract_vect_2d(robotPos, ballPos);
+     if (sign(tempVect.y) == 1) {
+         return orbit.avoidMethod(ballPos, ORBIT_RADIUS, ORBIT_RADIUS, Vector(ballPos.x, ballPos.y - ORBIT_RADIUS, false), robotPos);
+    } else {
+        if(sign(tempVect.x) == 1) {
+            return orbit.avoidMethod(Vector(ballPos.x + ORBIT_RADIUS/2, ballPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, ballPos, robotPos);
+        } else {
+            return orbit.avoidMethod(Vector(ballPos.x - ORBIT_RADIUS/2, ballPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, ballPos, robotPos);
+        }
+    }
+    return vect_2d(0, 0, true);
+}
+
+vect_2d_t backward_orbit() {
+    tempVect = subtract_vect_2d(robotPos, ballPos);
+     if (sign(tempVect.y) == -1) {
+         return orbit.avoidMethod(ballPos, ORBIT_RADIUS, ORBIT_RADIUS, Vector(ballPos.x, ballPos.y + ORBIT_RADIUS, false), robotPos);
+    } else {
+        if(sign(tempVect.x) == 1) {
+            return orbit.avoidMethod(Vector(ballPos.x + ORBIT_RADIUS/2, ballPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, ballPos, robotPos);
+        } else {
+            return orbit.avoidMethod(Vector(ballPos.x - ORBIT_RADIUS/2, ballPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, ballPos, robotPos);
+        }
+    }
+    return vect_2d(0, 0, true);
+}
+
 void velcontrol_updatePID(float direction, float speed){
     // Split velocity vector into components
     float polarAngle = bearingToPolar(direction);
