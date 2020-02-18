@@ -13,6 +13,8 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import java.util.zip.Inflater
 import RemoteDebug
+import com.github.ajalt.colormath.ColourSpace
+import com.github.ajalt.colormath.RGB
 import javafx.collections.FXCollections
 import javafx.scene.Cursor
 import javafx.scene.control.ComboBox
@@ -29,7 +31,6 @@ import java.io.FileOutputStream
 import java.nio.file.Paths
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.imageio.ImageIO
 import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
 import kotlin.math.cos
@@ -60,6 +61,9 @@ class CameraView : View() {
     private var savingNextToDisk = AtomicBoolean()
     /** if true, when a min/max slider is dragged, it will update the value to all min/max sliders **/
     private var multiSlide = false
+    private val colourSpace: ColourSpace = RGB
+    private val minColour = IntArray(3)
+    private val maxColour = IntArray(3)
 
     init {
         reloadStylesheetsOnFocus()
@@ -284,10 +288,11 @@ class CameraView : View() {
                 }
 
                 // set min then max slider values
-                for ((i, colour) in COLOURS.withIndex()) {
+                // FIXME MUST CONVERT TO RGB
+                for ((i, colour) in colourSpace.friendlyName.withIndex()) {
                     sliders["${colour}Min"]?.value = newObjThresh.minList[i].toDouble()
                 }
-                for ((i, colour) in COLOURS.withIndex()) {
+                for ((i, colour) in colourSpace.friendlyName.withIndex()) {
                     sliders["${colour}Max"]?.value = newObjThresh.maxList[i].toDouble()
                 }
 
@@ -302,13 +307,18 @@ class CameraView : View() {
     }
 
     /** sends threshold slider value change to Omicontrol **/
-    private fun publishSliderValueChange(colour: String, type: String, value: Int){
-        // Logger.trace("Slider $colour$type changed to new value: $value")
+    private fun publishSliderValueChange(type: String, value: Int, channelIdx: Int){
+        // convert from current colour space to RGB
+        val colour = if (type.toLowerCase() == "min") colourSpaceToColour(colourSpace, minColour)
+                        else colourSpaceToColour(colourSpace, maxColour)
+        val rgbColour = colour.toRGB()
+        println("Sending colour: $rgbColour")
+
         val msg = RemoteDebug.DebugCommand.newBuilder().apply {
             messageId = DebugCommands.CMD_THRESHOLDS_SET.ordinal
             minMax = type.toLowerCase() == "min"
-            colourChannel = COLOURS.indexOf(colour.toUpperCase())
-            this.value = value
+            colourChannel = channelIdx
+            this.value = rgbColour.getChannel(channelIdx)
         }.build()
         CONNECTION_MANAGER.dispatchCommand(command=msg, ignoreErrors=true)
     }
@@ -317,10 +327,11 @@ class CameraView : View() {
      * Generates a JavaFX field containing a slider and label for the given colour channel in the threshold
      * @param colour the name of the colour channel, eg "R"
      * @param type "min" or "max"
+     * @param colourIdx the position of the current colour index in the colour space
      **/
-    private fun generateSlider(colour: String, type: String): Field {
+    private fun generateSlider(colour: String, type: String, colourIdx: Int): Field {
         return field("$colour $type") {
-            val colourSlider = slider(min=0, max=255){
+            val colourSlider = slider(min=colourSpace.minRange[colourIdx], max=colourSpace.maxRange[colourIdx]){
                 blockIncrement = 1.0
                 majorTickUnit = 1.0
                 minorTickCount = 0
@@ -330,19 +341,19 @@ class CameraView : View() {
                 // when the mouse is pressed start the drag timer
                 setOnMousePressed {
                     grabSendTimer = fixedRateTimer(name="GrabSendTimer", period=GRAB_SEND_TIMER_PERIOD, action = {
-                        publishSliderValueChange(colour, type, value.toInt())
+                        publishSliderValueChange(type, value.toInt(), colourIdx)
                     })
                 }
                 // when the mouse is finished being moved, cancel the grab timer and send the request to Omicam
                 setOnMouseReleased {
                     grabSendTimer?.cancel()
                     grabSendTimer?.purge()
-                    publishSliderValueChange(colour, type, value.toInt())
+                    publishSliderValueChange(type, value.toInt(), colourIdx)
                 }
                 // left and right arrow keys
                 setOnKeyReleased {
                     if (it.code == KeyCode.LEFT || it.code == KeyCode.RIGHT)
-                        publishSliderValueChange(colour, type, value.toInt())
+                        publishSliderValueChange(type, value.toInt(), colourIdx)
                 }
             }
             sliders["$colour$type"] = colourSlider
@@ -350,27 +361,14 @@ class CameraView : View() {
             label("000"){
                 colourSlider.valueProperty().addListener { _, _, newValue ->
                     text = newValue.toInt().toString().padStart(3, '0')
-                }
-                cursor = Cursor.HAND
 
-                // allow the user to manually input the threshold value
-                setOnMouseClicked {
-                    // you can't edit the none object threshold
-                    if (selectedObject == FieldObjects.OBJ_NONE) return@setOnMouseClicked
-
-                    val result = Utils.showTextInputDialog("Enter new value (0-255):", "Manual threshold input",
-                        default = colourSlider.value.toInt().toString())
-                    if (result.isBlank()) return@setOnMouseClicked
-
-                    val newValue = result.toIntOrNull()
-                    if (newValue == null || newValue > 255 || newValue < 0){
-                        Utils.showGenericAlert(Alert.AlertType.ERROR, "\"$result\" is not a valid threshold.",
-                            "Invalid input")
+                    if (type.toLowerCase() == "min"){
+                        minColour[colourIdx] = newValue.toInt()
                     } else {
-                        colourSlider.value = newValue.toDouble()
-                        publishSliderValueChange(colour, type, newValue)
+                        maxColour[colourIdx] = newValue.toInt()
                     }
                 }
+                cursor = Cursor.HAND
             }
         }
     }
@@ -487,18 +485,18 @@ class CameraView : View() {
                 }
 
                 form {
-                    // RGB colour sliders
-                    for (colour in COLOURS){
+                    // Colour sliders
+                    for ((i, channel) in colourSpace.friendlyName.withIndex()){
                         fieldset {
-                            add(generateSlider(colour, "Min"))
-                            add(generateSlider(colour, "Max"))
+                            add(generateSlider(channel.toString(), "Min", i))
+                            add(generateSlider(channel.toString(), "Max", i))
                         }
                     }
 
                     // object selection dropdown
                     fieldset {
                         field {
-                            label("Select object: ")
+                            label("Select object:")
                             selectBox = combobox<String> {
                                 items = FXCollections.observableArrayList(FieldObjects.values().map { it.toString() })
                                 selectionModel.selectFirst()
@@ -506,6 +504,25 @@ class CameraView : View() {
                                 // listen for changes to the slider
                                 valueProperty().addListener { _, _, _ ->
                                     selectNewObject(selectionModel.selectedIndex)
+                                }
+                            }
+                        }
+                    }
+
+                    fieldset {
+                        field {
+                            label("Colour space:")
+                            combobox<String> {
+                                items = FXCollections.observableArrayList("RGB", "HSV", "HSL", "YUV", "LAB", "XYZ")
+                                selectionModel.selectFirst()
+
+                                valueProperty().addListener { _, _, newValue ->
+                                    /*
+                                    To update colour spaces, we will need to:
+                                    1. set the new selected colour space enum
+                                    2. convert threshold values from current colour space
+                                    3. update labels
+                                    */
                                 }
                             }
                         }

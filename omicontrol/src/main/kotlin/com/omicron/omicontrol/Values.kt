@@ -1,10 +1,10 @@
 package com.omicron.omicontrol
 
+import com.github.ajalt.colormath.ConvertibleColor
+import com.github.ajalt.colormath.RGB
 import javafx.scene.control.Label
 import org.apache.commons.lang3.SystemUtils
 import org.greenrobot.eventbus.EventBus
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Version history:
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicLong
  * 2.2a: added support for camera calibration
  * 2.3a: added sleep mode
  * 3.3a: added field display screen
- * 3.4a: (WIP) continue to work on field diplay screen
+ * 3.4a: (WIP) camera view supports many different colour spaces now, not just RGB
  */
 const val OMICONTROL_VERSION = "3.4a"
 const val DEFAULT_IP = "192.168.12.1"
@@ -37,7 +37,6 @@ const val DEBUG_CAMERA_VIEW = false
 const val GRAB_SEND_TIMER_PERIOD = 100L // ms
 /** bytes sent/received in the last second **/
 var BANDWIDTH = 0L
-val COLOURS = listOf("R", "G", "B")
 var lastPingLabel: Label? = null
 
 enum class DebugCommands {

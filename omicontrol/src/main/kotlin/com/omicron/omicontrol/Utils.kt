@@ -1,6 +1,7 @@
 package com.omicron.omicontrol
 
 import RemoteDebug
+import com.github.ajalt.colormath.*
 import com.omicron.omicontrol.views.ConnectView
 import javafx.application.Platform
 import javafx.geometry.Point2D
@@ -12,6 +13,7 @@ import javafx.util.Duration
 import org.tinylog.kotlin.Logger
 import tornadofx.View
 import tornadofx.ViewTransition
+import java.lang.IllegalArgumentException
 
 // TODO remove this class and just put all methods in the global scope
 object Utils {
@@ -130,4 +132,15 @@ fun pointInCircle(point: Point2D, circlePos: Point2D, circleRadius: Double): Boo
 
 fun lerp(fromValue: Double, toValue: Double, progress: Double): Double {
     return fromValue + (toValue - fromValue) * progress
+}
+
+fun colourSpaceToColour(colourSpace: ColourSpace, colour: IntArray): ConvertibleColor {
+    return when (colourSpace) {
+        is RGB.Companion -> RGB(colour[0], colour[1], colour[2])
+        is HSV.Companion -> HSV(colour[0], colour[1], colour[2])
+        is HSL.Companion -> HSL(colour[0], colour[1], colour[2])
+        is LAB.Companion -> LAB(colour[0].toDouble(), colour[1].toDouble(), colour[2].toDouble())
+        is XYZ.Companion -> XYZ(colour[0].toDouble(), colour[1].toDouble(), colour[2].toDouble())
+        else -> throw IllegalArgumentException("Invalid colour space: $colourSpace with channels: $colour")
+    }
 }
