@@ -1,4 +1,5 @@
 #include "avoid.h"
+#include <utils.h>
 
 static bool isInEllipse(vect_2d_t robot, float a, float b)
 {

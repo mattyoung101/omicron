@@ -1,6 +1,8 @@
 #pragma once
 #include "fsm.h"
 #include <math.h>
+#include <avoid.h>
+#include <path_following.h>
 #include "pid.h"
 #include "defines.h"
 #include "esp_log.h"

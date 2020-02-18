@@ -1,9 +1,8 @@
 #pragma once
 
-#include "utils.h"
 #include "Vector.h"
 #include "stdbool.h"
-#include "math.h"
+#include <math.h>
 
 static bool isInEllipse(vect_2d_t robot, float a, float b);
 static vect_2d_t ellipsePoint(vect_2d_t robot, float a, float b);

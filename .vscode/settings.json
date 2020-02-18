@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "#3": "python",
+        "str.h": "c",
+        "bno055_wrapper.h": "c",
+        "efuse_reg.h": "c",
+        "uart.h": "c",
+        "inv_mpu.h": "c",
+        "states.h": "c",
+        "simple_imu.h": "c",
+        "math.h": "c",
+        "pid.h": "c",
+        "esp_utils.h": "c",
+        "handmademath.h": "c",
+        "tsop.h": "c",
+        "comms_uart.h": "c",
+        "*.txt": "plaintext",
+        "defines.h": "c",
+        "fsm.h": "c",
+        "path_following.h": "c",
+        "avoid.h": "c"
+    }
+}
