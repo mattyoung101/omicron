@@ -23,7 +23,7 @@
 #define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
 #define VISION_APPLY_CLAHE 0 // enables CLAHE adaptive histogram normalisation to correct dogshit venue lighting, bad for performance
 
-#define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames
+#define REMOTE_FRAME_INTERVAL 2 // send a debug frame every N real frames
 #define REMOTE_JPEG_QUALITY 70 // quality of remote debugger JPEG, 0 being the worst and 100 being the best
 #define REMOTE_COMPRESS_LEVEL 6 // zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive
 #define REMOTE_PORT 42708 // which port the remote debug TCP server runs on
@@ -55,7 +55,7 @@ typedef enum {
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET (BUILD_TARGET_SBC) // which platform Omicam will be running on
+#define BUILD_TARGET (BUILD_TARGET_PC) // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 1 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.01 // stop optimisation if the last step size was smaller than this in centimetres

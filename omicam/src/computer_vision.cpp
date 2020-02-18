@@ -328,9 +328,9 @@ static auto cv_thread(void *arg) -> void *{
         utils_cv_transmit_data(data);
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-        if (remote_debug_is_connected()) {
-            waitKey(static_cast<int>(1000 / fps));
-        }
+//        if (remote_debug_is_connected()) {
+//            waitKey(static_cast<int>(1000 / fps));
+//        }
 #endif
 
         double elapsed = utils_time_millis() - begin;

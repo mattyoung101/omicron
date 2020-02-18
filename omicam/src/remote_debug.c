@@ -22,6 +22,7 @@
 #include "protobuf/RemoteDebug.pb.h"
 #include "localisation.h"
 #include <sys/reboot.h>
+#include <sys/param.h>
 
 // Manages encoding camera frames to JPG images (with turbo-jpeg) and sending them over a TCP socket to Omicontrol
 // Also handles receiving data from Omicontrol
@@ -184,8 +185,9 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     //////////////////////////////////////////
     if (sendDebugFrames) {
         // we're in the camera view
-        memcpy(msg.defaultImage.bytes, camImg, camImgSize);
-        memcpy(msg.ballThreshImage.bytes, threshImg, threshImgSize);
+        // TODO note that this 9600 value will need to be updated if the field size is changed
+        memcpy(msg.defaultImage.bytes, camImg, MIN(camImgSize, 96000));
+        memcpy(msg.ballThreshImage.bytes, threshImg, MIN(threshImgSize, 96000));
         msg.defaultImage.size = camImgSize;
         msg.ballThreshImage.size = threshImgSize;
     } else {

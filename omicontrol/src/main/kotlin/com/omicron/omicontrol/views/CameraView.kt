@@ -139,7 +139,7 @@ class CameraView : View() {
             }
 
             if (System.currentTimeMillis() - bandwidthRecordingBegin >= 1000){
-                bandwidthLabel.text = "Bandwidth: ${FileUtils.byteCountToDisplaySize(BANDWIDTH)}/s"
+                bandwidthLabel.text = "Bandwidth: ${BANDWIDTH / 1024} Kb/s"
                 bandwidthRecordingBegin = System.currentTimeMillis()
                 BANDWIDTH = 0
             }
@@ -312,7 +312,6 @@ class CameraView : View() {
         val colour = if (type.toLowerCase() == "min") colourSpaceToColour(colourSpace, minColour)
                         else colourSpaceToColour(colourSpace, maxColour)
         val rgbColour = colour.toRGB()
-        println("Sending colour: $rgbColour")
 
         val msg = RemoteDebug.DebugCommand.newBuilder().apply {
             messageId = DebugCommands.CMD_THRESHOLDS_SET.ordinal
@@ -368,7 +367,6 @@ class CameraView : View() {
                         maxColour[colourIdx] = newValue.toInt()
                     }
                 }
-                cursor = Cursor.HAND
             }
         }
     }
