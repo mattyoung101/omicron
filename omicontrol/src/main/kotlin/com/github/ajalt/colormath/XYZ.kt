@@ -1,5 +1,6 @@
 package com.github.ajalt.colormath
 
+import java.lang.IllegalArgumentException
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
@@ -62,5 +63,15 @@ data class XYZ(val x: Double, val y: Double, val z: Double, val a: Float = 1f) :
         val b = 200 * (fy - fz)
 
         return LAB(l, a, b, alpha)
+    }
+
+    override fun getChannel(idx: Int): Int {
+        return when (idx){
+            0 -> x.toInt()
+            1 -> y.toInt()
+            2 -> z.toInt()
+            3 -> a.toInt()
+            else -> throw IllegalArgumentException("Illegal colour channel: $idx")
+        }
     }
 }

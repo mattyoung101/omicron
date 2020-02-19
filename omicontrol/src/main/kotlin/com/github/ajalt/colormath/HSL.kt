@@ -1,5 +1,6 @@
 package com.github.ajalt.colormath
 
+import java.lang.IllegalArgumentException
 import kotlin.math.roundToInt
 
 /**
@@ -81,6 +82,16 @@ data class HSL(override val h: Int, val s: Int, val l: Int, val a: Float = 1f) :
         val sv = if (l == 0.0) (2 * smin) / (lmin + smin) else (2 * s) / (l + s)
 
         return HSV(h.roundToInt(), (sv * 100).roundToInt(), (v * 100).roundToInt(), alpha)
+    }
+
+    override fun getChannel(idx: Int): Int {
+        return when (idx){
+            0 -> h
+            1 -> s
+            2 -> l
+            3 -> a.toInt()
+            else -> throw IllegalArgumentException("Illegal colour channel: $idx")
+        }
     }
 
     override fun toHSL() = this

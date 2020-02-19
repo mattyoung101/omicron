@@ -43,9 +43,20 @@ _<sup>2 depending on whether LRF based/goal based localisation was used.</sup>_
 Omicam runs on a Linux-based LattePanda Delta 432. It uses an OV4689 USB 2.0 camera module, which is capable of streaming
 motion JPEG (MJPEG) at 720p 100+ fps.
 
-**More here, justifcations for why we picked this hardware.**
+## Prototypes
+The current iteration of Omicam's hardware setup is the cumulation of around 2 years of prototyping iterations.
 
-**TODO cover Omicam development with other SBCs**
+**Prototype 0 (December 2018-January 2019):** Raspberry Pi Zero W, initial prototype sort of stuff. Too slow. Project canned.
+
+**Prototype 1 (December 2019):** Raspberry Pi 4, custom CV library, GPU acceleration with MMAL. Too slow.
+
+**Prototype 2 (January 2020):** Jetson Nano, OpenCV, CUDA. No performance benefits observed on GPU (slow down in fact).
+
+**Prototype 3 (January-February 2020):** LattePanda Delta 432, OpenCV, purely CPU bound. Final iteration.
+
+**This is out of date**
+
+**More here, justifcations for why we picked this hardware.**
 
 ## Field object detection
 The primary responsibility of Omicam is to detect the bounding box and centroid of field objects: the ball, goals and also lines. 

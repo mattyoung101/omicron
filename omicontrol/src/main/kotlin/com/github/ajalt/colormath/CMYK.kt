@@ -1,5 +1,6 @@
 package com.github.ajalt.colormath
 
+import java.lang.IllegalArgumentException
 import kotlin.math.roundToInt
 
 data class CMYK(val c: Int, val m: Int, val y: Int, val k: Int, val a: Float = 1f) : ConvertibleColor {
@@ -28,6 +29,17 @@ data class CMYK(val c: Int, val m: Int, val y: Int, val k: Int, val a: Float = 1
         val g = 255 * (1 - m) * (1 - k)
         val b = 255 * (1 - y) * (1 - k)
         return RGB(r.roundToInt(), g.roundToInt(), b.roundToInt(), alpha)
+    }
+
+    override fun getChannel(idx: Int): Int {
+        return when (idx){
+            0 -> c
+            1 -> m
+            2 -> y
+            3 -> k
+            4 -> a.toInt()
+            else -> throw IllegalArgumentException("Illegal colour channel: $idx")
+        }
     }
 
     override fun toCMYK() = this

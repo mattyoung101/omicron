@@ -1,5 +1,6 @@
 package com.omicron.omicontrol
 
+import com.github.ajalt.colormath.LAB
 import com.google.common.eventbus.DeadEvent
 import com.google.common.eventbus.Subscribe
 import com.omicron.omicontrol.views.ConnectView

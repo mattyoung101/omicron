@@ -212,13 +212,26 @@ data class RGB(val r: Int, val g: Int, val b: Int, val a: Float = 1f) : Converti
         return Ansi256(code)
     }
 
-    fun getChannel(idx: Int): Int {
+    /** Gets an individual colour channel from this colour */
+    override fun getChannel(idx: Int): Int {
         return when (idx){
             0 -> r
             1 -> g
             2 -> b
             3 -> a.toInt()
             else -> throw IllegalArgumentException("Illegal colour channel: $idx")
+        }
+    }
+
+    /** Converts this colour to any colour that inherets from ConvertibleColor */
+    fun convertToAnyColour(space: ColourSpace): ConvertibleColor {
+        return when (space){
+            is Companion -> this.toRGB()
+            is HSL.Companion -> this.toHSL()
+            is HSV.Companion -> this.toHSV()
+            is LAB.Companion -> this.toLAB()
+            is XYZ.Companion -> this.toXYZ()
+            else -> throw IllegalArgumentException("Invalid colour space: $space")
         }
     }
 

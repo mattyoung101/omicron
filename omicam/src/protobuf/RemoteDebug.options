@@ -1,5 +1,5 @@
-DebugFrame.defaultImage max_size:96000
-DebugFrame.ballThreshImage max_size:96000
+DebugFrame.defaultImage max_size:128000
+DebugFrame.ballThreshImage max_size:128000
 DebugFrame.rays max_count:128
 DebugFrame.dewarpedRays max_count:128
 DebugFrame.robotPositions max_count:2

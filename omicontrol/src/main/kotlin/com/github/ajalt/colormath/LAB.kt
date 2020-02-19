@@ -1,5 +1,6 @@
 package com.github.ajalt.colormath
 
+import java.lang.IllegalArgumentException
 import kotlin.math.pow
 
 /**
@@ -45,4 +46,14 @@ data class LAB(val l: Double, val a: Double, val b: Double, override val alpha: 
     }
 
     override fun toLAB(): LAB = this
+
+    override fun getChannel(idx: Int): Int {
+        return when (idx){
+            0 -> l.toInt()
+            1 -> a.toInt()
+            2 -> b.toInt()
+            3 -> a.toInt()
+            else -> throw IllegalArgumentException("Illegal colour channel: $idx")
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.github.ajalt.colormath
 
+import java.lang.IllegalArgumentException
 import kotlin.math.floor
 
 /**
@@ -38,5 +39,9 @@ data class Ansi256(val code: Int) : ConvertibleColor {
         code < 8 -> Ansi16(code + 30)
         code < 16 -> Ansi16(code - 8 + 90)
         else -> toRGB().toAnsi16()
+    }
+
+    override fun getChannel(idx: Int): Int {
+        return code
     }
 }

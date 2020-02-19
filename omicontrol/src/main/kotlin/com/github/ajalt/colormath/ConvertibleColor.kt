@@ -56,5 +56,9 @@ interface ConvertibleColor {
     /** Convert this color to CIE LAB */
     fun toLAB(): LAB = toRGB().toLAB()
 
+    fun getChannel(idx: Int): Int
+
+    operator fun get(idx: Int): Int = getChannel(idx)
+
     companion object // enables extensions on the interface
 }

@@ -13,8 +13,7 @@ import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import java.util.zip.Inflater
 import RemoteDebug
-import com.github.ajalt.colormath.ColourSpace
-import com.github.ajalt.colormath.RGB
+import com.github.ajalt.colormath.*
 import javafx.collections.FXCollections
 import javafx.scene.Cursor
 import javafx.scene.control.ComboBox
@@ -22,6 +21,7 @@ import javafx.scene.control.Label
 import javafx.scene.control.Slider
 import javafx.scene.image.WritableImage
 import javafx.scene.layout.Priority
+import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import org.apache.commons.io.FileUtils
@@ -61,9 +61,10 @@ class CameraView : View() {
     private var savingNextToDisk = AtomicBoolean()
     /** if true, when a min/max slider is dragged, it will update the value to all min/max sliders **/
     private var multiSlide = false
-    private val colourSpace: ColourSpace = RGB
+    private var colourSpace: ColourSpace = RGB
     private val minColour = IntArray(3)
     private val maxColour = IntArray(3)
+    private lateinit var sliderVbox: VBox
 
     init {
         reloadStylesheetsOnFocus()
@@ -230,8 +231,19 @@ class CameraView : View() {
 
         CONNECTION_MANAGER.dispatchCommand(command, {
             for ((i, thresh) in it.allThresholdsList.withIndex()){
-                Logger.trace("Object ${FieldObjects.values()[i]} min: ${thresh.minList}, max: ${thresh.maxList}")
-                objectThresholds[FieldObjects.values()[i]] = thresh
+                // convert min and max from RGB on Omicam's end to whatever colour space we're in here
+                // sorry for how ugly this looks, it's just an ugly problem in general I think
+                // could probably make it better with generics and reflection but I can't really be stuffed
+                val minColour = RGB(thresh.minList[0], thresh.minList[1], thresh.minList[2]).convertToAnyColour(colourSpace)
+                val maxColour = RGB(thresh.maxList[0], thresh.maxList[1], thresh.maxList[2]).convertToAnyColour(colourSpace)
+                val convertedThresh = RemoteDebug.RDThreshold.newBuilder().apply {
+                    addAllMin(listOf(minColour[0], minColour[1], minColour[2]))
+                    addAllMax(listOf(maxColour[0], maxColour[1], maxColour[2]))
+                }.build()
+
+                Logger.debug("Object ${FieldObjects.values()[i]} original min: ${thresh.minList}, converted min: ${convertedThresh.minList}    " +
+                        "original max: ${thresh.maxList}, converted max: ${convertedThresh.maxList} (RGB -> ${minColour::class.simpleName})")
+                objectThresholds[FieldObjects.values()[i]] = convertedThresh
             }
 
             // notify awaiting threads that the new data has been received
@@ -287,8 +299,7 @@ class CameraView : View() {
                     slider.value.isDisable = selectedObject == FieldObjects.OBJ_NONE
                 }
 
-                // set min then max slider values
-                // FIXME MUST CONVERT TO RGB
+                // set min then max slider values, this should already be in correct colour space as its done earlier
                 for ((i, colour) in colourSpace.friendlyName.withIndex()) {
                     sliders["${colour}Min"]?.value = newObjThresh.minList[i].toDouble()
                 }
@@ -312,6 +323,7 @@ class CameraView : View() {
         val colour = if (type.toLowerCase() == "min") colourSpaceToColour(colourSpace, minColour)
                         else colourSpaceToColour(colourSpace, maxColour)
         val rgbColour = colour.toRGB()
+        // Logger.trace("SLIDER Colour value in ${colourSpace.friendlyName}: $colour, in RGB: $rgbColour")
 
         val msg = RemoteDebug.DebugCommand.newBuilder().apply {
             messageId = DebugCommands.CMD_THRESHOLDS_SET.ordinal
@@ -329,6 +341,7 @@ class CameraView : View() {
      * @param colourIdx the position of the current colour index in the colour space
      **/
     private fun generateSlider(colour: String, type: String, colourIdx: Int): Field {
+        Logger.trace("Generating slider for colour $colour, type $type, channel index: $colourIdx")
         return field("$colour $type") {
             val colourSlider = slider(min=colourSpace.minRange[colourIdx], max=colourSpace.maxRange[colourIdx]){
                 blockIncrement = 1.0
@@ -368,6 +381,20 @@ class CameraView : View() {
                     }
                 }
             }
+        }
+    }
+
+    /** Clears the current slider hashmap and vbox, and re-adds them **/
+    private fun regenerateSliders(){
+        Logger.trace("Regenerating sliders")
+        sliderVbox.clear()
+        sliders.clear()
+
+        for ((i, channel) in colourSpace.friendlyName.withIndex()) {
+            sliderVbox.add(fieldset {
+                add(generateSlider(channel.toString(), "Min", i))
+                add(generateSlider(channel.toString(), "Max", i))
+            })
         }
     }
 
@@ -451,7 +478,7 @@ class CameraView : View() {
             menu("Settings"){
                 checkmenuitem("Multi-slide mode"){
                     selectedProperty().addListener { _, _, newValue ->
-                        // FIXME finish this off
+                        // FIXME finish this off - or consider removing
                         multiSlide = newValue
                     }
                 }
@@ -483,19 +510,14 @@ class CameraView : View() {
                 }
 
                 form {
-                    // Colour sliders
-                    for ((i, channel) in colourSpace.friendlyName.withIndex()){
-                        fieldset {
-                            add(generateSlider(channel.toString(), "Min", i))
-                            add(generateSlider(channel.toString(), "Max", i))
-                        }
-                    }
+                    sliderVbox = vbox {}
+                    regenerateSliders()
 
                     // object selection dropdown
                     fieldset {
                         field {
                             label("Select object:")
-                            selectBox = combobox<String> {
+                            selectBox = combobox {
                                 items = FXCollections.observableArrayList(FieldObjects.values().map { it.toString() })
                                 selectionModel.selectFirst()
 
@@ -511,7 +533,7 @@ class CameraView : View() {
                         field {
                             label("Colour space:")
                             combobox<String> {
-                                items = FXCollections.observableArrayList("RGB", "HSV", "HSL", "YUV", "LAB", "XYZ")
+                                items = FXCollections.observableArrayList("RGB", "HSV", "HSL", "YUV", "LAB")
                                 selectionModel.selectFirst()
 
                                 valueProperty().addListener { _, _, newValue ->
@@ -521,6 +543,28 @@ class CameraView : View() {
                                     2. convert threshold values from current colour space
                                     3. update labels
                                     */
+
+                                    // we could probably do some reflection trickery here but it's probably not worth it
+                                    when (newValue){
+                                        "RGB" -> colourSpace = RGB
+                                        "HSV" -> colourSpace = HSV
+                                        "HSL" -> colourSpace = HSL
+                                        "YUV" -> Logger.error("YUV is not yet supported")
+                                        "LAB" -> colourSpace = LAB
+                                        else -> Logger.error("Invalid colour space: $newValue")
+                                    }
+                                    regenerateSliders()
+
+                                    // this is the best way I can think of to basically re-get the slider values, since
+                                    // we essentially just destroyed them, though it requires fetching from the server
+                                    // essentially, we just re-select the currently selected object
+                                    selectNewObject(selectedObject.ordinal)
+
+                                    // TODO we should also send ALL the new values to the remote for each channel to make
+                                    // sure it's still valid
+                                    for ((key, value) in sliders.entries){
+
+                                    }
                                 }
                             }
                         }
