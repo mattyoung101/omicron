@@ -1,4 +1,4 @@
-#define DG_DYNARR_IMPLEMENTATION
+
 #include "fsm.h"
 #include "states.h"
 #include "utils.h"
