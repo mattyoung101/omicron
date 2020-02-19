@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "esp_log.h"
+#define DG_DYNARR_IMPLEMENTATION
 #include "DG_dynarr.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"

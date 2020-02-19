@@ -876,6 +876,9 @@ dg__dynarr_deletefast(void** arr, dg__dynarr_md* md, size_t itemsize, size_t idx
 extern "C" {
 #endif
 
+
+#ifndef DG_DYNARR_FREE
+#define DG_DYNARR_FREE
 DG_DYNARR_DEF void
 dg__dynarr_free(void** p, dg__dynarr_md* md)
 {
@@ -888,8 +891,10 @@ dg__dynarr_free(void** p, dg__dynarr_md* md)
 	}
 	md->cnt = 0;
 }
+#endif
 
-
+#ifndef DG_DYNARR_GROW
+#define DG_DYNARR_GROW
 DG_DYNARR_DEF int
 dg__dynarr_grow(void** arr, dg__dynarr_md* md, size_t itemsize, size_t min_needed)
 {
@@ -935,7 +940,10 @@ dg__dynarr_grow(void** arr, dg__dynarr_md* md, size_t itemsize, size_t min_neede
 	DG_DYNARR_ASSERT(min_needed < DG__DYNARR_SIZE_T_MSB, "Arrays must stay below SIZE_T_MAX/2 elements!");
 	return 0;
 }
+#endif
 
+#ifndef DG_DYNARR_SHRINK
+#define DG_DYNARR_SHRINK
 DG_DYNARR_DEF void
 dg__dynarr_shrink_to_fit(void** arr, dg__dynarr_md* md, size_t itemsize)
 {
@@ -957,6 +965,7 @@ dg__dynarr_shrink_to_fit(void** arr, dg__dynarr_md* md, size_t itemsize)
 		}
 	}
 }
+#endif
 
 #ifdef __cplusplus
 } // extern "C"

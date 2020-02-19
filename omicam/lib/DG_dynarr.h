@@ -201,6 +201,7 @@
 
 // this macro is used to create an array type (struct) for elements of TYPE
 // use like DA_TYPEDEF(int, MyIntArrType); MyIntArrType ia = {0}; da_push(ia, 42); ...
+
 #define DA_TYPEDEF(TYPE, NewArrayTypeName) \
 	DG_DYNARR_TYPEDEF(TYPE, NewArrayTypeName)
 
