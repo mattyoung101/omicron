@@ -3,10 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include "esp_log.h"
-#define DG_DYNARR_IMPLEMENTATION
-#include "DG_dynarr.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "DG_dynarr.h"
 
 // State machine with stack history, based on/inspired by:
 // https://github.com/libgdx/gdx-ai/blob/master/gdx-ai/src/com/badlogic/gdx/ai/fsm/StackStateMachine.java

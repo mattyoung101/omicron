@@ -1,7 +1,7 @@
-
 #include "fsm.h"
 #include "states.h"
 #include "utils.h"
+#include "DG_dynarr.h"
 
 static const char *TAG = "FSM";
 state_machine_t *stateMachine = NULL;
