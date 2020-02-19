@@ -10,7 +10,7 @@ DA_TYPEDEF(vect_2d_t, point_list_t);
 //     int epic;
 // } point_list_t;
 
-static void pf_calculate_nearest(point_list_t points, float robotX, float robotY);
+void pf_calculate_nearest(point_list_t points, float robotX, float robotY);
 vect_2d_t pf_follow_path(point_list_t points, float robotX, float robotY);
 
 vect_2d_t lowestPoint;

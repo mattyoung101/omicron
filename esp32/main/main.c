@@ -314,6 +314,6 @@ void app_main(){
     fflush(stdout);
 
     // create the main (or test, uncomment it if you want that) task 
-    // xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-    xTaskCreatePinnedToCore(test_music_task, "TestMusicTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    // xTaskCreatePinnedToCore(test_music_task, "TestMusicTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
 }
