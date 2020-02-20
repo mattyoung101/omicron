@@ -65,7 +65,7 @@ bool is_angle_between(float target, float angle1, float angle2){
 }
 
 void imu_correction(robot_state_t *robotState){
-    if (robotState->outSpeed <= IDLE_MIN_SPEED){ // Check if robot is moving
+    if (robotState->outMotion.mag <= IDLE_MIN_SPEED){ // Check if robot is moving
         robotState->outOrientation = (int16_t) -pid_update(&idlePID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
                                 + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Correct with idle PID
         // printf("IDLE PID\n");
@@ -126,62 +126,61 @@ inline float get_angle(int16_t x, int16_t y){
 
 void move_by_difference(robot_state_t *robotState, int16_t x, int16_t y){
     if (get_magnitude(x, y) < COORD_THRESHOLD){
-        robotState->outSpeed = 0;
+        robotState->outMotion = vect_2d(0, 0, false);
         robotState->outShouldBrake = true;
     }else{
-        robotState->outDirection = fmodf(get_angle(x, y) - robotState->inHeading, 360.0f);
-        robotState->outSpeed = fabsf(pid_update(&coordPID, get_magnitude(x, y), 0.0f, 0.0f));
+        robotState->outMotion = vect_2d(fabsf(pid_update(&coordPID, get_magnitude(x, y), 0.0f, 0.0f)), fmodf(get_angle(x, y) - robotState->inHeading, 360.0f), true);
     }
 }
 
-void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y){
-    if (robotState->inGoalVisible){
-        return move_by_difference(robotState, x - robotState->inX, y - robotState->inY);
-    }else{
-        robotState->outShouldBrake = true;
-        robotState->outSpeed = 0;
-    }
-}
+// void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y){
+//     if (robotState->inGoalVisible){
+//         return move_by_difference(robotState, x - robotState->inRobotPos.x, y - robotState->inRobotPos.y);
+//     }else{
+//         robotState->outShouldBrake = true;
+//         robotState->outSpeed = 0;
+//     }
+// }
 
 inline float lerp(float fromValue, float toValue, float progress){
     return fromValue + (toValue - fromValue) * progress;
 }
 
-void orbit(robot_state_t *robotState){
-    // orbit requires angles in -180 to +180 range
-    float tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
+// void orbit(robot_state_t *robotState){
+//     // orbit requires angles in -180 to +180 range
+//     float tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
 
-    // I hate to do this but...
-    if(robotState->inRobotId == 0){
-        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the distance on the sides cos it's too low
+//     // I hate to do this but...
+//     if(robotState->inRobotId == 0){
+//         // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the distance on the sides cos it's too low
         
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
-        float distanceFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale distance between 0 and 1
-        float distanceMultiplier = constrain(0.08 * distanceFactor * powf(E, 3.8 * distanceFactor), 0, 1); // Use that to make another exponential function based on distance
-        float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
+//         float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+//         float distanceFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale distance between 0 and 1
+//         float distanceMultiplier = constrain(0.08 * distanceFactor * powf(E, 3.8 * distanceFactor), 0, 1); // Use that to make another exponential function based on distance
+//         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
-        robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
-        // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
-        robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
-        // printf("tempStrength: %f\n", tempStrength);
-    } else {
-        // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the distance on the sides cos it's too low
+//         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
+//         // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
+//         robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
+//         // printf("tempStrength: %f\n", tempStrength);
+//     } else {
+//         // float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallDistance * 1.45f : robotState->inBallDistance; // Stupid multiplier thing to incrase the distance on the sides cos it's too low
         
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
-        float distanceFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale distance between 0 and 1
-        float distanceMultiplier = constrain(0.08 * distanceFactor * powf(E, 3.8 * distanceFactor), 0, 1); // Use that to make another exponential function based on distance
-        float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
+//         float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+//         float distanceFactor = constrain(((float)robotState->inBallDistance - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale distance between 0 and 1
+//         float distanceMultiplier = constrain(0.08 * distanceFactor * powf(E, 3.8 * distanceFactor), 0, 1); // Use that to make another exponential function based on distance
+//         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
-        robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
-        // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
-        robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
-        // printf("tempStrength: %f\n", tempStrength);
-    }
+//         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
+//         // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
+//         robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
+//         // printf("tempStrength: %f\n", tempStrength);
+//     }
 
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
     // printf("ballAngleDifference: %f, distanceFactor: %f, distanceMultiplier: %f, angleAddition: %f\n", ballAngleDifference, 
     // distanceFactor, distanceMultiplier, angleAddition);
-}
+// }
 
 void position(robot_state_t *robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed) {
     float goalAngle_ = goalAngle < 0.0f ? goalAngle + 360.0f : goalAngle; // Convert to 0 - 360 range
@@ -195,10 +194,10 @@ void position(robot_state_t *robotState, float distance, float offset, int16_t g
 
     if(reversed) distanceMovement *= -1; // All dimensions are inverted cos the goal is behind for the defender
 
-    robotState->outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - robotState->inHeading, 360.0f); // Use atan2 to find angle
-    robotState->outSpeed = get_magnitude(sidewaysMovement, distanceMovement); // Use pythag to find the overall speed
+    robotState->outMotion = vect_2d(get_magnitude(sidewaysMovement, distanceMovement) <= IDLE_MIN_SPEED ? 0 : robotState->outMotion.mag, fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - robotState->inHeading, 360.0f), true); // Use atan2 to find angle
+   // Use pythag to find the overall speed
 
-    robotState->outSpeed = robotState->outSpeed <= IDLE_MIN_SPEED ? 0 : robotState->outSpeed; // To stop the robot from spazzing, if the robot is close to it's destination (so is moving very little), it will just stop.
+     // To stop the robot from spazzing, if the robot is close to it's destination (so is moving very little), it will just stop.
 
     // printf("goalAngle_: %f, verticalDistance: %f, horizontalDistance: %f\n", goalAngle_, verticalDistance, horizontalDistance);
     // printf("goalAngle_: %f, verticalDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
@@ -304,7 +303,7 @@ void i2c_scanner(i2c_port_t port){
 
 void print_ball_data(robot_state_t *robotState){
     static const char *TAG = "BallDebug";
-    ESP_LOGD(TAG, "Ball angle: %f, Ball distance: %f", robotState->inBallAngle, robotState->inBallDistance);
+    ESP_LOGD(TAG, "Ball angle: %f, Ball distance: %f", robotState->inBallPos.arg, robotState->inBallPos.mag);
 }
 
 void print_line_data(robot_state_t *robotState){
@@ -322,12 +321,12 @@ void print_goal_data(){
 
 void print_position_data(robot_state_t *robotState){
     static const char *TAG = "PositionDebug";
-    ESP_LOGD(TAG, "Xpos: %f, Ypos: %f, Heading: %f", robotState->inX, robotState->inY, robotState->inHeading);
+    ESP_LOGD(TAG, "Xpos: %f, Ypos: %f, Heading: %f", robotState->inRobotPos.x, robotState->inRobotPos.y, robotState->inHeading);
 }
 
 void print_motion_data(robot_state_t *robotState){
     static const char *TAG = "MotionDebug";
-    ESP_LOGD(TAG, "Speed: %d, Direction: %d, Orientation: %d, Should break: %d", robotState->outSpeed, robotState->outDirection, 
+    ESP_LOGD(TAG, "Speed: %f, Direction: %f, Orientation: %f, Should break: %d", robotState->outMotion.mag, robotState->outMotion.arg, 
     robotState->outOrientation, robotState->outShouldBrake);
 }
 

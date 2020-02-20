@@ -38,6 +38,7 @@
 #include "goap.h"
 #include "path_following.h"
 #include "buzzer.h"
+#include "Vector.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -172,12 +173,11 @@ static void master_task(void *pvParameter){
                 // reset out values
                 robotState.outShouldBrake = false;
                 robotState.outOrientation = 0;
-                robotState.outDirection = 0;
+                robotState.outMotion = vect_2d(0, 0, false);
                 robotState.outSwitchOk = false;
 
                 // update FSM in values
-                robotState.inBallAngle = orangeBall.angle;
-                robotState.inBallDistance = orangeBall.exists ? orangeBall.length : 0.0f;
+                robotState.inBallPos = vect_2d(orangeBall.exists ? orangeBall.length : 0.0f, orangeBall.angle, true);
                 // TODO make goal stuff floats as well
                 if (robotState.outIsAttack){
                     robotState.inGoalVisible = AWAY_GOAL.exists;
@@ -201,8 +201,7 @@ static void master_task(void *pvParameter){
                     robotState.inGoalDistance = HOME_GOAL.distance;
                 }
                 robotState.inHeading = yaw;
-                robotState.inX = robotX;
-                robotState.inY = robotY;
+                robotState.inRobotPos = vect_2d(robotX, robotY, false);
 
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);

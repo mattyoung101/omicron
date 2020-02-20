@@ -192,6 +192,7 @@ extern uint16_t IN_FRONT_MAX_ANGLE;
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot
 #define FORWARD_ORBIT_MIN_ANGLE 120 // the range where the robot will orbit forward
 #define FORWARD_ORBIT_MAX_ANGLE 240
+#define ORBIT_RADIUS 1
 
 // Defence FSM defines
 extern uint8_t DEFEND_DISTANCE;

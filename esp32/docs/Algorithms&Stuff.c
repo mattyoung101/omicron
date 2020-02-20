@@ -30,6 +30,13 @@ ball_data_t ballData = {0};
     //     }
     // then also compass correct to [0, 61.5]
         //and then like rotation shit or something idk ????????????????????/
+
+    //search:
+    //if sign(x) == 1 {
+        // searchpoints = [],[]
+    // } else {
+        // searchpoints = [],[]
+    // }
 // }
 
 vect_2d_t orbit() {
@@ -43,7 +50,7 @@ vect_2d_t orbit() {
             return orbit.avoidMethod(Vector(ballPos.x - ORBIT_RADIUS/2, ballPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, ballPos, robotPos);
         }
     }
-    return vect_2d(0, 0, true);
+    rs.outMotion = vect_2d(0, 0, true)
 }
 
 vect_2d_t backward_orbit() {

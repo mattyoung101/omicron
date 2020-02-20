@@ -63,7 +63,7 @@ extern pid_config_t forwardPID;
 #define sign(x) (copysignf(1.0f, x))
 /** Brake the motors in the FSM **/
 #define FSM_MOTOR_BRAKE do { \
-    robotState.outSpeed = 0; \
+    robotState.outMotion = vect_2d(0, 0, true); \
     robotState.outShouldBrake = false; \
     return; \
 } while (0);

@@ -9,6 +9,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/timers.h"
+#include "Vector.h"
+#include "DG_dynarr.h"
 
 // Struct which holds highly processed info about the robot's state. Shared resource, should be synced with a mutex.
 typedef struct {
@@ -24,15 +26,11 @@ typedef struct {
     int16_t inOtherGoalLength;
     int16_t inOtherGoalDistance;
     // Coordinate System
-    float inX;
-    float inY;
+    vect_2d_t inRobotPos;
     // IMU Input
     float inHeading;
     // Ball Inputs
-    float inBallAngle;
-    float inBallDistance;
-    int16_t inBallX;
-    int16_t inBallY;
+    vect_2d_t inBallPos;
     // Line Inputs
     float inLineAngle;
     float inLineSize;
@@ -47,9 +45,8 @@ typedef struct {
     bool inBTConnection;
 
     // Outputs
-    int16_t outSpeed;
-    int16_t outDirection;
-    int16_t outOrientation;
+    vect_2d_t outMotion;
+    float outOrientation;
     bool outShouldBrake;
     bool outIsAttack;
     bool outSwitchOk;

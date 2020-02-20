@@ -53,10 +53,10 @@ static void can_kick_callback(TimerHandle_t timer){
     if (!orangeBall.exists){
         LOG_ONCE(TAG, "Ball not visible, switching to Idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
-    } else if (is_angle_between(rs.inBallAngle, SURGEON_ANGLE_MIN, SURGEON_ANGLE_MAX) 
-                && rs.inBallDistance <= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
+    } else if (is_angle_between(rs.inBallPos.arg, SURGEON_ANGLE_MIN, SURGEON_ANGLE_MAX) 
+                && rs.inBallPos.mag <= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
         LOG_ONCE(TAG, "Switching to surge, angle: %f, distance: %f, goal length: %d",
-                robotState.inBallAngle, robotState.inBallDistance, rs.inGoalLength);
+                robotState.inBallPos.arg, robotState.inBallPos.mag, rs.inGoalLength);
         FSM_CHANGE_STATE_DEFENCE(Surge);
     }
 
@@ -92,10 +92,9 @@ void state_defence_surge_update(state_machine_t *fsm){
 
     // EPIC YEET MODE
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
-    robotState.outSpeed = SURGE_SPEED; 
+    robotState.outMotion = vect_2d(SURGE_SPEED, robotState.inBallPos.arg, true);
     // Just yeet towards the ball (which is forwards)
-    // robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle * 1.05;
-    robotState.outDirection = robotState.inBallAngle;
+    // robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallPos.arg * 1.05;
 }
 
 void state_defence_surge_exit(state_machine_t *fsm){

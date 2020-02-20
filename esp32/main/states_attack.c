@@ -65,109 +65,75 @@ void state_attack_pursue_enter(state_machine_t *fsm){
 }
 
 void state_attack_pursue_update(state_machine_t *fsm){
-    static const char *TAG = "PursueState";
+    // static const char *TAG = "PursueState";
     
-    accelProgress = 0;
-    RS_SEM_LOCK
-    rs.outIsAttack = true;
-    rs.outSwitchOk = true;
-    RS_SEM_UNLOCK
-    imu_correction(&robotState);
-    timer_check();
+    // accelProgress = 0;
+    // RS_SEM_LOCK
+    // rs.outIsAttack = true;
+    // rs.outSwitchOk = true;
+    // RS_SEM_UNLOCK
+    // imu_correction(&robotState);
+    // timer_check();
 
-    // Check criteria:
-    // Ball not visible (brake) and ball too close (switch to orbit)
-    if (!orangeBall.exists){
-        LOG_ONCE(TAG, "Ball is not visible, braking");
-        om_timer_start(&noBallTimer);
-        FSM_MOTOR_BRAKE;
-    } else if (rs.inBallDistance >= ORBIT_DIST){
-        if (is_angle_between(rs.inBallAngle, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
-            LOG_ONCE(TAG, "Ball close enough and ball is in forward range, switching to front orbit, distance: %f, orbit dist thresh: %d, angle: %f", 
-            rs.inBallDistance, ORBIT_DIST, rs.inBallAngle);
-            FSM_CHANGE_STATE(FrontOrbit);
-        } else {
-            LOG_ONCE(TAG, "Ball close enough and ball is in back range, switching to reverse orbit, distance: %f, orbit dist thresh: %d, angle: %f", 
-            rs.inBallDistance, ORBIT_DIST, rs.inBallAngle);
-            FSM_CHANGE_STATE(ReverseOrbit);
-        }
-    }
+    // // Check criteria:
+    // // Ball not visible (brake) and ball too close (switch to orbit)
+    // if (!orangeBall.exists){
+    //     LOG_ONCE(TAG, "Ball is not visible, braking");
+    //     om_timer_start(&noBallTimer);
+    //     FSM_MOTOR_BRAKE;
+    // } else if (rs.inBallPos.mag >= ORBIT_DIST){
+    //     if (is_angle_between(rs.inBallPos.arg, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
+    //         LOG_ONCE(TAG, "Ball close enough and ball is in forward range, switching to front orbit, distance: %f, orbit dist thresh: %d, angle: %f", 
+    //         rs.inBallPos.mag, ORBIT_DIST, rs.inBallPos.arg);
+    //         FSM_CHANGE_STATE(FrontOrbit);
+    //     } else {
+    //         LOG_ONCE(TAG, "Ball close enough and ball is in back range, switching to reverse orbit, distance: %f, orbit dist thresh: %d, angle: %f", 
+    //         rs.inBallPos.mag, ORBIT_DIST, rs.inBallPos.arg);
+    //         FSM_CHANGE_STATE(ReverseOrbit);
+    //     }
+    // }
 
-    // LOG_ONCE(TAG, "Ball is visible, pursuing");
-    // Quickly approach the ball
-    robotState.outSpeed = 100; // TODO: using mm/s speed now :D
-    robotState.outDirection = robotState.inBallAngle;
+    // // LOG_ONCE(TAG, "Ball is visible, pursuing");
+    // // Quickly approach the ball
+    // robotState.outSpeed = 100; // TODO: using mm/s speed now :D
+    // robotState.outDirection = robotState.inBallPos.arg;
 }
 
 // Orbit
 void state_attack_frontorbit_update(state_machine_t *fsm){
-    static const char *TAG = "FrontOrbitState";
-
-    accelProgress = 0; // reset acceleration progress
-    RS_SEM_LOCK
-    rs.outIsAttack = true;
-    rs.outSwitchOk = true;
-    RS_SEM_UNLOCK
-
-    imu_correction(&robotState);
-    timer_check();
-
-    if (rs.inBallDistance <= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
-        LOG_ONCE(TAG, "Ball and angle in correct spot, changing intro dribble, distance: %f, angle: %f, orbit dist thresh: %d"
-                " angle range: %d-%d", robotState.inBallDistance, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
-                IN_FRONT_MAX_ANGLE);
-        accelBegin = rs.outSpeed;
-        FSM_CHANGE_STATE(Yeet);
+    vect_2d_t tempVect = subtract_vect_2d(rs.inRobotPos, rs.inBallPos);
+    if (sign(tempVect.y) == 1) {
+        rs.outMotion = avoidMethod(rs.inBallPos, ORBIT_RADIUS, ORBIT_RADIUS, vect_2d(rs.inBallPos.x, rs.inBallPos.y - ORBIT_RADIUS, false), rs.inRobotPos);
+        return;
+    } else {
+        if(sign(tempVect.x) == 1) {
+            rs.outMotion = avoidMethod(vect_2d(rs.inBallPos.x + ORBIT_RADIUS/2, rs.inBallPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, rs.inBallPos, rs.inRobotPos);
+            return;
+        } else {
+            rs.outMotion = avoidMethod(vect_2d(rs.inBallPos.x - ORBIT_RADIUS/2, rs.inBallPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, rs.inBallPos, rs.inRobotPos);
+            return;
+        }
     }
-
-    // Check criteria:
-    // Ball too far away, Ball too close and angle good (go to yeet), Ball too far (revert)
-    if (!orangeBall.exists){
-        LOG_ONCE(TAG, "Ball not visible, starting idle timer, distance: %f", robotState.inBallDistance);
-        om_timer_start(&noBallTimer);
-        FSM_MOTOR_BRAKE;
-    } else if (rs.inBallDistance < ORBIT_DIST){
-        LOG_ONCE(TAG, "Ball too far away, reverting, distance: %f, orbit dist thresh: %d", robotState.inBallDistance,
-                 ORBIT_DIST);
-        FSM_REVERT;
-    } else if (!is_angle_between(rs.inBallAngle, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
-        LOG_ONCE(TAG, "Ball is behind, reverting");
-        FSM_REVERT;
-    }
-
-    orbit(&robotState); // TODO: replace with new orbit
+    rs.outMotion = vect_2d(0, 0, true);
+    return;
 }
 
 void state_attack_reverseorbit_update(state_machine_t *fsm){
-    static const char *TAG = "ReverseOrbitState";
-
-    accelProgress = 0; // reset acceleration progress
-    RS_SEM_LOCK
-    rs.outIsAttack = true;
-    rs.outSwitchOk = true;
-    RS_SEM_UNLOCK
-
-    imu_correction(&robotState);
-    timer_check();
-
-    // Check criteria:
-    if (!orangeBall.exists){
-        LOG_ONCE(TAG, "Ball not visible, starting idle timer, distance: %f", robotState.inBallDistance);
-        om_timer_start(&noBallTimer);
-        FSM_MOTOR_BRAKE;
-    } else if (rs.inBallDistance < ORBIT_DIST){
-        LOG_ONCE(TAG, "Ball too far away, reverting, distance: %f, orbit dist thresh: %d", robotState.inBallDistance,
-                 ORBIT_DIST);
-        FSM_REVERT;
-    } else if (is_angle_between(rs.inBallAngle, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
-        LOG_ONCE(TAG, "Ball is in front, reverting");
-        FSM_REVERT;
-    } else if (rs.inBackGate){
-        LOG_ONCE(TAG, "Ball is in back capture zone, activating strat");
-        // TODO: add state switch to strat, and the magic black box
+    vect_2d_t tempVect = subtract_vect_2d(rs.inRobotPos, rs.inBallPos); 
+     if (sign(tempVect.y) == -1) {
+        rs.outMotion = avoidMethod(rs.inBallPos, ORBIT_RADIUS, ORBIT_RADIUS, vect_2d(rs.inBallPos.x, rs.inBallPos.y + ORBIT_RADIUS, false), rs.inRobotPos);
+        return;
+    } else {
+        if(sign(tempVect.x) == 1) {
+            rs.outMotion = avoidMethod(vect_2d(rs.inBallPos.x + ORBIT_RADIUS/2, rs.inBallPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, rs.inBallPos, rs.inRobotPos);
+            return;
+        } else {
+            rs.outMotion = avoidMethod(vect_2d(rs.inBallPos.x - ORBIT_RADIUS/2, rs.inBallPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, rs.inBallPos, rs.inRobotPos);
+            return;
+        }
     }
-
-    orbit(&robotState); // TODO: replace with reversed orbit
+    rs.outMotion = vect_2d(0, 0, true);
+    return;
 }
 
 // Yeet
@@ -193,11 +159,11 @@ void state_attack_yeet_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball in capture zone and facing goal and shoot permitted, shooting, angle: %d, range: %d", rs.inGoalAngle, rs.inGoalLength);
         FSM_CHANGE_STATE_GENERAL(Shoot); // TODO: use real world units
     } else if (!orangeBall.exists && !rs.inFrontGate){
-        LOG_ONCE(TAG, "Ball not visible, braking, distance: %f", robotState.inBallDistance);
+        LOG_ONCE(TAG, "Ball not visible, braking, distance: %f", robotState.inBallPos.mag);
         om_timer_start(&noBallTimer);
         FSM_MOTOR_BRAKE;
-    } else if (rs.inBallAngle > IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER && rs.inBallAngle < IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER){
-        LOG_ONCE(TAG, "Ball not in front, WILL REVERT, angle: %f, range: %d-%d", robotState.inBallAngle,
+    } else if (rs.inBallPos.arg > IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER && rs.inBallPos.arg < IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER){
+        LOG_ONCE(TAG, "Ball not in front, WILL REVERT, angle: %f, range: %d-%d", robotState.inBallPos.arg,
                 IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);       
         om_timer_start(&yeetTimer);
 
@@ -212,12 +178,11 @@ void state_attack_yeet_update(state_machine_t *fsm){
     }
 
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
-    robotState.outSpeed = lerp(accelBegin, DRIBBLE_SPEED, constrain(accelProgress, 0.0f, 1.0f)); 
+    robotState.outMotion = vect_2d(lerp(accelBegin, DRIBBLE_SPEED, constrain(accelProgress, 0.0f, 1.0f)), robotState.inBallPos.arg, true); 
     // Yeet towards te goal if visible
-    // robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle;
-    robotState.outDirection = robotState.inBallAngle;
-
+    // robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallPos.arg;
     // Update progress for linear interpolation
+
     accelProgress += ACCEL_PROG;
 }
 
