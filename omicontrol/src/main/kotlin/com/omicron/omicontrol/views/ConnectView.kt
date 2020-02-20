@@ -5,6 +5,7 @@ import javafx.collections.FXCollections
 import javafx.geometry.Pos
 import javafx.scene.control.Alert
 import javafx.scene.control.ComboBox
+import javafx.scene.control.ProgressIndicator
 import javafx.scene.control.TextField
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority
@@ -100,25 +101,41 @@ class ConnectView : View() {
                 hbox {
                     button("Connect") {
                         setOnAction {
-                            try {
-                                CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
-                                prefs.put("LastViewSelected", viewBox.value)
-                                prefs.put("LastIP", ipField.text)
+                            this@button.text = "Connecting..."
+                            this.isDisable = true
 
-                                when (viewBox.value){
-                                    "Camera view" -> Utils.transitionMetro(this@ConnectView, CameraView())
-                                    "Calibration view" -> Utils.transitionMetro(this@ConnectView, CalibrationView())
-                                    "Field view" -> Utils.transitionMetro(this@ConnectView, FieldView())
-                                    else -> Logger.error("Unsupported view: ${viewBox.value}")
+                            // this is terrible practice for tornadofx but i don't really care
+                            runAsync {
+                                var success = false
+                                try {
+                                    CONNECTION_MANAGER.connect(ipField.text, portField.text.toInt())
+                                    success = true
+                                } catch (e: Exception) {
+                                    runLater {
+                                        Utils.showGenericAlert(
+                                            Alert.AlertType.ERROR, "Error: $e\n\nPlease check the device is" +
+                                                    " powered on, and Omicam is running successfully.",
+                                            "Failed to establish connection"
+                                        )
+                                        e.printStackTrace()
+                                        this@button.text = "Connect"
+                                        this@button.isDisable = false
+                                        success = false
+                                    }
                                 }
+                                if (!success) return@runAsync
 
-                            } catch (e: Exception) {
-                                Utils.showGenericAlert(
-                                    Alert.AlertType.ERROR, "Error: $e\n\nPlease check the device is" +
-                                            " powered on, and Omicam is running successfully.",
-                                    "Failed to establish connection"
-                                )
-                                e.printStackTrace()
+                                runLater {
+                                    prefs.put("LastViewSelected", viewBox.value)
+                                    prefs.put("LastIP", ipField.text)
+
+                                    when (viewBox.value){
+                                        "Camera view" -> Utils.transitionMetro(this@ConnectView, CameraView())
+                                        "Calibration view" -> Utils.transitionMetro(this@ConnectView, CalibrationView())
+                                        "Field view" -> Utils.transitionMetro(this@ConnectView, FieldView())
+                                        else -> Logger.error("Unsupported view: ${viewBox.value}")
+                                    }
+                                }
                             }
                         }
                     }
@@ -135,6 +152,7 @@ class ConnectView : View() {
                     addClass(Styles.paddedBox)
                     alignment = Pos.CENTER
                 }
+
                 hgrow = Priority.ALWAYS
                 vgrow = Priority.ALWAYS
                 alignment = Pos.CENTER
