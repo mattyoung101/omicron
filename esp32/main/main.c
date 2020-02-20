@@ -181,24 +181,20 @@ static void master_task(void *pvParameter){
                 // TODO make goal stuff floats as well
                 if (robotState.outIsAttack){
                     robotState.inGoalVisible = AWAY_GOAL.exists;
-                    robotState.inGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inGoal = vect_2d(AWAY_GOAL.distance, AWAY_GOAL.angle + CAM_ANGLE_OFFSET, true);
                     robotState.inGoalLength = (int16_t) AWAY_GOAL.length;
-                    robotState.inGoalDistance = AWAY_GOAL.distance;
 
                     robotState.inOtherGoalVisible = HOME_GOAL.exists;
-                    robotState.inOtherGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inGoal = vect_2d(HOME_GOAL.distance, HOME_GOAL.angle + CAM_ANGLE_OFFSET, true);
                     robotState.inOtherGoalLength = (int16_t) HOME_GOAL.length;
-                    robotState.inOtherGoalDistance = HOME_GOAL.distance;
                 } else {
                     robotState.inOtherGoalVisible = AWAY_GOAL.exists;
-                    robotState.inOtherGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inOtherGoal = vect_2d(AWAY_GOAL.distance, AWAY_GOAL.angle + CAM_ANGLE_OFFSET, true);
                     robotState.inOtherGoalLength = (int16_t) AWAY_GOAL.length;
-                    robotState.inOtherGoalDistance = AWAY_GOAL.distance;
 
                     robotState.inGoalVisible = HOME_GOAL.exists;
-                    robotState.inGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inGoal = vect_2d(HOME_GOAL.distance, HOME_GOAL.angle + CAM_ANGLE_OFFSET, true);
                     robotState.inGoalLength = (int16_t) HOME_GOAL.length;
-                    robotState.inGoalDistance = HOME_GOAL.distance;
                 }
                 robotState.inHeading = yaw;
                 robotState.inRobotPos = vect_2d(robotX, robotY, false);

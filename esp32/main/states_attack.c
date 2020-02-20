@@ -154,9 +154,9 @@ void state_attack_yeet_update(state_machine_t *fsm){
 
     // Check criteria:
     // Ball not visible, ball not in front, ball too far away, not facing goal, should we kick?
-    if (rs.inFrontGate && is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, 
+    if (rs.inFrontGate && is_angle_between(rs.inGoal.arg, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, 
         IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
-        LOG_ONCE(TAG, "Ball in capture zone and facing goal and shoot permitted, shooting, angle: %d, range: %d", rs.inGoalAngle, rs.inGoalLength);
+        LOG_ONCE(TAG, "Ball in capture zone and facing goal and shoot permitted, shooting, angle: %f, range: %d", rs.inGoal.arg, rs.inGoalLength);
         FSM_CHANGE_STATE_GENERAL(Shoot); // TODO: use real world units
     } else if (!orangeBall.exists && !rs.inFrontGate){
         LOG_ONCE(TAG, "Ball not visible, braking, distance: %f", robotState.inBallPos.mag);

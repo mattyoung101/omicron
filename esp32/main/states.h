@@ -17,14 +17,16 @@ typedef struct {
     // Goal Inputs
     // Main goal in question (home goal for defender, enemy goal for attacker)
     bool inGoalVisible;
-    int16_t inGoalAngle;
+    vect_2d_t inGoal;
+    // int16_t inGoalAngle;
     int16_t inGoalLength;
-    int16_t inGoalDistance;
+    // int16_t inGoalDistance;
     // Other goal (home goal for attacker, enemy goal for defender)
     bool inOtherGoalVisible;
-    int16_t inOtherGoalAngle;
+    vect_2d_t inOtherGoal;
+    // int16_t inOtherGoalAngle;
     int16_t inOtherGoalLength;
-    int16_t inOtherGoalDistance;
+    // int16_t inOtherGoalDistance;
     // Coordinate System
     vect_2d_t inRobotPos;
     // IMU Input
