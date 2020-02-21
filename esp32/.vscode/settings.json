@@ -15,7 +15,10 @@
         "comms_uart.h": "c",
         "*.txt": "plaintext",
         "algorithms&stuff.h": "c",
-        "PHONETIC.C": "cpp"
+        "PHONETIC.C": "cpp",
+        "*.tcc": "c",
+        "cmath": "c",
+        "random": "c"
     },
     "cSpell.words": [
         "Bluedroid",
