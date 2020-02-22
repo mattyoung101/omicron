@@ -11,7 +11,7 @@
 static int serialfd;
 
 void comms_uart_init(){
-#if BUILD_TARGET != BUILD_TARGET_PC
+#if BUILD_TARGET == BUILD_TARGET_SBC
     // sources:
     // - https://chrisheydrick.com/2012/06/17/how-to-read-serial-data-from-an-arduino-in-linux-with-c-part-3/
     // - https://en.wikibooks.org/wiki/Serial_Programming/termios
@@ -55,6 +55,7 @@ void comms_uart_init(){
 
     // set the options
     tcsetattr(serialfd, TCSANOW, &toptions);
+    log_info("UART comms initialised successfully");
 #else
     log_warn("UART comms disabled in BUILD_TARGET_PC.");
 #endif

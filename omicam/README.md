@@ -63,6 +63,16 @@ and enter that as the IP in Omicontrol/SSH.
 ### Syncing the time
 I'm working on a solution to this problem. Please see Known issues as to why this is important.
 
+**TODO list instructions: install NetTime, config that, unblock in firewall, install sntp, etc**
+
+`sudo sntp -S 10.0.0.1`
+
+May also want to cover adding to config? instead of just using sntp. Would fix clock drift. Make doesn't really care tho.
+
+Linux instructions? Install ntpd, allow through UFW. Untested.
+
+Mac instructions? Unclear if possible. Probably sync with Windows or Linux host first.
+
 ### CLion setup
 If you don't have CLion, you'll need to download and install it. It's free for students if you have an *.edu email.
 

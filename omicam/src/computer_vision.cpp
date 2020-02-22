@@ -151,7 +151,14 @@ static auto cv_thread(void *arg) -> void *{
     log_info("Frame size: %dx%d (cropping enabled: %s)", videoWidth, videoHeight, VISION_CROP_ENABLED ? "YES" : "NO");
     log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
+    // generate the mirror mask
+    // TODO handle if not cropped (this won't work then)
+    Mat mirrorMask(cropRect.height, cropRect.width, CV_8UC1, Scalar(0));
+    circle(mirrorMask, Point(mirrorMask.cols / 2, mirrorMask.rows / 2), visionMirrorRadius, Scalar(255, 255, 255), FILLED);
+
+#if VISION_APPLY_CLAHE
     auto clahe = createCLAHE();
+#endif
 
     while (true){
         // handle threading crap before beginning with the vision
@@ -197,6 +204,12 @@ static auto cv_thread(void *arg) -> void *{
         merge(labPlanes, 3, labFinal);
         cvtColor(labFinal, frame, COLOR_Lab2RGB);
 #endif
+
+        // apply mirror mask
+        Mat tmp;
+        bitwise_and(frame, frame, tmp, mirrorMask);
+        frame = tmp;
+
         // mask out the robot
 #if VISION_DRAW_ROBOT_MASK
         circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius, Scalar(0, 0, 0), FILLED);

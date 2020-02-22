@@ -71,7 +71,7 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
 
         // return if going to be out of bounds
         if (rx < minCorner.x || ry < minCorner.y || rx > maxCorner.x || ry > maxCorner.y){
-            // TODO we actually want to return -1 and set this ray to be ignored then
+            // TODO we might actually want to return -1 and set this ray to be ignored then?
             // in case we have a bad track or something in the way or similar to that instead of throwing all
             // the other readings with a huge value
             return dist;
@@ -81,7 +81,7 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
         // TODO sometimes segfault here?
         int32_t i = rx + imageWidth * ry;
         if (image[i] != 0 || (earlyStop != -1 && dist > earlyStop)){
-            return dist;
+                return dist;
         } else {
             dist++;
         }
@@ -115,6 +115,8 @@ static inline double objective_func_impl(double x, double y){
     // 2. compare ray lengths
     double totalError = 0.0;
     for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+        // TODO if we do the -1 ray thing here, for any rays which didn't detect anything (are -1), skip comparing them
+        // do this only for observedRays[i] because expectedRays should always hit
         double diff = fabs(expectedRays[i] - observedRays[i]);
         totalError += diff;
     }
