@@ -33,7 +33,7 @@ void receiveEvent(int bytes){
 }
 
 void setup(){
-    Serial.begin(115200);
+    Serial.begin(9600);
 
     #if I2C_ON
         Wire.begin(I2C_ADDRESS);
@@ -45,13 +45,24 @@ void setup(){
         Serial.println(mouse.begin(10)); // I think 10 is the SS (CS) pin
     #endif
 
+    pinMode(13, OUTPUT);
+    digitalWrite(13, HIGH);
+
     motor.init();
 }
 
 void loop(){
-    PMW3360_DATA data = mouse.readBurst();
-    dx = data.dx;
-    dy = data.dy;
+    #if MOUSE_ON
+        PMW3360_DATA data = mouse.readBurst();
+        Serial.print(data.dx);
+        Serial.print("\t");
+        Serial.println(data.dy);
+    #endif
+
+    #if I2C_ON
+        dx = data.dx;
+        dy = data.dy;
+    #endif
 
     motor.move(frMotor, brMotor, blMotor, flMotor);
 }
