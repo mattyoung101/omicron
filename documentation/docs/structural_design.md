@@ -7,13 +7,13 @@ year.
 The following are the major hardware improvements that have occurred this year:
 
 * Custom omni-directional wheels
-* ~~Custom wound solenoid~~ and kicking circuit
+* Custom kicker unit
 * Custom microcontroller circuits
 * Custom camera hardware
 * Mouse sensor implemenation
 * Various debugging options for software to use
 
-## Design overview
+## Design Overview
 
 **TODO: PUT PICTURE OF DESIGN HERE, POSSIBLE EXPLODED VIEW OR A360 LINK**
 
@@ -80,7 +80,3 @@ Further improvements upon the debugging options were made this year including:
 * 4 piezzoelectric buzzers for audio feedback
 * 8 LEDs and a text LCD screen for visual feedback
 * Wireless degbugging UI for easy visualisation
-
-# Electrical Design
-
-##

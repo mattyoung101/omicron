@@ -8,6 +8,7 @@ nav:
     - About: about.md
     - Hardware:
         - Structural design: structural_design.md
+        - Electrical design: electrical_design.md
     - Software:
         - Omicam (vision and localisastion): omicam.md
         - Omicontrol (debugging and control): omicontrol.md
