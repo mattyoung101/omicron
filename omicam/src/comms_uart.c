@@ -5,6 +5,7 @@
 #include <log/log.h>
 #include <unistd.h>
 #include <errno.h>
+#include "defines.h"
 
 // TODO we also need to have a receive task here as well
 
@@ -62,7 +63,7 @@ void comms_uart_init(){
 }
 
 void comms_uart_send(uint8_t *data, size_t size){
-#if BUILD_TARGET != BUILD_TARGET_PC
+#if BUILD_TARGET == BUILD_TARGET_SBC
     // TODO need to package this with the ESP32 header
     ssize_t bytesWritten = write(serialfd, data, size);
     if (bytesWritten == -1){
