@@ -68,7 +68,7 @@ class LightSensorController{
 
 		float initialAngle;
 
-		Vector calculateClusters();
+		void calculateClusters();
 
 		int numClusters = 0;
 

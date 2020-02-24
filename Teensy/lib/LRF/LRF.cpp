@@ -23,24 +23,31 @@ void LRF::init(){
     setLRF(LRF4_SERIAL);
 }
 
-uint16_t LRF::pollLRF(HardwareSerial serial){
+bool LRF::checkSerial(HardwareSerial serial){
     if(serial.available() >= LRF_DATA_LENGTH){
         int firstByte = serial.read();
         if(firstByte == LRF_START_BYTE){
             if(serial.read() == LRF_START_BYTE){
-                serial.read();
-                serial.read();
-                int highByte = serial.read();
-                int lowByte = serial.read();
-                return highByte << 8 | lowByte;
+                return true;
             }
+            else return false;
         }
+        else return false;
     }
+    else return false;
+}
+
+uint16_t LRF::pollLRF(HardwareSerial serial){
+    serial.read();
+    serial.read();
+    int highByte = serial.read();
+    int lowByte = serial.read();
+    return highByte << 8 | lowByte;
 }
 
 void LRF::read(){
-    frontLRF = pollLRF(LRF1_SERIAL);
-    rightLRF = pollLRF(LRF2_SERIAL);
-    backLRF = pollLRF(LRF3_SERIAL);
-    leftLRF = pollLRF(LRF4_SERIAL);
+    frontLRF = checkSerial(LRF1_SERIAL) ? pollLRF(LRF1_SERIAL) : frontLRF;
+    rightLRF = checkSerial(LRF2_SERIAL) ? pollLRF(LRF2_SERIAL) : rightLRF;
+    backLRF = checkSerial(LRF3_SERIAL) ? pollLRF(LRF3_SERIAL) : backLRF;
+    leftLRF = checkSerial(LRF4_SERIAL) ? pollLRF(LRF4_SERIAL) : leftLRF;
 }
