@@ -118,9 +118,9 @@ static auto cv_thread(void *arg) -> void *{
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-    Mat ogFrame = imread("../field5.png");
+    Mat ogFrame = imread("../test_data/field5_nats.png");
     log_trace("Build target is PC, using test data");
-    VideoCapture cap("../test_footage_2.m4v");
+    VideoCapture cap("../test_data/test_footage_2.m4v");
     if (!cap.isOpened()) {
         log_error("Failed to load OpenCV test video, cannot continue");
         fflush(stdout);

@@ -34,6 +34,7 @@ static BMP *bmp = NULL;
 double observedRays[LOCALISER_NUM_RAYS] = {0};
 double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
 double expectedRays[LOCALISER_NUM_RAYS] = {0};
+double rayScores[LOCALISER_NUM_RAYS] = {0};
 static pthread_t perfThread;
 static movavg_t *timeAvg = NULL;
 static movavg_t *evalAvg = NULL;
@@ -99,7 +100,7 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
                 }
             }
 #endif
-                return dist;
+            return dist;
         } else {
             dist++;
         }
@@ -142,6 +143,7 @@ static inline double objective_func_impl(double x, double y){
         if (observedRays[i] == -1 || expectedRays[i] == -1) continue;
 
         double diff = fabs(expectedRays[i] - observedRays[i]);
+        rayScores[i] = diff;
         totalError += diff;
     }
     evaluations++;

@@ -76,6 +76,8 @@ message DebugFrame {
     RDPointF ballPos = 19;
     // visited positions by the Subplex optimiser
     repeated RDPointF localiserVisitedPoints = 20;
+    // score for each ray
+    repeated double rayScores = 21;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

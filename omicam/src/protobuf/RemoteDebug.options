@@ -6,6 +6,7 @@ DebugFrame.robotPositions max_count:2
 DebugFrame.robotOrientations max_count:2
 DebugFrame.localiserStatus max_length:32
 DebugFrame.localiserVisitedPoints max_count:128
+DebugFrame.rayScores max_count:128
 DebugCommand.allThresholds max_count:5 fixed_count:true
 RDThreshold.min max_count:3 fixed_count:true
 RDThreshold.max max_count:3 fixed_count:true

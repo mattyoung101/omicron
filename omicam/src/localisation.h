@@ -34,6 +34,8 @@ extern double observedRays[LOCALISER_NUM_RAYS];
 extern double expectedRays[LOCALISER_NUM_RAYS];
 /** points visited by the Subplex optimiser */
 extern lp_list_t localiserVisitedPoints;
+/** score for each ray in the last localiser pass */
+extern double rayScores[LOCALISER_NUM_RAYS];
 
 #ifdef __cplusplus
 extern "C" {

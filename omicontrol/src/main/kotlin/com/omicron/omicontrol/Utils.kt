@@ -9,11 +9,13 @@ import javafx.scene.control.Alert
 import javafx.scene.control.ButtonType
 import javafx.scene.control.TextInputDialog
 import javafx.scene.layout.Region
+import javafx.scene.paint.Color
 import javafx.util.Duration
 import org.tinylog.kotlin.Logger
 import tornadofx.View
 import tornadofx.ViewTransition
-import java.lang.IllegalArgumentException
+import kotlin.math.roundToInt
+
 
 // TODO remove this class and just put all methods in the global scope
 object Utils {
@@ -132,6 +134,10 @@ fun pointInCircle(point: Point2D, circlePos: Point2D, circleRadius: Double): Boo
 
 fun lerp(fromValue: Double, toValue: Double, progress: Double): Double {
     return fromValue + (toValue - fromValue) * progress
+}
+
+fun lerpColour(colour1: Color, colour2: Color, progress: Double): Color {
+    return colour1.interpolate(colour2, progress)
 }
 
 fun colourSpaceToColour(colourSpace: ColourSpace, colour: IntArray): ConvertibleColor {

@@ -1,28 +1,29 @@
 package com.omicron.omicontrol.views
 
+import RemoteDebug
 import com.omicron.omicontrol.*
+import com.omicron.omicontrol.field.Ball
+import com.omicron.omicontrol.field.Robot
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.Alert
+import javafx.scene.control.Label
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
+import org.apache.commons.io.FileUtils
 import org.greenrobot.eventbus.Subscribe
 import org.tinylog.kotlin.Logger
 import tornadofx.*
-import kotlin.system.exitProcess
-import com.omicron.omicontrol.field.Ball
-import com.omicron.omicontrol.field.Robot
-import javafx.scene.control.Label
-import javafx.scene.shape.Circle
-import org.apache.commons.io.FileUtils
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import kotlin.system.exitProcess
+
 
 /**
  * This screen displays the localised positions of the robots on a virtual field and allows you to control them
@@ -109,6 +110,11 @@ class FieldView : View() {
             // TODO instead of picking robot 0, we need to pick the one we're connected to, to debug
             val connectedRobot = 0
             if (isRaycastDebug && robots[connectedRobot].isPositionKnown) {
+                // find min and max ray sscore
+                val rayScores = message.rayScoresList.take(message.rayScoresCount)
+                val minRayScore = rayScores.min()!!
+                val maxRayScore = rayScores.max()!!
+
                 display.lineWidth = 2.0
                 display.stroke = Color.WHITE
 
@@ -117,11 +123,14 @@ class FieldView : View() {
                 val y0 = original.y
                 var angle = 0.0
 
-                for (rayLength in message.dewarpedRaysList.take(message.dewarpedRaysCount)) {
+                for ((i, rayLength) in message.dewarpedRaysList.take(message.dewarpedRaysCount).withIndex()) {
                     if (rayLength < 0) continue // TODO may want to draw a red line to indicate missed ray
                     val x1 = x0 + (toFieldLength(rayLength) * sin(angle))
                     val y1 = y0 + (toFieldLength(rayLength) * cos(angle))
 
+                    val normalisedScore = (rayScores[i] - minRayScore) / (maxRayScore - minRayScore)
+                    // note that we're going FROM GOOD COLOUR TO BAD COLOUR because 0 means high accuracy and 1 means low accuracy
+                    display.stroke = lerpColour(Color.WHITE, Color.RED, normalisedScore)
                     display.strokeLine(x0, y0, x1, y1)
                     angle += message.rayInterval
                 }

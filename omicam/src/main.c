@@ -83,7 +83,7 @@ int main() {
     log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);
 
     log_debug("Loading and parsing config...");
-    dictionary *config = iniparser_load("../omicam.ini");
+    dictionary *config = iniparser_load("../omicam_local.ini");
     if (config == NULL){
         log_error("Failed to open config file (error: %s)", strerror(errno));
         return EXIT_FAILURE;

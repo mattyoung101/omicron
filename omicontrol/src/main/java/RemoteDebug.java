@@ -3352,6 +3352,31 @@ public final class RemoteDebug {
      */
     RemoteDebug.RDPointFOrBuilder getLocaliserVisitedPointsOrBuilder(
         int index);
+
+    /**
+     * <pre>
+     * score for each ray
+     * </pre>
+     *
+     * <code>repeated double rayScores = 21;</code>
+     */
+    java.util.List<java.lang.Double> getRayScoresList();
+    /**
+     * <pre>
+     * score for each ray
+     * </pre>
+     *
+     * <code>repeated double rayScores = 21;</code>
+     */
+    int getRayScoresCount();
+    /**
+     * <pre>
+     * score for each ray
+     * </pre>
+     *
+     * <code>repeated double rayScores = 21;</code>
+     */
+    double getRayScores(int index);
   }
   /**
    * <pre>
@@ -3387,6 +3412,7 @@ public final class RemoteDebug {
       localiserTime_ = 0F;
       localiserStatus_ = "";
       localiserVisitedPoints_ = java.util.Collections.emptyList();
+      rayScores_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -3603,6 +3629,27 @@ public final class RemoteDebug {
                   input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry));
               break;
             }
+            case 169: {
+              if (!((mutable_bitField0_ & 0x00100000) == 0x00100000)) {
+                rayScores_ = new java.util.ArrayList<java.lang.Double>();
+                mutable_bitField0_ |= 0x00100000;
+              }
+              rayScores_.add(input.readDouble());
+              break;
+            }
+            case 170: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00100000) == 0x00100000) && input.getBytesUntilLimit() > 0) {
+                rayScores_ = new java.util.ArrayList<java.lang.Double>();
+                mutable_bitField0_ |= 0x00100000;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                rayScores_.add(input.readDouble());
+              }
+              input.popLimit(limit);
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -3625,6 +3672,9 @@ public final class RemoteDebug {
         }
         if (((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
           localiserVisitedPoints_ = java.util.Collections.unmodifiableList(localiserVisitedPoints_);
+        }
+        if (((mutable_bitField0_ & 0x00100000) == 0x00100000)) {
+          rayScores_ = java.util.Collections.unmodifiableList(rayScores_);
         }
         makeExtensionsImmutable();
       }
@@ -4166,6 +4216,41 @@ public final class RemoteDebug {
       return localiserVisitedPoints_.get(index);
     }
 
+    public static final int RAYSCORES_FIELD_NUMBER = 21;
+    private java.util.List<java.lang.Double> rayScores_;
+    /**
+     * <pre>
+     * score for each ray
+     * </pre>
+     *
+     * <code>repeated double rayScores = 21;</code>
+     */
+    public java.util.List<java.lang.Double>
+        getRayScoresList() {
+      return rayScores_;
+    }
+    /**
+     * <pre>
+     * score for each ray
+     * </pre>
+     *
+     * <code>repeated double rayScores = 21;</code>
+     */
+    public int getRayScoresCount() {
+      return rayScores_.size();
+    }
+    /**
+     * <pre>
+     * score for each ray
+     * </pre>
+     *
+     * <code>repeated double rayScores = 21;</code>
+     */
+    public double getRayScores(int index) {
+      return rayScores_.get(index);
+    }
+    private int rayScoresMemoizedSerializedSize = -1;
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -4250,6 +4335,13 @@ public final class RemoteDebug {
       }
       for (int i = 0; i < localiserVisitedPoints_.size(); i++) {
         output.writeMessage(20, localiserVisitedPoints_.get(i));
+      }
+      if (getRayScoresList().size() > 0) {
+        output.writeUInt32NoTag(170);
+        output.writeUInt32NoTag(rayScoresMemoizedSerializedSize);
+      }
+      for (int i = 0; i < rayScores_.size(); i++) {
+        output.writeDoubleNoTag(rayScores_.get(i));
       }
     }
 
@@ -4358,6 +4450,17 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(20, localiserVisitedPoints_.get(i));
       }
+      {
+        int dataSize = 0;
+        dataSize = 8 * getRayScoresList().size();
+        size += dataSize;
+        if (!getRayScoresList().isEmpty()) {
+          size += 2;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        rayScoresMemoizedSerializedSize = dataSize;
+      }
       memoizedSize = size;
       return size;
     }
@@ -4432,6 +4535,8 @@ public final class RemoteDebug {
       }
       result = result && getLocaliserVisitedPointsList()
           .equals(other.getLocaliserVisitedPointsList());
+      result = result && getRayScoresList()
+          .equals(other.getRayScoresList());
       return result;
     }
 
@@ -4502,6 +4607,10 @@ public final class RemoteDebug {
       if (getLocaliserVisitedPointsCount() > 0) {
         hash = (37 * hash) + LOCALISERVISITEDPOINTS_FIELD_NUMBER;
         hash = (53 * hash) + getLocaliserVisitedPointsList().hashCode();
+      }
+      if (getRayScoresCount() > 0) {
+        hash = (37 * hash) + RAYSCORES_FIELD_NUMBER;
+        hash = (53 * hash) + getRayScoresList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -4693,6 +4802,8 @@ public final class RemoteDebug {
         } else {
           localiserVisitedPointsBuilder_.clear();
         }
+        rayScores_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00100000);
         return this;
       }
 
@@ -4781,6 +4892,11 @@ public final class RemoteDebug {
         } else {
           result.localiserVisitedPoints_ = localiserVisitedPointsBuilder_.build();
         }
+        if (((bitField0_ & 0x00100000) == 0x00100000)) {
+          rayScores_ = java.util.Collections.unmodifiableList(rayScores_);
+          bitField0_ = (bitField0_ & ~0x00100000);
+        }
+        result.rayScores_ = rayScores_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -4950,6 +5066,16 @@ public final class RemoteDebug {
               localiserVisitedPointsBuilder_.addAllMessages(other.localiserVisitedPoints_);
             }
           }
+        }
+        if (!other.rayScores_.isEmpty()) {
+          if (rayScores_.isEmpty()) {
+            rayScores_ = other.rayScores_;
+            bitField0_ = (bitField0_ & ~0x00100000);
+          } else {
+            ensureRayScoresIsMutable();
+            rayScores_.addAll(other.rayScores_);
+          }
+          onChanged();
         }
         onChanged();
         return this;
@@ -6987,6 +7113,100 @@ public final class RemoteDebug {
           localiserVisitedPoints_ = null;
         }
         return localiserVisitedPointsBuilder_;
+      }
+
+      private java.util.List<java.lang.Double> rayScores_ = java.util.Collections.emptyList();
+      private void ensureRayScoresIsMutable() {
+        if (!((bitField0_ & 0x00100000) == 0x00100000)) {
+          rayScores_ = new java.util.ArrayList<java.lang.Double>(rayScores_);
+          bitField0_ |= 0x00100000;
+         }
+      }
+      /**
+       * <pre>
+       * score for each ray
+       * </pre>
+       *
+       * <code>repeated double rayScores = 21;</code>
+       */
+      public java.util.List<java.lang.Double>
+          getRayScoresList() {
+        return java.util.Collections.unmodifiableList(rayScores_);
+      }
+      /**
+       * <pre>
+       * score for each ray
+       * </pre>
+       *
+       * <code>repeated double rayScores = 21;</code>
+       */
+      public int getRayScoresCount() {
+        return rayScores_.size();
+      }
+      /**
+       * <pre>
+       * score for each ray
+       * </pre>
+       *
+       * <code>repeated double rayScores = 21;</code>
+       */
+      public double getRayScores(int index) {
+        return rayScores_.get(index);
+      }
+      /**
+       * <pre>
+       * score for each ray
+       * </pre>
+       *
+       * <code>repeated double rayScores = 21;</code>
+       */
+      public Builder setRayScores(
+          int index, double value) {
+        ensureRayScoresIsMutable();
+        rayScores_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * score for each ray
+       * </pre>
+       *
+       * <code>repeated double rayScores = 21;</code>
+       */
+      public Builder addRayScores(double value) {
+        ensureRayScoresIsMutable();
+        rayScores_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * score for each ray
+       * </pre>
+       *
+       * <code>repeated double rayScores = 21;</code>
+       */
+      public Builder addAllRayScores(
+          java.lang.Iterable<? extends java.lang.Double> values) {
+        ensureRayScoresIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, rayScores_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * score for each ray
+       * </pre>
+       *
+       * <code>repeated double rayScores = 21;</code>
+       */
+      public Builder clearRayScores() {
+        rayScores_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00100000);
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -9791,7 +10011,7 @@ public final class RemoteDebug {
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
       "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\";\n\007RDRobo" +
       "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
-      "ation\030\002 \001(\002\"\370\003\n\nDebugFrame\022\024\n\014defaultIma" +
+      "ation\030\002 \001(\002\"\213\004\n\nDebugFrame\022\024\n\014defaultIma" +
       "ge\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013tem" +
       "perature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RDRec" +
       "t\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\022\013\n\003fps",
@@ -9803,16 +10023,16 @@ public final class RemoteDebug {
       "yInterval\030\017 \001(\002\022\026\n\016localiserEvals\030\020 \001(\005\022" +
       "\025\n\rlocaliserTime\030\021 \001(\002\022\027\n\017localiserStatu" +
       "s\030\022 \001(\t\022\032\n\007ballPos\030\023 \001(\0132\t.RDPointF\022)\n\026l" +
-      "ocaliserVisitedPoints\030\024 \003(\0132\t.RDPointF\"\341" +
-      "\001\n\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006co",
-      "ords\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 \001(" +
-      "\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold\022\020" +
-      "\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolo" +
-      "urChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robotI" +
-      "d\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFrame" +
-      "\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007command\030" +
-      "\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003 \001" +
-      "(\005b\006proto3"
+      "ocaliserVisitedPoints\030\024 \003(\0132\t.RDPointF\022\021" +
+      "\n\trayScores\030\025 \003(\001\"\341\001\n\014DebugCommand\022\021\n\tme",
+      "ssageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022" +
+      "\023\n\013orientation\030\003 \001(\002\022#\n\rallThresholds\030\004 " +
+      "\003(\0132\014.RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006m" +
+      "inMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005va" +
+      "lue\030\010 \001(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled\030" +
+      "\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.Deb" +
+      "ugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCommand\022" +
+      "\024\n\014whichMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -9861,7 +10081,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_DebugCommand_fieldAccessorTable = new
