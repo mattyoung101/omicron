@@ -50,6 +50,7 @@ class FieldView : View() {
     private var bandwidthRecordingBegin = System.currentTimeMillis()
     private var isRaycastDebug = false
     private var isOptimiserDebug = false
+    private var isIgnorePosition = false
 
     init {
         reloadStylesheetsOnFocus()
@@ -68,7 +69,7 @@ class FieldView : View() {
                 robot.isPositionKnown = false
             }
             for ((i, robot) in message.robotPositionsList.take(message.robotPositionsCount).withIndex()){
-                robots[i].position = Point2D(robot.x.toDouble(), robot.y.toDouble())
+                if (!isIgnorePosition) robots[i].position = Point2D(robot.x.toDouble(), robot.y.toDouble())
                 // robots[i].orientation = message.robotOrientationsList[i] // FIXME broken right now
                 robots[i].isPositionKnown = true
                 robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f), %.2f", robot.x, robot.y, robots[i].orientation)
@@ -122,6 +123,7 @@ class FieldView : View() {
                 }
             }
 
+            // render optimiser debug (the path the optimiser took to the minimum)
             if (isOptimiserDebug){
                 var lastPoint: Point2D? = null
                 for ((i, point) in message.localiserVisitedPointsList.take(message.localiserVisitedPointsCount).withIndex()) {
@@ -226,6 +228,11 @@ class FieldView : View() {
                         isOptimiserDebug = value
                     }
                 }
+                checkmenuitem("Ignore sent position"){
+                    selectedProperty().addListener { _, _, value ->
+                        isIgnorePosition = value
+                    }
+                }
             }
             menu("Help") {
                 item("About").setOnAction {
@@ -264,8 +271,8 @@ class FieldView : View() {
                             }
                         }
 
-                        targetPos = if (targetPos != null && targetPos!!.distance(fieldCanvasPos) <= 16.0){
-                            // user clicked on the same position, deslect target
+                        targetPos = if (targetPos != null && targetPos!!.distance(fieldCanvasPos) <= 24.0){
+                            // user clicked on the same position, deselect target
                             null
                         } else {
                             // new position to move target to
@@ -389,11 +396,21 @@ class FieldView : View() {
                             button("Orient selected"){
                                 setOnAction {
                                     if (checkSelected()){
-                                        // FIXME ask for orientation here
+                                        val orientationStr = Utils.showTextInputDialog("Range: 0-360 degrees",
+                                            "Enter new orientation").trim()
+                                        if (orientationStr == "") return@setOnAction
+
+                                        val newOrientation = orientationStr.toFloatOrNull() ?: run {
+                                            Utils.showGenericAlert(Alert.AlertType.ERROR,
+                                                "$orientationStr is not a valid number.",
+                                                "Invalid orientation entered.")
+                                            return@setOnAction
+                                        }
+
                                         val cmd = RemoteDebug.DebugCommand.newBuilder().apply {
                                             messageId = DebugCommands.CMD_MOVE_ORIENT.ordinal
                                             robotId = selectedRobot!!.id
-                                            orientation = 0.0f
+                                            orientation = newOrientation % 360.0f
                                         }.build()
                                         CONNECTION_MANAGER.dispatchCommand(cmd)
                                     }

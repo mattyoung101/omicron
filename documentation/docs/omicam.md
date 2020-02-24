@@ -23,46 +23,83 @@ single board computer (SBC). In terms of localisation, in the past we managed to
 a low-fidelity approach based on detecting the goals in the image.
 
 ## Performance and results
-Omicam is capable of detecting 4 field objects at **60-70fps at 720p (1280x720) resolution**. Compared to the previous
-OpenMV H7, this is **23x higher resolution at 3x the framerate.<sup>1</sup>**
+Omicam is capable of detecting the ball, both goals and lines at **60-70fps at 720p (1280x720) resolution**. 
+Compared to the previous OpenMV H7, this is **23x higher resolution at 3x the framerate.<sup>1</sup>**
 
 In addition, using the novel vision-based localisation algorithm we developed this year, we can now determine the
-robot's position to **&lt;1cm accuracy** at realtime speeds. This is over **5x/25x more accurate<sup>2</sup>** than any previous methods 
-used at BBC Robotics, and has been shown to be much more reliable and stable.
+robot's position to **&lt;1cm accuracy** at around 30 Hz. This is over **5x/25x more accurate<sup>2</sup>** 
+than any previous methods used at BBC Robotics, and has been shown to be much more reliable and stable.
 
-To achieve this performance, we made heavy use of parallel programming techniques, OpenCV's x86 SIMD CPU optimisations,
-Clang optimiser flags as well as intelligent image downscaling for the goal threshold images (as they are mostly unused).
-In addition, the localisation, vision and remote debug pipelines all run in parallel to each other so the entire application
-is asynchronous.
+Finally, using the e-con Systems Hyperyon based around the ultra low-light performance IMX290 sensor, our vision pipeline
+is robust against lighting conditions ranging from near pitch black to direct sunlight.
 
 _<sup>1 previous results based on mediocre lighting conditions running well optimised OpenMV H7 code at QVGA resolution.</sup>_ 
 
 _<sup>2 depending on whether LRF based/goal based localisation was used.</sup>_
 
 ## Hardware
-Omicam runs on a Linux-based LattePanda Delta 432. It uses an OV4689 USB 2.0 camera module, which is capable of streaming
-motion JPEG (MJPEG) at 720p 100+ fps.
+Omicam supports any single board computer (SBC) that can run Linux. In our case, we use a LattePanda Delta 432 with a 
+2.4 GHz quad-core Intel Celeron N4100, 4GB of dual-channel DDR4 RAM, 32GB of storage, WiFi, Bluetooth, gigabit Ethernet
+and a UART bus via the inbuilt ATMega32U4.
 
-## Prototypes
-The current iteration of Omicam's hardware setup is the cumulation of around 2 years of prototyping iterations.
+The current camera we use is an e-con Systems Hyperyon, based on the Sony Starvis IMX290 ultra low-light sensor capable
+of seeing in almost pitch black at high framerates. This is a USB 2.0 camera module, since the LattePanda has no 
+MIPI port.
 
-**Prototype 0 (December 2018-January 2019):** Raspberry Pi Zero W, initial prototype sort of stuff. Too slow. Project canned.
+### SBC iterations
+The current iteration of Omicam's SBC setup is the cumulation of around 2 years of prototyping iterations. Each
+of the previous SBCs we tried have had one problem or another, and we believe the LattePanda Delta is the most powerful yet
+cost efficient approach.
 
-**Prototype 1 (December 2019):** Raspberry Pi 4, custom CV library, GPU acceleration with MMAL. Too slow.
+**Prototype 1 (December 2018-January 2019):** This consisted of a Raspberry Pi Zero W, with a 1 GHz single-core CPU.
+It was our initial prototype for a single-board computer, however, we quickly found it was far too weak to do any vision,
+and our inexperience at the time didn't help. Thus, we canned the SBC project for around a year.
 
-**Prototype 2 (January 2020):** Jetson Nano, OpenCV, CUDA. No performance benefits observed on GPU (slow down in fact).
+**Prototype 2 (December 2019):** After resurrecting the SBC R&D project for our 2020 Internationals, we started development
+with the Raspberry Pi 4. This has a 1.5 GHz quad-core ARM Cortex-A72 CPU. We began developing a custom computer vision
+library tailored specifically to our task, using the Pi's MMAL API for GPU-accelerated camera decoding. Initial results
+showed we could threshold images successfully, but we believed it would be too slow to localise and run a
+connected-component labeller in real time.
 
-**Prototype 3 (January-February 2020):** LattePanda Delta 432, OpenCV, purely CPU bound. Final iteration.
+**Prototype 3 (January 2020):** Next, we moved onto the NVIDIA Jetson Nano, containing a 1.43 GHz quad-core Cortex-A57,
+but far more importantly a 128-core Maxwell GPU. At this time we also switched to using OpenCV 4 for our computer vision.
+In theory, using the GPU for processing would lead to a huge performance boost due to the parallelism, however, in practice
+we observed the GPU was significantly slower than even the weaker Cortex-A43 CPU, (presumably) due to copying times. We
+were unable to optimise this to standard after weeks of development, thus we decided to move on from this prototype.
 
-**This is out of date**
+**Prototype 4 (January-February 2020):** After much research, we decided to use the LattePanda Delta 432. The OpenCV
+pipeline is now entirely CPU bound, and despite not using the GPU at all, we are able to achieve very good performance.
 
-**More here, justifcations for why we picked this hardware.**
+### Camera module iterations
+We have spent a great deal of time and money trying to find the absolute best camera module to use in our hardware
+setup. After all, no matter how good our software may be, we are still limited by the quality of our image sensor.
+
+**Pi Camera:** The initial camera we used in hardware prototypes 1-3, was the Raspberry Pi Camera. 
+In prototype 1, we used the Pi Cam v1.3 which is an OV5647 connected via MIPI, and in prototypes 2 and 3 we used the 
+Pi Cam v2 which is an IMX219 again connected via MIPI. We had to drop this camera in later iterations because
+the LattePanda doesn't have a MIPI port. Both of these cameras were capable of around 720p at 60 fps.
+
+**OV4689-based module:** We experimented with a generic OV4689 USB 2.0 camera module from Amazon, which is capable of
+streaming JPEGs (aka an MJPEG stream) at 720p at 120 fps (we could get around 90 fps in practice with no processing).
+While this framerate was impressive, the camera module suffered from terrible noise and flickering in relatively good
+lighting conditions, so it was dropped.
+
+**e-con Hyperyon:** After these two failures, we began looking into professional industrial-grade cameras to use on
+our robot. While most of these, from companies like FLIR, are out of our price range, we found e-con Systems as a
+relatively affordable vendor of extremely high quality cameras. We narrowed down our selection to two devices: the
+See3CAM_CU30 USB 2/USB 3 2MP camera module, which is fairly standard and affordable, as well as the more expensive
+Hyperyon described above. Using our contacts at CSIRO, we managed to acquire a sample of some of the e-con cameras
+they used including the Hyperyon and a device similar to the CU30. While both can do 720p at 60 fps, we observed
+absolutely fantastic lighting performance from the Hyperyon but 100ms latency, while mediocre lighting performance
+from the CU30 but 60ms latency. After much deliberation, we decided to make the difficult trade-off to prioritise
+lighting over latency and use the Hyperyon.
 
 ## Field object detection
 The primary responsibility of Omicam is to detect the bounding box and centroid of field objects: the ball, goals and also lines. 
 To do this, we use the popular computer vision library OpenCV (v4.2.0). 
 We use Video4Linux2 (V4L2) to acquire an MJPEG stream from the USB camera, via the popular gstreamer library.
-Then, we apply any pre-processing steps such as downscaling the goal frames and gamma boosting.
+Then, we apply our pre-processing steps which are: crop the image, mask out the outside of the mirror, mask out the robot
+and downscale for the goal processing.
 
 Next, we threshold all objects in parallel to make use of our quad-core CPU, using OpenCV's `inRange` thresholder but a custom
 parallel framework (as it doesn't run in parallel by default). Thresholding generates a 1-bit binary mask of the image, where
@@ -243,6 +280,11 @@ With all these optimisations, even at high framerates (60+ packets per second), 
 1 MB/s of outgoing bandwidth, which is small enough to work reliably on both local and Internet networks.
 
 ## Debugging and performance optimisation
+To achieve Omicam's performance, we made heavy use of parallel programming techniques, OpenCV's x86 SIMD CPU optimisations,
+Clang optimiser flags as well as intelligent image downscaling for the goal threshold images (as they are mostly unused).
+In addition, the localisation, vision and remote debug pipelines all run in parallel to each other so the entire application
+is asynchronous.
+
 Low-level compiled languages such as C and C++ are notoriously unstable and difficult to debug. In order to improve the stability of Omicam
 and fix bugs, we used Google's Address Sanitizer (ASan) and Undefined Behaviour Sanitizer (UBSan) to easily find and trace a variety of 
 bugs such as buffer overflows, memory leaks and more. 

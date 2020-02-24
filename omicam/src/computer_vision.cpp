@@ -142,7 +142,7 @@ static auto cv_thread(void *arg) -> void *{
     auto fps = ROUND2INT(cap.get(CAP_PROP_FPS));
     log_debug("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
 
-    // this is a stupid way of calculating this
+    // calculate cropped frame size
     Mat junk(videoHeight, videoWidth, CV_8UC1);
 #if VISION_CROP_ENABLED
     junk = junk(cropRect);
@@ -151,10 +151,11 @@ static auto cv_thread(void *arg) -> void *{
     log_info("Frame size: %dx%d (cropping enabled: %s)", videoWidth, videoHeight, VISION_CROP_ENABLED ? "YES" : "NO");
     log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
-    // generate the mirror mask
-    // TODO handle if not cropped (this won't work then)
+    // generate the mirror mask if we're cropping (if we're not, there's no point)
+#if VISION_CROP_ENABLED
     Mat mirrorMask(cropRect.height, cropRect.width, CV_8UC1, Scalar(0));
     circle(mirrorMask, Point(mirrorMask.cols / 2, mirrorMask.rows / 2), visionMirrorRadius, Scalar(255, 255, 255), FILLED);
+#endif
 
 #if VISION_APPLY_CLAHE
     auto clahe = createCLAHE();
@@ -188,7 +189,7 @@ static auto cv_thread(void *arg) -> void *{
             continue;
         }
 
-        // pre-processing:
+        // pre-processing steps:
         // crop the frame if cropping is enabled
 #if VISION_CROP_ENABLED
         frame = frame(Rect(cropRect));
@@ -204,20 +205,20 @@ static auto cv_thread(void *arg) -> void *{
         merge(labPlanes, 3, labFinal);
         cvtColor(labFinal, frame, COLOR_Lab2RGB);
 #endif
-
-        // apply mirror mask
+        // apply mirror mask if we're cropping
+#if VISION_CROP_ENABLED
         Mat tmp;
         bitwise_and(frame, frame, tmp, mirrorMask);
         frame = tmp;
-
+#endif
         // mask out the robot
 #if VISION_DRAW_ROBOT_MASK
         circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius, Scalar(0, 0, 0), FILLED);
 #endif
-
         // downscale for goal detection (and possibly initial ball pass)
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
+        // vision processing:
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
         Mat thresholded[5] = {};
         parallel_for_(Range(1, 5), [&](const Range& range){
@@ -339,12 +340,6 @@ static auto cv_thread(void *arg) -> void *{
 //        data.ballX = ball.centroid.x;
 //        data.ballY = ball.centroid.y;
         utils_cv_transmit_data(data);
-
-#if BUILD_TARGET == BUILD_TARGET_PC
-//        if (remote_debug_is_connected()) {
-//            waitKey(static_cast<int>(1000 / fps));
-//        }
-#endif
 
         double elapsed = utils_time_millis() - begin;
         movavg_push(fpsAvg, elapsed);
