@@ -19,6 +19,7 @@ class LRF {
 
         void setLRF(HardwareSerial serial);
         uint16_t pollLRF(HardwareSerial serial);
+        bool checkSerial(HardwareSerial serial);
 };
 
 #endif

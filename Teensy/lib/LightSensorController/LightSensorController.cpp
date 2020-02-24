@@ -169,7 +169,7 @@ void LightSensorController::read(){
 	// Serial.println("");
 }
 
-Vector LightSensorController::calculateClusters() {
+void LightSensorController::calculateClusters() {
     // Finds clusters of activated lightsensors
     // Reset Values
     numClusters = 0;

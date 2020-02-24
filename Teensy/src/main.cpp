@@ -7,7 +7,7 @@
 #include "pb_common.h"
 #include "pb_decode.h"
 #include "pb_encode.h"
-#include "i2c.pb.h"
+#include "wirecomms.pb.h"
 
 // IMPORTANT: WE ARE USING UART FOR PROTOBUF NOT I2C, WE ARE JUST TOO LAZY TO RENAME STUFF
 
@@ -15,7 +15,7 @@ typedef enum {
     MSG_ANY = 0
 } msg_type_t;
 
-static I2CMasterProvide lastMasterProvide = I2CMasterProvide_init_zero;
+static MasterToLSlave lastMasterProvide = MasterToLSlave_init_zero;
 
 LRF lrfs;
 LightSensorController ls;
@@ -65,9 +65,9 @@ static void decodeProtobuf(void){
 
         // assign destination struct based on message ID
         switch (msgId){
-            case MSG_ESP_TO_TEENSY:
+            case MSG_ANY:
                 dest = (void*) &lastMasterProvide;
-                msgFields = (void*) &I2CMasterProvide_fields;
+                msgFields = (void*) &MasterToLSlave_fields;
                 break;
             default:
                 Serial.printf("[Comms] Unknown message ID: %d\n", msgId);
