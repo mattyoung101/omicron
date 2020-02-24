@@ -191,7 +191,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
         msg.defaultImage.size = camImgSize;
         msg.ballThreshImage.size = threshImgSize;
     } else {
-        // we're in the field view
+        // we're in the field view so don't send anything to save bandwidth
         msg.defaultImage.size = 0;
         msg.ballThreshImage.size = 0;
     }

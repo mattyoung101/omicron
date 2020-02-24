@@ -69,7 +69,11 @@ class FieldView : View() {
                 robot.isPositionKnown = false
             }
             for ((i, robot) in message.robotPositionsList.take(message.robotPositionsCount).withIndex()){
-                if (!isIgnorePosition) robots[i].position = Point2D(robot.x.toDouble(), robot.y.toDouble())
+                if (!isIgnorePosition){
+                    robots[i].position = Point2D(robot.x.toDouble(), robot.y.toDouble())
+                } else {
+                    robots[i].position = Point2D(0.0, 0.0)
+                }
                 // robots[i].orientation = message.robotOrientationsList[i] // FIXME broken right now
                 robots[i].isPositionKnown = true
                 robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f), %.2f", robot.x, robot.y, robots[i].orientation)
@@ -108,15 +112,15 @@ class FieldView : View() {
                 display.lineWidth = 2.0
                 display.stroke = Color.WHITE
 
-                val original =
-                    Point2D(robots[connectedRobot].position.x, robots[connectedRobot].position.y).toCanvasPosition()
+                val original = Point2D(robots[connectedRobot].position.x, robots[connectedRobot].position.y).toCanvasPosition()
                 val x0 = original.x
                 val y0 = original.y
                 var angle = 0.0
 
-                for (ray in message.dewarpedRaysList.take(message.dewarpedRaysCount)) {
-                    val x1 = x0 + (toFieldLength(ray) * sin(angle))
-                    val y1 = y0 + (toFieldLength(ray) * cos(angle))
+                for (rayLength in message.dewarpedRaysList.take(message.dewarpedRaysCount)) {
+                    if (rayLength < 0) continue // TODO may want to draw a red line to indicate missed ray
+                    val x1 = x0 + (toFieldLength(rayLength) * sin(angle))
+                    val y1 = y0 + (toFieldLength(rayLength) * cos(angle))
 
                     display.strokeLine(x0, y0, x1, y1)
                     angle += message.rayInterval
