@@ -38,6 +38,7 @@ any package manager or distro.
 - ffmpeg: `sudo apt install ffmpeg libavformat-dev libavcodec-dev libswscale-dev libavresample-dev`
 - GTK devlopment files: `sudo apt install libgtk2.0-dev`
 - create_ap: `sudo apt install hostapd`, then [see here](https://github.com/oblique/create_ap) for information.
+- NTP tools: `sudo apt install ntpd sntp ntpstat`
 - OpenCV: You have to build from source, [see here](https://docs.opencv.org/master/d7/d9f/tutorial_linux_install.html).
   Pro tip: if your host computer is Linux-based, use `ssh -Y <username>@<domain>` so you can X-forward cmake-gui to your host.
 
@@ -61,17 +62,30 @@ for each robot. To connect to the robot, simply connect to the hotspot, run `ifc
 and enter that as the IP in Omicontrol/SSH.
 
 ### Syncing the time
-I'm working on a solution to this problem. Please see Known issues as to why this is important.
+Because of the fact that `make` decides which files to rebuild based on the modification time, it's very important that
+the SBC has an accurate time source. This is made difficult due to the fact that the SBC is offline almost all of
+the time. See [this link](https://stackoverflow.com/a/3824532/5007892) for more information.
 
-**TODO list instructions: install NetTime, config that, unblock in firewall, install sntp, etc**
+There are two ways to solve this issue: you can either put a coin cell battery in the SBC and sync the time once,
+or for a consistently accurate time source with no Internet required, set up a local NTP server on your host computer.
 
-`sudo sntp -S 10.0.0.1`
+#### Windows host
+Download and install [NetTime](http://www.timesynctool.com/) and make sure it's installed as a system service. Click
+"Update Now" to sync the time, then click "Settings" and check both "Allow other computers to sync to this computer"
+and "Always provide time" (ignore the warning).
 
-May also want to cover adding to config? instead of just using sntp. Would fix clock drift. Make doesn't really care tho.
+Make sure you unblock UDP port 123 in Windows Firewall as both incoming and outgoing connections.
 
-Linux instructions? Install ntpd, allow through UFW. Untested.
+#### Linux host
+Currently untested, you will want to install an NTP daemon like ntpd and then do some configuration to host a local 
+NTP server. Google is your friend.
 
-Mac instructions? Unclear if possible. Probably sync with Windows or Linux host first.
+#### Mac host
+There's no way to do this on a Mac as far as I'm aware. Please sync with a Linux or Windows host beforehand.
+
+### Synchronisation
+Once you have an NTP server running on your host machine, run `sudo sntp -S 10.0.0.1` over SSH on the SBC to sync
+the time. It may also be possible to use ntpd to do this automatically but it hasn't been researched yet.
 
 ### CLion setup
 If you don't have CLion, you'll need to download and install it. It's free for students if you have an *.edu email.

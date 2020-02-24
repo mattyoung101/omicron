@@ -64,23 +64,41 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
 */
 static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double theta, int32_t imageWidth, int32_t earlyStop, struct vec2 minCorner, struct vec2 maxCorner){
     int32_t dist = 0;
+#if LOCALISER_DEBUG
+    int32_t r = rand() % 256; // NOLINT
+    int32_t g = rand() % 256; // NOLINT
+    int32_t b = rand() % 256; // NOLINT
+#endif
 
     while (true){
         int32_t rx = ROUND2INT(x0 + (dist * sin(theta)));
         int32_t ry = ROUND2INT(y0 + (dist * cos(theta)));
 
-        // return if going to be out of bounds
+        // return if going to be out of bounds, and mark as ignored if so
         if (rx < minCorner.x || ry < minCorner.y || rx > maxCorner.x || ry > maxCorner.y){
-            // TODO we might actually want to return -1 and set this ray to be ignored then?
-            // in case we have a bad track or something in the way or similar to that instead of throwing all
-            // the other readings with a huge value
-            return dist;
+            // the ray didn't land inside bounds so mark it as ignored
+            return -1;
+        }
+
+        // check if we exited mirror bounds, and mark as ignored if so
+        if (earlyStop != -1 && dist > earlyStop){
+            return -1;
         }
 
         // also return if we touch a line, or exited the early stop bounds
-        // TODO sometimes segfault here?
         int32_t i = rx + imageWidth * ry;
-        if (image[i] != 0 || (earlyStop != -1 && dist > earlyStop)){
+        if (image[i] != 0){
+#if LOCALISER_DEBUG
+            // we hit, go redraw the whole line for debug
+            // this is required so we don't redraw ignored lines
+            if (bmp != NULL){
+                for (int j = 0; j < dist; j++){
+                    int32_t frx = ROUND2INT(x0 + (j * sin(theta)));
+                    int32_t fry = ROUND2INT(y0 + (j * cos(theta)));
+                    BMP_SetPixelRGB(bmp, frx, fry, r, g, b);
+                }
+            }
+#endif
                 return dist;
         } else {
             dist++;
@@ -96,6 +114,11 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
  * @return a score of how close the estimated position is to the real position
  */
 static inline double objective_func_impl(double x, double y){
+    // HACK HACK HACK: check if out of bounds and return a huge number if so
+    if ((x < 28 || x > 215) || (y < 29 || y > 155)) {
+        return 8600;
+    }
+
     // 1. raycast out from the guessed x and y on the field file
     double interval = PI2 / LOCALISER_NUM_RAYS;
     double x0 = x;
@@ -115,8 +138,9 @@ static inline double objective_func_impl(double x, double y){
     // 2. compare ray lengths
     double totalError = 0.0;
     for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
-        // TODO if we do the -1 ray thing here, for any rays which didn't detect anything (are -1), skip comparing them
-        // do this only for observedRays[i] because expectedRays should always hit
+        // the ray didn't land, so ignore it
+        if (observedRays[i] == -1 || expectedRays[i] == -1) continue;
+
         double diff = fabs(expectedRays[i] - observedRays[i]);
         totalError += diff;
     }
@@ -133,7 +157,7 @@ static inline double objective_func_impl(double x, double y){
 static void render_test_image(){
     // render raycast
     bmp = BMP_Create(field.length, field.width, 24);
-    objective_func_impl(120.0, 120.0);
+    objective_func_impl(200.0, 45.0);
 
     // render the field as well
     for (int y = 0; y < field.width; y++){
@@ -232,6 +256,7 @@ static void *work_thread(void *arg){
         // image normalisation
         // 2. dewarp ray lengths based on calculated mirror model to get centimetre field coordinates, then rotate based on robot's real orientation
         for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+            if (observedRays[i] == -1) continue;
             observedRays[i] = utils_camera_dewarp(observedRaysRaw[i]);
         }
         // TODO somehow we also need to rotate this array based on orientation of robot
@@ -239,7 +264,7 @@ static void *work_thread(void *arg){
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
         evaluations = 0;
-        double resultCoord[2] = {0.0, 0.0};
+        double resultCoord[2] = {field.width / 2.0, field.width / 2.0};
         double resultError = 0.0;
         nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
         if (result < 0){
