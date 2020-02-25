@@ -37,6 +37,7 @@ class FieldView : View() {
     private val robotImage = Image("robot.png")
     private val robotUnknown = Image("robot_unknown.png")
     private val robotSelected = Image("robot_selected.png")
+    private lateinit var localiserStatusLabel: Label
     private val robots = listOf(
         Robot(0),
         Robot(1)
@@ -52,6 +53,7 @@ class FieldView : View() {
     private var isRaycastDebug = false
     private var isOptimiserDebug = false
     private var isIgnorePosition = false
+    private var isReduceTransparency = false
 
     init {
         reloadStylesheetsOnFocus()
@@ -80,6 +82,8 @@ class FieldView : View() {
                 robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f), %.2f", robot.x, robot.y, robots[i].orientation)
             }
 
+            localiserStatusLabel.text = message.localiserStatus
+
             display.fill = Color.BLACK
             display.fillRect(0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
             display.drawImage(fieldImage, 0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
@@ -89,7 +93,10 @@ class FieldView : View() {
                 val half = ROBOT_CANVAS_DIAMETER / 2.0
                 val pos = robot.position.toCanvasPosition()
                 val sprite = if (selectedRobot == robot) robotSelected else if (robot.isPositionKnown) robotImage else robotUnknown
+
+                display.globalAlpha = if (isReduceTransparency) 0.3 else 1.0
                 display.drawImage(sprite, pos.x - half, pos.y - half, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
+                display.globalAlpha = 1.0
 
                 display.fill = Color.WHITE
                 display.fillText(robot.id.toString(), pos.x - (half / 2.0), pos.y + (half / 2.0))
@@ -246,6 +253,11 @@ class FieldView : View() {
                         isIgnorePosition = value
                     }
                 }
+                checkmenuitem("Reduce sprite transparency"){
+                    selectedProperty().addListener { _, _, value ->
+                        isReduceTransparency = value
+                    }
+                }
             }
             menu("Help") {
                 item("About").setOnAction {
@@ -316,6 +328,12 @@ class FieldView : View() {
                     }
                     fieldset {
                         field {
+                            label("Optimiser status:"){ addClass(Styles.boldLabel) }
+                            localiserStatusLabel = label("Unknown")
+                        }
+                    }
+                    fieldset {
+                        field {
                             label("Robot 0:"){ addClass(Styles.boldLabel) }
                         }
                         field {
@@ -340,10 +358,6 @@ class FieldView : View() {
                     fieldset {
                         field {
                             label("Ball:"){ addClass(Styles.boldLabel) }
-                        }
-                        field {
-                            // ball position will always be according to connected robot
-                            label("Position:")
                             label("Unknown")
                         }
                     }
@@ -429,9 +443,7 @@ class FieldView : View() {
                                     }
                                 }
                             }
-                        }
 
-                        field {
                             button("Reset ALL"){
                                 setOnAction {
                                     val cmd = RemoteDebug.DebugCommand.newBuilder().apply {

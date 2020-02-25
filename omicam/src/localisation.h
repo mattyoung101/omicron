@@ -36,6 +36,7 @@ extern double expectedRays[LOCALISER_NUM_RAYS];
 extern lp_list_t localiserVisitedPoints;
 /** score for each ray in the last localiser pass */
 extern double rayScores[LOCALISER_NUM_RAYS];
+extern char localiserStatus[32];
 
 #ifdef __cplusplus
 extern "C" {

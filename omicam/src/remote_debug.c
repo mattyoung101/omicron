@@ -194,6 +194,19 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
         // we're in the field view so don't send anything to save bandwidth
         msg.defaultImage.size = 0;
         msg.ballThreshImage.size = 0;
+
+        // FIXME this shit is NOT THREAD SAFE!!!! and will occasionally fall victim to a race condition so fix that fucking shit
+        for (size_t i = 0; i < da_count(localiserVisitedPoints); i++){
+            localiser_point_t point = da_get(localiserVisitedPoints, i);
+            msg.localiserVisitedPoints[i].x = (float) point.x;
+            msg.localiserVisitedPoints[i].y = (float) point.y;
+        }
+        msg.localiserVisitedPoints_count = da_count(localiserVisitedPoints);
+
+        memcpy(msg.dewarpedRays, observedRays, LOCALISER_NUM_RAYS * sizeof(double));
+        memcpy(msg.rayScores, rayScores, LOCALISER_NUM_RAYS * sizeof(double));
+        msg.dewarpedRays_count = LOCALISER_NUM_RAYS;
+        msg.rayScores_count = LOCALISER_NUM_RAYS;
     }
     msg.temperature = (float) cpuTemperature;
     msg.ballCentroid = entry->ballCentroid;
@@ -207,26 +220,14 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     RDRect cropRect = {0, 0, videoWidth, videoHeight};
 #endif
     memcpy(msg.rays, observedRaysRaw, LOCALISER_NUM_RAYS * sizeof(double));
-    memcpy(msg.dewarpedRays, observedRays, LOCALISER_NUM_RAYS * sizeof(double));
-    memcpy(msg.rayScores, rayScores, LOCALISER_NUM_RAYS * sizeof(double));
     msg.rays_count = LOCALISER_NUM_RAYS;
-    msg.dewarpedRays_count = LOCALISER_NUM_RAYS;
-    msg.rayScores_count = LOCALISER_NUM_RAYS;
-
     msg.cropRect = cropRect;
     msg.mirrorRadius = visionMirrorRadius;
     msg.robotPositions[0].x = (float) localisedPosition.x;
     msg.robotPositions[0].y = (float) localisedPosition.y;
     msg.robotPositions_count = 1;
     msg.rayInterval = (float) (PI2 / LOCALISER_NUM_RAYS);
-
-    // FIXME this shit is NOT THREAD SAFE!!!! and will occasionally fall victim to a race condition so fix that fucking shit
-    for (size_t i = 0; i < da_count(localiserVisitedPoints); i++){
-        localiser_point_t point = da_get(localiserVisitedPoints, i);
-        msg.localiserVisitedPoints[i].x = (float) point.x;
-        msg.localiserVisitedPoints[i].y = (float) point.y;
-    }
-    msg.localiserVisitedPoints_count = da_count(localiserVisitedPoints);
+    memcpy(msg.localiserStatus, localiserStatus, 32);
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.frame = msg;

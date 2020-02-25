@@ -35,6 +35,7 @@ double observedRays[LOCALISER_NUM_RAYS] = {0};
 double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
 double expectedRays[LOCALISER_NUM_RAYS] = {0};
 double rayScores[LOCALISER_NUM_RAYS] = {0};
+char localiserStatus[32] = {0};
 static pthread_t perfThread;
 static movavg_t *timeAvg = NULL;
 static movavg_t *evalAvg = NULL;
@@ -280,12 +281,14 @@ static void *work_thread(void *arg){
 #endif
         localisedPosition.x = resultCoord[0];
         localisedPosition.y = resultCoord[1];
+        const char *resultStr = nlopt_result_to_string(result);
+        memset(localiserStatus, 0, 32);
+        memcpy(localiserStatus, resultStr, MIN(strlen(resultStr), 32));
 
 #if LOCALISER_DEBUG
         log_info("Localisation debug enabled, displaying objective function and quitting...");
         render_test_image();
 #endif
-
         double elapsed = utils_time_millis() - begin;
         movavg_push(timeAvg, elapsed);
         movavg_push(evalAvg, evaluations);
