@@ -39,6 +39,7 @@ static pthread_t fpsCounterThread = {0};
 static _Atomic int32_t lastFpsMeasurement = 0;
 static Rect cropRect;
 static movavg_t *fpsAvg;
+static int32_t errorCount = 0;
 
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
@@ -99,7 +100,7 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
     largestCentroid.y += cropRect.y;
 #endif
 
-    object_result_t result = {0}; // NOLINT
+    object_result_t result = {}; // NOLINT
     result.exists = blobExists;
     result.centroid = {largestCentroid.x, largestCentroid.y};
     result.boundingBox = objRect;
@@ -185,8 +186,14 @@ static auto cv_thread(void *arg) -> void *{
             cap.set(CAP_PROP_POS_AVI_RATIO, 0);
 #else
             log_warn("Received empty frame from capture!");
+            if (errorCount++ > 16){
+                log_error("Too many empty frames, going to quit!");
+                return nullptr;
+            }
 #endif
             continue;
+        } else {
+            errorCount = 0;
         }
 
         // pre-processing steps:
@@ -295,7 +302,7 @@ static auto cv_thread(void *arg) -> void *{
             // frame is a 3 channel RGB image (hence the times 3)
             auto *frameData = (uint8_t*) malloc(frame.rows * frame.cols * 3);
             memcpy(frameData, debugFrame.data, frame.rows * frame.cols * 3);
-
+            
             // wait for localisation to finish before dispatching info
             // if performance issue occur, make this mutexes and shit instead of a busy loop - just couldn't be bothered now
             // FIXME make this not a busy loop and use proper threading stuff
