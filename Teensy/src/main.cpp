@@ -90,13 +90,13 @@ static void decodeProtobuf(void){
 
 void setup() {
     // Put other setup stuff here
-    Serial.begin(115200);
+    Serial.begin(9600);
     ESPSERIAL.begin(115200);
 
     #if LS_ON
         // Init light sensors
         ls.setup();
-        //ls.calibrate if request here
+        // ls.calibrate if request here
         ls.setThresholds();
     #endif
 
@@ -107,11 +107,14 @@ void setup() {
 
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
+
+    Serial.println("INIT DONE");
 }
 
 void loop() {
+    Serial.println("  LOOP");
     // Poll UART and decode incoming protobuf message
-    decodeProtobuf();
+    // decodeProtobuf();
     
 
     #if LS_ON

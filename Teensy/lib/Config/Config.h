@@ -5,7 +5,7 @@
 
 // --- Code Activation Defines --- //
 #define LS_ON true
-#define LRFS_ON true
+#define LRFS_ON false
 #define LED_ON true
 
 // --- Light Sensors --- //

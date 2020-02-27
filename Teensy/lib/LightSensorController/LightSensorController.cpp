@@ -11,7 +11,6 @@ LightSensorController::LightSensorController() {
 
 void LightSensorController::setup(){
 	// Sets up light sensors and calibrates
-	Serial.print("yeeting");
 	pinMode(MUX_A0, OUTPUT);
 	pinMode(MUX_A1, OUTPUT);
 	pinMode(MUX_A2, OUTPUT);

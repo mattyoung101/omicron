@@ -7,14 +7,14 @@
 
 // --- Light Sensors --- //
 
-#define MUX_EN 43 // TODO: FIX
-#define MUX_A0 46
-#define MUX_A1 34
-#define MUX_A2 33
-#define MUX_A3 47
-#define MUX_A4 48
-#define MUX_WR 44
-#define MUX_OUT 49
+// #define MUX_EN 43 // TODO: FIX
+#define MUX_A0 6
+#define MUX_A1 5
+#define MUX_A2 4
+#define MUX_A3 3
+#define MUX_A4 2
+// #define MUX_WR 44
+#define MUX_OUT 22
 
 // --- Serial --- //
 
