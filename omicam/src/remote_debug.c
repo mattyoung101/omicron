@@ -161,6 +161,12 @@ static void read_remote_messages(void){
                 RD_SEND_OK_RESPONSE;
                 break;
             }
+            case CMD_RELOAD_CONFIG: {
+                log_debug("Received CMD_RELOAD_CONFIG, reloading config from disk");
+                utils_reload_config();
+                RD_SEND_OK_RESPONSE;
+                break;
+            }
             default: {
                 log_warn("Unhandled debug message id: %d", message.messageId);
                 break;

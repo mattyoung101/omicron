@@ -16,13 +16,12 @@
 #define OMICAM_VERSION "3.5b"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
-#define DEWARP_MODEL (1.5269 * exp(0.0175 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease image size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 #define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
-#define VISION_DRAW_MIRROR_MASK 0 // whether or not to hide everything outside the mirror (circular mask)
+#define VISION_DRAW_MIRROR_MASK 1 // whether or not to hide everything outside the mirror (circular mask)
 #define VISION_APPLY_CLAHE 0 // enables CLAHE adaptive histogram normalisation to correct dogshit venue lighting, bad for performance
 
 #define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames
@@ -46,6 +45,7 @@ typedef enum {
     CMD_MOVE_RESUME, // allows the robot to move again
     CMD_MOVE_ORIENT, // orient to a specific direction
     CMD_SET_SEND_FRAMES, // set whether or not to send frames (useful for saving data in the field view)
+    CMD_RELOAD_CONFIG, // reloads Omicam INI config from disk
 } debug_commands_t;
 typedef enum {
     OBJ_NONE = 0,
@@ -57,7 +57,7 @@ typedef enum {
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET (BUILD_TARGET_SBC) // which platform Omicam will be running on
+#define BUILD_TARGET (BUILD_TARGET_PC) // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 1 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.01 // stop optimisation if the last step size was smaller than this in centimetres

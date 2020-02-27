@@ -119,8 +119,12 @@ static auto cv_thread(void *arg) -> void *{
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-    Mat ogFrame = imread("../test_data/field5_nats.png");
     log_trace("Build target is PC, using test data");
+    Mat ogFrame = imread("../test_data/field5.png");
+    if (ogFrame.cols <= 1280 || ogFrame.rows <= 0){
+        log_error("Unable to load test image! Please check the path is correct. Cannot continue.");
+        return nullptr;
+    }
     VideoCapture cap("../test_data/test_footage_2.m4v");
     if (!cap.isOpened()) {
         log_error("Failed to load OpenCV test video, cannot continue");
@@ -212,13 +216,13 @@ static auto cv_thread(void *arg) -> void *{
         merge(labPlanes, 3, labFinal);
         cvtColor(labFinal, frame, COLOR_Lab2RGB);
 #endif
-        // apply mirror mask if we're cropping
+        // apply mirror mask if that's enabled
 #if VISION_DRAW_MIRROR_MASK
         Mat tmp;
         bitwise_and(frame, frame, tmp, mirrorMask);
         frame = tmp;
 #endif
-        // mask out the robot
+        // apply robot mask
 #if VISION_DRAW_ROBOT_MASK
         circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius, Scalar(0, 0, 0), FILLED);
 #endif

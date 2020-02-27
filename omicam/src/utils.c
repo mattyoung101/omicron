@@ -14,11 +14,14 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <nlopt.h>
+#include <iniparser/iniparser.h>
 
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
 int32_t visionCropRect[4];
-// OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE, OBJ_LINES,
+double mirrorModelVariable;
+te_expr *mirrorModelExpr;
+// OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE, OBJ_LINES
 int32_t *thresholds[] = {minBallData, maxBallData, minYellowData, maxYellowData, minBlueData, maxBlueData, minLineData, maxLineData};
 char *fieldObjToString[] = {"OBJ_NONE", "OBJ_BALL", "OBJ_GOAL_YELLOW", "OBJ_GOAL_BLUE", "OBJ_LINES"};
 bool sleeping;
@@ -37,8 +40,10 @@ static void remove_spaces(char* s) {
     } while ((*s++ = *d++));
 }
 
-double utils_camera_dewarp(double x){
-    return DEWARP_MODEL;
+double utils_camera_dewarp(double x) {
+    // FIXME this is not thread safe, we'd need to use a mutex
+    mirrorModelVariable = x;
+    return te_eval(mirrorModelExpr);
 }
 
 void utils_parse_thresh(char *threshStr, int32_t *array){
@@ -207,6 +212,66 @@ void utils_sleep_exit(void){
     pthread_cond_broadcast(&sleepCond);
     pthread_mutex_unlock(&sleepMutex);
     log_debug("Exited sleep mode successfully");
+}
+
+void utils_reload_config(void){
+    log_debug("Reloading Omicam INI config from disk...");
+#if BUILD_TARGET == BUILD_TARGET_SBC
+    dictionary *config = iniparser_load("../omicam.ini");
+#else
+    dictionary *config = iniparser_load("../omicam_local.ini");
+#endif
+    if (config == NULL){
+        log_error("Failed to open config file (error: %s)", strerror(errno));
+        return;
+    }
+
+    char *minBallStr = (char*) iniparser_getstring(config, "Thresholds:minBall", "0,0,0");
+    char *maxBallStr = (char*) iniparser_getstring(config, "Thresholds:maxBall", "0,0,0");
+    utils_parse_thresh(minBallStr, minBallData);
+    utils_parse_thresh(maxBallStr, maxBallData);
+    log_trace("Min ball threshold: (%d,%d,%d), Max ball threshold: (%d,%d,%d)", minBallData[0], minBallData[1], minBallData[2],
+              maxBallData[0], maxBallData[1], maxBallData[2]);
+
+    char *minLineStr = (char*) iniparser_getstring(config, "Thresholds:minLine", "0,0,0");
+    char *maxLineStr = (char*) iniparser_getstring(config, "Thresholds:maxLine", "0,0,0");
+    utils_parse_thresh(minLineStr, minLineData);
+    utils_parse_thresh(maxLineStr, maxLineData);
+
+    char *minBlueStr = (char*) iniparser_getstring(config, "Thresholds:minBlue", "0,0,0");
+    char *maxBlueStr = (char*) iniparser_getstring(config, "Thresholds:maxBlue", "0,0,0");
+    utils_parse_thresh(minBlueStr, minBlueData);
+    utils_parse_thresh(maxBlueStr, maxBlueData);
+
+    char *minYellowStr = (char*) iniparser_getstring(config, "Thresholds:minYellow", "0,0,0");
+    char *maxYellowStr = (char*) iniparser_getstring(config, "Thresholds:maxYellow", "0,0,0");
+    utils_parse_thresh(minYellowStr, minYellowData);
+    utils_parse_thresh(maxYellowStr, maxYellowData);
+
+    int32_t width = iniparser_getint(config, "VideoSettings:width", 1280);
+    int32_t height = iniparser_getint(config, "VideoSettings:height", 720);
+    videoWidth = width;
+    videoHeight = height;
+
+    const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
+    log_trace("Mirror model is: %s", mirrorModelStr);
+    te_variable vars[] = {{"x", &mirrorModelVariable}};
+    int err;
+    mirrorModelExpr = te_compile(mirrorModelStr, vars, 1, &err);
+    if (mirrorModelExpr != NULL){
+        log_trace("Mirror model parsed successfully!");
+    } else {
+        log_warn("Mirror model is invalid, parse error at %d.", err);
+    }
+
+    visionRobotMaskRadius = iniparser_getint(config, "Vision:robotMaskRadius", 64);
+    visionMirrorRadius = iniparser_getint(config, "Vision:mirrorRadius", 256);
+    char *rectStr = (char*) iniparser_getstring(config, "Vision:cropRect", "0,0,1280,720");
+    log_trace("Vision crop rect: %s", rectStr);
+    utils_parse_rect(rectStr, visionCropRect);
+
+    // we don't edit this a lot, and reloading it would require editing the localiser which I can't be stuffed to do
+    // char *fieldFile = (char*) iniparser_getstring(config, "Localiser:fieldFile", "../fields/Ints_StandardField.ff");
 }
 
 // source: https://stackoverflow.com/a/3756954/5007892 and https://stackoverflow.com/a/17371925/5007892

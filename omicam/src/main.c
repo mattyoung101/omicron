@@ -20,6 +20,7 @@
 #include "computer_vision.hpp"
 #include "localisation.h"
 #include "comms_uart.h"
+#include "tinyexpr.h"
 
 static FILE *logFile = NULL;
 static pthread_mutex_t logLock;
@@ -31,6 +32,7 @@ static void disposeResources(){
     remote_debug_dispose();
     localiser_dispose();
     comms_uart_dispose();
+    te_free(mirrorModelExpr);
     log_trace("Closing log file, goodbye!");
     fflush(logFile);
     fclose(logFile);
@@ -83,7 +85,12 @@ int main() {
     log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);
 
     log_debug("Loading and parsing config...");
+#if BUILD_TARGET == BUILD_TARGET_SBC
     dictionary *config = iniparser_load("../omicam.ini");
+#else
+    dictionary *config = iniparser_load("../omicam_local.ini");
+    log_warn("ATTENTION: Loading local Omicam configuration file (not for SBC)!");
+#endif
     if (config == NULL){
         log_error("Failed to open config file (error: %s)", strerror(errno));
         return EXIT_FAILURE;
@@ -115,6 +122,18 @@ int main() {
     int32_t height = iniparser_getint(config, "VideoSettings:height", 720);
     videoWidth = width;
     videoHeight = height;
+
+    const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
+    log_trace("Mirror model is: %s", mirrorModelStr);
+    te_variable vars[] = {{"x", &mirrorModelVariable}};
+    int err;
+    mirrorModelExpr = te_compile(mirrorModelStr, vars, 1, &err);
+    if (mirrorModelExpr != NULL){
+        log_trace("Mirror model parsed successfully!");
+    } else {
+        log_error("Mirror model is invalid, parse error at %d. Cannot continue.", err);
+        return 0;
+    }
 
     visionRobotMaskRadius = iniparser_getint(config, "Vision:robotMaskRadius", 64);
     visionMirrorRadius = iniparser_getint(config, "Vision:mirrorRadius", 256);

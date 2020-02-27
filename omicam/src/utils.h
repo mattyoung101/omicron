@@ -5,6 +5,7 @@
 #include "protobuf/UART.pb.h"
 #include <pthread.h>
 #include <nlopt.h>
+#include <tinyexpr.h>
 #include "mathc.h"
 
 // Globals
@@ -14,6 +15,9 @@ extern char *fieldObjToString[];
 /** this is the UNCROPPED video width and height (i.e. what we receive raw from the camera) */
 extern int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
 extern int32_t visionCropRect[4];
+/** used by te_compile() when compiling the mirror model expression **/
+extern double mirrorModelVariable;
+extern te_expr *mirrorModelExpr;
 /** true if Omicam is currently in sleep mode (low power mode) **/
 extern bool sleeping;
 extern pthread_cond_t sleepCond;
@@ -48,6 +52,8 @@ double utils_camera_dewarp(double x);
 void utils_sleep_enter(void);
 /** Exits sleep mode (low power mode). Does nothing if already awake. */
 void utils_sleep_exit(void);
+/** Reloads Omicam ini config file from disk **/
+void utils_reload_config(void);
 double utils_lerp(double fromValue, double toValue, double progress);
 const char *nlopt_result_to_string(nlopt_result result);
 
