@@ -21,6 +21,7 @@ int LightSensor::read(){
 	// Reads the light sensor, stores its value and returns it
 	changeMUXChannel(sensor);
 	// Serial.println(sensor);
+    delayMicroseconds(1);
 	readVal = analogRead(MUX_OUT);
 	// if(sensor == 2) {
 	// Serial.println(readVal);
