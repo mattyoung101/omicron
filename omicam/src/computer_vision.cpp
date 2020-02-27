@@ -153,7 +153,7 @@ static auto cv_thread(void *arg) -> void *{
     log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
     // generate the mirror mask if we're cropping (if we're not, there's no point)
-#if VISION_CROP_ENABLED
+#if VISION_DRAW_MIRROR_MASK
     Mat mirrorMask(cropRect.height, cropRect.width, CV_8UC1, Scalar(0));
     circle(mirrorMask, Point(mirrorMask.cols / 2, mirrorMask.rows / 2), visionMirrorRadius, Scalar(255, 255, 255), FILLED);
 #endif
@@ -213,7 +213,7 @@ static auto cv_thread(void *arg) -> void *{
         cvtColor(labFinal, frame, COLOR_Lab2RGB);
 #endif
         // apply mirror mask if we're cropping
-#if VISION_CROP_ENABLED
+#if VISION_DRAW_MIRROR_MASK
         Mat tmp;
         bitwise_and(frame, frame, tmp, mirrorMask);
         frame = tmp;

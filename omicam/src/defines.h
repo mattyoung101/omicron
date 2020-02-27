@@ -16,12 +16,13 @@
 #define OMICAM_VERSION "3.5b"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
-#define DEWARP_MODEL (1.5169 * exp(0.0177 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
+#define DEWARP_MODEL (1.5269 * exp(0.0175 * x)) // mathematical function to turn pixel distances into centimetre distances on the camera
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease image size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
 #define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
+#define VISION_DRAW_MIRROR_MASK 0 // whether or not to hide everything outside the mirror (circular mask)
 #define VISION_APPLY_CLAHE 0 // enables CLAHE adaptive histogram normalisation to correct dogshit venue lighting, bad for performance
 
 #define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames
