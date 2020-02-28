@@ -20,8 +20,6 @@
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease image size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
 #define VISION_DIAGNOSTICS 1 // enable or disable performance (i.e. FPS) diagnostics
-#define VISION_DRAW_ROBOT_MASK 1 // whether or not to draw the robot mask
-#define VISION_DRAW_MIRROR_MASK 1 // whether or not to hide everything outside the mirror (circular mask)
 #define VISION_APPLY_CLAHE 0 // enables CLAHE adaptive histogram normalisation to correct dogshit venue lighting, bad for performance
 
 #define REMOTE_FRAME_INTERVAL 1 // send a debug frame every N real frames

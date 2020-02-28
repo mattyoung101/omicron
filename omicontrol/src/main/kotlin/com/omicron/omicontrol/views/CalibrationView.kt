@@ -24,9 +24,7 @@ import java.io.FileWriter
 import java.nio.file.Paths
 import kotlin.system.exitProcess
 
-class DewarpPoint(var pixelDistance: Double){
-    var realDistance: Double = 0.0
-}
+data class DewarpPoint(var pixelDistance: Double, var realDistance: Double = 0.0)
 
 /**
  * This is essentially a stripped down version of the ConnectView which can be used to make calibrating the
@@ -54,6 +52,8 @@ class CalibrationView : View() {
     private var ghostPoints = mutableListOf<Point2D>()
     private var model: Expression? = null
     private var snapInitialPoint = false
+    private var isAutoIncrement = true
+    private var counter = 5.0
 
     init {
         reloadStylesheetsOnFocus()
@@ -192,6 +192,12 @@ class CalibrationView : View() {
                         snapInitialPoint = newValue
                     }
                 }
+                checkmenuitem("Auto increment"){
+                    isSelected = true
+                    selectedProperty().addListener { _, _, newValue ->
+                        isAutoIncrement = newValue
+                    }
+                }
             }
             menu("Help") {
                 item("About").setOnAction {
@@ -222,7 +228,14 @@ class CalibrationView : View() {
                             selecting = false
                             end = Point2D(it.x, it.y)
                             if (!loadedModel) {
-                                measurements.add(DewarpPoint(origin!!.distance(end)))
+                                // FIXME test that this works
+                                if (isAutoIncrement){
+                                    measurements.add(DewarpPoint(origin!!.distance(end), counter))
+                                    counter += 5
+                                } else {
+                                    measurements.add(DewarpPoint(origin!!.distance(end)))
+                                }
+
                                 ghostPoints.add(end!!)
                             }
                         }
@@ -277,6 +290,7 @@ class CalibrationView : View() {
                                     end = null
                                     loadedModel = false
                                     ghostPoints.clear()
+                                    counter = 5.0
                                 }
                             }
                         }
@@ -322,17 +336,6 @@ class CalibrationView : View() {
                             modelStatusLabel = label("Model status: Not loaded")
                         }
                     }
-
-//                    fieldset {
-//                        field {
-//                            label("Snap initial point to centre")
-//                            checkbox{
-//                                selectedProperty().addListener { _, _, newValue ->
-//                                    snapInitialPoint = newValue
-//                                }
-//                            }
-//                        }
-//                    }
                 }
 
                 hgrow = Priority.ALWAYS

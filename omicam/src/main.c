@@ -122,6 +122,8 @@ int main() {
     int32_t height = iniparser_getint(config, "VideoSettings:height", 720);
     videoWidth = width;
     videoHeight = height;
+    isDrawMirrorMask = iniparser_getboolean(config, "Vision:drawMirrorMask", true);
+    isDrawRobotMask = iniparser_getboolean(config, "Vision:drawRobotMask", true);
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
     log_trace("Mirror model is: %s", mirrorModelStr);

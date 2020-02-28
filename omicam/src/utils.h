@@ -11,6 +11,7 @@
 // Globals
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 extern int32_t *thresholds[];
+extern bool isDrawRobotMask, isDrawMirrorMask;
 extern char *fieldObjToString[];
 /** this is the UNCROPPED video width and height (i.e. what we receive raw from the camera) */
 extern int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
@@ -56,6 +57,11 @@ void utils_sleep_exit(void);
 void utils_reload_config(void);
 double utils_lerp(double fromValue, double toValue, double progress);
 const char *nlopt_result_to_string(nlopt_result result);
+/**
+ * Basically calculates a polar vector from a cartesian vector for cam comms.
+ * The piece of shit known as mathc doesn't fucking include "extern C" stuff so we can't do this in computer_vision.cpp.
+ */
+double *utils_vision_calc_polar(double *screenCentre, double *position);
 
 #ifdef __cplusplus
 }

@@ -16,7 +16,7 @@ import org.greenrobot.eventbus.EventBus
  * 2.3a: added sleep mode
  * 3.3a: added field display screen
  * 3.4a: camera view supports many different colour spaces now, not just RGB
- * 3.5a: (WIP) working on some more localiser stuff I assume? not decided yet
+ * 3.5a: (WIP) fixed some bugs, added some more tools to for debugging
  */
 const val OMICONTROL_VERSION = "3.5a"
 const val DEFAULT_IP = "192.168.12.1"

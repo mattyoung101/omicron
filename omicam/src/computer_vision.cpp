@@ -120,8 +120,8 @@ static auto cv_thread(void *arg) -> void *{
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-    Mat ogFrame = imread("../test_data/field5.png");
-    if (ogFrame.cols <= 1280 || ogFrame.rows <= 0){
+    Mat ogFrame = imread("../test_data/field4.png");
+    if (ogFrame.cols <= 0 || ogFrame.rows <= 0){
         log_error("Unable to load test image! Please check the path is correct. Cannot continue.");
         return nullptr;
     }
@@ -156,11 +156,10 @@ static auto cv_thread(void *arg) -> void *{
     log_info("Frame size: %dx%d (cropping enabled: %s)", videoWidth, videoHeight, VISION_CROP_ENABLED ? "YES" : "NO");
     log_info("Scaled frame size: %dx%d (scale factor: %.2f)", junk.cols, junk.rows, VISION_SCALE_FACTOR);
 
-    // generate the mirror mask if we're cropping (if we're not, there's no point)
-#if VISION_DRAW_MIRROR_MASK
-    Mat mirrorMask(cropRect.height, cropRect.width, CV_8UC1, Scalar(0));
-    circle(mirrorMask, Point(mirrorMask.cols / 2, mirrorMask.rows / 2), visionMirrorRadius, Scalar(255, 255, 255), FILLED);
-#endif
+    // generate the mirror mask always (in case it's changed later in the ini)
+    Mat mirrorMask = Mat(cropRect.height, cropRect.width, CV_8UC1, Scalar(0));
+    circle(mirrorMask, Point(mirrorMask.cols / 2, mirrorMask.rows / 2), visionMirrorRadius, Scalar(255, 255, 255),
+           FILLED);
 
 #if VISION_APPLY_CLAHE
     auto clahe = createCLAHE();
@@ -217,15 +216,17 @@ static auto cv_thread(void *arg) -> void *{
         cvtColor(labFinal, frame, COLOR_Lab2RGB);
 #endif
         // apply mirror mask if that's enabled
-#if VISION_DRAW_MIRROR_MASK
-        Mat tmp;
-        bitwise_and(frame, frame, tmp, mirrorMask);
-        frame = tmp;
-#endif
+        if (isDrawMirrorMask) {
+            Mat tmp;
+            bitwise_and(frame, frame, tmp, mirrorMask);
+            frame = tmp;
+        }
+
         // apply robot mask
-#if VISION_DRAW_ROBOT_MASK
-        circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius, Scalar(0, 0, 0), FILLED);
-#endif
+        if (isDrawRobotMask) {
+            circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius, Scalar(0, 0, 0), FILLED);
+        }
+
         // downscale for goal detection (and possibly initial ball pass)
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 

@@ -235,9 +235,6 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
         msg.localiserVisitedPoints[i].y = (float) point.y;
     }
     msg.localiserVisitedPoints_count = size;
-    if (size == 0){
-        puts("WHY IS MY SIZE ZOERO YUO MORON");
-    }
     pthread_mutex_unlock(&localiserMutex);
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;

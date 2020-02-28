@@ -249,7 +249,7 @@ class FieldView : View() {
                         isRaycastDebug = value
                     }
                 }
-                checkmenuitem("Optimiser debug"){
+                checkmenuitem("Optimiser debug (buggy)"){
                     selectedProperty().addListener { _, _, value ->
                         isOptimiserDebug = value
                     }

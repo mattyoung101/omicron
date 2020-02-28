@@ -19,6 +19,7 @@
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
 int32_t visionCropRect[4];
+bool isDrawRobotMask = true, isDrawMirrorMask = true;
 double mirrorModelVariable;
 te_expr *mirrorModelExpr;
 // OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE, OBJ_LINES
@@ -252,6 +253,8 @@ void utils_reload_config(void){
     int32_t height = iniparser_getint(config, "VideoSettings:height", 720);
     videoWidth = width;
     videoHeight = height;
+    isDrawMirrorMask = iniparser_getboolean(config, "Vision:drawMirrorMask", true);
+    isDrawRobotMask = iniparser_getboolean(config, "Vision:drawRobotMask", true);
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
     log_trace("Mirror model is: %s", mirrorModelStr);
