@@ -6,8 +6,6 @@ OpenCV. It runs on the powerful LattePanda Delta 432 single board computer and u
 We are proud to report that Omicam is a significant step up compared to previous vision applications in use at BBC
 Robotics, as explained in the "Performance and results" section.
 
-Omicam consists of **X** lines of code, and took about **X** hours to develop.
-
 ## Background and previous methods
 Intelligent, accurate and fast computer vision continues to become increasingly important in RoboCup Jr Open Soccer.
 With the introduction of the orange ball and advanced teams' application of "ball-hiding" strategies, high resolution yet
@@ -264,6 +262,16 @@ interpolation, it's not worth switching to a linear optimiser when the non-linea
 Finally, it was brought to our attention that it may be possible to forgo the optimisation process and sum the error of the
 rays in some geometric method to transform the robot's position. While we agree that this may be possible and worth looking into, 
 we believe that optimisation leads to more stable and less error-prone results (though this is not confirmed).
+
+## Configuration
+Usually, we embed configuration in a "defines.h" file. Config includes information like the bounding box of the crop
+rectangle, the radius of the mirror and the dewarp function.
+
+Because this is embedded in a header, the project would have to be recompiled and relaunched every time a setting is updated
+which is not ideal. For Omicam, we used an INI file stored on the SBC's disk that is  parsed and loaded on every startup.
+
+In addition, the config file can also be dynamically reloaded by an Omicontrol action, making even relaunching Omicam un-necessary. Because of this, we have much more flexibility and faster
+prototyping abilities when tuning to different venues.
 
 ## Interfacing with Omicontrol
 To interface with our remote management application Omicontrol, Omicam starts a TCP server on port 42708. This server sends

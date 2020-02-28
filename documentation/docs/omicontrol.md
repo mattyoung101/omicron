@@ -19,6 +19,30 @@ _Figure 1: Omicontrol main window running on KDE neon_
 
 **TODO: maybe make the above a video demonstration fo Omicontrol**
 
+## Views
+Omicontrol functions through the concepts of "views", which provide different information about different aspects of our
+robot(s).
+
+### Camera view
+
+### Field view
+
+### Calibration view
+This view is used to calibrate the mirror dewarp model, which translates pixel distances from the centre of the mirror
+into centimetre distances on the real field. In the past, this was complex and could take upwards of half an hour.
+We decided this process could be greatly streamlined, so we added the calibration view to Omicontrol.
+
+To calibrate, the Omicron Calibration Stick is used. This is just a ruler with masking tape every 5cm on it. The ruler
+is placed down on the field, and the user enters the Calibration View and clicks on the each line of tape as visible
+in the frame. Omicontrol will automatically calculate the distances to each point in pixels and add this to a table,
+which can then be exported with a button press. The CSV is loaded in Excel to generate an exponential function which
+maps pixels to centimetres (this could be done inside Omicontrol but is difficult to calculate). Finally, the calculated
+model can then be pasted into Omicontrol, where a mathematical expression parser will evaluate it, allowing the user to
+confirm the model is accurate before hot-swapping it into Omicam.
+
+With this streamlined process, a mirror model can be calculated and verified in well under 5 minutes which is a large
+improvement.
+
 ## Wireless connection
 Being able to connect to any robot wirelessly and manage it is a great quality of life improvement, which saves looking
 for cables, troubleshooting connection problems and more. There are a variety of wireless protocols in existence such as
