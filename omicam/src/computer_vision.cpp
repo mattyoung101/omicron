@@ -286,7 +286,10 @@ static auto cv_thread(void *arg) -> void *{
         auto yellowGoal = process_object(thresholded[OBJ_GOAL_YELLOW], OBJ_GOAL_YELLOW, realWidth, realHeight);
         auto blueGoal = process_object(thresholded[OBJ_GOAL_BLUE], OBJ_GOAL_BLUE, realWidth, realHeight);
         auto lines = process_object(thresholded[OBJ_LINES], OBJ_LINES, realWidth, realHeight);
-        //printf("actual processing took %.2f ms\n", utils_time_millis() - proBegin);
+
+        // exclude debug time from fps measurement
+        double elapsed = utils_time_millis() - begin;
+        movavg_push(fpsAvg, elapsed);
 
         // dispatch frames to remote debugger
 #if REMOTE_ENABLED
@@ -352,8 +355,6 @@ static auto cv_thread(void *arg) -> void *{
 //        data.ballY = ball.centroid.y;
         utils_cv_transmit_data(data);
 
-        double elapsed = utils_time_millis() - begin;
-        movavg_push(fpsAvg, elapsed);
         pthread_testcancel();
     }
     destroyAllWindows();

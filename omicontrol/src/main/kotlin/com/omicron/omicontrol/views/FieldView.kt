@@ -54,6 +54,7 @@ class FieldView : View() {
     private var isOptimiserDebug = false
     private var isIgnorePosition = false
     private var isReduceTransparency = false
+    private var lastGoodPointList = listOf<RemoteDebug.RDPointF>()
 
     init {
         reloadStylesheetsOnFocus()
@@ -143,11 +144,16 @@ class FieldView : View() {
                 }
             }
 
+            // workaround for a stupid fucking bug where the point list size will be zero for some reason
+            if (message.localiserVisitedPointsCount != 0){
+                lastGoodPointList = message.localiserVisitedPointsList.take(message.localiserVisitedPointsCount)
+            }
+
             // render optimiser debug (the path the optimiser took to the minimum)
             if (isOptimiserDebug){
                 var lastPoint: Point2D? = null
-                for ((i, point) in message.localiserVisitedPointsList.take(message.localiserVisitedPointsCount).withIndex()) {
-                    val progress = (i / message.localiserVisitedPointsCount.toDouble()) * 255.0
+                for ((i, point) in lastGoodPointList.withIndex()) {
+                    val progress = (i / lastGoodPointList.size.toDouble()) * 255.0
 
                     val fieldPoint = Point2D(point.x.toDouble(), point.y.toDouble()).toCanvasPosition()
                     display.fill = Color.rgb(progress.roundToInt(), 0, 0)

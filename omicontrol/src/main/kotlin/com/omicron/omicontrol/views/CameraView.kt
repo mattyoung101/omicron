@@ -474,6 +474,18 @@ class CameraView : View() {
                         })
                     }
                 }
+                item("Reload config"){
+                    accelerator = KeyCodeCombination(KeyCode.R, KeyCombination.CONTROL_DOWN)
+                    setOnAction {
+                        val msg = RemoteDebug.DebugCommand.newBuilder()
+                            .setMessageId(DebugCommands.CMD_RELOAD_CONFIG.ordinal)
+                            .build()
+                        CONNECTION_MANAGER.dispatchCommand(msg, {
+                            Utils.showGenericAlert(Alert.AlertType.INFORMATION, "Omicam settings have been updated from disk.",
+                                "Reloaded config successfully.")
+                        })
+                    }
+                }
             }
             menu("Settings"){
                 checkmenuitem("Multi-slide mode"){

@@ -54,6 +54,7 @@ enum class DebugCommands {
     CMD_MOVE_RESUME, // allows the robot to move again
     CMD_MOVE_ORIENT, // orient to a specific direction
     CMD_SET_SEND_FRAMES, // set whether or not to send frames (useful for saving data in the field view)
+    CMD_RELOAD_CONFIG, // reloads Omicam INI config from disk
 }
 
 /** objects on the field **/

@@ -17,6 +17,7 @@
 #include "qdbmp.h"
 #include "movavg.h"
 #include "remote_debug.h"
+#include "errno.h"
 
 lp_list_t localiserVisitedPoints = {0};
 static nlopt_opt optimiser;
@@ -40,6 +41,7 @@ static pthread_t perfThread;
 static movavg_t *timeAvg = NULL;
 static movavg_t *evalAvg = NULL;
 static int32_t evaluations = 0;
+pthread_mutex_t localiserMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -150,7 +152,10 @@ static inline double objective_func_impl(double x, double y){
     evaluations++;
 
     localiser_point_t point = {x - field.length / 2.0, y - field.width / 2.0};
+
+    pthread_mutex_lock(&localiserMutex);
     da_add(localiserVisitedPoints, point);
+    pthread_mutex_unlock(&localiserMutex);
 
     return totalError;
 }
@@ -238,7 +243,10 @@ static void *work_thread(void *arg){
         double begin = utils_time_millis();
         localiser_entry_t *entry = (localiser_entry_t*) queueData;
         localiserDone = false;
+
+        pthread_mutex_lock(&localiserMutex);
         da_clear(localiserVisitedPoints);
+        pthread_mutex_unlock(&localiserMutex);
 
         // image analysis
         // 1. calculate begin points for rays
@@ -373,6 +381,8 @@ void localiser_init(char *fieldFile){
         pthread_setname_np(perfThread, "Localiser Perf");
     }
 
+    pthread_mutex_init(&localiserMutex, NULL);
+    pthread_mutex_unlock(&localiserMutex);
     free(data);
     pthread_testcancel();
 }

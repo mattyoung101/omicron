@@ -201,14 +201,6 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
         msg.defaultImage.size = 0;
         msg.ballThreshImage.size = 0;
 
-        // FIXME this shit is NOT THREAD SAFE!!!! and will occasionally fall victim to a race condition so fix that fucking shit
-        for (size_t i = 0; i < da_count(localiserVisitedPoints); i++){
-            localiser_point_t point = da_get(localiserVisitedPoints, i);
-            msg.localiserVisitedPoints[i].x = (float) point.x;
-            msg.localiserVisitedPoints[i].y = (float) point.y;
-        }
-        msg.localiserVisitedPoints_count = da_count(localiserVisitedPoints);
-
         memcpy(msg.dewarpedRays, observedRays, LOCALISER_NUM_RAYS * sizeof(double));
         memcpy(msg.rayScores, rayScores, LOCALISER_NUM_RAYS * sizeof(double));
         msg.dewarpedRays_count = LOCALISER_NUM_RAYS;
@@ -234,6 +226,19 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.robotPositions_count = 1;
     msg.rayInterval = (float) (PI2 / LOCALISER_NUM_RAYS);
     memcpy(msg.localiserStatus, localiserStatus, 32);
+
+    pthread_mutex_lock(&localiserMutex);
+    uint32_t size = MIN(da_count(localiserVisitedPoints), 128);
+    for (size_t i = 0; i < size; i++) {
+        localiser_point_t point = da_get(localiserVisitedPoints, i);
+        msg.localiserVisitedPoints[i].x = (float) point.x;
+        msg.localiserVisitedPoints[i].y = (float) point.y;
+    }
+    msg.localiserVisitedPoints_count = size;
+    if (size == 0){
+        puts("WHY IS MY SIZE ZOERO YUO MORON");
+    }
+    pthread_mutex_unlock(&localiserMutex);
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;
     wrapper.frame = msg;

@@ -37,6 +37,7 @@ extern lp_list_t localiserVisitedPoints;
 /** score for each ray in the last localiser pass */
 extern double rayScores[LOCALISER_NUM_RAYS];
 extern char localiserStatus[32];
+extern pthread_mutex_t localiserMutex;
 
 #ifdef __cplusplus
 extern "C" {
