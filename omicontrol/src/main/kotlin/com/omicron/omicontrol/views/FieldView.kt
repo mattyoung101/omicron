@@ -37,7 +37,7 @@ class FieldView : View() {
     private val robotImage = Image("robot.png")
     private val robotUnknown = Image("robot_unknown.png")
     private val robotSelected = Image("robot_selected.png")
-    private lateinit var localiserStatusLabel: Label
+    private lateinit var localiserPerfLabel: Label
     private val robots = listOf(
         Robot(0),
         Robot(1)
@@ -83,7 +83,10 @@ class FieldView : View() {
                 robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f), %.2f", robot.x, robot.y, robots[i].orientation)
             }
 
-            localiserStatusLabel.text = message.localiserStatus
+            // update labels
+            localiserPerfLabel.text = "${message.localiserRate} Hz (${1000 / message.localiserRate} ms), " +
+                    "${message.localiserEvals} evals"
+            localiserPerfLabel.textFill = if (message.localiserStatus != "FTOL_REACHED") Color.ORANGE else Color.WHITE
 
             display.fill = Color.BLACK
             display.fillRect(0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
@@ -334,8 +337,8 @@ class FieldView : View() {
                     }
                     fieldset {
                         field {
-                            label("Optimiser status:"){ addClass(Styles.boldLabel) }
-                            localiserStatusLabel = label("Unknown")
+                            label("Optimiser perf:"){ addClass(Styles.boldLabel) }
+                            localiserPerfLabel = label("Unknown")
                         }
                     }
                     fieldset {

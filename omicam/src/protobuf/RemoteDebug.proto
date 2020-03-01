@@ -78,6 +78,8 @@ message DebugFrame {
     repeated RDPointF localiserVisitedPoints = 20;
     // score for each ray
     repeated double rayScores = 21;
+    // localiser rate in Hz
+    int32 localiserRate = 22;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

@@ -390,6 +390,10 @@ struct mat4 {
 #endif
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if defined(MATHC_USE_INT)
 mint_t clampi(mint_t value, mint_t min, mint_t max);
 #endif
@@ -1297,6 +1301,10 @@ mfloat_t back_ease_in_out(mfloat_t f);
 mfloat_t bounce_ease_out(mfloat_t f);
 mfloat_t bounce_ease_in(mfloat_t f);
 mfloat_t bounce_ease_in_out(mfloat_t f);
+#endif
+
+#ifdef __cplusplus
+};
 #endif
 
 #endif

@@ -28,7 +28,7 @@ extern _Atomic bool localiserDone;
 // these need to be declared extern so they can be acessed by the remote debugger
 /** rays that we observed from raycasting on the camera image, no dewarping */
 extern double observedRaysRaw[LOCALISER_NUM_RAYS];
-/** rays that we observed from raycasting on the camera, with dewarping **/
+/** rays that we observed from raycasting on the camera, with dewarping */
 extern double observedRays[LOCALISER_NUM_RAYS];
 /** rays that we got from raycasting on the field file */
 extern double expectedRays[LOCALISER_NUM_RAYS];
@@ -36,7 +36,11 @@ extern double expectedRays[LOCALISER_NUM_RAYS];
 extern lp_list_t localiserVisitedPoints;
 /** score for each ray in the last localiser pass */
 extern double rayScores[LOCALISER_NUM_RAYS];
+/** NLopt status for remote debug */
 extern char localiserStatus[32];
+/** localiser rate in Hz and nubmer of evals */
+extern int32_t localiserRate, localiserEvals;
+/** was used to try and fix a bug, not very helpful anymore */
 extern pthread_mutex_t localiserMutex;
 
 #ifdef __cplusplus

@@ -3377,6 +3377,15 @@ public final class RemoteDebug {
      * <code>repeated double rayScores = 21;</code>
      */
     double getRayScores(int index);
+
+    /**
+     * <pre>
+     * localiser rate in Hz
+     * </pre>
+     *
+     * <code>optional int32 localiserRate = 22;</code>
+     */
+    int getLocaliserRate();
   }
   /**
    * <pre>
@@ -3413,6 +3422,7 @@ public final class RemoteDebug {
       localiserStatus_ = "";
       localiserVisitedPoints_ = java.util.Collections.emptyList();
       rayScores_ = java.util.Collections.emptyList();
+      localiserRate_ = 0;
     }
 
     @java.lang.Override
@@ -3648,6 +3658,11 @@ public final class RemoteDebug {
                 rayScores_.add(input.readDouble());
               }
               input.popLimit(limit);
+              break;
+            }
+            case 176: {
+
+              localiserRate_ = input.readInt32();
               break;
             }
           }
@@ -4251,6 +4266,19 @@ public final class RemoteDebug {
     }
     private int rayScoresMemoizedSerializedSize = -1;
 
+    public static final int LOCALISERRATE_FIELD_NUMBER = 22;
+    private int localiserRate_;
+    /**
+     * <pre>
+     * localiser rate in Hz
+     * </pre>
+     *
+     * <code>optional int32 localiserRate = 22;</code>
+     */
+    public int getLocaliserRate() {
+      return localiserRate_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -4342,6 +4370,9 @@ public final class RemoteDebug {
       }
       for (int i = 0; i < rayScores_.size(); i++) {
         output.writeDoubleNoTag(rayScores_.get(i));
+      }
+      if (localiserRate_ != 0) {
+        output.writeInt32(22, localiserRate_);
       }
     }
 
@@ -4461,6 +4492,10 @@ public final class RemoteDebug {
         }
         rayScoresMemoizedSerializedSize = dataSize;
       }
+      if (localiserRate_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(22, localiserRate_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -4537,6 +4572,8 @@ public final class RemoteDebug {
           .equals(other.getLocaliserVisitedPointsList());
       result = result && getRayScoresList()
           .equals(other.getRayScoresList());
+      result = result && (getLocaliserRate()
+          == other.getLocaliserRate());
       return result;
     }
 
@@ -4612,6 +4649,8 @@ public final class RemoteDebug {
         hash = (37 * hash) + RAYSCORES_FIELD_NUMBER;
         hash = (53 * hash) + getRayScoresList().hashCode();
       }
+      hash = (37 * hash) + LOCALISERRATE_FIELD_NUMBER;
+      hash = (53 * hash) + getLocaliserRate();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -4804,6 +4843,8 @@ public final class RemoteDebug {
         }
         rayScores_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00100000);
+        localiserRate_ = 0;
+
         return this;
       }
 
@@ -4897,6 +4938,7 @@ public final class RemoteDebug {
           bitField0_ = (bitField0_ & ~0x00100000);
         }
         result.rayScores_ = rayScores_;
+        result.localiserRate_ = localiserRate_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5076,6 +5118,9 @@ public final class RemoteDebug {
             rayScores_.addAll(other.rayScores_);
           }
           onChanged();
+        }
+        if (other.getLocaliserRate() != 0) {
+          setLocaliserRate(other.getLocaliserRate());
         }
         onChanged();
         return this;
@@ -7205,6 +7250,44 @@ public final class RemoteDebug {
       public Builder clearRayScores() {
         rayScores_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00100000);
+        onChanged();
+        return this;
+      }
+
+      private int localiserRate_ ;
+      /**
+       * <pre>
+       * localiser rate in Hz
+       * </pre>
+       *
+       * <code>optional int32 localiserRate = 22;</code>
+       */
+      public int getLocaliserRate() {
+        return localiserRate_;
+      }
+      /**
+       * <pre>
+       * localiser rate in Hz
+       * </pre>
+       *
+       * <code>optional int32 localiserRate = 22;</code>
+       */
+      public Builder setLocaliserRate(int value) {
+        
+        localiserRate_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * localiser rate in Hz
+       * </pre>
+       *
+       * <code>optional int32 localiserRate = 22;</code>
+       */
+      public Builder clearLocaliserRate() {
+        
+        localiserRate_ = 0;
         onChanged();
         return this;
       }
@@ -10011,7 +10094,7 @@ public final class RemoteDebug {
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
       "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\";\n\007RDRobo" +
       "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
-      "ation\030\002 \001(\002\"\213\004\n\nDebugFrame\022\024\n\014defaultIma" +
+      "ation\030\002 \001(\002\"\242\004\n\nDebugFrame\022\024\n\014defaultIma" +
       "ge\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013tem" +
       "perature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RDRec" +
       "t\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\022\013\n\003fps",
@@ -10024,15 +10107,16 @@ public final class RemoteDebug {
       "\025\n\rlocaliserTime\030\021 \001(\002\022\027\n\017localiserStatu" +
       "s\030\022 \001(\t\022\032\n\007ballPos\030\023 \001(\0132\t.RDPointF\022)\n\026l" +
       "ocaliserVisitedPoints\030\024 \003(\0132\t.RDPointF\022\021" +
-      "\n\trayScores\030\025 \003(\001\"\341\001\n\014DebugCommand\022\021\n\tme",
-      "ssageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022" +
-      "\023\n\013orientation\030\003 \001(\002\022#\n\rallThresholds\030\004 " +
-      "\003(\0132\014.RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006m" +
-      "inMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005va" +
-      "lue\030\010 \001(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled\030" +
-      "\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.Deb" +
-      "ugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCommand\022" +
-      "\024\n\014whichMessage\030\003 \001(\005b\006proto3"
+      "\n\trayScores\030\025 \003(\001\022\025\n\rlocaliserRate\030\026 \001(\005",
+      "\"\341\001\n\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006" +
+      "coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 " +
+      "\001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold" +
+      "\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rco" +
+      "lourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robo" +
+      "tId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFra" +
+      "me\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007comman" +
+      "d\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003" +
+      " \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10081,7 +10165,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", "LocaliserRate", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_DebugCommand_fieldAccessorTable = new

@@ -10,6 +10,7 @@
 #include "pb.h"
 #include "nanopb/pb_encode.h"
 #include "comms_uart.h"
+#include "computer_vision.hpp"
 #include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -123,7 +124,13 @@ static void write_thresholds(FILE *fp){
 }
 
 void utils_write_thresholds_disk(){
-    FILE *curConfig = fopen("../omicam.ini", "r");
+#if BUILD_TARGET == BUILD_TARGET_SBC
+    char *oldFile = "../omicam.ini";
+#else
+    char *oldFile = "../omicam_local.ini";
+#endif
+
+    FILE *curConfig = fopen(oldFile, "r");
     if (curConfig == NULL){
         log_error("Failed to open config file: %s", strerror(errno));
         return;
@@ -163,13 +170,13 @@ void utils_write_thresholds_disk(){
     fclose(newConfig);
 
     // delete current config file
-    if (unlink("../omicam.ini") != 0){
+    if (unlink(oldFile) != 0){
         log_error("Failed to remove old config file: %s", strerror(errno));
         return;
     }
 
     // rename new config file to old config file
-    if (rename("../omicam_new.ini", "../omicam.ini")){
+    if (rename("../omicam_new.ini", oldFile)){
         log_error("You will have to rename \"omicam_new.ini\" to \"omicam.ini\" manually, error: %s", strerror(errno));
         return;
     }

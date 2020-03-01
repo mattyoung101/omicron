@@ -225,6 +225,8 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.robotPositions[0].y = (float) localisedPosition.y;
     msg.robotPositions_count = 1;
     msg.rayInterval = (float) (PI2 / LOCALISER_NUM_RAYS);
+    msg.localiserRate = localiserRate;
+    msg.localiserEvals = localiserEvals;
     memcpy(msg.localiserStatus, localiserStatus, 32);
 
     pthread_mutex_lock(&localiserMutex);

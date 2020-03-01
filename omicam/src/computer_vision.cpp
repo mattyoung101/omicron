@@ -348,6 +348,9 @@ static auto cv_thread(void *arg) -> void *{
             }
         }
 #endif
+
+        // convert
+
         // encode protocol buffer to send to ESP over UART
         ObjectData data = ObjectData_init_zero;
         data.ballExists = ball.exists;
@@ -367,7 +370,7 @@ static auto fps_counter_thread(void *arg) -> void *{
         sleep(1);
         double avgTime = movavg_calc(fpsAvg);
         if (avgTime == 0) continue; // another stupid to fix divide by zero when debugging
-        lastFpsMeasurement = (int32_t) (1000.0 / avgTime);
+        lastFpsMeasurement = ROUND2INT(1000.0 / avgTime);
         movavg_clear(fpsAvg);
 
 #if VISION_DIAGNOSTICS

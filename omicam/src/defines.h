@@ -61,6 +61,7 @@ typedef enum {
 #define LOCALISER_STEP_TOLERANCE 0.01 // stop optimisation if the last step size was smaller than this in centimetres
 #define LOCALISER_MAX_EVAL_TIME 100 // max evaluation time for the optimiser in milliseconds
 #define LOCALISER_NUM_RAYS 128 // the number of rays to use when raycasting on the line image
+#define LOCALISER_LARGE_ERROR 8600 // error which is 200-300 point higher than the highest usual error in the loacliser
 #define LOCALISER_DEBUG 0 // if true, renders the objective function bitmap and quits
 #define LOCALISER_DIAGNOSTICS 1 // if true, print data like vision diagnostics to console
 

@@ -42,6 +42,8 @@ static movavg_t *timeAvg = NULL;
 static movavg_t *evalAvg = NULL;
 static int32_t evaluations = 0;
 pthread_mutex_t localiserMutex = PTHREAD_MUTEX_INITIALIZER;
+int32_t localiserRate = 0;
+int32_t localiserEvals = 0;
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -316,7 +318,9 @@ static void *perf_thread(void *arg){
         double avgEval = movavg_calc(evalAvg);
         if (avgTime == 0) continue;
 
-        double rate = (int32_t) (1000.0 / avgTime);
+        double rate = (1000.0 / avgTime);
+        localiserRate = ROUND2INT(rate);
+        localiserEvals = ROUND2INT(avgEval);
         movavg_clear(timeAvg);
         movavg_clear(evalAvg);
 

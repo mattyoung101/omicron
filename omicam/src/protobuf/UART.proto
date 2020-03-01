@@ -5,7 +5,6 @@ syntax = "proto3";
 // Message that we (the LattePanda) send to the ESP32 with the ball data. The reason this is separate from the LocalisationData
 // is that this should be sent more frequently than that one is (due to the time it takes to converge on a solution).
 message ObjectData {
-    // FIXME make these polar coordinates instead
     float ballAngle = 1;
     float ballMag = 2;
     bool ballExists = 3;
