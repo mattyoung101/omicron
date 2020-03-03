@@ -9,9 +9,10 @@ import shutil
 import uuid
 
 print("[Runner] Running Omicam...")
-os.chdir("cmake-build-release-clang")
+os.chdir("cmake-build-release-clang") # TODO this isn't correct currently find out what it is on the SBC!
 
 for i in range(10):
+    print(f"[Runner] Attempt #{i}")
     try:
         subprocess.run("./omicam", check=True)
         print("[Runner] Omicam terminated normally")

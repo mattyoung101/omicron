@@ -100,19 +100,28 @@ void utils_parse_rect(char *rectStr, int32_t *array){
 }
 
 void utils_cv_transmit_data(ObjectData ballData){
+    // does anybody know why I put this here and not in computer_vision.cpp ...?
     uint8_t msgBuf[128] = {0};
     pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, 128);
-    if (!pb_encode_delimited(&stream, ObjectData_fields, &ballData)){
+    if (!pb_encode(&stream, ObjectData_fields, &ballData)){
         log_error("Failed to encode vision protocol buffer message: %s", PB_GET_ERROR(&stream));
         return;
     }
 
-    size_t arraySize = 4 + stream.bytes_written + 1;
+    uint32_t arraySize = 3 + stream.bytes_written + 1;
     uint8_t outBuf[arraySize];
     uint8_t header[3] = {0xB, 0, stream.bytes_written};
+
+    memset(outBuf, 0, arraySize);
     memcpy(outBuf, header, 3);
-    memcpy(outBuf + 3, msgBuf, stream.bytes_written); // check this, is it +3 or +4?
+    memcpy(outBuf + 3, msgBuf, stream.bytes_written);
     outBuf[arraySize - 1] = 0xE;
+
+//    printf("PROTOBUF MESSAGE: ");
+//    for (uint32_t i = 0; i < arraySize; i++){
+//        printf("%.2X ", outBuf[i]);
+//    }
+//    puts("");
 
     comms_uart_send(outBuf, arraySize);
 }
@@ -294,9 +303,6 @@ void utils_reload_config(void){
 
 // source: https://stackoverflow.com/a/3756954/5007892 and https://stackoverflow.com/a/17371925/5007892
 double utils_time_millis(){
-//    struct timeval tv;
-//    gettimeofday(&tv, NULL);
-//    return (tv.tv_sec) * 1000.0 + (tv.tv_usec) / 1000.0;
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC_RAW, &time);
     return (time.tv_sec) * 1000.0 + (time.tv_nsec / 1000.0) / 1000.0; // convert tv_sec & tv_usec to millisecond

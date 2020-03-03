@@ -7,6 +7,8 @@
 #include <errno.h>
 #include "defines.h"
 
+#define UART_BUS_NAME "/dev/ttyACM0"
+
 // TODO we also need to have a receive task here as well
 static int serialfd;
 static bool uartInitOk = false;
@@ -16,13 +18,14 @@ void comms_uart_init(){
     // sources:
     // - https://chrisheydrick.com/2012/06/17/how-to-read-serial-data-from-an-arduino-in-linux-with-c-part-3/
     // - https://en.wikibooks.org/wiki/Serial_Programming/termios
-    serialfd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY); // TODO not sure if this is the right port?
+    log_debug("Opening UART bus: " UART_BUS_NAME);
+    serialfd = open(UART_BUS_NAME, O_RDWR | O_NOCTTY); // TODO not sure if this is the right port?
     if (serialfd == -1){
         log_error("Failed to open UART bus: %s", strerror(errno));
-        return;
+        goto die;
     } else if (!isatty(serialfd)){
         log_error("UART bus claims to not be a tty!");
-        return;
+        goto die;
     }
 
     // get current config
@@ -58,6 +61,11 @@ void comms_uart_init(){
     tcsetattr(serialfd, TCSANOW, &toptions);
     uartInitOk = true;
     log_info("UART comms initialised successfully!");
+    return;
+
+    die:
+        log_error("Error opening UART bus in SBC build: impossible to continue running Omicam!");
+        exit(EXIT_FAILURE);
 #else
     log_warn("UART comms disabled in BUILD_TARGET_PC.");
 #endif

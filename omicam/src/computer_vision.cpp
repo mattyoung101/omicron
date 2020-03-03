@@ -92,7 +92,7 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
         }
     }
 
-    // scale coordinates if cropping is enabled
+    // translate coordinates if cropping is enabled
 #if VISION_CROP_ENABLED
     objRect.x += cropRect.x;
     objRect.y += cropRect.y;
@@ -141,7 +141,7 @@ static auto cv_thread(void *arg) -> void *{
         log_error("Failed to open OpenCV capture device in SBC build: impossible to continue running Omicam.");
         fflush(stdout);
         fflush(stderr);
-        exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE); // TODO should we exit with EXIT_SUCCESS so that we don't keep being restarted by run.py?
     }
 #endif
     auto fps = ROUND2INT(cap.get(CAP_PROP_FPS));
@@ -291,25 +291,33 @@ static auto cv_thread(void *arg) -> void *{
         auto lines = process_object(thresholded[OBJ_LINES], OBJ_LINES, realWidth, realHeight);
 
         // transmit data to ESP32
-        // convert cartesian centroids of each field object to polar vectors
+        // for each centroid, convert to cartesian (first by translating to have origin point as centre of frame)
         // TODO just a note, should probably go elsewhere: investigate centroid merging to fix goal track stability issues
-        struct vec2 ballVec = {ball.centroid.x, ball.centroid.y};
-        struct vec2 blueGoalVec = {blueGoal.centroid.x, blueGoal.centroid.y};
-        struct vec2 yellowGoalVec = {yellowGoal.centroid.x, yellowGoal.centroid.y};
-        struct vec2 screenOrigin = {frame.cols / 2.0, frame.rows / 2.0};
+        double cx = frame.cols / 2.0;
+        double cy = frame.rows / 2.0;
+        struct vec2 ballVec = {ball.centroid.x - cx, ball.centroid.y - cy};
+        struct vec2 blueGoalVec = {blueGoal.centroid.x - cx, blueGoal.centroid.y - cy};
+        struct vec2 yellowGoalVec = {yellowGoal.centroid.x - cx, yellowGoal.centroid.y - cy};
 
         // encode protocol buffer to send to ESP over UART
         ObjectData data = ObjectData_init_zero;
         data.ballExists = ball.exists;
-        // TODO these are wrong
-        data.ballMag = (float) fabs(svec2_distance(ballVec, screenOrigin));
-        data.ballAngle = acos(svec2_dot(ballVec, screenOrigin) / (svec2_length(ballVec) * svec2_length(screenOrigin))) * RAD_DEG;
+        if (ball.exists) {
+            data.ballAngle = static_cast<float>(fmod(atan2f(ballVec.y, ballVec.x) * RAD_DEG + 360.0, 360.0));
+            data.ballMag = utils_camera_dewarp(svec2_length(ballVec));
+        }
 
         data.goalBlueExists = blueGoal.exists;
-        data.goalBlueMag = (float) fabs(svec2_distance(blueGoalVec, screenOrigin));
+        if (blueGoal.exists) {
+            data.goalBlueAngle = static_cast<float>(fmod(atan2f(blueGoalVec.y, blueGoalVec.x) * RAD_DEG + 360.0,360.0));
+            data.goalBlueMag = utils_camera_dewarp(svec2_length(blueGoalVec));
+        }
 
         data.goalYellowExists = yellowGoal.exists;
-        data.goalYellowMag = (float) fabs(svec2_distance(yellowGoalVec, screenOrigin));
+        if (yellowGoal.exists) {
+            data.goalYellowAngle = static_cast<float>(fmod(atan2f(yellowGoalVec.y, yellowGoalVec.x) * RAD_DEG + 360.0,360.0));
+            data.goalYellowMag = utils_camera_dewarp(svec2_length(yellowGoalVec));
+        }
         utils_cv_transmit_data(data);
 
         // exclude debug time from fps measurement

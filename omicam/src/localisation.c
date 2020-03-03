@@ -283,6 +283,7 @@ static void *work_thread(void *arg){
         if (result < 0){
             log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
         }
+        // TODO I reckon this is wrong
         resultCoord[0] -= field.length / 2.0;
         resultCoord[1] -= field.width / 2.0;
 #if LOCALISER_DEBUG
