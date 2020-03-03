@@ -8,15 +8,15 @@
 #include "defines.h"
 
 // TODO we also need to have a receive task here as well
-
 static int serialfd;
+static bool uartInitOk = false;
 
 void comms_uart_init(){
 #if BUILD_TARGET == BUILD_TARGET_SBC
     // sources:
     // - https://chrisheydrick.com/2012/06/17/how-to-read-serial-data-from-an-arduino-in-linux-with-c-part-3/
     // - https://en.wikibooks.org/wiki/Serial_Programming/termios
-    serialfd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY);
+    serialfd = open("/dev/ttyACM0", O_RDWR | O_NOCTTY); // TODO not sure if this is the right port?
     if (serialfd == -1){
         log_error("Failed to open UART bus: %s", strerror(errno));
         return;
@@ -35,7 +35,7 @@ void comms_uart_init(){
     // &= followed by ~ means toggle off, |= means toggle on
     // 8 bits, no parity bit, 1 stop bit
     toptions.c_cflag &= ~PARENB;
-    // CSTOPB will either need to be set here with |=, commented out or unset like it is now, depending on what works
+    // TODO CSTOPB will either need to be set here with |=, commented out or unset like it is now, depending on what works
     toptions.c_cflag &= ~CSTOPB;
     toptions.c_cflag &= ~CSIZE;
     toptions.c_cflag |= CS8;
@@ -51,12 +51,13 @@ void comms_uart_init(){
     // disable output processing
     toptions.c_oflag &= ~OPOST;
 
-    // wait till we receive 3 byte header
+    // wait till we receive 3 byte header - TODO do we actually want to do this??? probably?
     toptions.c_cc[VMIN] = 3;
 
     // set the options
     tcsetattr(serialfd, TCSANOW, &toptions);
-    log_info("UART comms initialised successfully");
+    uartInitOk = true;
+    log_info("UART comms initialised successfully!");
 #else
     log_warn("UART comms disabled in BUILD_TARGET_PC.");
 #endif
@@ -64,7 +65,10 @@ void comms_uart_init(){
 
 void comms_uart_send(uint8_t *data, size_t size){
 #if BUILD_TARGET == BUILD_TARGET_SBC
-    // TODO need to package this with the ESP32 header
+    if (!uartInitOk){
+        log_error("Cannot write to UART because UART did not initialise correctly!");
+        return;
+    }
     ssize_t bytesWritten = write(serialfd, data, size);
     if (bytesWritten == -1){
         log_error("Failed to write to UART bus: %s", strerror(errno));

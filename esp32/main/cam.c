@@ -8,6 +8,7 @@ cam_object_t orangeBall = {0};
 float robotX = 0;
 float robotY = 0;
 
+// FIXME with Omicam this will now need to work with Protobuf - or recycle comms_uart.c
 static void cam_receive_task(void *pvParameter){
     static const char *TAG = "CamReceiveTask";;
     

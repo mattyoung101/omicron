@@ -207,7 +207,9 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
         msg.rayScores_count = LOCALISER_NUM_RAYS;
     }
     msg.temperature = (float) cpuTemperature;
-    msg.ballCentroid = entry->ballCentroid;
+    // TODO make the msg use RDPointF instead of integers
+    msg.ballCentroid.x = ROUND2INT(entry->ballCentroid.x);
+    msg.ballCentroid.y = ROUND2INT(entry->ballCentroid.y);
     msg.ballRect = entry->ballRect;
     msg.fps = entry->fps;
     msg.frameWidth = width;
@@ -462,7 +464,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
     log_debug("Remote debugger initialised successfully");
 }
 
-void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPoint ballCentroid, int32_t fps,
+void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPointF ballCentroid, int32_t fps,
         int32_t w, int32_t h){
 #if !REMOTE_ALWAYS_SEND
     // we're not connected so free this data

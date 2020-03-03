@@ -55,7 +55,7 @@ typedef enum {
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET (BUILD_TARGET_PC) // which platform Omicam will be running on
+#define BUILD_TARGET (BUILD_TARGET_SBC) // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 1 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.01 // stop optimisation if the last step size was smaller than this in centimetres
@@ -65,5 +65,9 @@ typedef enum {
 #define LOCALISER_DEBUG 0 // if true, renders the objective function bitmap and quits
 #define LOCALISER_DIAGNOSTICS 1 // if true, print data like vision diagnostics to console
 
-#define PI 3.14159265359
-#define PI2 6.28318530718
+// maths defines are the same ones used in the ESP32 project
+
+#define PI 3.14159265358979323846
+#define PI2 6.283185307179586
+#define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
+#define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees

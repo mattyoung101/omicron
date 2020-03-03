@@ -10,8 +10,19 @@
 #include "esp_task_wdt.h"
 #include "wirecomms.pb.h"
 #include "driver/uart.h"
+#include "pb_decode.h"
 
 // Handles slave to master communication over UART
+#define UART_BUF_SIZE 128
+
+typedef enum {
+    SBC_CAMERA = 0,
+    MCU_TEENSY = 1,
+} uart_dev_type_t;
+
+typedef struct {
+    uart_dev_type_t deviceType;
+} uart_endpoint_t;
 
 typedef struct {
     uint16_t tsopAngle;

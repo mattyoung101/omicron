@@ -29,7 +29,7 @@ using namespace std;
 /** A detected field object and its associated information */
 typedef struct {
     bool exists;
-    RDPoint centroid;
+    RDPointF centroid;
     RDRect boundingBox;
     Mat threshMask;
 } object_result_t;
@@ -66,7 +66,7 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
 
     auto blobExists = !sortedLabels.empty();
     auto largestId = !blobExists ? -1 : sortedLabels.back();
-    auto largestCentroid = !blobExists ? Point(0, 0) : Point(centroids.at<double>(largestId, 0),
+    auto largestCentroid = !blobExists ? Point2f(0.0, 0.0) : Point2f(centroids.at<double>(largestId, 0),
                                                              centroids.at<double>(largestId, 1));
     RDRect objRect = {};
     if (blobExists) {
@@ -138,7 +138,7 @@ static auto cv_thread(void *arg) -> void *{
     VideoCapture cap("v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720 ! jpegdec ! videoconvert"
                      " ! appsink drop=true", CAP_GSTREAMER);
     if (!cap.isOpened()){
-        log_error("Failed to open OpenCV capture device. Impossible to continue running Omicam.");
+        log_error("Failed to open OpenCV capture device in SBC build: impossible to continue running Omicam.");
         fflush(stdout);
         fflush(stderr);
         exit(EXIT_FAILURE);
@@ -158,8 +158,8 @@ static auto cv_thread(void *arg) -> void *{
 
     // generate the mirror mask always (in case it's changed later in the ini)
     Mat mirrorMask = Mat(cropRect.height, cropRect.width, CV_8UC1, Scalar(0));
-    circle(mirrorMask, Point(mirrorMask.cols / 2, mirrorMask.rows / 2), visionMirrorRadius, Scalar(255, 255, 255),
-           FILLED);
+    circle(mirrorMask, Point(mirrorMask.cols / 2, mirrorMask.rows / 2), visionMirrorRadius,
+            Scalar(255, 255, 255),FILLED);
 
 #if VISION_APPLY_CLAHE
     auto clahe = createCLAHE();
@@ -224,7 +224,8 @@ static auto cv_thread(void *arg) -> void *{
 
         // apply robot mask
         if (isDrawRobotMask) {
-            circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius, Scalar(0, 0, 0), FILLED);
+            circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius,
+                    Scalar(0, 0, 0), FILLED);
         }
 
         // downscale for goal detection (and possibly initial ball pass)
@@ -261,7 +262,8 @@ static auto cv_thread(void *arg) -> void *{
             // we re-arrange the orders of these to convert from RGB to BGR so we can skip the call to cvtColor
             Scalar minScalar = Scalar(min[2], min[1], min[0]);
             Scalar maxScalar = Scalar(max[2], max[1], max[0]);
-            inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar, thresholded[object]);
+            inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar,
+                    thresholded[object]);
 
             // morphology isn't actually very helpful here because lines are too small
 //            if (object == OBJ_LINES){
@@ -287,6 +289,28 @@ static auto cv_thread(void *arg) -> void *{
         auto yellowGoal = process_object(thresholded[OBJ_GOAL_YELLOW], OBJ_GOAL_YELLOW, realWidth, realHeight);
         auto blueGoal = process_object(thresholded[OBJ_GOAL_BLUE], OBJ_GOAL_BLUE, realWidth, realHeight);
         auto lines = process_object(thresholded[OBJ_LINES], OBJ_LINES, realWidth, realHeight);
+
+        // transmit data to ESP32
+        // convert cartesian centroids of each field object to polar vectors
+        // TODO just a note, should probably go elsewhere: investigate centroid merging to fix goal track stability issues
+        struct vec2 ballVec = {ball.centroid.x, ball.centroid.y};
+        struct vec2 blueGoalVec = {blueGoal.centroid.x, blueGoal.centroid.y};
+        struct vec2 yellowGoalVec = {yellowGoal.centroid.x, yellowGoal.centroid.y};
+        struct vec2 screenOrigin = {frame.cols / 2.0, frame.rows / 2.0};
+
+        // encode protocol buffer to send to ESP over UART
+        ObjectData data = ObjectData_init_zero;
+        data.ballExists = ball.exists;
+        // TODO these are wrong
+        data.ballMag = (float) fabs(svec2_distance(ballVec, screenOrigin));
+        data.ballAngle = acos(svec2_dot(ballVec, screenOrigin) / (svec2_length(ballVec) * svec2_length(screenOrigin))) * RAD_DEG;
+
+        data.goalBlueExists = blueGoal.exists;
+        data.goalBlueMag = (float) fabs(svec2_distance(blueGoalVec, screenOrigin));
+
+        data.goalYellowExists = yellowGoal.exists;
+        data.goalYellowMag = (float) fabs(svec2_distance(yellowGoalVec, screenOrigin));
+        utils_cv_transmit_data(data);
 
         // exclude debug time from fps measurement
         double elapsed = utils_time_millis() - begin;
@@ -320,7 +344,6 @@ static auto cv_thread(void *arg) -> void *{
             }
 
             // ballThresh is just a 1-bit mask so it has only one channel
-            // TODO for each of these we should probably check if their data is null, and thus no object is present, else UBSan complains
             auto *threshData = (uint8_t*) calloc(ball.threshMask.rows * ball.threshMask.cols, sizeof(uint8_t));
             switch (selectedFieldObject){
                 case OBJ_NONE:
@@ -329,35 +352,29 @@ static auto cv_thread(void *arg) -> void *{
                     break;
                 case OBJ_BALL:
                     memcpy(threshData, ball.threshMask.data, ball.threshMask.rows * ball.threshMask.cols);
-                    remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
+                    remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement, debugFrame.cols,
+                            debugFrame.rows);
                     break;
                 case OBJ_LINES:
                     memcpy(threshData, lines.threshMask.data, lines.threshMask.rows * lines.threshMask.cols);
-                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
+                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols,
+                            debugFrame.rows);
                     break;
                 case OBJ_GOAL_BLUE:
                     if (blueGoal.threshMask.data != nullptr)
                         memcpy(threshData, blueGoal.threshMask.data, blueGoal.threshMask.rows * blueGoal.threshMask.cols);
-                    remote_debug_post(frameData, threshData, blueGoal.boundingBox, blueGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
+                    remote_debug_post(frameData, threshData, blueGoal.boundingBox, blueGoal.centroid, lastFpsMeasurement,
+                            debugFrame.cols, debugFrame.rows);
                     break;
                 case OBJ_GOAL_YELLOW:
                     if (yellowGoal.threshMask.data != nullptr)
                         memcpy(threshData, yellowGoal.threshMask.data, yellowGoal.threshMask.rows * yellowGoal.threshMask.cols);
-                    remote_debug_post(frameData, threshData, yellowGoal.boundingBox, yellowGoal.centroid, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
+                    remote_debug_post(frameData, threshData, yellowGoal.boundingBox, yellowGoal.centroid, lastFpsMeasurement,
+                            debugFrame.cols, debugFrame.rows);
                     break;
             }
         }
 #endif
-
-        // convert
-
-        // encode protocol buffer to send to ESP over UART
-        ObjectData data = ObjectData_init_zero;
-        data.ballExists = ball.exists;
-        // TODO make this work with angle and mag stuff (use vector library probs)
-//        data.ballX = ball.centroid.x;
-//        data.ballY = ball.centroid.y;
-        utils_cv_transmit_data(data);
 
         pthread_testcancel();
     }

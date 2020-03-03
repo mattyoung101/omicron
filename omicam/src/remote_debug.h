@@ -16,7 +16,7 @@ typedef struct {
     uint8_t *camFrame;
     uint8_t *threshFrame;
     RDRect ballRect;
-    RDPoint ballCentroid;
+    RDPointF ballCentroid;
     int32_t fps;
 } frame_entry_t;
 
@@ -41,7 +41,7 @@ void remote_debug_dispose(void);
  * @param videoWidth the actual width of the video, especially if cropping is enabled
  * @param videoHeight the actual height of the video, especialy if cropping is enabled
  **/
-void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPoint ballCentroid, int32_t fps,
+void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPointF ballCentroid, int32_t fps,
         int32_t videoWidth, int32_t videoHeight);
 /** Checks if the remote debugger currently has an established connection **/
 bool remote_debug_is_connected(void);

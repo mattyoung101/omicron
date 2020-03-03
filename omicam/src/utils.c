@@ -100,13 +100,21 @@ void utils_parse_rect(char *rectStr, int32_t *array){
 }
 
 void utils_cv_transmit_data(ObjectData ballData){
-    uint8_t buf[128] = {0};
-    pb_ostream_t stream = pb_ostream_from_buffer(buf, 128);
+    uint8_t msgBuf[128] = {0};
+    pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, 128);
     if (!pb_encode_delimited(&stream, ObjectData_fields, &ballData)){
         log_error("Failed to encode vision protocol buffer message: %s", PB_GET_ERROR(&stream));
         return;
     }
-    comms_uart_send(buf, stream.bytes_written);
+
+    size_t arraySize = 4 + stream.bytes_written + 1;
+    uint8_t outBuf[arraySize];
+    uint8_t header[3] = {0xB, 0, stream.bytes_written};
+    memcpy(outBuf, header, 3);
+    memcpy(outBuf + 3, msgBuf, stream.bytes_written); // check this, is it +3 or +4?
+    outBuf[arraySize - 1] = 0xE;
+
+    comms_uart_send(outBuf, arraySize);
 }
 
 static void write_thresholds(FILE *fp){

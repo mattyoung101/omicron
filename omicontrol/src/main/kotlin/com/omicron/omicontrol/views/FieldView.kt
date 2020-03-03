@@ -247,7 +247,7 @@ class FieldView : View() {
                 }
             }
             menu("Settings"){
-                checkmenuitem("Raycast debug"){
+                checkmenuitem("Raycast debug (little buggy)"){
                     selectedProperty().addListener { _, _, value ->
                         isRaycastDebug = value
                     }
