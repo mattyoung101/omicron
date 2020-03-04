@@ -21,7 +21,7 @@ int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueD
 int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
 int32_t visionCropRect[4];
 bool isDrawRobotMask = true, isDrawMirrorMask = true;
-double mirrorModelVariable;
+_Atomic double mirrorModelVariable;
 te_expr *mirrorModelExpr;
 // OBJ_BALL, OBJ_GOAL_YELLOW, OBJ_GOAL_BLUE, OBJ_LINES
 int32_t *thresholds[] = {minBallData, maxBallData, minYellowData, maxYellowData, minBlueData, maxBlueData, minLineData, maxLineData};

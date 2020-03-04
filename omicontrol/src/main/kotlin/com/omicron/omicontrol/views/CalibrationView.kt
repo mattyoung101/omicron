@@ -57,7 +57,7 @@ class CalibrationView : View() {
 
     init {
         reloadStylesheetsOnFocus()
-        title = "Calibration View | Omicontrol"
+        title = "Calibration View | Omicontrol v${OMICONTROL_VERSION}"
     }
 
     private fun updateDisplay(){

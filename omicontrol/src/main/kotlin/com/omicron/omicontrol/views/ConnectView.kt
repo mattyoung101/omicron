@@ -19,7 +19,7 @@ class ConnectView : View() {
     private lateinit var viewBox: ComboBox<String>
     init {
         reloadStylesheetsOnFocus()
-        title = "Connect to Robot | Omicontrol"
+        title = "Connect to Robot | Omicontrol v${OMICONTROL_VERSION}"
     }
     private val prefs = Preferences.userRoot().node("Omicontrol")
 

@@ -89,7 +89,7 @@ int main() {
     dictionary *config = iniparser_load("../omicam.ini");
 #else
     dictionary *config = iniparser_load("../omicam_local.ini");
-    log_warn("ATTENTION: Loading local Omicam configuration file (not for SBC)!");
+    log_warn("Loading LOCAL Omicam configuration file (for development use)!");
 #endif
     if (config == NULL){
         log_error("Failed to open config file (error: %s)", strerror(errno));
@@ -100,8 +100,6 @@ int main() {
     char *maxBallStr = (char*) iniparser_getstring(config, "Thresholds:maxBall", "0,0,0");
     utils_parse_thresh(minBallStr, minBallData);
     utils_parse_thresh(maxBallStr, maxBallData);
-    log_trace("Min ball threshold: (%d,%d,%d), Max ball threshold: (%d,%d,%d)", minBallData[0], minBallData[1], minBallData[2],
-            maxBallData[0], maxBallData[1], maxBallData[2]);
 
     char *minLineStr = (char*) iniparser_getstring(config, "Thresholds:minLine", "0,0,0");
     char *maxLineStr = (char*) iniparser_getstring(config, "Thresholds:maxLine", "0,0,0");

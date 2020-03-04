@@ -58,7 +58,7 @@ class FieldView : View() {
 
     init {
         reloadStylesheetsOnFocus()
-        title = "Field View | Omicontrol"
+        title = "Field View | Omicontrol v${OMICONTROL_VERSION}"
     }
 
     @ExperimentalUnsignedTypes

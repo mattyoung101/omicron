@@ -68,7 +68,7 @@ class CameraView : View() {
 
     init {
         reloadStylesheetsOnFocus()
-        title = "Camera View | Omicontrol"
+        title = "Camera View | Omicontrol v${OMICONTROL_VERSION}"
     }
 
     @ExperimentalUnsignedTypes

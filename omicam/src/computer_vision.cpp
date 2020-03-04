@@ -304,19 +304,19 @@ static auto cv_thread(void *arg) -> void *{
         data.ballExists = ball.exists;
         if (ball.exists) {
             data.ballAngle = static_cast<float>(fmod(atan2f(ballVec.y, ballVec.x) * RAD_DEG + 360.0, 360.0));
-            data.ballMag = utils_camera_dewarp(svec2_length(ballVec));
+            data.ballMag = (float) utils_camera_dewarp(svec2_length(ballVec));
         }
 
         data.goalBlueExists = blueGoal.exists;
         if (blueGoal.exists) {
             data.goalBlueAngle = static_cast<float>(fmod(atan2f(blueGoalVec.y, blueGoalVec.x) * RAD_DEG + 360.0,360.0));
-            data.goalBlueMag = utils_camera_dewarp(svec2_length(blueGoalVec));
+            data.goalBlueMag = (float) utils_camera_dewarp(svec2_length(blueGoalVec));
         }
 
         data.goalYellowExists = yellowGoal.exists;
         if (yellowGoal.exists) {
             data.goalYellowAngle = static_cast<float>(fmod(atan2f(yellowGoalVec.y, yellowGoalVec.x) * RAD_DEG + 360.0,360.0));
-            data.goalYellowMag = utils_camera_dewarp(svec2_length(yellowGoalVec));
+            data.goalYellowMag = (float) utils_camera_dewarp(svec2_length(yellowGoalVec));
         }
         utils_cv_transmit_data(data);
 

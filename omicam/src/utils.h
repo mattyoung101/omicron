@@ -7,8 +7,10 @@
 #include <nlopt.h>
 #include <tinyexpr.h>
 #include "mathc.h"
+#include <stdatomic.h>
 
 // Globals
+
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 extern int32_t *thresholds[];
 extern bool isDrawRobotMask, isDrawMirrorMask;
@@ -17,7 +19,7 @@ extern char *fieldObjToString[];
 extern int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
 extern int32_t visionCropRect[4];
 /** used by te_compile() when compiling the mirror model expression **/
-extern double mirrorModelVariable;
+extern _Atomic double mirrorModelVariable;
 extern te_expr *mirrorModelExpr;
 /** true if Omicam is currently in sleep mode (low power mode) **/
 extern bool sleeping;
