@@ -39,7 +39,8 @@ void LightSensorController::calibrate(){
 	
     readNum = 0;
 	calibTimer.update();
-	while(!calibTimer.timeHasPassedNoUpdate() || digitalRead(BUTTON1) == 0) {
+	while(!calibTimer.timeHasPassedNoUpdate()) {
+		Serial.println("i am literally calibrating rn ngl");
 		for(int i = 0; i < LS_RING_NUM; i++) {
 			curRead = lsRing[i].read();
 			// Serial.print(i);
@@ -142,7 +143,9 @@ void LightSensorController::read(){
  		} else {
 			isOnLine[i] = false;
 		}
+		Serial.print(isOnLine[i]);
 	}
+	Serial.println("");
 
 	for(int i = 0; i < LS_RING_NUM; i++) {
 		if(!isOnLine[mod(i - 1, LS_RING_NUM)] && !isOnLine[mod(i +1, LS_RING_NUM)] && isOnLine[i]) {

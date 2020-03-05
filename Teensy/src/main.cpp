@@ -108,11 +108,17 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
 
+    // ls.calibrate();
+
+    // while(true) {
+    //     Serial.println("cool done ok");
+    // }
+
     Serial.println("INIT DONE");
 }
 
 void loop() {
-    Serial.println("  LOOP");
+    // Serial.println("  LOOP");
     // Poll UART and decode incoming protobuf message
     // decodeProtobuf();
     
