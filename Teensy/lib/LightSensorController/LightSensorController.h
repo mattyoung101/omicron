@@ -83,7 +83,7 @@ class LightSensorController{
 		Vector line = Vector(0, 0, true);
 		bool firstFrame = true;
 		float prevDepth;
-		Timer calibTimer = Timer(1000000);
+		Timer calibTimer = Timer(10000000);
 		int readNum = 0;
 };
 
