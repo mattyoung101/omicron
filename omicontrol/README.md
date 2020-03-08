@@ -51,6 +51,14 @@ With the project imported and built, go to Main.kt and click on the play icon ne
 it will look weird and complain about missing resources, to fix this, edit the run configuration to have its working directory
 in the src/main/resources directory.
 
+**Very important:** If you're on Windows, please add an environment variable called "HOME" which is your home directory, 
+or the output of `echo %userprofile%`. In IntelliJ, you can also add this to the environment variables section in the run
+configuration. In the future there'll be a workaround for this but it's not been added yet.
+
+To run a release build on Windows, use the following command:
+
+`java -XX:+UseStringDeduplication --illegal-access=deny -Dglass.win.uiScale=100% -jar omicontrol-<VERSION>.jar`
+
 ## Compatibility
 Omicontrol has been tested on Windows, Mac OS X and Linux. The application _functions_ on all platforms,
 however there are various quirks specific to each one. This is especially the case when using high DPI displays which

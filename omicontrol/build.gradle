@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'omicron'
-version '0.1'
+version '4.5b'
 
 sourceCompatibility = 1.8
 
@@ -28,6 +28,14 @@ dependencies {
     // compile 'com.github.ajalt:colormath:1.4.0'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'com.omicron.omicontrol.Main'
+    }
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 javafx {

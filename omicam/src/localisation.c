@@ -81,7 +81,7 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
         int32_t ry = ROUND2INT(y0 + (dist * cos(theta)));
 
         // return if going to be out of bounds, and mark as ignored if so
-        if (rx < minCorner.x || ry < minCorner.y || rx > maxCorner.x || ry > maxCorner.y){
+        if (rx <= minCorner.x || ry <= minCorner.y || rx >= maxCorner.x || ry >= maxCorner.y){
             // the ray didn't land inside bounds so mark it as ignored
             return -1;
         }

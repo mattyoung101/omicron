@@ -20,6 +20,8 @@ object Main {
         System.setProperty("tinylog.configuration", "tinylog.properties")
         Logger.info("Omicontrol v${OMICONTROL_VERSION} - Copyright (c) 2019-2020 Team Omicron.")
 
+        // FIXME: if on windows set home to be %userprofile% as workaround
+
         Logger.debug("OS name: ${SystemUtils.OS_NAME}")
         if (SystemUtils.IS_OS_MAC){
             Logger.warn("This is a Mac, scaling/DPI workaround will be enabled")

@@ -79,7 +79,7 @@ void comms_uart_send(uint8_t *data, size_t size){
     }
     ssize_t bytesWritten = write(serialfd, data, size);
     if (bytesWritten == -1){
-        log_error("Failed to write to UART bus: %s", strerror(errno));
+         log_error("Failed to write to UART bus: %s", strerror(errno));
     }
 #endif
 }
