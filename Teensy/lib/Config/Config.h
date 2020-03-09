@@ -39,10 +39,10 @@
 #define LRF_DATA_LENGTH 8
 #define LRF_START_BYTE 0x5A
 
-#define LRF1_SERIAL Serial1
-#define LRF2_SERIAL Serial2
-#define LRF3_SERIAL Serial3
-#define LRF4_SERIAL Serial4
+#define LRF1_SERIAL Serial2
+#define LRF2_SERIAL Serial3
+#define LRF3_SERIAL Serial4
+#define LRF4_SERIAL Serial5
 
 // --- Math --- //
 #define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians

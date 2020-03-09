@@ -2,7 +2,6 @@
 #include "utils.h"
 
 robot_state_t robotState = {0};
-SemaphoreHandle_t robotStateSem = NULL;
 #ifdef HAS_KICKER
 bool canShoot = true;
 #else

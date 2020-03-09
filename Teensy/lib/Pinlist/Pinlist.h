@@ -18,7 +18,7 @@
 
 // --- Serial --- //
 
-#define ESPSERIAL Serial3
+#define ESPSERIAL Serial1
 
 // --- Debug --- //
 
