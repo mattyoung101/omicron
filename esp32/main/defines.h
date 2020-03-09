@@ -38,7 +38,7 @@
 #define MAX_ACCELERATION 0.001f // must be between 0.0 and 1.0
 
 // I2C
-#define I2C_SLAVE_DEV_ADDR 0x23 // the I2C address of the Teensy slave
+#define I2C_SLAVE_DEV_ADDR 0x12 // the I2C address of the Teensy slave
 #define I2C_TIMEOUT 250 // ms
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
@@ -193,6 +193,11 @@ extern uint16_t IN_FRONT_MAX_ANGLE;
 #define FORWARD_ORBIT_MIN_ANGLE 120 // the range where the robot will orbit forward
 #define FORWARD_ORBIT_MAX_ANGLE 240
 #define ORBIT_RADIUS 1
+
+#define MOTOR_FL_ANGLE 315
+#define MOTOR_BL_ANGLE 225
+#define MOTOR_BR_ANGLE 135
+#define MOTOR_FR_ANGLE 45
 
 // Defence FSM defines
 extern uint8_t DEFEND_DISTANCE;

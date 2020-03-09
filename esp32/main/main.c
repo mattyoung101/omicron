@@ -39,6 +39,7 @@
 #include "path_following.h"
 #include "buzzer.h"
 #include "Vector.h"
+#include "motor.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -52,6 +53,8 @@ static const char *RST_TAG = "ResetReason";
 #ifdef ENABLE_DIAGNOSTICS 
 static const char *PT_TAG = "PerfTimer";
 #endif
+
+SemaphoreHandle_t robotStateSem;
 
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
@@ -107,22 +110,23 @@ static void master_task(void *pvParameter){
     uint8_t pbErrors = 0;
 
     print_reset_reason();
-    robotStateSem = xSemaphoreCreateMutex();
+    robotStateSem = xSemaphoreCreateBinary();
+    xSemaphoreGive(robotStateSem);
 
     // Initialise comms and hardware
     comms_uart_init();
     comms_i2c_init_bno(I2C_NUM_1);
     comms_i2c_init_nano(I2C_NUM_0);
     // i2c_scanner(I2C_NUM_1);
-    cam_init();
+    // cam_init();
     init_bno055(&bno055);
     bno055_convert_float_euler_h_deg(&yawRaw);
     yawOffset = yawRaw;
     ESP_LOGI(TAG, "Yaw offset: %f degrees", yawOffset);
 
-    gpio_set_direction(KICKER_PIN1, GPIO_MODE_OUTPUT);
-    gpio_set_direction(KICKER_PIN2, GPIO_MODE_OUTPUT);
-    QueueHandle_t buttonQueue = button_init(PIN_BIT(RST_BTN));
+    // gpio_set_direction(KICKER_PIN1, GPIO_MODE_OUTPUT);
+    // gpio_set_direction(KICKER_PIN2, GPIO_MODE_OUTPUT);
+    // // QueueHandle_t buttonQueue = button_init(PIN_BIT(RST_BTN));
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
 
     // read robot ID from NVS and init Bluetooth
@@ -147,9 +151,9 @@ static void master_task(void *pvParameter){
     #endif
 
     ESP_LOGI(TAG, "=============== Master software init OK ===============");
-    ESP_LOGI(TAG, "Waiting on valid cam packet...");
-    xSemaphoreTake(validCamPacket, portMAX_DELAY);
-    ESP_LOGI(TAG, "Cam packet received. Running!");
+    // ESP_LOGI(TAG, "Waiting on valid cam packet...");
+    // xSemaphoreTake(validCamPacket, portMAX_DELAY);
+    // ESP_LOGI(TAG, "Cam packet received. Running!");
     esp_task_wdt_add(NULL);
 
     while (true){
@@ -158,7 +162,7 @@ static void master_task(void *pvParameter){
         #endif
 
         // update sensors
-        cam_calc();
+        // cam_calc();
         bno055_convert_float_euler_h_deg(&yawRaw);
         yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
         printf("yaw: %.2f\n", yaw);
@@ -168,8 +172,9 @@ static void master_task(void *pvParameter){
         // continue;
 
         // update values for FSM, mutexes are used to prevent race conditions
-        if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
-            xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) /*&& */
+            /*xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))*/){
+                // puts("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! AHHHHHHHHHHHHHHHHHHHHHHHH !!!!!!!!!!!!!!!!!!!!!!!!!!");
                 // reset out values
                 robotState.outShouldBrake = false;
                 robotState.outOrientation = 0;
@@ -201,7 +206,7 @@ static void master_task(void *pvParameter){
 
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
-                xSemaphoreGive(goalDataSem);
+                // xSemaphoreGive(goalDataSem);
         } else {
             ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
         }
@@ -217,65 +222,68 @@ static void master_task(void *pvParameter){
         teensyMsg.heading = yaw; // IMU heading
         memcpy(teensyMsg.debugLEDs, robotState.debugLEDs, 6 * sizeof(bool));
 
-        if (!pb_encode(&stream, MasterToLSlave_fields, &teensyMsg)){
-            ESP_LOGE(TAG, "Protobuf encode error: %s", PB_GET_ERROR(&stream));
-            if (pbErrors++ > 4){
-                ESP_LOGE(TAG, "Too many Protobuf errors, resetting!");
-                abort();
-            }
-        } else {
-            pbErrors = 0;
-        }
-        comms_uart_send(MSG_ANY, teensyBuf, stream.bytes_written);
+        // if (!pb_encode(&stream, MasterToLSlave_fields, &teensyMsg)){
+        //     ESP_LOGE(TAG, "Protobuf encode error: %s", PB_GET_ERROR(&stream));
+        //     if (pbErrors++ > 4){
+        //         ESP_LOGE(TAG, "Too many Protobuf errors, resetting!");
+        //         abort();
+        //     }
+        // } else {
+        //     pbErrors = 0;
+        // }
+        uint8_t buffer[] = {0xB, 0xB, HIGH_BYTE_16((uint16_t) yaw), LOW_BYTE_16((uint16_t) yaw)};
+        comms_uart_send(MSG_ANY, buffer, 4);
+        motor_calc(0, 0, 100);
+        // TODO: SET MOTOR VALUES
 
-        // handle reset button
-        if (xQueueReceive(buttonQueue, &buttonEvent, 0)){
-            if ((buttonEvent.pin == RST_BTN) && (buttonEvent.event == BUTTON_UP)){
-                ESP_LOGI(TAG, "Reset button pressed");
-                // fsm_dump(stateMachine);
-                fsm_reset(stateMachine);
+    //     // // handle reset button
+    //     // if (xQueueReceive(buttonQueue, &buttonEvent, 0)){
+    //     //     if ((buttonEvent.pin == RST_BTN) && (buttonEvent.event == BUTTON_UP)){
+    //     //         ESP_LOGI(TAG, "Reset button pressed");
+    //     //         // fsm_dump(stateMachine);
+    //     //         fsm_reset(stateMachine);
 
-                // calculate new yaw offset
-                bno055_convert_float_euler_h_deg(&yawRaw);
-                yawOffset = yawRaw;
-                ESP_LOGI(TAG, "New yaw offset: %f degrees", yawOffset);
-            }
-        }
+    //     //         // calculate new yaw offset
+    //     //         bno055_convert_float_euler_h_deg(&yawRaw);
+    //     //         yawOffset = yawRaw;
+    //     //         ESP_LOGI(TAG, "New yaw offset: %f degrees", yawOffset);
+    //     //     }
+    //     // }
         
-        // main loop performance profiling code
-        #ifdef ENABLE_DIAGNOSTICS
-            int64_t end = esp_timer_get_time() - begin;
-            movavg_push(avgTime, (float) end);
-            ticks++;
-            ticksSinceLastBestTime++;
-            ticksSinceLastWorstTime++;
-            float avgFreq = (1.0f / movavg_calc(avgTime)) * 1000000.0f;
+    //     // main loop performance profiling code
+    //     #ifdef ENABLE_DIAGNOSTICS
+    //         int64_t end = esp_timer_get_time() - begin;
+    //         movavg_push(avgTime, (float) end);
+    //         ticks++;
+    //         ticksSinceLastBestTime++;
+    //         ticksSinceLastWorstTime++;
+    //         float avgFreq = (1.0f / movavg_calc(avgTime)) * 1000000.0f;
 
-            if (end > worstTime){
-                // we took longer than recorded previously, means we have a new worst time
-                ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
-                    (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime), avgFreq);
-                ticksSinceLastWorstTime = 0;
-                worstTime = end;
-            } else if (end < bestTime){
-                // we took less than recorded previously, meaning we have a new best time
-                ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
-                    (long) end, ticksSinceLastBestTime, movavg_calc(avgTime), avgFreq);
-                ticksSinceLastBestTime = 0;
-                bestTime = end;
-            } else if (ticks >= 512){
-                // print the average time and memory diagnostics every few loops
-                ESP_LOGW(PT_TAG, "Average time: %.2f us (%.2f Hz). Heap bytes free: %d KB (min free ever: %d KB)", 
-                        movavg_calc(avgTime), avgFreq, esp_get_free_heap_size() / 1024, 
-                        esp_get_minimum_free_heap_size() / 1024);
-                // fsm_dump(stateMachine);
-                // ESP_LOGI(TAG, "Heading: %f", yaw);
-                ticks = 0;
-            }
-        #endif
+    //         if (end > worstTime){
+    //             // we took longer than recorded previously, means we have a new worst time
+    //             ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
+    //                 (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime), avgFreq);
+    //             ticksSinceLastWorstTime = 0;
+    //             worstTime = end;
+    //         } else if (end < bestTime){
+    //             // we took less than recorded previously, meaning we have a new best time
+    //             ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
+    //                 (long) end, ticksSinceLastBestTime, movavg_calc(avgTime), avgFreq);
+    //             ticksSinceLastBestTime = 0;
+    //             bestTime = end;
+    //         } else if (ticks >= 512){
+    //             // print the average time and memory diagnostics every few loops
+    //             ESP_LOGW(PT_TAG, "Average time: %.2f us (%.2f Hz). Heap bytes free: %d KB (min free ever: %d KB)", 
+    //                     movavg_calc(avgTime), avgFreq, esp_get_free_heap_size() / 1024, 
+    //                     esp_get_minimum_free_heap_size() / 1024);
+    //             // fsm_dump(stateMachine);
+    //             // ESP_LOGI(TAG, "Heading: %f", yaw);
+    //             ticks = 0;
+    //         }
+    //     #endif
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
+        vTaskDelay(pdMS_TO_TICKS(5)); // Random delay at of loop to allow motors to spin
     }
 }
 

@@ -54,6 +54,10 @@ static void nano_comms_task(void *pvParameters){
         memset(buf, 0, NANO_PACKET_SIZE);
         nano_read(I2C_NANO_SLAVE_ADDR, NANO_PACKET_SIZE, buf, &robotState);
 
+        for (int i=0; i>5; i++){
+            puts(buf[i]);
+        }
+
         if (buf[0] == I2C_BEGIN_DEFAULT){
             if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 nanoData.mouseDX = UNPACK_16(buf[1], buf[2]);
@@ -91,15 +95,17 @@ void comms_i2c_init_nano(i2c_port_t port){
 }
 
 esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
+    static const char *TAG = "i2csend";
+    ESP_LOGI(TAG, "SENDING I2C SHIT");
     uint8_t header[] = {0xB, msgId, msgSize};
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_SLAVE_DEV_ADDR << 1) | I2C_MASTER_WRITE, I2C_ACK_MODE));
 
-    ESP_ERROR_CHECK(i2c_master_write(cmd, header, 3, I2C_ACK_MODE)); // write header
+    // ESP_ERROR_CHECK(i2c_master_write(cmd, header, 3, I2C_ACK_MODE)); // write header
     ESP_ERROR_CHECK(i2c_master_write(cmd, pbData, msgSize, I2C_ACK_MODE)); // write buffer
-    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0xEE, I2C_ACK_MODE)); // write end byte
+    // ESP_ERROR_CHECK(i2c_master_write_byte(cmd, 0xEE, I2C_ACK_MODE)); // write end byte
 
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
     esp_err_t err = i2c_master_cmd_begin(I2C_SLAVE_DEV_BUS, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));

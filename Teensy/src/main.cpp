@@ -27,6 +27,8 @@ Timer idleLedTimer(1000000); // LED timer when idling
 bool ledOn;
 double heading;
 
+uint8_t uartBuf[64] = {0};
+
 /** decode protobuf over UART from ESP **/
 static void decodeProtobuf(void){
     uint8_t buf[64] = {0};
@@ -88,6 +90,26 @@ static void decodeProtobuf(void){
     }
 }
 
+void crapUart() {
+    // Send line values and lrf stuff across
+    Serial.println("sending shit");
+    ESPSERIAL.write(0xB);
+    ESPSERIAL.write(0xB);
+    ESPSERIAL.write(highByte(int(lineAvoid.arg)));
+    ESPSERIAL.write(lowByte(int(lineAvoid.arg)));
+    ESPSERIAL.write(uint8_t(lineAvoid.mag) * 100);
+
+    if (ESPSERIAL.available()) Serial.println("FUCKING KILL ME");
+
+    if (ESPSERIAL.available() >= 4) {
+        if (ESPSERIAL.read() == 0xB && ESPSERIAL.peek() == 0xB) {
+            Serial.println("found start shit");
+            ESPSERIAL.read();
+            heading = word(ESPSERIAL.read(), ESPSERIAL.read());
+        }
+    }
+}
+
 void setup() {
     // Put other setup stuff here
     Serial.begin(9600);
@@ -121,13 +143,12 @@ void loop() {
     // Serial.println("  LOOP");
     // Poll UART and decode incoming protobuf message
     // decodeProtobuf();
+    crapUart();
     
 
     #if LS_ON
         // Update line data
         lineAvoid = ls.update(heading);
-
-        // (ETHAN) NOTE TO SELF: RETURN LINEANGLE, LINEDISTANCE AND ISOUT
     #endif
 
     #if LRFS_ON
