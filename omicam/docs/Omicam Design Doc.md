@@ -1,6 +1,6 @@
 # Omicam
 
-_This design document is currently confidential property of Team Omicron and should not be redistributed outside our team._
+**ATTENTION: this is outdated, especially the localisation section.**
 
 Written by Matt Young in collaboration with Ethan Lo.
 

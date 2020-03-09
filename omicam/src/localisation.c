@@ -250,6 +250,10 @@ static void *work_thread(void *arg){
         da_clear(localiserVisitedPoints);
         pthread_mutex_unlock(&localiserMutex);
 
+        // TODO we're going to have to reconstruct the localisation pipeline from scratch with this new hyrbid algorithm
+        // but clearly the first thing we're going to want to localise with the goal positions only
+        // then calculate which quadrant we're in, and somewhere in here feed back in the mouse sensor data once we have some
+
         // image analysis
         // 1. calculate begin points for rays
         double interval = PI2 / LOCALISER_NUM_RAYS;
@@ -272,9 +276,7 @@ static void *work_thread(void *arg){
             if (observedRays[i] == -1) continue;
             observedRays[i] = utils_camera_dewarp(observedRaysRaw[i]);
         }
-        // TODO somehow we also need to rotate this array based on orientation of robot
-        // TODO we also need to calculate which quadrant we're in and set the bounds accordingly
-        // TODO we also need to get the initial seed position, which we could do by goals or by mouse sensor
+        // TODO (!!IMPORTANT!!) somehow we also need to rotate this array based on orientation of robot
 
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
@@ -393,11 +395,13 @@ void localiser_init(char *fieldFile){
     pthread_testcancel();
 }
 
-void localiser_post(uint8_t *frame, int32_t width, int32_t height){
+void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowGoal, struct vec2 blueGoal){
     localiser_entry_t *entry = malloc(sizeof(localiser_entry_t));
     entry->frame = frame;
     entry->width = width;
     entry->height = height;
+    entry->yellowGoal = yellowGoal;
+    entry->blueGoal = blueGoal;
     if (!rpa_queue_trypush(queue, entry)){
         // localiser is busy, drop frame
         free(frame);

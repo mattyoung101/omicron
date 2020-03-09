@@ -7,12 +7,15 @@
 #include "protobuf/RemoteDebug.pb.h"
 #include "defines.h"
 #include "DG_dynarr.h"
+#include "mathc.h"
 
 /** An entry submitted to the localisation work queue */
 typedef struct {
     uint8_t *frame;
     int32_t width;
     int32_t height;
+    struct vec2 yellowGoal;
+    struct vec2 blueGoal;
 } localiser_entry_t;
 
 /** The 4 quadrants of a field **/
@@ -60,13 +63,16 @@ extern "C" {
  * @param fieldFile the full path including extension to the field file
  **/
 void localiser_init(char *fieldFile);
-
 /**
- * Posts a frame to the localiser for processing. This will be sent to a work queue
- * and processed asynchronously so the function returns immediately.
+ * Posts a frame to the localiser for processing. This will be sent to a work queue and processed asynchronously so the
+ * function returns immediately.
+ * @param frame 1 bit mask of line pixels, allocated previously
+ * @param width the width of the frame
+ * @param height the height of the frame
+ * @param yellowGoal the position of the yellow goal as a polar vector with camera centre as origin, or (0,0) if it doesn't exist
+ * @param blueGoal same as yellowGoal but for the blue goal
  */
-void localiser_post(uint8_t *frame, int32_t width, int32_t height);
-
+void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowGoal, struct vec2 blueGoal);
 /** Destroys the localiser and its resources **/
 void localiser_dispose(void);
 

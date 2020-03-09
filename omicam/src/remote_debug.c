@@ -21,6 +21,7 @@
 #include "nanopb/pb_decode.h"
 #include "protobuf/RemoteDebug.pb.h"
 #include "localisation.h"
+#include "comms_uart.h"
 #include <sys/reboot.h>
 #include <sys/param.h>
 
@@ -164,6 +165,41 @@ static void read_remote_messages(void){
             case CMD_RELOAD_CONFIG: {
                 log_debug("Received CMD_RELOAD_CONFIG, reloading config from disk");
                 utils_reload_config();
+                RD_SEND_OK_RESPONSE;
+                break;
+            }
+            case CMD_MOVE_TO_XY ... CMD_MOVE_ORIENT: {
+                log_debug("Received robot command (id %d), forwarding to ESP32", message.messageId);
+                ESP32DebugCommand fwdCmd = {0};
+                fwdCmd.msgId = message.messageId;
+                fwdCmd.robotId = message.robotId;
+
+                // copy across data if necessary
+                if (message.messageId == CMD_MOVE_TO_XY){
+                    fwdCmd.x = message.coords.x;
+                    fwdCmd.y = message.coords.y;
+                } else if (message.messageId == CMD_MOVE_ORIENT){
+                    fwdCmd.orientation = ROUND2INT(message.orientation);
+                }
+
+                uint8_t msgBuf[128] = {0};
+                pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, 128);
+                if (!pb_encode(&stream, ESP32DebugCommand_fields, &fwdCmd)){
+                    log_error("Failed to encode debug command message to ESP32: %s", PB_GET_ERROR(&stream));
+                    return;
+                }
+
+                uint32_t arraySize = 3 + stream.bytes_written + 1;
+                uint8_t outBuf[arraySize];
+                // FIXME send the correct message id here, get it from the ESP stuff, just copy in that enum
+                uint8_t header[3] = {0xB, 0, stream.bytes_written};
+
+                memset(outBuf, 0, arraySize);
+                memcpy(outBuf, header, 3);
+                memcpy(outBuf + 3, msgBuf, stream.bytes_written);
+                outBuf[arraySize - 1] = 0xE;
+                comms_uart_send(outBuf, arraySize);
+
                 RD_SEND_OK_RESPONSE;
                 break;
             }

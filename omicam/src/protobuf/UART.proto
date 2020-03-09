@@ -37,15 +37,16 @@ message MouseData {
 
 // Message that we send to the ESP32, this is basically just forwarded through the LattePanda from Omicontrol
 // So it goes Omicontrol (computer) -> Omicam (LattePanda) -> ESP32 -> teensy, motors, etc
-// TODO: we could just end a copy of DebugCommand over??
 message ESP32DebugCommand {
     // For a list of commands, see the enums in defines.h or Values.kt - just debug_commands_t
     int32 msgId = 1;
+    // which robot this message applies to
+    int32 robotId = 2;
 
     // orientation in degrees
-    int32 orientation = 2;
+    int32 orientation = 3;
     // move to position x
-    int32 x = 3;
+    int32 x = 4;
     // move to position y
-    int32 y = 4;
+    int32 y = 5;
 }

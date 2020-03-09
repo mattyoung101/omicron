@@ -302,9 +302,7 @@ static auto cv_thread(void *arg) -> void *{
                 // we spend decoding the bloody camera frame anyway, the actual processing can run at like 100 fps
 
                 // note: this assumes we will never scale the line image, otherwise we would have to check and use frameScaled
-                auto *localiserFrame = (uint8_t*) malloc(frame.rows * frame.cols);
-                memcpy(localiserFrame, thresholded[object].data, frame.rows * frame.cols);
-                localiser_post(localiserFrame, frame.cols, frame.rows);
+                // ... old stuff was here...
             }
         }, 4);
 
@@ -332,19 +330,24 @@ static auto cv_thread(void *arg) -> void *{
             data.ballAngle = static_cast<float>(fmod(atan2f(ballVec.y, ballVec.x) * RAD_DEG + 360.0, 360.0));
             data.ballMag = (float) utils_camera_dewarp(svec2_length(ballVec));
         }
-
         data.goalBlueExists = blueGoal.exists;
         if (blueGoal.exists) {
             data.goalBlueAngle = static_cast<float>(fmod(atan2f(blueGoalVec.y, blueGoalVec.x) * RAD_DEG + 360.0,360.0));
             data.goalBlueMag = (float) utils_camera_dewarp(svec2_length(blueGoalVec));
         }
-
         data.goalYellowExists = yellowGoal.exists;
         if (yellowGoal.exists) {
             data.goalYellowAngle = static_cast<float>(fmod(atan2f(yellowGoalVec.y, yellowGoalVec.x) * RAD_DEG + 360.0,360.0));
             data.goalYellowMag = (float) utils_camera_dewarp(svec2_length(yellowGoalVec));
         }
         utils_cv_transmit_data(data);
+
+        // post data to localiser, the reason it's done so late now is because the new hybrid localisation algorithm
+        // relies on a lot of data sources, including the polar vector goals which are only calculated here
+        auto *localiserFrame = (uint8_t*) malloc(frame.rows * frame.cols);
+        memcpy(localiserFrame, thresholded[OBJ_LINES].data, frame.rows * frame.cols);
+        localiser_post(localiserFrame, frame.cols, frame.rows, {data.goalYellowAngle, data.goalYellowMag},
+                {data.goalYellowAngle, data.goalYellowMag});
 
         // exclude debug time from fps measurement
         double elapsed = utils_time_millis() - begin;
