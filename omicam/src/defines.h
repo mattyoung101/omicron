@@ -11,9 +11,9 @@
  * 1.4a: performance optimisations for new SBC, new FPS timing code, fixes
  * 2.4a: localisation prototype implemented, sleep mode added
  * 3.4b: Omicam enters beta, localiser work continued
- * 3.5b: (WIP) UART comms implemented... what else?
+ * 4.4b: (WIP) UART comms implemented, improved localiser with quadrants, fixed some bugs/oversights
  */
-#define OMICAM_VERSION "3.5b"
+#define OMICAM_VERSION "4.4b"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
 #define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
 

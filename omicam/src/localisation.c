@@ -273,6 +273,8 @@ static void *work_thread(void *arg){
             observedRays[i] = utils_camera_dewarp(observedRaysRaw[i]);
         }
         // TODO somehow we also need to rotate this array based on orientation of robot
+        // TODO we also need to calculate which quadrant we're in and set the bounds accordingly
+        // TODO we also need to get the initial seed position, which we could do by goals or by mouse sensor
 
         // coordinate optimisation
         // 3. start the NLopt Subplex optimiser
@@ -283,7 +285,6 @@ static void *work_thread(void *arg){
         if (result < 0){
             log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
         }
-        // TODO I reckon this is wrong
         resultCoord[0] -= field.length / 2.0;
         resultCoord[1] -= field.width / 2.0;
 #if LOCALISER_DEBUG
