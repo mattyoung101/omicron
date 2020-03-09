@@ -143,9 +143,9 @@ void LightSensorController::read(){
  		} else {
 			isOnLine[i] = false;
 		}
-		Serial.print(isOnLine[i]);
+		// Serial.print(isOnLine[i]);
 	}
-	Serial.println("");
+	// Serial.println("");
 
 	for(int i = 0; i < LS_RING_NUM; i++) {
 		if(!isOnLine[mod(i - 1, LS_RING_NUM)] && !isOnLine[mod(i +1, LS_RING_NUM)] && isOnLine[i]) {
@@ -273,5 +273,8 @@ Vector LightSensorController::calcLine(){
         angle = 0;
         size = 0;
     }
-	return Vector(size, angle, true);
+	Serial.print(size);
+	Serial.print(", ");
+	Serial.println(angle + 5.625);
+	return Vector(size, angle + 5.625, true);
 }

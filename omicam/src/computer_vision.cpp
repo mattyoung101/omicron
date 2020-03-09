@@ -50,6 +50,16 @@ static int32_t errorCount = 0;
  * @param realHeight the real size of the (potentially cropped) frame, before downscaling
  */
 static object_result_t process_object(const Mat& thresholded, field_objects_t objectId, int32_t realWidth, int32_t realHeight){
+    // shortcut just for lines
+    if (objectId == OBJ_LINES){
+        object_result_t result = {}; // NOLINT
+        result.exists = true;
+        result.centroid = {0.0, 0.0};
+        result.boundingBox = {};
+        result.threshMask = thresholded;
+        return result;
+    }
+
     Mat labels, stats, centroids, threshScaled;
     int nLabels = connectedComponentsWithStats(thresholded, labels, stats, centroids);
 
@@ -190,7 +200,7 @@ static auto cv_thread(void *arg) -> void *{
 #else
             log_warn("Received empty frame from capture!");
             if (errorCount++ > 16){
-                log_error("Too many empty frames, going to quit!");
+                log_error("Too many empty frames, going to quit! Please make sure the camera is functioning correctly.");
                 return nullptr;
             }
 #endif
@@ -220,12 +230,6 @@ static auto cv_thread(void *arg) -> void *{
             Mat tmp;
             bitwise_and(frame, frame, tmp, mirrorMask);
             frame = tmp;
-        }
-
-        // apply robot mask
-        if (isDrawRobotMask) {
-            circle(frame, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius,
-                    Scalar(0, 0, 0), FILLED);
         }
 
         // downscale for goal detection (and possibly initial ball pass)
@@ -262,8 +266,24 @@ static auto cv_thread(void *arg) -> void *{
             // we re-arrange the orders of these to convert from RGB to BGR so we can skip the call to cvtColor
             Scalar minScalar = Scalar(min[2], min[1], min[0]);
             Scalar maxScalar = Scalar(max[2], max[1], max[0]);
-            inRange(object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE ? frameScaled : frame, minScalar, maxScalar,
-                    thresholded[object]);
+
+            // decide which source image we're going to threshold from - yeah this code kinda sucks, nothing new
+            if (object == OBJ_LINES){
+                if (isDrawRobotMask) {
+                    // make a copy to apply the robot mask on
+                    Mat frameCpy;
+                    frame.copyTo(frameCpy);
+                    circle(frameCpy, Point(frame.cols / 2, frame.rows / 2), visionRobotMaskRadius,
+                           Scalar(0, 0, 0), FILLED);
+                    inRange(frameCpy, minScalar, maxScalar, thresholded[object]);
+                } else {
+                    inRange(frame, minScalar, maxScalar, thresholded[object]);
+                }
+            } else if (object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE){
+                inRange(frameScaled, minScalar, maxScalar, thresholded[object]);
+            } else {
+                inRange(frame, minScalar, maxScalar, thresholded[object]);
+            }
 
             // morphology isn't actually very helpful here because lines are too small
 //            if (object == OBJ_LINES){
@@ -275,6 +295,12 @@ static auto cv_thread(void *arg) -> void *{
 
             // dispatch the lines immediately to the localiser for processing to give it a little bit of a head start
             if (object == OBJ_LINES){
+                // FIXME we need to move this out of here, because localiser relies on goal positions now
+                // then we lose all benefits of multi-threading :(
+                // is there a way around this????? mouse sensor with fake data??? how do we test irl???
+                // honestly I think the best way is to try it without and then evaluate, since remember most of the time
+                // we spend decoding the bloody camera frame anyway, the actual processing can run at like 100 fps
+
                 // note: this assumes we will never scale the line image, otherwise we would have to check and use frameScaled
                 auto *localiserFrame = (uint8_t*) malloc(frame.rows * frame.cols);
                 memcpy(localiserFrame, thresholded[object].data, frame.rows * frame.cols);
@@ -288,11 +314,11 @@ static auto cv_thread(void *arg) -> void *{
         auto ball = process_object(thresholded[OBJ_BALL], OBJ_BALL, realWidth, realHeight);
         auto yellowGoal = process_object(thresholded[OBJ_GOAL_YELLOW], OBJ_GOAL_YELLOW, realWidth, realHeight);
         auto blueGoal = process_object(thresholded[OBJ_GOAL_BLUE], OBJ_GOAL_BLUE, realWidth, realHeight);
+        // note that we don't actually do CCL on the lines, process_object() is smart enough to automatically skip it
         auto lines = process_object(thresholded[OBJ_LINES], OBJ_LINES, realWidth, realHeight);
 
         // transmit data to ESP32
         // for each centroid, convert to cartesian (first by translating to have origin point as centre of frame)
-        // TODO just a note, should probably go elsewhere: investigate centroid merging to fix goal track stability issues
         double cx = frame.cols / 2.0;
         double cy = frame.rows / 2.0;
         struct vec2 ballVec = {ball.centroid.x - cx, ball.centroid.y - cy};
@@ -414,7 +440,7 @@ void vision_init(void){
     // IMPORTANT: due to some weird shit with Intel's Turbo Boost on the Celeron, it may be faster to uncomment the below
     // line and disable multi-threading. With multi-threading enabled, all cores max out at 1.4 GHz, whereas with it
     // disabled they will happily run at 2 GHz. However, YMMV so just try it if Omicam is running slow.
-    // setNumThreads(3); // leave one core free for localiser
+    setNumThreads(3); // leave one core free for localiser
 
     int numCpus = getNumberOfCPUs();
     string features = getCPUFeaturesLine();
