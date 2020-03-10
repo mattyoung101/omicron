@@ -1,7 +1,6 @@
 #include "cam.h"
 
 SemaphoreHandle_t goalDataSem = NULL;
-SemaphoreHandle_t validCamPacket = NULL;
 cam_object_t goalBlue = {0};
 cam_object_t goalYellow = {0};
 cam_object_t orangeBall = {0};
@@ -24,7 +23,7 @@ static void cam_receive_task(void *pvParameter){
         uart_read_bytes(UART_NUM_2, buffer, CAM_BUF_SIZE, pdMS_TO_TICKS(4096)); 
 
         if (buffer[0] == CAM_BEGIN_BYTE){
-            xSemaphoreGive(validCamPacket);
+            // xSemaphoreGive(validCamPacket);
             if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // first byte is begin byte so skip that
                 goalBlue.exists = buffer[1];
@@ -70,9 +69,9 @@ void cam_init(void){
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, 256, 256, 8, NULL, 0));
 
     goalDataSem = xSemaphoreCreateMutex();
-    validCamPacket = xSemaphoreCreateMutex();
+    // validCamPacket = xSemaphoreCreateMutex();
     // the main task will have to wait until a valid cam packet is received
-    xSemaphoreTake(validCamPacket, portMAX_DELAY);
+    // xSemaphoreTake(validCamPacket, portMAX_DELAY);
 
     xTaskCreate(cam_receive_task, "CamReceiveTask", 4096, NULL, configMAX_PRIORITIES - 2, NULL);
     ESP_LOGI(TAG, "Camera init OK!");

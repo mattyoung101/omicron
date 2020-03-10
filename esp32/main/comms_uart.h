@@ -11,32 +11,26 @@
 #include "wirecomms.pb.h"
 #include "driver/uart.h"
 #include "pb_decode.h"
+#include "UART.pb.h"
 
-// Handles slave to master communication over UART
-#define UART_BUF_SIZE 128
+// Handles communication between different devices over UART
 
+/** enum of different UART endpoints, or physical devices */
 typedef enum {
     SBC_CAMERA = 0,
-    MCU_TEENSY = 1,
-} uart_dev_type_t;
-
-typedef struct {
-    uart_dev_type_t deviceType;
+    MCU_TEENSY,
 } uart_endpoint_t;
+// we'll figure out all information like what pins, baud rate, etc, based o just the uart endpoint
 
-typedef struct {
-    uint16_t tsopAngle;
-    uint16_t tsopStrength;
-    uint16_t lineAngle;
-    uint16_t lineSize;
-    uint16_t heading;
-} uart_data_t;
-
-extern uart_data_t receivedData;
+extern ObjectData lastObjectData;
+extern LocalisationData lastLocaliserData;
+extern ESP32DebugCommand lastDebugCmd;
+extern SemaphoreHandle_t uartDataSem;
+extern SemaphoreHandle_t validCamPacket;
 
 /** Initialises UART on the given port **/
-void comms_uart_init(void);
-/** Sends data to the slave without waiting for the response */
-esp_err_t comms_uart_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize);
+void comms_uart_init(uart_endpoint_t device);
+/** Sends data to the specified endpoint without waiting for the response */
+esp_err_t comms_uart_send(uart_endpoint_t device, msg_type_t msgId, uint8_t *pbData, size_t msgSize);
 /** Sends a message without any Protobuf content */
-esp_err_t comms_uart_notify(msg_type_t msgId);
+esp_err_t comms_uart_notify(uart_endpoint_t device, msg_type_t msgId);

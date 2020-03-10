@@ -45,9 +45,28 @@
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
 #define I2C_SLAVE_DEV_BUS I2C_NUM_0 // which bus the Teensy slave is on (I2C_NUM_0 or I2C_NUM_1)
 
-// Atmega (nano) comms
+// ATMega328P (nano) comms
 #define NANO_PACKET_SIZE 5
 #define I2C_NANO_SLAVE_ADDR 0x12
+
+// UART
+#define UART_BUF_SIZE 128
+typedef enum {
+    CMD_OK = 0, // the last command completed successfully
+    CMD_ERROR, // the last command had a problem with it
+    CMD_SLEEP_ENTER, // enter sleep mode (low power mode)
+    CMD_THRESHOLDS_GET_ALL, // return the current thresholds for all object
+    CMD_THRESHOLDS_SET, // set the specified object's threshold to the given value
+    CMD_THRESHOLDS_WRITE_DISK, // writes the current thresholds to the INI file and then to disk
+    CMD_THRESHOLDS_SELECT, // select the particular threshold to stream
+    CMD_MOVE_TO_XY, // move to the given (X,Y) coordinates on the field, will need to be forwarded to ESP
+    CMD_MOVE_RESET, // move to starting position
+    CMD_MOVE_HALT, // stops the robot in place, braking
+    CMD_MOVE_RESUME, // allows the robot to move again
+    CMD_MOVE_ORIENT, // orient to a specific direction
+    CMD_SET_SEND_FRAMES, // set whether or not to send frames (useful for saving data in the field view)
+    CMD_RELOAD_CONFIG, // reloads Omicam INI config from disk
+} debug_commands_t;
 
 // Goals
 #define GOAL_YELLOW 0
@@ -64,7 +83,16 @@
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
 typedef enum {
-    MSG_ANY = 0
+    /** generic message */
+    MSG_ANY = 0,
+    /** object data containing positions for field objects to ESP32 */
+    OBJECT_DATA,
+    /** determined (x,y) positions to ESP32 **/
+    LOCALISATION_DATA,
+    /** mouse sensor data to Omicam **/
+    MOUSE_DATA,
+    /** debug command to ESP32 **/
+    DEBUG_CMD,
 } msg_type_t;
 
 // Music

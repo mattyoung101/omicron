@@ -13,6 +13,8 @@
 #include "freertos/timers.h"
 #include "esp_task_wdt.h"
 
+// FIXME this whole file and cam.c are both deprecated in favour of unified UART
+
 #define CAM_BUF_SIZE 10
 
 typedef struct {
@@ -30,7 +32,6 @@ typedef struct {
 } cam_object_t;
 
 extern SemaphoreHandle_t goalDataSem;
-extern SemaphoreHandle_t validCamPacket;
 
 extern cam_object_t goalBlue;
 extern cam_object_t goalYellow;

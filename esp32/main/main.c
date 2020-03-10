@@ -114,10 +114,13 @@ static void master_task(void *pvParameter){
     xSemaphoreGive(robotStateSem);
 
     // Initialise comms and hardware
-    comms_uart_init();
+    comms_uart_init(SBC_CAMERA);
+    comms_uart_init(MCU_TEENSY);
+
     comms_i2c_init_bno(I2C_NUM_1);
     comms_i2c_init_nano(I2C_NUM_0);
-    // i2c_scanner(I2C_NUM_1);
+    i2c_scanner(I2C_NUM_0);
+    i2c_scanner(I2C_NUM_1);
     // cam_init();
     init_bno055(&bno055);
     bno055_convert_float_euler_h_deg(&yawRaw);
@@ -162,7 +165,7 @@ static void master_task(void *pvParameter){
         #endif
 
         // update sensors
-        // cam_calc();
+        // TODO we need to set cam stuff from protobuf data, or reference that in the below update stuff
         bno055_convert_float_euler_h_deg(&yawRaw);
         yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
         printf("yaw: %.2f\n", yaw);
@@ -232,7 +235,7 @@ static void master_task(void *pvParameter){
         //     pbErrors = 0;
         // }
         uint8_t buffer[] = {0xB, 0xB, HIGH_BYTE_16((uint16_t) yaw), LOW_BYTE_16((uint16_t) yaw)};
-        comms_uart_send(MSG_ANY, buffer, 4);
+        comms_uart_send(MCU_TEENSY, MSG_ANY, buffer, 4);
         motor_calc(0, 0, 100);
         // TODO: SET MOTOR VALUES
 
@@ -250,37 +253,37 @@ static void master_task(void *pvParameter){
     //     //     }
     //     // }
         
-    //     // main loop performance profiling code
-    //     #ifdef ENABLE_DIAGNOSTICS
-    //         int64_t end = esp_timer_get_time() - begin;
-    //         movavg_push(avgTime, (float) end);
-    //         ticks++;
-    //         ticksSinceLastBestTime++;
-    //         ticksSinceLastWorstTime++;
-    //         float avgFreq = (1.0f / movavg_calc(avgTime)) * 1000000.0f;
+        // main loop performance profiling code
+        #ifdef ENABLE_DIAGNOSTICS
+            int64_t end = esp_timer_get_time() - begin;
+            movavg_push(avgTime, (float) end);
+            ticks++;
+            ticksSinceLastBestTime++;
+            ticksSinceLastWorstTime++;
+            float avgFreq = (1.0f / movavg_calc(avgTime)) * 1000000.0f;
 
-    //         if (end > worstTime){
-    //             // we took longer than recorded previously, means we have a new worst time
-    //             ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
-    //                 (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime), avgFreq);
-    //             ticksSinceLastWorstTime = 0;
-    //             worstTime = end;
-    //         } else if (end < bestTime){
-    //             // we took less than recorded previously, meaning we have a new best time
-    //             ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
-    //                 (long) end, ticksSinceLastBestTime, movavg_calc(avgTime), avgFreq);
-    //             ticksSinceLastBestTime = 0;
-    //             bestTime = end;
-    //         } else if (ticks >= 512){
-    //             // print the average time and memory diagnostics every few loops
-    //             ESP_LOGW(PT_TAG, "Average time: %.2f us (%.2f Hz). Heap bytes free: %d KB (min free ever: %d KB)", 
-    //                     movavg_calc(avgTime), avgFreq, esp_get_free_heap_size() / 1024, 
-    //                     esp_get_minimum_free_heap_size() / 1024);
-    //             // fsm_dump(stateMachine);
-    //             // ESP_LOGI(TAG, "Heading: %f", yaw);
-    //             ticks = 0;
-    //         }
-    //     #endif
+            if (end > worstTime){
+                // we took longer than recorded previously, means we have a new worst time
+                ESP_LOGW(PT_TAG, "New worst time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
+                    (long) end, ticksSinceLastWorstTime, movavg_calc(avgTime), avgFreq);
+                ticksSinceLastWorstTime = 0;
+                worstTime = end;
+            } else if (end < bestTime){
+                // we took less than recorded previously, meaning we have a new best time
+                ESP_LOGW(PT_TAG, "New best time: %ld us (last was %d ticks ago). Average time: %.2f us (%.2f Hz)", 
+                    (long) end, ticksSinceLastBestTime, movavg_calc(avgTime), avgFreq);
+                ticksSinceLastBestTime = 0;
+                bestTime = end;
+            } else if (ticks >= 512){
+                // print the average time and memory diagnostics every few loops
+                ESP_LOGW(PT_TAG, "Average time: %.2f us (%.2f Hz). Heap bytes free: %d KB (min free ever: %d KB)", 
+                        movavg_calc(avgTime), avgFreq, esp_get_free_heap_size() / 1024, 
+                        esp_get_minimum_free_heap_size() / 1024);
+                // fsm_dump(stateMachine);
+                // ESP_LOGI(TAG, "Heading: %f", yaw);
+                ticks = 0;
+            }
+        #endif
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(5)); // Random delay at of loop to allow motors to spin
@@ -298,7 +301,7 @@ static void test_music_task(void *pvParameter){
 void app_main(){
     puts("====================================================================================");
     puts(" * This ESP32 belongs to a robot from Team Omicron at Brisbane Boys' College.");
-    puts(" * Software copyright (c) 2019 Team Omicron. All rights reserved.");
+    puts(" * Software copyright (c) 2019-2020 Team Omicron. All rights reserved.");
     puts("====================================================================================");
 
     // Initialize NVS
