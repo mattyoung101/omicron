@@ -315,8 +315,9 @@ void print_line_data(robot_state_t *robotState){
 
 void print_goal_data(){
     static const char *TAG = "GoalDebug";
-    ESP_LOGD(TAG, "Yellow - Angle: %f, Length: %f, Distance: %f | Blue - Angle: %f, Length: %f, Distance: %f", goalYellow.angle, 
-    goalYellow.length, goalYellow.distance, goalBlue.angle, goalBlue.length, goalBlue.distance);
+    ESP_LOGW(TAG, "print_goal_data() is currently not working, ping Matt if you need a fix");
+    // ESP_LOGD(TAG, "Yellow - Angle: %f, Length: %f, Distance: %f | Blue - Angle: %f, Length: %f, Distance: %f", goalYellow.angle, 
+    // goalYellow.length, goalYellow.distance, goalBlue.angle, goalBlue.length, goalBlue.distance);
 }
 
 void print_position_data(robot_state_t *robotState){

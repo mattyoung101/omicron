@@ -1,19 +1,17 @@
 #include "comms_uart.h"
 
 static const char *TAG = "CommsUART";
-ObjectData lastObjectData = {0};
-LocalisationData lastLocaliserData = {0};
-ESP32DebugCommand lastDebugCmd = {0};
+ObjectData lastObjectData = ObjectData_init_zero;
+LocalisationData lastLocaliserData = LocalisationData_init_zero;
+ESP32DebugCommand lastDebugCmd = ESP32DebugCommand_init_zero;
+LSlaveToMaster lastLSlaveData = LSlaveToMaster_init_zero;
+
 SemaphoreHandle_t uartDataSem = NULL;
 SemaphoreHandle_t validCamPacket = NULL;
 static bool createdSemaphore = false;
 
-// UART comms, between Teensy and ESP32
-// Could possibly also recycle to use with the camera since they both use Protobuf, but we'd have to change it a bit
-// because camera stuff needs to take action after decoding. But may not be the worst idea actually.
-
 static void uart_receive_task(void *pvParameter){
-    static const char *TAG = "UARTReceiveTask"; // TODO need new name
+    static const char *TAG = "UARTReceiveTask";
     
     esp_task_wdt_add(NULL);
     uart_endpoint_t device = *(uart_endpoint_t*) pvParameter;
@@ -40,7 +38,6 @@ static void uart_receive_task(void *pvParameter){
             // like we did with the old comms_i2c.c in the 2019 deus vult repo
 
             // set up what fields and destination structs we need to decode
-            // FIXME we should probably lock this all with a semaphore? make uartDataSem
             pb_istream_t stream = pb_istream_from_buffer(data, msgSize);
             const pb_field_t *fields = NULL;
             void *dest = NULL;
@@ -60,19 +57,24 @@ static void uart_receive_task(void *pvParameter){
                         dest = &lastDebugCmd;
                         break;
                     default:
-                        ESP_LOGW(TAG, "Unhandled message id: %d on device %d, going to drop packet", msgType, device);
+                        ESP_LOGW(TAG, "Unhandled message id %d on device %d, going to drop message", msgType, device);
                         continue;
                 }
+
+                // let's just hope it decodes correctly I guess? we can't know for sure, but hopefully it will
+                xSemaphoreGive(validCamPacket);
             } else {
-                // TODO decode "wirecomms.proto" data, figure out exactly what Teensy will send
+                // so the Teensy actually only sends one message to the ESP32 so we can ignore the message id
+                fields = LSlaveToMaster_fields;
+                dest = &lastLSlaveData;
             }
 
             if (xSemaphoreTake(uartDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 if (!pb_decode(&stream, fields, dest)){
-                    ESP_LOGW(TAG, "Failed to decode Protobuf message for device id %d, message id %d", device, msgType);
+                    ESP_LOGW(TAG, "Failed to decode Protobuf on device %d, msg id %d, error: %s", device, msgType,
+                                PB_GET_ERROR(&stream));
                     vTaskDelay(pdMS_TO_TICKS(15));
                 }
-                xSemaphoreGive(validCamPacket);
             } else {
                 ESP_LOGW(TAG, "Failed to unlock UART semaphore, can't decode message on device id %d", device);
             }
@@ -116,8 +118,8 @@ void comms_uart_init(uart_endpoint_t device){
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
     };
     uart_port_t port = device == SBC_CAMERA ? UART_NUM_2 : UART_NUM_1;
-    gpio_num_t txPin = device == SBC_CAMERA ? 420 : 19;
-    gpio_num_t rxPin = device == SBC_CAMERA ? 420 : 18;
+    gpio_num_t txPin = device == SBC_CAMERA ? 17 : 19;
+    gpio_num_t rxPin = device == SBC_CAMERA ? 16 : 18;
     ESP_LOGD(TAG, "UART endpoint is: %d, port is: %d", device, port);
 
     // Configure UART parameters
@@ -129,13 +131,16 @@ void comms_uart_init(uart_endpoint_t device){
         uartDataSem = xSemaphoreCreateMutex();
         validCamPacket = xSemaphoreCreateBinary();
 
-        // the main task will have to wait until a valid cam packet is received
+        // the main task will have to wait until a valid cam packet is received, so we lock the semaphore here
         xSemaphoreTake(validCamPacket, portMAX_DELAY);
         xSemaphoreGive(uartDataSem);
         createdSemaphore = true;
     }
 
-    xTaskCreate(uart_receive_task, "UARTReceiveTask", 4096, (void*) device, configMAX_PRIORITIES - 1, NULL);
+    char buf[64];
+    snprintf(buf, 64, "UARTRecvTask%d", device);
+
+    xTaskCreate(uart_receive_task, buf, 4096, (void*) device, configMAX_PRIORITIES - 1, NULL);
     ESP_LOGI(TAG, "UART comms init OK!");
 }
 
@@ -156,5 +161,6 @@ esp_err_t comms_uart_send(uart_endpoint_t device, msg_type_t msgId, uint8_t *pbD
 
 esp_err_t comms_uart_notify(uart_endpoint_t device, msg_type_t msgId){
     // not really implemented (as it's not needed as of now)
+    ESP_LOGW(TAG, "comms_uart_notify() is not currently implemented");
     return ESP_FAIL;
 }

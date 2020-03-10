@@ -12,6 +12,7 @@
 #include "driver/uart.h"
 #include "pb_decode.h"
 #include "UART.pb.h"
+#include "wirecomms.pb.h"
 
 // Handles communication between different devices over UART
 
@@ -20,15 +21,15 @@ typedef enum {
     SBC_CAMERA = 0,
     MCU_TEENSY,
 } uart_endpoint_t;
-// we'll figure out all information like what pins, baud rate, etc, based o just the uart endpoint
 
 extern ObjectData lastObjectData;
 extern LocalisationData lastLocaliserData;
 extern ESP32DebugCommand lastDebugCmd;
+extern LSlaveToMaster lastLSlaveData;
 extern SemaphoreHandle_t uartDataSem;
 extern SemaphoreHandle_t validCamPacket;
 
-/** Initialises UART on the given port **/
+/** Initialises UART on the given port */
 void comms_uart_init(uart_endpoint_t device);
 /** Sends data to the specified endpoint without waiting for the response */
 esp_err_t comms_uart_send(uart_endpoint_t device, msg_type_t msgId, uint8_t *pbData, size_t msgSize);

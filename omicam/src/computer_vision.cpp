@@ -292,18 +292,6 @@ static auto cv_thread(void *arg) -> void *{
 //                        Size(morphSize, morphSize));
 //                morphologyEx(thresholded[object], thresholded[object], MORPH_OPEN, element);
 //            }
-
-            // dispatch the lines immediately to the localiser for processing to give it a little bit of a head start
-            if (object == OBJ_LINES){
-                // FIXME we need to move this out of here, because localiser relies on goal positions now
-                // then we lose all benefits of multi-threading :(
-                // is there a way around this????? mouse sensor with fake data??? how do we test irl???
-                // honestly I think the best way is to try it without and then evaluate, since remember most of the time
-                // we spend decoding the bloody camera frame anyway, the actual processing can run at like 100 fps
-
-                // note: this assumes we will never scale the line image, otherwise we would have to check and use frameScaled
-                // ... old stuff was here...
-            }
         }, 4);
 
         // process all our field objects
@@ -317,8 +305,8 @@ static auto cv_thread(void *arg) -> void *{
 
         // transmit data to ESP32
         // for each centroid, convert to cartesian (first by translating to have origin point as centre of frame)
-        double cx = frame.cols / 2.0;
-        double cy = frame.rows / 2.0;
+        double cx = videoWidth / 2.0;
+        double cy = videoHeight / 2.0;
         struct vec2 ballVec = {ball.centroid.x - cx, ball.centroid.y - cy};
         struct vec2 blueGoalVec = {blueGoal.centroid.x - cx, blueGoal.centroid.y - cy};
         struct vec2 yellowGoalVec = {yellowGoal.centroid.x - cx, yellowGoal.centroid.y - cy};
@@ -327,17 +315,17 @@ static auto cv_thread(void *arg) -> void *{
         ObjectData data = ObjectData_init_zero;
         data.ballExists = ball.exists;
         if (ball.exists) {
-            data.ballAngle = static_cast<float>(fmod(atan2f(ballVec.y, ballVec.x) * RAD_DEG + 360.0, 360.0));
+            data.ballAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(ballVec.y, ballVec.x), 360.0));
             data.ballMag = (float) utils_camera_dewarp(svec2_length(ballVec));
         }
         data.goalBlueExists = blueGoal.exists;
         if (blueGoal.exists) {
-            data.goalBlueAngle = static_cast<float>(fmod(atan2f(blueGoalVec.y, blueGoalVec.x) * RAD_DEG + 360.0,360.0));
+            data.goalBlueAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(blueGoalVec.y, blueGoalVec.x), 360.0));
             data.goalBlueMag = (float) utils_camera_dewarp(svec2_length(blueGoalVec));
         }
         data.goalYellowExists = yellowGoal.exists;
         if (yellowGoal.exists) {
-            data.goalYellowAngle = static_cast<float>(fmod(atan2f(yellowGoalVec.y, yellowGoalVec.x) * RAD_DEG + 360.0,360.0));
+            data.goalYellowAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(yellowGoalVec.y, yellowGoalVec.x), 360.0));
             data.goalYellowMag = (float) utils_camera_dewarp(svec2_length(yellowGoalVec));
         }
         utils_cv_transmit_data(data);

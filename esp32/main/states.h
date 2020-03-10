@@ -32,6 +32,7 @@ typedef struct {
     // IMU Input
     float inHeading;
     // Ball Inputs
+    bool inBallVisible;
     vect_2d_t inBallPos;
     // Line Inputs
     float inLineAngle;

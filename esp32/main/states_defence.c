@@ -22,7 +22,7 @@ void state_defence_idle_update(state_machine_t *fsm){
     rs.outIsAttack = false;
     imu_correction(&robotState);
 
-    if (orangeBall.exists){
+    if (robotState.inBallVisible){
         LOG_ONCE(TAG, "Ball visible, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
@@ -50,7 +50,7 @@ static void can_kick_callback(TimerHandle_t timer){
     goal_correction(&robotState);
 
     // Check criteria: TODO: FIX
-    if (!orangeBall.exists){
+    if (!robotState.inBallVisible){
         LOG_ONCE(TAG, "Ball not visible, switching to Idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } else if (is_angle_between(rs.inBallPos.arg, SURGEON_ANGLE_MIN, SURGEON_ANGLE_MAX) 

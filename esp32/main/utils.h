@@ -9,7 +9,6 @@
 #include "driver/i2c.h"
 #include "pid.h"
 #include "states.h"
-#include "cam.h"
 #include "bno055.h"
 
 // literally the world's stupidest fucking hack to make it compile
