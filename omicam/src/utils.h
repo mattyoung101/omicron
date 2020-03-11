@@ -79,6 +79,8 @@ const char *nlopt_result_to_string(nlopt_result result);
 #define X_TO_FF(x) (constrain(ROUND2INT(x), 0, field.length))
 /** converts real field Y coordinate into field file coordinate */
 #define Y_TO_FF(y) (constrain(ROUND2INT(y), 0, field.width))
+/** x squared */
+#define sq(x) (x * x)
 
 // note: put all your shit above this line because CLion fucks the indent of anything below this macro
 /** sends a response indicating OK to Omicontrol */

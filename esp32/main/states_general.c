@@ -92,7 +92,7 @@ void state_general_findball_update(state_machine_t *fsm){
     static const char *TAG = "FindballState";
 
     // Check criteria
-    if (orangeBall.exists){
+    if (robotState.inBallVisible){
         LOG_ONCE(TAG, "Ball is visible, reverting");
         FSM_REVERT;
     }

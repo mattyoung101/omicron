@@ -76,7 +76,7 @@ try again, it will eventually pop up.
 Workaround is to add either `Dprism.allowhidpi=false` or `-Dglass.win.uiScale=100%` to the VM options to disable DPI scaling.
 - This will make fonts smaller, but fixes everything else.
 - Windows is well supported because it's installed on our laptops.
-[]
+
 ### Mac OS X
 - Tested on a high DPI (Retina?) display, not only is scaling bugged but the Windows workaround doesn't work. Instead, I
 added a manual workaround which scales down the preview window to 90% it's normal size if Mac OS is detected. The Windows

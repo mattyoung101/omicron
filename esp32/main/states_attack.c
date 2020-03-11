@@ -51,7 +51,7 @@ static void create_timers_if_needed(state_machine_t *fsm){
 
 static void timer_check(){
     // if the ball is visible, stop the idle timer
-    if (orangeBall.exists){
+    if (robotState.inBallVisible){
         om_timer_stop(&noBallTimer);
     }
 }
@@ -157,7 +157,7 @@ void state_attack_yeet_update(state_machine_t *fsm){
         IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
         LOG_ONCE(TAG, "Ball in capture zone and facing goal and shoot permitted, shooting, angle: %f, range: %d", rs.inGoal.arg, rs.inGoalLength);
         FSM_CHANGE_STATE_GENERAL(Shoot); // TODO: use real world units
-    } else if (!orangeBall.exists && !rs.inFrontGate){
+    } else if (!robotState.inBallVisible && !rs.inFrontGate){
         LOG_ONCE(TAG, "Ball not visible, braking, distance: %f", robotState.inBallPos.mag);
         om_timer_start(&noBallTimer);
         FSM_MOTOR_BRAKE;

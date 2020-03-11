@@ -52,6 +52,7 @@ static void nano_comms_task(void *pvParameters){
 
     while (true){
         memset(buf, 0, NANO_PACKET_SIZE);
+        // TODO move nano read back into this function since it's not used elsewhere afaik
         nano_read(I2C_NANO_SLAVE_ADDR, NANO_PACKET_SIZE, buf, &robotState);
 
         if (buf[0] == I2C_BEGIN_DEFAULT){

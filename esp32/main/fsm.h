@@ -35,26 +35,26 @@ struct state_machine_t {
 
 extern state_machine_t *stateMachine;
 
-/** Instantiates a new state machine, starting out in the given state **/
+/** Instantiates a new state machine, starting out in the given state */
 state_machine_t* fsm_new(fsm_state_t *startState);
-/** Updates the instance of the Finite State Machine **/
+/** Updates the instance of the Finite State Machine */
 void fsm_update(state_machine_t *fsm);
-/** Changes from one state to another **/
+/** Changes from one state to another */
 void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState);
-/** Reverts to the previous state in the stack **/
+/** Reverts to the previous state in the stack */
 void fsm_revert_state(state_machine_t *fsm);
-/** Returns true if the given state machine is in the state provided by the string "name" **/
+/** Returns true if the given state machine is in the state provided by the string "name" */
 bool fsm_in_state(state_machine_t *fsm, char *name);
 /** 
  * Thread safe function to get the current state name, synchronised with semaphores.
  * IMPORTANT NOTE: the returned string MUST be freed with free(), as strdup is used. 
- **/
+ */
 char *fsm_get_current_state_name(state_machine_t *fsm);
-/** Resets the FSM to its initial state **/
+/** Resets the FSM to its initial state */
 void fsm_reset(state_machine_t *fsm);
-/** Just clears the state history, but does not change states **/
+/** Just clears the state history, but does not change states */
 void fsm_partial_reset(state_machine_t *fsm);
-/** Dumps the FSM to the console **/
+/** Dumps the FSM to the console */
 void fsm_dump(state_machine_t *fsm);
-/** Frees memory allocated by the FSM **/
+/** Frees memory allocated by the FSM */
 void fsm_free(state_machine_t *fsm);

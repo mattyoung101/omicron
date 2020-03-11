@@ -1,5 +1,6 @@
 #include "comms_bluetooth.h"
 #include "fsm.h"
+#include "esp_task_wdt.h"
 
 // Based on the ESP32 BT SPP initiator example (https://git.io/fj465) and the BT SPP acceptor example (https://git.io/fj46d)
 

@@ -1,4 +1,5 @@
 #include "comms_bluetooth.h"
+#include "esp_task_wdt.h"
 
 // tasks which runs when a Bluetooth connection is established. manages sending and receiving data as well as logic.
 
