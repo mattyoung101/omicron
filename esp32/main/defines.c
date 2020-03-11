@@ -2,10 +2,10 @@
 #include "string.h"
 
 static const char *TAG = "Defines";
-bool MOTOR_FL_REVERSED = false;
-bool MOTOR_FR_REVERSED = false;
-bool MOTOR_BL_REVERSED = false;
-bool MOTOR_BR_REVERSED = false;
+// bool MOTOR_FL_REVERSED = false;
+// bool MOTOR_FR_REVERSED = false;
+// bool MOTOR_BL_REVERSED = false;
+// bool MOTOR_BR_REVERSED = false;
 uint8_t ROBOT_MODE = 254;
 uint16_t DRIBBLE_BALL_TOO_FAR;
 uint16_t ORBIT_DIST;

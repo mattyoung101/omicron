@@ -45,10 +45,9 @@ static void uart_receive_task(void *pvParameter){
         memset(buffer, 0, 5);
         esp_task_wdt_reset();
         uart_read_bytes(UART_NUM_1, buffer, 5, pdMS_TO_TICKS(4096));
-        // ESP_LOGI(TAG, "BULLSHIT");
 
         if (buffer[0] == 0xB && buffer[1] == 0xB) {
-            ESP_LOGW(TAG, "Found start byte");  
+            // ESP_LOGW(TAG, "Found start byte");  
             if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))) {
                 robotState.inLineAngle = (buffer[2] << 8) | (buffer[3] & 0xFF);
                 robotState.inLineSize = buffer[4] / 100;

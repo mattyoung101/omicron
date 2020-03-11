@@ -80,7 +80,7 @@ static void init_bno055(struct bno055_t *bno055){
     // see page 22 of the datasheet, Section 3.3.1
     // we don't use NDOF or NDOF_FMC_OFF because it has a habit of snapping to magnetic north which is undesierable
     // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
-    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_IMUPLUS);
+    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_M4G);
     result += bno055_read_sw_rev_id(&swRevId);
     result += bno055_read_chip_id(&chipId);
     if (result == 0){
@@ -117,7 +117,7 @@ static void master_task(void *pvParameter){
     comms_uart_init();
     comms_i2c_init_bno(I2C_NUM_1);
     comms_i2c_init_nano(I2C_NUM_0);
-    // i2c_scanner(I2C_NUM_1);
+    // i2c_scanner(I2C_NUM_0);
     // cam_init();
     init_bno055(&bno055);
     bno055_convert_float_euler_h_deg(&yawRaw);
@@ -165,7 +165,7 @@ static void master_task(void *pvParameter){
         // cam_calc();
         bno055_convert_float_euler_h_deg(&yawRaw);
         yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
-        printf("yaw: %.2f\n", yaw);
+        // printf("yaw: %.2f\n", yaw);
 
         // for camera debug
         // esp_task_wdt_reset();
@@ -233,7 +233,9 @@ static void master_task(void *pvParameter){
         // }
         uint8_t buffer[] = {0xB, 0xB, HIGH_BYTE_16((uint16_t) yaw), LOW_BYTE_16((uint16_t) yaw)};
         comms_uart_send(MSG_ANY, buffer, 4);
-        motor_calc(0, 0, 100);
+        // motor_calc(0, (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState.inHeading, 360.0f) + 180.0f, 360.0f) - 180, 0.0f, 0.0f), 0);
+        // motor_calc(0, 10, 0);
+        motor_calc(0, 0, 10);
         // TODO: SET MOTOR VALUES
 
     //     // // handle reset button
@@ -283,7 +285,7 @@ static void master_task(void *pvParameter){
     //     #endif
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(5)); // Random delay at of loop to allow motors to spin
+        vTaskDelay(pdMS_TO_TICKS(50)); // Delay main task so I can see the bloody logs
     }
 }
 
@@ -326,4 +328,9 @@ void app_main(){
     // create the main (or test, uncomment it if you want that) task 
     xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     // xTaskCreatePinnedToCore(test_music_task, "TestMusicTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+
+    vTaskDelete(NULL);
+    while (true){
+        vTaskSuspend(NULL);
+    }
 }

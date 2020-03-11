@@ -24,7 +24,7 @@ static const char *TAG = "Motor";
  */
 
 void motor_calc(int16_t direction, int16_t orientation, float speed){
-    float radAngle = DEG_RAD * ((float) direction + 180.0f);
+    float radAngle = DEG_RAD * ((float) direction);
 
     pwmValues[0] = cosf(((MOTOR_FL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
     pwmValues[1] = cosf(((MOTOR_FR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
@@ -41,8 +41,8 @@ void motor_calc(int16_t direction, int16_t orientation, float speed){
         fmaxf(fabsf(blmotor_speed), fabsf(brmotor_speed))
         );
 
-    flmotor_speed = speed == 0 ? flmotor_speed : (flmotor_speed / maxSpeed) * speed;
-    frmotor_speed = speed == 0 ? frmotor_speed : (frmotor_speed / maxSpeed) * speed;
-    blmotor_speed = speed == 0 ? blmotor_speed : (blmotor_speed / maxSpeed) * speed;
-    brmotor_speed = speed == 0 ? brmotor_speed : (brmotor_speed / maxSpeed) * speed;
+    robotState.outFLMotor = speed == 0 ? flmotor_speed : (flmotor_speed / maxSpeed) * speed;
+    robotState.outFRMotor = speed == 0 ? frmotor_speed : (frmotor_speed / maxSpeed) * speed;
+    robotState.outBLMotor = speed == 0 ? blmotor_speed : (blmotor_speed / maxSpeed) * speed;
+    robotState.outBRMotor = speed == 0 ? brmotor_speed : (brmotor_speed / maxSpeed) * speed;
 }

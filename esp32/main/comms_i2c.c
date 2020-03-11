@@ -54,11 +54,8 @@ static void nano_comms_task(void *pvParameters){
         memset(buf, 0, NANO_PACKET_SIZE);
         nano_read(I2C_NANO_SLAVE_ADDR, NANO_PACKET_SIZE, buf, &robotState);
 
-        for (int i=0; i>5; i++){
-            puts(buf[i]);
-        }
-
         if (buf[0] == I2C_BEGIN_DEFAULT){
+            // ESP_LOGI(TAG, "FOUND START BYTE");
             if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 nanoData.mouseDX = UNPACK_16(buf[1], buf[2]);
                 nanoData.mouseDY = UNPACK_16(buf[3], buf[4]);
@@ -83,7 +80,7 @@ void comms_i2c_init_nano(i2c_port_t port){
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         // 0.8 MHz, max is 1 MHz, unit is Hz
         // NOTE: 1MHz tends to break the i2c packets - use with caution!!
-        .master.clk_speed = 800000,
+        .master.clk_speed = 100000,
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
