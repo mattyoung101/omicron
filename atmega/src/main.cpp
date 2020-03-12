@@ -21,7 +21,7 @@ Timer idleLedTimer(1000000); // LED timer when idling
 bool ledOn;
 
 void requestEvent(){
-    Serial.println("SENDING");
+    // Serial.println("BITCH");
     Wire.write(I2C_START_BYTE);
     Wire.write(highByte((int16_t) dx));
     Wire.write(lowByte((int16_t) dx));
@@ -30,23 +30,23 @@ void requestEvent(){
 }
 
 void receiveEvent(int bytes){
+    // Serial.println("ASS");
     if(Wire.available() >= I2C_PACKET_SIZE && Wire.read() == I2C_START_BYTE){
-        Serial.println("FOUND START BYTES");
-        frMotor = Wire.read();
-        brMotor = Wire.read();
-        blMotor = Wire.read();
-        flMotor = Wire.read();
+        frMotor = Wire.read() - 100;
+        brMotor = Wire.read() - 100;
+        blMotor = Wire.read() - 100;
+        flMotor = Wire.read() - 100;
     }
 }
 
 void setup(){
     Serial.begin(9600);
 
-    #if I2C_ON
+    // #if I2C_ON
         Wire.begin(I2C_ADDRESS);
         Wire.onRequest(requestEvent);
         Wire.onReceive(receiveEvent);
-    #endif
+    // #endif
     
     #if MOUSE_ON
         // Serial.println(mouse.begin(10)); // I think 10 is the SS (CS) pin
@@ -78,6 +78,8 @@ void loop(){
             ledOn = !ledOn;
         }
     #endif
+
+    Serial.println(frMotor);
 
     motor.move(frMotor, brMotor, blMotor, flMotor);
 }

@@ -18,6 +18,7 @@
         "defines.h": "c",
         "fsm.h": "c",
         "path_following.h": "c",
-        "avoid.h": "c"
+        "avoid.h": "c",
+        "*.tcc": "cpp"
     }
 }

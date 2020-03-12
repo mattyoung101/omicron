@@ -56,6 +56,7 @@ static void nano_comms_task(void *pvParameters){
         nano_read(I2C_NANO_SLAVE_ADDR, NANO_PACKET_SIZE, buf, &robotState);
 
         if (buf[0] == I2C_BEGIN_DEFAULT){
+            // ESP_LOGI(TAG, "FOUND START BYTE");
             if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 nanoData.mouseDX = UNPACK_16(buf[1], buf[2]);
                 nanoData.mouseDY = UNPACK_16(buf[3], buf[4]);

@@ -4,7 +4,7 @@
 #include "freertos/semphr.h"
 
 // If this is defined, the value of the robot number will be written to NVS
-// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+#define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
@@ -223,9 +223,13 @@ extern uint16_t IN_FRONT_MAX_ANGLE;
 #define ORBIT_RADIUS 1
 
 #define MOTOR_FL_ANGLE 315
+#define MOTOR_FL_REVERSED false
 #define MOTOR_BL_ANGLE 225
+#define MOTOR_BL_REVERSED false
 #define MOTOR_BR_ANGLE 135
+#define MOTOR_BR_REVERSED false
 #define MOTOR_FR_ANGLE 45
+#define MOTOR_FR_REVERSED false
 
 // Defence FSM defines
 extern uint8_t DEFEND_DISTANCE;
