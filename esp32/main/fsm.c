@@ -98,6 +98,7 @@ void fsm_reset(state_machine_t *fsm){
         if (da_count(fsm->stateHistory) <= 1){
             ESP_LOGD(TAG, "Nothing to revert (only one state in history)");
             xSemaphoreGive(fsm->semaphore);
+            xSemaphoreGive(fsm->updateInProgress);
             return;
         }
 

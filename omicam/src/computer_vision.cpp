@@ -317,7 +317,7 @@ static auto cv_thread(void *arg) -> void *{
         if (ball.exists) {
             data.ballAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(ballVec.y, ballVec.x), 360.0));
             data.ballMag = (float) utils_camera_dewarp(svec2_length(ballVec));
-        }
+        }malloc
         data.goalBlueExists = blueGoal.exists;
         if (blueGoal.exists) {
             data.goalBlueAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(blueGoalVec.y, blueGoalVec.x), 360.0));

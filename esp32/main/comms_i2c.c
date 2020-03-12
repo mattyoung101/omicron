@@ -37,7 +37,7 @@ void comms_i2c_init_bno(i2c_port_t port){
     // workaround for clock stretching
     ESP_ERROR_CHECK(i2c_set_timeout(port, 0xFFFF));
 
-    ESP_LOGI("CommsI2C_M", "I2C init OK on bus %d", port);
+    ESP_LOGI("CommsI2C_M", "BNO-055 I2C init OK on bus %d", port);
 }
 
 /** sends/receives data from the atmega slave **/
@@ -54,10 +54,6 @@ static void nano_comms_task(void *pvParameters){
         memset(buf, 0, NANO_PACKET_SIZE);
         // TODO move nano read back into this function since it's not used elsewhere afaik
         nano_read(I2C_NANO_SLAVE_ADDR, NANO_PACKET_SIZE, buf, &robotState);
-
-        for (int i=0; i>5; i++){
-            printf("0x%.2X ", i);
-        }
 
         if (buf[0] == I2C_BEGIN_DEFAULT){
             if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
@@ -82,17 +78,17 @@ void comms_i2c_init_nano(i2c_port_t port){
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_io_num = 22,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        // 0.8 MHz, max is 1 MHz, unit is Hz
-        // NOTE: 1MHz tends to break the i2c packets - use with caution!!
-        .master.clk_speed = 800000,
+        // 0.25 MHz, max is 1 MHz, unit is Hz
+        // NOTE: the ATMega328P can go up to 400 KHz
+        .master.clk_speed = 250'000,
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
-    // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
+    // TODO should probably remove this timeout workaround
     ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFF));
 
     xTaskCreate(nano_comms_task, "NanoCommsTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
-    ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
+    ESP_LOGI("CommsI2C_M", "ATMega I2C init OK as master (RL slave) on bus %d", port);
 }
 
 esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
