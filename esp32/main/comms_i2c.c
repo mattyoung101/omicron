@@ -81,7 +81,7 @@ void comms_i2c_init_nano(i2c_port_t port){
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         // 0.25 MHz, max is 1 MHz, unit is Hz
         // NOTE: the ATMega328P can go up to 400 KHz
-        .master.clk_speed = 250'000,
+        .master.clk_speed = 250000,
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
@@ -93,8 +93,6 @@ void comms_i2c_init_nano(i2c_port_t port){
 }
 
 esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){
-    static const char *TAG = "i2csend";
-    ESP_LOGI(TAG, "SENDING I2C SHIT");
     uint8_t header[] = {0xB, msgId, msgSize};
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();

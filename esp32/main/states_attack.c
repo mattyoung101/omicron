@@ -154,8 +154,8 @@ void state_attack_yeet_update(state_machine_t *fsm){
     // Check criteria:
     // Ball not visible, ball not in front, ball too far away, not facing goal, should we kick?
     if (rs.inFrontGate && is_angle_between(rs.inGoal.arg, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, 
-        IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
-        LOG_ONCE(TAG, "Ball in capture zone and facing goal and shoot permitted, shooting, angle: %f, range: %d", rs.inGoal.arg, rs.inGoalLength);
+        IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoal.mag <= GOAL_SHOOT_DIST && canShoot){
+        LOG_ONCE(TAG, "Ball in capture zone and facing goal and shoot permitted, shooting, angle: %f, range: %.2f", rs.inGoal.arg, rs.inGoal.mag);
         FSM_CHANGE_STATE_GENERAL(Shoot); // TODO: use real world units
     } else if (!robotState.inBallVisible && !rs.inFrontGate){
         LOG_ONCE(TAG, "Ball not visible, braking, distance: %f", robotState.inBallPos.mag);
@@ -199,7 +199,7 @@ void state_attack_turtle_update(state_machine_t *fsm){
     if (!rs.inBackGate){
         LOG_ONCE(TAG, "Ball not in capture zone, reverting");
         FSM_REVERT;
-    } else if (rs.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
+    } else if (rs.inGoal.mag <= GOAL_SHOOT_DIST && canShoot){
         LOG_ONCE(TAG, "Goal in range, shooting");
         FSM_CHANGE_STATE_GENERAL(Shoot); // Yet to implement throwing
     }
@@ -221,7 +221,7 @@ void state_attack_linerun_update(state_machine_t *fsm){
     if (!rs.inBackGate){
         LOG_ONCE(TAG, "Ball not in capture zone, reverting");
         FSM_REVERT;
-    } else if (rs.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
+    } else if (rs.inGoal.mag <= GOAL_SHOOT_DIST && canShoot){
         LOG_ONCE(TAG, "Goal in range, shooting");
         FSM_CHANGE_STATE_GENERAL(Shoot); // Yet to implement throwing
     }
@@ -246,7 +246,7 @@ void state_attack_zigzag_update(state_machine_t *fsm)
         LOG_ONCE(TAG, "Ball not in capture zone, reverting");
         FSM_REVERT;
     }
-    else if (rs.inGoalLength <= GOAL_SHOOT_DIST && canShoot)
+    else if (rs.inGoal.mag <= GOAL_SHOOT_DIST && canShoot)
     {
         LOG_ONCE(TAG, "Goal in range, shooting");
         FSM_CHANGE_STATE_GENERAL(Shoot); // Yet to implement throwing

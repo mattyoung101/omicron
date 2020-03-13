@@ -65,6 +65,8 @@ typedef enum {
 #define LOCALISER_DEBUG 0 // if true, renders the objective function bitmap and quits
 #define LOCALISER_DIAGNOSTICS 1 // if true, print data like vision diagnostics to console
 
+#define UART_OVERRIDE 1 // override if UART enabled
+
 // maths defines are the same ones used in the ESP32 project
 
 #define PI 3.14159265358979323846

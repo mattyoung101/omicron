@@ -79,7 +79,7 @@ void imu_correction(robot_state_t *robotState){
 }
 
 void goal_correction(robot_state_t *robotState){
-    if (robotState->inGoalVisible && robotState->inGoalLength < GOAL_TRACK_DIST){
+    if (robotState->inGoalVisible && robotState->inGoal.mag < GOAL_TRACK_DIST){
         // if the goal is visible use goal correction
         if (robotState->outIsAttack){ // If attacking
             robotState->outOrientation = (int16_t) pid_update(&goalPID, floatMod(floatMod((float)robotState->inGoal.arg, 360.0f) 
@@ -98,7 +98,7 @@ void goal_correction(robot_state_t *robotState){
 }
 
 void other_goal_correction(robot_state_t *robotState){
-    if (robotState->inOtherGoalVisible && robotState->inOtherGoalLength < GOAL_TRACK_DIST){
+    if (robotState->inOtherGoalVisible && robotState->inOtherGoal.mag < GOAL_TRACK_DIST){
         // if the goal is visible use goal correction
         if (!robotState->outIsAttack){ // If attacking
             robotState->outOrientation = (int16_t) pid_update(&goalPID, floatMod(floatMod((float)robotState->inOtherGoal.arg, 360.0f) 

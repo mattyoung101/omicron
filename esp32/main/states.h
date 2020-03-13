@@ -12,21 +12,15 @@
 #include "Vector.h"
 #include "DG_dynarr.h"
 
-// Struct which holds highly processed info about the robot's state. Shared resource, should be synced with a mutex.
+/** Struct which holds high level info about the robot's state. Shared resource, should be synced with a mutex. */
 typedef struct {
     // Goal Inputs
     // Main goal in question (home goal for defender, enemy goal for attacker)
     bool inGoalVisible;
     vect_2d_t inGoal;
-    // int16_t inGoalAngle;
-    int16_t inGoalLength;
-    // int16_t inGoalDistance;
     // Other goal (home goal for attacker, enemy goal for defender)
     bool inOtherGoalVisible;
     vect_2d_t inOtherGoal;
-    // int16_t inOtherGoalAngle;
-    int16_t inOtherGoalLength;
-    // int16_t inOtherGoalDistance;
     // Coordinate System
     vect_2d_t inRobotPos;
     // IMU Input
