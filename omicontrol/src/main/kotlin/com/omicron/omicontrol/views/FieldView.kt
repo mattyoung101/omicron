@@ -2,7 +2,7 @@ package com.omicron.omicontrol.views
 
 import RemoteDebug
 import com.omicron.omicontrol.*
-import com.omicron.omicontrol.field.Ball
+import com.omicron.omicontrol.field.FieldObject
 import com.omicron.omicontrol.field.Robot
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
@@ -48,7 +48,9 @@ class FieldView : View() {
             field = value
         }
     private var targetPos: Point2D? = null
-    private val ball = Ball()
+    private val ball = FieldObject()
+    private val yellowGoal = FieldObject()
+    private val blueGoal = FieldObject()
     private var bandwidthRecordingBegin = System.currentTimeMillis()
     private var isRaycastDebug = false
     private var isOptimiserDebug = false
@@ -65,6 +67,7 @@ class FieldView : View() {
     @Subscribe
     fun receiveMessageEvent(message: RemoteDebug.DebugFrame) {
         BANDWIDTH += message.serializedSize
+        val connectedRobotId = 0
 
         runLater {
             // update data
@@ -82,6 +85,13 @@ class FieldView : View() {
                 robots[i].isPositionKnown = true
                 robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f), %.2f", robot.x, robot.y, robots[i].orientation)
             }
+
+            ball.isPositionKnown = message.isBallKnown
+            ball.position = Point2D(message.ballPos.x.toDouble(), message.ballPos.y.toDouble())
+            yellowGoal.isPositionKnown = message.isYellowKnown
+            yellowGoal.position = Point2D(message.yellowGoalPos.x.toDouble(), message.yellowGoalPos.y.toDouble())
+            blueGoal.isPositionKnown = message.isBlueKnown
+            blueGoal.position = Point2D(message.blueGoalPos.x.toDouble(), message.blueGoalPos.y.toDouble())
 
             // update labels
             localiserPerfLabel.text = "${message.localiserRate} Hz (${1000 / message.localiserRate} ms), " +
@@ -107,20 +117,37 @@ class FieldView : View() {
             }
 
             // render ball
-            display.fill = if (ball.isPositionKnown) Color.ORANGE else Color.GREY
-            val pos = ball.position.toCanvasPosition()
-            val half = BALL_CANVAS_DIAMETER / 2.0
-            display.fillOval(pos.x - half, pos.y - half, BALL_CANVAS_DIAMETER, BALL_CANVAS_DIAMETER)
+            run {
+                display.fill = if (ball.isPositionKnown) Color.ORANGE else Color.GREY
+                val pos = ball.position.toCanvasPosition()
+                val half = BALL_CANVAS_DIAMETER / 2.0
+                display.fillOval(pos.x - half, pos.y - half, BALL_CANVAS_DIAMETER, BALL_CANVAS_DIAMETER)
+            }
 
-            // render target
+            // render goals
+            display.lineWidth = 3.0
+            val centrePos = robots[connectedRobotId].position.toCanvasPosition()
+
+            run {
+                display.stroke = if (blueGoal.isPositionKnown) Color.YELLOW else Color.DARKGOLDENROD
+                val pos = yellowGoal.position.toCanvasPosition()
+                display.strokeLine(centrePos.x, centrePos.y, pos.x, pos.y)
+            }
+
+            run {
+                display.stroke = if (blueGoal.isPositionKnown) Color.DODGERBLUE else Color.DARKBLUE
+                val pos = blueGoal.position.toCanvasPosition()
+                display.strokeLine(centrePos.x, centrePos.y, pos.x, pos.y)
+            }
+
+            // render target sprite
             if (targetPos != null) {
                 display.drawImage(targetIcon, targetPos!!.x - 16, targetPos!!.y - 16, 48.0, 48.0)
             }
 
             // draw rays if requested
             // TODO instead of picking robot 0, we need to pick the one we're connected to, to debug
-            val connectedRobot = 0
-            if (isRaycastDebug && robots[connectedRobot].isPositionKnown) {
+            if (isRaycastDebug && robots[connectedRobotId].isPositionKnown) {
                 // find min and max ray sscore
                 val rayScores = message.rayScoresList.take(message.rayScoresCount)
                 val minRayScore = rayScores.min()!!
@@ -129,7 +156,7 @@ class FieldView : View() {
                 display.lineWidth = 2.0
                 display.stroke = Color.WHITE
 
-                val original = Point2D(robots[connectedRobot].position.x, robots[connectedRobot].position.y).toCanvasPosition()
+                val original = Point2D(robots[connectedRobotId].position.x, robots[connectedRobotId].position.y).toCanvasPosition()
                 val x0 = original.x
                 val y0 = original.y
                 var angle = 0.0

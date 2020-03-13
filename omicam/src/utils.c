@@ -110,13 +110,12 @@ void utils_cv_transmit_data(ObjectData ballData){
 
     uint32_t arraySize = 3 + stream.bytes_written + 1;
     uint8_t outBuf[arraySize];
-    // FIXME send the correct message id here, get it from the ESP stuff, just copy in that enum
-    uint8_t header[3] = {0xB, 0, stream.bytes_written};
+    uint8_t header[3] = {0xB, OBJECT_DATA, stream.bytes_written};
 
     memset(outBuf, 0, arraySize);
-    memcpy(outBuf, header, 3);
-    memcpy(outBuf + 3, msgBuf, stream.bytes_written);
-    outBuf[arraySize - 1] = 0xE;
+    memcpy(outBuf, header, 3); // copy the header into the buffer
+    memcpy(outBuf + 3, msgBuf, stream.bytes_written); // copy the rest of the buffer in
+    outBuf[arraySize - 1] = 0xE; // set end byte
 
     // verification:
 //    printf("PROTOBUF MESSAGE: ");

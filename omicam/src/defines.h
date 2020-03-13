@@ -52,6 +52,18 @@ typedef enum {
     OBJ_GOAL_BLUE,
     OBJ_LINES,
 } field_objects_t;
+typedef enum {
+    /** generic message */
+    MSG_ANY = 0,
+    /** object data containing positions for field objects to ESP32 */
+    OBJECT_DATA,
+    /** determined (x,y) positions to ESP32 **/
+    LOCALISATION_DATA,
+    /** mouse sensor data to Omicam **/
+    MOUSE_DATA,
+    /** debug command to ESP32 **/
+    DEBUG_CMD,
+} firmware_msg_type_t;
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
@@ -65,7 +77,7 @@ typedef enum {
 #define LOCALISER_DEBUG 0 // if true, renders the objective function bitmap and quits
 #define LOCALISER_DIAGNOSTICS 1 // if true, print data like vision diagnostics to console
 
-#define UART_OVERRIDE 1 // override if UART enabled
+#define UART_OVERRIDE 0 // override if UART enabled
 
 // maths defines are the same ones used in the ESP32 project
 
