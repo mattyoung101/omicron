@@ -289,3 +289,15 @@ dmypy.json
 
 documentation/site/
 omicontrol/.idea/misc.xml
+atmega/CMakeListsPrivate.txt
+atmega/.idea/workspace.xml
+atmega/.idea/watcherTasks.xml
+atmega/.idea/platformio.iml
+atmega/.idea/modules.xml
+atmega/.idea/misc.xml
+atmega/.idea/clion.iml
+.idea/omicron.iml
+.idea/misc.xml
+.idea/.name
+.idea/omicron.iml
+.idea/misc.xml
