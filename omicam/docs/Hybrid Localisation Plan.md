@@ -9,6 +9,9 @@ We're going to fix this by developing a hybrid localisation algorithm that does 
 goal localisation, the medium accuracy mouse sensor (integrated displacement values), and finally the high accuracy
 but error prone optimisation solution with field lines.
 
+By doing this, we essentially get increased accuracy by combining the strengths of all three sensors. It mainly acts
+so that the localiser has less area to search which makes it faster and more stable.
+
 ## Sensors
 ### Goals
 Basically we determine a localisation (for each goal?) using trigonometry, just like many other teams do. Except,
@@ -23,11 +26,12 @@ by sending it from the ATMega to the ESP32 first, then to Omicam via a Protobuf 
 Same approach as before, nothing different. Subplex optimiser and raycasting.
 
 ## Algorithm
-1. Determine an initial approximation based on goals. This can put us in a quadrant for where we're on in the field.
-   The uncertainty of this initial approximation is our search radius or domain to run the localiser in.
+1. Determine an initial approximation based on goals. The uncertainty of this initial approximation is our search radius 
+   or domain to run the localiser in.
 2. Seed the initial position of the localiser using the integrated mouse sensor absolute position data, fed back in
-   from the ATMega via the ESP32.
-3. Run the Subplex optimiser _only in this domain_ and from the mouse sensor determined last position.
+   from the ATMega via the ESP32. _Should we calculate mouse sensor uncertainty and use it to narrow down goal radius?_
+3. Run the Subplex optimiser _only in this domain_ and from the mouse sensor determined last position, converge on
+   a final position.
 
 ## Notes for implementation
 - Clamping Subplex optimiser domain to circle: we can just check if it's outside and return LOCALISER_LARGE_ERROR (8900)

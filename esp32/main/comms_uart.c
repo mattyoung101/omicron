@@ -120,7 +120,7 @@ void comms_uart_init(uart_endpoint_t device){
     uart_port_t port = device == SBC_CAMERA ? UART_NUM_2 : UART_NUM_1;
     gpio_num_t txPin = device == SBC_CAMERA ? 17 : 19;
     gpio_num_t rxPin = device == SBC_CAMERA ? 16 : 18;
-    ESP_LOGD(TAG, "UART endpoint is: %d, port is: %d", device, port);
+    ESP_LOGD(TAG, "UART endpoint is: %d, port is: %d, tx pin: %d, rx pin: %d", device, port, txPin, rxPin);
 
     // Configure UART parameters
     ESP_ERROR_CHECK(uart_param_config(port, &uart_config));
@@ -135,6 +135,7 @@ void comms_uart_init(uart_endpoint_t device){
         xSemaphoreTake(validCamPacket, portMAX_DELAY);
         xSemaphoreGive(uartDataSem);
         createdSemaphore = true;
+        ESP_LOGD(TAG, "Created UART semaphores on first run");
     }
 
     char buf[64];

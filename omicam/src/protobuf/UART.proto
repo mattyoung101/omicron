@@ -2,20 +2,26 @@ syntax = "proto3";
 
 // This files contains all the messages we send/receive with the ESP32 over UART
 
-// Message that we (the LattePanda) send to the ESP32 with the ball data. The reason this is separate from the LocalisationData
-// is that this should be sent more frequently than that one is (due to the time it takes to converge on a solution).
+// Message that we (the LattePanda) send to the ESP32 with the ball data.
+// angle and mag are for polar vectors in centimetres, absX and absY are for absolute field coordinates in centimetres
 message ObjectData {
     float ballAngle = 1;
     float ballMag = 2;
-    bool ballExists = 3;
+    float ballAbsX = 3;
+    float ballAbsY = 4;
+    bool ballExists = 5;
 
-    float goalBlueAngle = 4;
-    float goalBlueMag = 5;
-    bool goalBlueExists = 6;
+    float goalBlueAngle = 6;
+    float goalBlueMag = 7;
+    float goalBlueAbsX = 8;
+    float goalBlueAbsY = 9;
+    bool goalBlueExists = 10;
 
-    float goalYellowAngle = 7;
-    float goalYellowMag = 8;
-    bool goalYellowExists = 9;
+    float goalYellowAngle = 11;
+    float goalYellowMag = 12;
+    float goalYellowAbsX = 13;
+    float goalYellowAbsY = 14;
+    bool goalYellowExists = 15;
 }
 
 // Message that we (the LattePanda) send to the ESP32 to inform it of our latest localised position

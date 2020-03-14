@@ -265,6 +265,15 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.rayInterval = (float) (PI2 / LOCALISER_NUM_RAYS);
     msg.localiserRate = localiserRate;
     msg.localiserEvals = localiserEvals;
+    msg.ballPos.x = entry->objectData.ballAbsX;
+    msg.ballPos.y = entry->objectData.ballAbsY;
+    msg.yellowGoalPos.x = entry->objectData.goalYellowAbsX;
+    msg.yellowGoalPos.y = entry->objectData.goalYellowAbsY;
+    msg.blueGoalPos.x = entry->objectData.goalBlueAbsX;
+    msg.blueGoalPos.y = entry->objectData.goalBlueAbsY;
+    msg.isBallKnown = entry->objectData.ballExists;
+    msg.isBlueKnown = entry->objectData.goalBlueExists;
+    msg.isYellowKnown = entry->objectData.goalYellowExists;
     memcpy(msg.localiserStatus, localiserStatus, 32);
 
     pthread_mutex_lock(&localiserMutex);
@@ -501,7 +510,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
 }
 
 void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPointF ballCentroid, int32_t fps,
-        int32_t w, int32_t h){
+        int32_t w, int32_t h, ObjectData objectData){
 #if !REMOTE_ALWAYS_SEND
     // we're not connected so free this data
     if (connfd == -1){
@@ -516,6 +525,7 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
     entry->ballRect = ballRect;
     entry->ballCentroid = ballCentroid;
     entry->fps = fps;
+    entry->objectData = objectData;
 
     // will this work?
     width = w;

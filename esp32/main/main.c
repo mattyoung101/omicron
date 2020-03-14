@@ -197,23 +197,18 @@ static void master_task(void *pvParameter){
                                 vect_2d(0.0f, 0.0f, true);
                 robotState.inBallVisible = lastObjectData.ballExists;
 
-                // TODO make goal stuff floats as well
                 if (robotState.outIsAttack){
                     robotState.inGoalVisible = AWAY_GOAL.exists;
                     robotState.inGoal = AWAY_GOAL.vec;
-                    robotState.inGoalLength = (int16_t) AWAY_GOAL.vec.mag;
 
                     robotState.inOtherGoalVisible = HOME_GOAL.exists;
                     robotState.inGoal = HOME_GOAL.vec;
-                    robotState.inOtherGoalLength = (int16_t) HOME_GOAL.vec.mag;
                 } else {
                     robotState.inOtherGoalVisible = AWAY_GOAL.exists;
                     robotState.inOtherGoal = AWAY_GOAL.vec;
-                    robotState.inOtherGoalLength = (int16_t) AWAY_GOAL.vec.mag;
 
                     robotState.inGoalVisible = HOME_GOAL.exists;
                     robotState.inGoal = HOME_GOAL.vec;
-                    robotState.inGoalLength = (int16_t) HOME_GOAL.vec.mag;
                 }
                 robotState.inHeading = yaw;
                 robotState.inRobotPos = vect_2d(lastLocaliserData.estimatedX, lastLocaliserData.estimatedY, false);
@@ -292,9 +287,10 @@ static void master_task(void *pvParameter){
         }
 #endif
         esp_task_wdt_reset();
-        // TODO is this necessary anymore?
-        // TODO No - Ethan
-        vTaskDelay(pdMS_TO_TICKS(5)); // Random delay at of loop to allow motors to spin
+        // is this necessary anymore?
+        // No - Ethan
+        // thanks, got rid of it - Matt
+        // vTaskDelay(pdMS_TO_TICKS(5)); // Random delay at of loop to allow motors to spin
     }
 }
 

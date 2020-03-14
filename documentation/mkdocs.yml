@@ -14,7 +14,7 @@ nav:
         - Omicontrol (debugging and control): omicontrol.md
         - Game strategies: strategy.md
         - Protocol Buffers: protobuf.md
-    - Open source acknowledgement: open_source.md
+    - Open source: open_source.md
 
 plugins:
     - search

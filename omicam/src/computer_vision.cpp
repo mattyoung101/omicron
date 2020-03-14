@@ -130,7 +130,7 @@ static auto cv_thread(void *arg) -> void *{
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-    Mat ogFrame = imread("../test_data/field4.png");
+    Mat ogFrame = imread("../test_data/field5.png");
     if (ogFrame.cols <= 0 || ogFrame.rows <= 0){
         log_error("Unable to load test image! Please check the path is correct. Cannot continue.");
         return nullptr;
@@ -317,16 +317,22 @@ static auto cv_thread(void *arg) -> void *{
         if (ball.exists) {
             data.ballAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(ballVec.y, ballVec.x), 360.0));
             data.ballMag = (float) utils_camera_dewarp(svec2_length(ballVec));
-        }malloc
+            data.ballAbsX = data.ballMag * cosf(fmod(data.ballAngle - 90.0, 360.0) * DEG_RAD);
+            data.ballAbsY = data.ballMag * sinf(fmod(data.ballAngle - 90.0, 360.0) * DEG_RAD);
+        }
         data.goalBlueExists = blueGoal.exists;
         if (blueGoal.exists) {
             data.goalBlueAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(blueGoalVec.y, blueGoalVec.x), 360.0));
             data.goalBlueMag = (float) utils_camera_dewarp(svec2_length(blueGoalVec));
+            data.goalBlueAbsX = data.goalBlueMag * cosf(fmod(data.goalBlueAngle - 90.0, 360.0) * DEG_RAD);
+            data.goalBlueAbsY = data.goalBlueMag * sinf(fmod(data.goalBlueAngle - 90.0, 360.0) * DEG_RAD);
         }
         data.goalYellowExists = yellowGoal.exists;
         if (yellowGoal.exists) {
             data.goalYellowAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(yellowGoalVec.y, yellowGoalVec.x), 360.0));
             data.goalYellowMag = (float) utils_camera_dewarp(svec2_length(yellowGoalVec));
+            data.goalYellowAbsX = data.goalYellowMag * cosf(fmod(data.goalYellowAngle - 90.0, 360.0) * DEG_RAD);
+            data.goalYellowAbsY = data.goalYellowMag * sinf(fmod(data.goalYellowAngle - 90.0, 360.0)  * DEG_RAD);
         }
         utils_cv_transmit_data(data);
 
@@ -373,29 +379,29 @@ static auto cv_thread(void *arg) -> void *{
             switch (selectedFieldObject){
                 case OBJ_NONE:
                     // just send the empty buffer
-                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows);
+                    remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols, debugFrame.rows, data);
                     break;
                 case OBJ_BALL:
                     memcpy(threshData, ball.threshMask.data, ball.threshMask.rows * ball.threshMask.cols);
                     remote_debug_post(frameData, threshData, ball.boundingBox, ball.centroid, lastFpsMeasurement, debugFrame.cols,
-                            debugFrame.rows);
+                            debugFrame.rows, data);
                     break;
                 case OBJ_LINES:
                     memcpy(threshData, lines.threshMask.data, lines.threshMask.rows * lines.threshMask.cols);
                     remote_debug_post(frameData, threshData, {}, {}, lastFpsMeasurement, debugFrame.cols,
-                            debugFrame.rows);
+                            debugFrame.rows, data);
                     break;
                 case OBJ_GOAL_BLUE:
                     if (blueGoal.threshMask.data != nullptr)
                         memcpy(threshData, blueGoal.threshMask.data, blueGoal.threshMask.rows * blueGoal.threshMask.cols);
                     remote_debug_post(frameData, threshData, blueGoal.boundingBox, blueGoal.centroid, lastFpsMeasurement,
-                            debugFrame.cols, debugFrame.rows);
+                            debugFrame.cols, debugFrame.rows, data);
                     break;
                 case OBJ_GOAL_YELLOW:
                     if (yellowGoal.threshMask.data != nullptr)
                         memcpy(threshData, yellowGoal.threshMask.data, yellowGoal.threshMask.rows * yellowGoal.threshMask.cols);
                     remote_debug_post(frameData, threshData, yellowGoal.boundingBox, yellowGoal.centroid, lastFpsMeasurement,
-                            debugFrame.cols, debugFrame.rows);
+                            debugFrame.cols, debugFrame.rows, data);
                     break;
             }
         }

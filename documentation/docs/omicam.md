@@ -38,7 +38,7 @@ _<sup>2 depending on whether LRF based/goal based localisation was used.</sup>_
 ## Hardware
 Omicam supports any single board computer (SBC) that can run Linux. In our case, we use a LattePanda Delta 432 with a 
 2.4 GHz quad-core Intel Celeron N4100, 4GB of dual-channel DDR4 RAM, 32GB of storage, WiFi, Bluetooth, gigabit Ethernet
-and a UART bus via the inbuilt ATMega32U4.
+and a UART bus via the on-board ATMega32U4 MCU.
 
 The current camera we use is an e-con Systems Hyperyon, based on the Sony Starvis IMX290 ultra low-light sensor capable
 of seeing in almost pitch black at high framerates. This is a USB 2.0 camera module, since the LattePanda has no 

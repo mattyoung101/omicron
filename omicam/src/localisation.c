@@ -18,6 +18,7 @@
 #include "movavg.h"
 #include "remote_debug.h"
 #include "errno.h"
+#include "comms_uart.h"
 
 lp_list_t localiserVisitedPoints = {0};
 static nlopt_opt optimiser;
@@ -299,6 +300,36 @@ static void *work_thread(void *arg){
         memset(localiserStatus, 0, 32);
         memcpy(localiserStatus, resultStr, MIN(strlen(resultStr), 32));
 
+        // 4. dispatch information to ESP32 firmware
+        uint8_t msgBuf[128] = {0};
+        pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, 128);
+        LocalisationData localisationData = LocalisationData_init_default;
+        localisationData.estimatedX = (float) localisedPosition.x;
+        localisationData.estimatedY = (float) localisedPosition.y;
+
+        if (!pb_encode(&stream, LocalisationData_fields, &localisationData)){
+            log_error("Failed to encode localisation Protobuf message: %s", PB_GET_ERROR(&stream));
+        }
+
+        uint32_t arraySize = 3 + stream.bytes_written + 1;
+        uint8_t outBuf[arraySize];
+        uint8_t header[3] = {0xB, LOCALISATION_DATA, stream.bytes_written};
+
+        memset(outBuf, 0, arraySize);
+        memcpy(outBuf, header, 3); // copy the header into the buffer
+        memcpy(outBuf + 3, msgBuf, stream.bytes_written); // copy the rest of the buffer in
+        outBuf[arraySize - 1] = 0xE; // set end byte
+
+        // verification:
+//        printf("LOCALISATION MESSAGE: ");
+//        for (uint32_t i = 0; i < arraySize; i++){
+//            printf("%.2X ", outBuf[i]);
+//        }
+//        puts("");
+
+        comms_uart_send(outBuf, arraySize);
+
+        // dispatch information to performance monitor and clean up
 #if LOCALISER_DEBUG
         log_info("Localisation debug enabled, displaying objective function and quitting...");
         render_test_image();

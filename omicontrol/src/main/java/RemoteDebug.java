@@ -3386,6 +3386,83 @@ public final class RemoteDebug {
      * <code>optional int32 localiserRate = 22;</code>
      */
     int getLocaliserRate();
+
+    /**
+     * <pre>
+     * yellow goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF yellowGoalPos = 23;</code>
+     */
+    boolean hasYellowGoalPos();
+    /**
+     * <pre>
+     * yellow goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF yellowGoalPos = 23;</code>
+     */
+    RemoteDebug.RDPointF getYellowGoalPos();
+    /**
+     * <pre>
+     * yellow goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF yellowGoalPos = 23;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getYellowGoalPosOrBuilder();
+
+    /**
+     * <pre>
+     * blue goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF blueGoalPos = 24;</code>
+     */
+    boolean hasBlueGoalPos();
+    /**
+     * <pre>
+     * blue goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF blueGoalPos = 24;</code>
+     */
+    RemoteDebug.RDPointF getBlueGoalPos();
+    /**
+     * <pre>
+     * blue goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF blueGoalPos = 24;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getBlueGoalPosOrBuilder();
+
+    /**
+     * <pre>
+     * if the yellow goal position is known (it's visible)
+     * </pre>
+     *
+     * <code>optional bool isYellowKnown = 25;</code>
+     */
+    boolean getIsYellowKnown();
+
+    /**
+     * <pre>
+     * if the blue goal position is known
+     * </pre>
+     *
+     * <code>optional bool isBallKnown = 26;</code>
+     */
+    boolean getIsBallKnown();
+
+    /**
+     * <pre>
+     * if the ball position is known
+     * </pre>
+     *
+     * <code>optional bool isBlueKnown = 27;</code>
+     */
+    boolean getIsBlueKnown();
   }
   /**
    * <pre>
@@ -3423,6 +3500,9 @@ public final class RemoteDebug {
       localiserVisitedPoints_ = java.util.Collections.emptyList();
       rayScores_ = java.util.Collections.emptyList();
       localiserRate_ = 0;
+      isYellowKnown_ = false;
+      isBallKnown_ = false;
+      isBlueKnown_ = false;
     }
 
     @java.lang.Override
@@ -3663,6 +3743,47 @@ public final class RemoteDebug {
             case 176: {
 
               localiserRate_ = input.readInt32();
+              break;
+            }
+            case 186: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (yellowGoalPos_ != null) {
+                subBuilder = yellowGoalPos_.toBuilder();
+              }
+              yellowGoalPos_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(yellowGoalPos_);
+                yellowGoalPos_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 194: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (blueGoalPos_ != null) {
+                subBuilder = blueGoalPos_.toBuilder();
+              }
+              blueGoalPos_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(blueGoalPos_);
+                blueGoalPos_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 200: {
+
+              isYellowKnown_ = input.readBool();
+              break;
+            }
+            case 208: {
+
+              isBallKnown_ = input.readBool();
+              break;
+            }
+            case 216: {
+
+              isBlueKnown_ = input.readBool();
               break;
             }
           }
@@ -4279,6 +4400,111 @@ public final class RemoteDebug {
       return localiserRate_;
     }
 
+    public static final int YELLOWGOALPOS_FIELD_NUMBER = 23;
+    private RemoteDebug.RDPointF yellowGoalPos_;
+    /**
+     * <pre>
+     * yellow goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF yellowGoalPos = 23;</code>
+     */
+    public boolean hasYellowGoalPos() {
+      return yellowGoalPos_ != null;
+    }
+    /**
+     * <pre>
+     * yellow goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF yellowGoalPos = 23;</code>
+     */
+    public RemoteDebug.RDPointF getYellowGoalPos() {
+      return yellowGoalPos_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : yellowGoalPos_;
+    }
+    /**
+     * <pre>
+     * yellow goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF yellowGoalPos = 23;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getYellowGoalPosOrBuilder() {
+      return getYellowGoalPos();
+    }
+
+    public static final int BLUEGOALPOS_FIELD_NUMBER = 24;
+    private RemoteDebug.RDPointF blueGoalPos_;
+    /**
+     * <pre>
+     * blue goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF blueGoalPos = 24;</code>
+     */
+    public boolean hasBlueGoalPos() {
+      return blueGoalPos_ != null;
+    }
+    /**
+     * <pre>
+     * blue goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF blueGoalPos = 24;</code>
+     */
+    public RemoteDebug.RDPointF getBlueGoalPos() {
+      return blueGoalPos_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : blueGoalPos_;
+    }
+    /**
+     * <pre>
+     * blue goal position in field coordinates
+     * </pre>
+     *
+     * <code>optional .RDPointF blueGoalPos = 24;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getBlueGoalPosOrBuilder() {
+      return getBlueGoalPos();
+    }
+
+    public static final int ISYELLOWKNOWN_FIELD_NUMBER = 25;
+    private boolean isYellowKnown_;
+    /**
+     * <pre>
+     * if the yellow goal position is known (it's visible)
+     * </pre>
+     *
+     * <code>optional bool isYellowKnown = 25;</code>
+     */
+    public boolean getIsYellowKnown() {
+      return isYellowKnown_;
+    }
+
+    public static final int ISBALLKNOWN_FIELD_NUMBER = 26;
+    private boolean isBallKnown_;
+    /**
+     * <pre>
+     * if the blue goal position is known
+     * </pre>
+     *
+     * <code>optional bool isBallKnown = 26;</code>
+     */
+    public boolean getIsBallKnown() {
+      return isBallKnown_;
+    }
+
+    public static final int ISBLUEKNOWN_FIELD_NUMBER = 27;
+    private boolean isBlueKnown_;
+    /**
+     * <pre>
+     * if the ball position is known
+     * </pre>
+     *
+     * <code>optional bool isBlueKnown = 27;</code>
+     */
+    public boolean getIsBlueKnown() {
+      return isBlueKnown_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -4373,6 +4599,21 @@ public final class RemoteDebug {
       }
       if (localiserRate_ != 0) {
         output.writeInt32(22, localiserRate_);
+      }
+      if (yellowGoalPos_ != null) {
+        output.writeMessage(23, getYellowGoalPos());
+      }
+      if (blueGoalPos_ != null) {
+        output.writeMessage(24, getBlueGoalPos());
+      }
+      if (isYellowKnown_ != false) {
+        output.writeBool(25, isYellowKnown_);
+      }
+      if (isBallKnown_ != false) {
+        output.writeBool(26, isBallKnown_);
+      }
+      if (isBlueKnown_ != false) {
+        output.writeBool(27, isBlueKnown_);
       }
     }
 
@@ -4496,6 +4737,26 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(22, localiserRate_);
       }
+      if (yellowGoalPos_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(23, getYellowGoalPos());
+      }
+      if (blueGoalPos_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(24, getBlueGoalPos());
+      }
+      if (isYellowKnown_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(25, isYellowKnown_);
+      }
+      if (isBallKnown_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(26, isBallKnown_);
+      }
+      if (isBlueKnown_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(27, isBlueKnown_);
+      }
       memoizedSize = size;
       return size;
     }
@@ -4574,6 +4835,22 @@ public final class RemoteDebug {
           .equals(other.getRayScoresList());
       result = result && (getLocaliserRate()
           == other.getLocaliserRate());
+      result = result && (hasYellowGoalPos() == other.hasYellowGoalPos());
+      if (hasYellowGoalPos()) {
+        result = result && getYellowGoalPos()
+            .equals(other.getYellowGoalPos());
+      }
+      result = result && (hasBlueGoalPos() == other.hasBlueGoalPos());
+      if (hasBlueGoalPos()) {
+        result = result && getBlueGoalPos()
+            .equals(other.getBlueGoalPos());
+      }
+      result = result && (getIsYellowKnown()
+          == other.getIsYellowKnown());
+      result = result && (getIsBallKnown()
+          == other.getIsBallKnown());
+      result = result && (getIsBlueKnown()
+          == other.getIsBlueKnown());
       return result;
     }
 
@@ -4651,6 +4928,23 @@ public final class RemoteDebug {
       }
       hash = (37 * hash) + LOCALISERRATE_FIELD_NUMBER;
       hash = (53 * hash) + getLocaliserRate();
+      if (hasYellowGoalPos()) {
+        hash = (37 * hash) + YELLOWGOALPOS_FIELD_NUMBER;
+        hash = (53 * hash) + getYellowGoalPos().hashCode();
+      }
+      if (hasBlueGoalPos()) {
+        hash = (37 * hash) + BLUEGOALPOS_FIELD_NUMBER;
+        hash = (53 * hash) + getBlueGoalPos().hashCode();
+      }
+      hash = (37 * hash) + ISYELLOWKNOWN_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getIsYellowKnown());
+      hash = (37 * hash) + ISBALLKNOWN_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getIsBallKnown());
+      hash = (37 * hash) + ISBLUEKNOWN_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getIsBlueKnown());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -4845,6 +5139,24 @@ public final class RemoteDebug {
         bitField0_ = (bitField0_ & ~0x00100000);
         localiserRate_ = 0;
 
+        if (yellowGoalPosBuilder_ == null) {
+          yellowGoalPos_ = null;
+        } else {
+          yellowGoalPos_ = null;
+          yellowGoalPosBuilder_ = null;
+        }
+        if (blueGoalPosBuilder_ == null) {
+          blueGoalPos_ = null;
+        } else {
+          blueGoalPos_ = null;
+          blueGoalPosBuilder_ = null;
+        }
+        isYellowKnown_ = false;
+
+        isBallKnown_ = false;
+
+        isBlueKnown_ = false;
+
         return this;
       }
 
@@ -4939,6 +5251,19 @@ public final class RemoteDebug {
         }
         result.rayScores_ = rayScores_;
         result.localiserRate_ = localiserRate_;
+        if (yellowGoalPosBuilder_ == null) {
+          result.yellowGoalPos_ = yellowGoalPos_;
+        } else {
+          result.yellowGoalPos_ = yellowGoalPosBuilder_.build();
+        }
+        if (blueGoalPosBuilder_ == null) {
+          result.blueGoalPos_ = blueGoalPos_;
+        } else {
+          result.blueGoalPos_ = blueGoalPosBuilder_.build();
+        }
+        result.isYellowKnown_ = isYellowKnown_;
+        result.isBallKnown_ = isBallKnown_;
+        result.isBlueKnown_ = isBlueKnown_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5121,6 +5446,21 @@ public final class RemoteDebug {
         }
         if (other.getLocaliserRate() != 0) {
           setLocaliserRate(other.getLocaliserRate());
+        }
+        if (other.hasYellowGoalPos()) {
+          mergeYellowGoalPos(other.getYellowGoalPos());
+        }
+        if (other.hasBlueGoalPos()) {
+          mergeBlueGoalPos(other.getBlueGoalPos());
+        }
+        if (other.getIsYellowKnown() != false) {
+          setIsYellowKnown(other.getIsYellowKnown());
+        }
+        if (other.getIsBallKnown() != false) {
+          setIsBallKnown(other.getIsBallKnown());
+        }
+        if (other.getIsBlueKnown() != false) {
+          setIsBlueKnown(other.getIsBlueKnown());
         }
         onChanged();
         return this;
@@ -7288,6 +7628,426 @@ public final class RemoteDebug {
       public Builder clearLocaliserRate() {
         
         localiserRate_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private RemoteDebug.RDPointF yellowGoalPos_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> yellowGoalPosBuilder_;
+      /**
+       * <pre>
+       * yellow goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF yellowGoalPos = 23;</code>
+       */
+      public boolean hasYellowGoalPos() {
+        return yellowGoalPosBuilder_ != null || yellowGoalPos_ != null;
+      }
+      /**
+       * <pre>
+       * yellow goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF yellowGoalPos = 23;</code>
+       */
+      public RemoteDebug.RDPointF getYellowGoalPos() {
+        if (yellowGoalPosBuilder_ == null) {
+          return yellowGoalPos_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : yellowGoalPos_;
+        } else {
+          return yellowGoalPosBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * yellow goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF yellowGoalPos = 23;</code>
+       */
+      public Builder setYellowGoalPos(RemoteDebug.RDPointF value) {
+        if (yellowGoalPosBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          yellowGoalPos_ = value;
+          onChanged();
+        } else {
+          yellowGoalPosBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * yellow goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF yellowGoalPos = 23;</code>
+       */
+      public Builder setYellowGoalPos(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (yellowGoalPosBuilder_ == null) {
+          yellowGoalPos_ = builderForValue.build();
+          onChanged();
+        } else {
+          yellowGoalPosBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * yellow goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF yellowGoalPos = 23;</code>
+       */
+      public Builder mergeYellowGoalPos(RemoteDebug.RDPointF value) {
+        if (yellowGoalPosBuilder_ == null) {
+          if (yellowGoalPos_ != null) {
+            yellowGoalPos_ =
+              RemoteDebug.RDPointF.newBuilder(yellowGoalPos_).mergeFrom(value).buildPartial();
+          } else {
+            yellowGoalPos_ = value;
+          }
+          onChanged();
+        } else {
+          yellowGoalPosBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * yellow goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF yellowGoalPos = 23;</code>
+       */
+      public Builder clearYellowGoalPos() {
+        if (yellowGoalPosBuilder_ == null) {
+          yellowGoalPos_ = null;
+          onChanged();
+        } else {
+          yellowGoalPos_ = null;
+          yellowGoalPosBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * yellow goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF yellowGoalPos = 23;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getYellowGoalPosBuilder() {
+        
+        onChanged();
+        return getYellowGoalPosFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * yellow goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF yellowGoalPos = 23;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getYellowGoalPosOrBuilder() {
+        if (yellowGoalPosBuilder_ != null) {
+          return yellowGoalPosBuilder_.getMessageOrBuilder();
+        } else {
+          return yellowGoalPos_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : yellowGoalPos_;
+        }
+      }
+      /**
+       * <pre>
+       * yellow goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF yellowGoalPos = 23;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getYellowGoalPosFieldBuilder() {
+        if (yellowGoalPosBuilder_ == null) {
+          yellowGoalPosBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getYellowGoalPos(),
+                  getParentForChildren(),
+                  isClean());
+          yellowGoalPos_ = null;
+        }
+        return yellowGoalPosBuilder_;
+      }
+
+      private RemoteDebug.RDPointF blueGoalPos_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> blueGoalPosBuilder_;
+      /**
+       * <pre>
+       * blue goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF blueGoalPos = 24;</code>
+       */
+      public boolean hasBlueGoalPos() {
+        return blueGoalPosBuilder_ != null || blueGoalPos_ != null;
+      }
+      /**
+       * <pre>
+       * blue goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF blueGoalPos = 24;</code>
+       */
+      public RemoteDebug.RDPointF getBlueGoalPos() {
+        if (blueGoalPosBuilder_ == null) {
+          return blueGoalPos_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : blueGoalPos_;
+        } else {
+          return blueGoalPosBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * blue goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF blueGoalPos = 24;</code>
+       */
+      public Builder setBlueGoalPos(RemoteDebug.RDPointF value) {
+        if (blueGoalPosBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          blueGoalPos_ = value;
+          onChanged();
+        } else {
+          blueGoalPosBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * blue goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF blueGoalPos = 24;</code>
+       */
+      public Builder setBlueGoalPos(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (blueGoalPosBuilder_ == null) {
+          blueGoalPos_ = builderForValue.build();
+          onChanged();
+        } else {
+          blueGoalPosBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * blue goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF blueGoalPos = 24;</code>
+       */
+      public Builder mergeBlueGoalPos(RemoteDebug.RDPointF value) {
+        if (blueGoalPosBuilder_ == null) {
+          if (blueGoalPos_ != null) {
+            blueGoalPos_ =
+              RemoteDebug.RDPointF.newBuilder(blueGoalPos_).mergeFrom(value).buildPartial();
+          } else {
+            blueGoalPos_ = value;
+          }
+          onChanged();
+        } else {
+          blueGoalPosBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * blue goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF blueGoalPos = 24;</code>
+       */
+      public Builder clearBlueGoalPos() {
+        if (blueGoalPosBuilder_ == null) {
+          blueGoalPos_ = null;
+          onChanged();
+        } else {
+          blueGoalPos_ = null;
+          blueGoalPosBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * blue goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF blueGoalPos = 24;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getBlueGoalPosBuilder() {
+        
+        onChanged();
+        return getBlueGoalPosFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * blue goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF blueGoalPos = 24;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getBlueGoalPosOrBuilder() {
+        if (blueGoalPosBuilder_ != null) {
+          return blueGoalPosBuilder_.getMessageOrBuilder();
+        } else {
+          return blueGoalPos_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : blueGoalPos_;
+        }
+      }
+      /**
+       * <pre>
+       * blue goal position in field coordinates
+       * </pre>
+       *
+       * <code>optional .RDPointF blueGoalPos = 24;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getBlueGoalPosFieldBuilder() {
+        if (blueGoalPosBuilder_ == null) {
+          blueGoalPosBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getBlueGoalPos(),
+                  getParentForChildren(),
+                  isClean());
+          blueGoalPos_ = null;
+        }
+        return blueGoalPosBuilder_;
+      }
+
+      private boolean isYellowKnown_ ;
+      /**
+       * <pre>
+       * if the yellow goal position is known (it's visible)
+       * </pre>
+       *
+       * <code>optional bool isYellowKnown = 25;</code>
+       */
+      public boolean getIsYellowKnown() {
+        return isYellowKnown_;
+      }
+      /**
+       * <pre>
+       * if the yellow goal position is known (it's visible)
+       * </pre>
+       *
+       * <code>optional bool isYellowKnown = 25;</code>
+       */
+      public Builder setIsYellowKnown(boolean value) {
+        
+        isYellowKnown_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * if the yellow goal position is known (it's visible)
+       * </pre>
+       *
+       * <code>optional bool isYellowKnown = 25;</code>
+       */
+      public Builder clearIsYellowKnown() {
+        
+        isYellowKnown_ = false;
+        onChanged();
+        return this;
+      }
+
+      private boolean isBallKnown_ ;
+      /**
+       * <pre>
+       * if the blue goal position is known
+       * </pre>
+       *
+       * <code>optional bool isBallKnown = 26;</code>
+       */
+      public boolean getIsBallKnown() {
+        return isBallKnown_;
+      }
+      /**
+       * <pre>
+       * if the blue goal position is known
+       * </pre>
+       *
+       * <code>optional bool isBallKnown = 26;</code>
+       */
+      public Builder setIsBallKnown(boolean value) {
+        
+        isBallKnown_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * if the blue goal position is known
+       * </pre>
+       *
+       * <code>optional bool isBallKnown = 26;</code>
+       */
+      public Builder clearIsBallKnown() {
+        
+        isBallKnown_ = false;
+        onChanged();
+        return this;
+      }
+
+      private boolean isBlueKnown_ ;
+      /**
+       * <pre>
+       * if the ball position is known
+       * </pre>
+       *
+       * <code>optional bool isBlueKnown = 27;</code>
+       */
+      public boolean getIsBlueKnown() {
+        return isBlueKnown_;
+      }
+      /**
+       * <pre>
+       * if the ball position is known
+       * </pre>
+       *
+       * <code>optional bool isBlueKnown = 27;</code>
+       */
+      public Builder setIsBlueKnown(boolean value) {
+        
+        isBlueKnown_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * if the ball position is known
+       * </pre>
+       *
+       * <code>optional bool isBlueKnown = 27;</code>
+       */
+      public Builder clearIsBlueKnown() {
+        
+        isBlueKnown_ = false;
         onChanged();
         return this;
       }
@@ -10094,7 +10854,7 @@ public final class RemoteDebug {
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
       "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\";\n\007RDRobo" +
       "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
-      "ation\030\002 \001(\002\"\242\004\n\nDebugFrame\022\024\n\014defaultIma" +
+      "ation\030\002 \001(\002\"\245\005\n\nDebugFrame\022\024\n\014defaultIma" +
       "ge\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013tem" +
       "perature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RDRec" +
       "t\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\022\013\n\003fps",
@@ -10108,15 +10868,18 @@ public final class RemoteDebug {
       "s\030\022 \001(\t\022\032\n\007ballPos\030\023 \001(\0132\t.RDPointF\022)\n\026l" +
       "ocaliserVisitedPoints\030\024 \003(\0132\t.RDPointF\022\021" +
       "\n\trayScores\030\025 \003(\001\022\025\n\rlocaliserRate\030\026 \001(\005",
-      "\"\341\001\n\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006" +
-      "coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 " +
-      "\001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold" +
-      "\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rco" +
-      "lourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robo" +
-      "tId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFra" +
-      "me\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007comman" +
-      "d\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003" +
-      " \001(\005b\006proto3"
+      "\022 \n\ryellowGoalPos\030\027 \001(\0132\t.RDPointF\022\036\n\013bl" +
+      "ueGoalPos\030\030 \001(\0132\t.RDPointF\022\025\n\risYellowKn" +
+      "own\030\031 \001(\010\022\023\n\013isBallKnown\030\032 \001(\010\022\023\n\013isBlue" +
+      "Known\030\033 \001(\010\"\341\001\n\014DebugCommand\022\021\n\tmessageI" +
+      "d\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013ori" +
+      "entation\030\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014." +
+      "RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030" +
+      "\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005value\030\010 " +
+      "\001(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"" +
+      "^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFram",
+      "e\022\036\n\007command\030\002 \001(\0132\r.DebugCommand\022\024\n\014whi" +
+      "chMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10165,7 +10928,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", "LocaliserRate", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_DebugCommand_fieldAccessorTable = new

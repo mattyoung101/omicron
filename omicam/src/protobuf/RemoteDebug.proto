@@ -80,6 +80,16 @@ message DebugFrame {
     repeated double rayScores = 21;
     // localiser rate in Hz
     int32 localiserRate = 22;
+    // yellow goal position in field coordinates
+    RDPointF yellowGoalPos = 23;
+    // blue goal position in field coordinates
+    RDPointF blueGoalPos = 24;
+    // if the yellow goal position is known (it's visible)
+    bool isYellowKnown = 25;
+    // if the blue goal position is known
+    bool isBallKnown = 26;
+    // if the ball position is known
+    bool isBlueKnown = 27;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

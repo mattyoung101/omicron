@@ -28,7 +28,7 @@ void state_defence_idle_update(state_machine_t *fsm){
     }
 
     // rs.outSpeed = 0;
-    position(&robotState, 65.0f, 0.0f, rs.inGoal.arg, rs.inGoalLength, true); // TODO: 
+    position(&robotState, 65.0f, 0.0f, rs.inGoal.arg, rs.inGoal.mag, true); // TODO: 
 }
 
 static om_timer_t surgeKickTimer = {NULL, false};
@@ -54,9 +54,9 @@ static void can_kick_callback(TimerHandle_t timer){
         LOG_ONCE(TAG, "Ball not visible, switching to Idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } else if (is_angle_between(rs.inBallPos.arg, SURGEON_ANGLE_MIN, SURGEON_ANGLE_MAX) 
-                && rs.inBallPos.mag <= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
-        LOG_ONCE(TAG, "Switching to surge, angle: %f, distance: %f, goal length: %d",
-                robotState.inBallPos.arg, robotState.inBallPos.mag, rs.inGoalLength);
+                && rs.inBallPos.mag <= SURGE_STRENGTH && rs.inGoal.mag < SURGE_DISTANCE){
+        LOG_ONCE(TAG, "Switching to surge, angle: %.2f, distance: %f, goal length: %.2f",
+                robotState.inBallPos.arg, robotState.inBallPos.mag, rs.inGoal.mag);
         FSM_CHANGE_STATE_DEFENCE(Surge);
     }
 
@@ -82,8 +82,8 @@ void state_defence_surge_update(state_machine_t *fsm){
 
     // Check criteria:
     // too far from goal, ball not in capture zone, should we kick?
-    if (rs.inGoalLength >= SURGE_DISTANCE || !rs.inGoalVisible){
-        LOG_ONCE(TAG, "Too far from goal, switching to defend, goal dist: %d", rs.inGoalLength);
+    if (rs.inGoal.mag >= SURGE_DISTANCE || !rs.inGoalVisible){
+        LOG_ONCE(TAG, "Too far from goal, switching to defend, goal dist: %.2f", rs.inGoal.mag);
         FSM_CHANGE_STATE_DEFENCE(Defend);
     } else if (!rs.inFrontGate){
         LOG_ONCE(TAG, "Ball is not in capture zone, switching to defend");

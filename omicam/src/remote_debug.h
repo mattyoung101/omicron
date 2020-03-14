@@ -6,6 +6,7 @@
 #include "nanopb/pb_encode.h"
 #include "pb.h"
 #include "defines.h"
+#include "protobuf/UART.pb.h"
 
 extern field_objects_t selectedFieldObject;
 
@@ -18,6 +19,7 @@ typedef struct {
     RDRect ballRect;
     RDPointF ballCentroid;
     int32_t fps;
+    ObjectData objectData;
 } frame_entry_t;
 
 #ifdef __cplusplus
@@ -40,9 +42,10 @@ void remote_debug_dispose(void);
  * @param fps the last recorded FPS measurement of the camera
  * @param videoWidth the actual width of the video, especially if cropping is enabled
  * @param videoHeight the actual height of the video, especialy if cropping is enabled
+ * @param objectData copy of the data sent over UART to the ESP32, used mainly for ball and goal positions for Omicontrol
  **/
 void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPointF ballCentroid, int32_t fps,
-        int32_t videoWidth, int32_t videoHeight);
+        int32_t videoWidth, int32_t videoHeight, ObjectData objectData);
 /** Checks if the remote debugger currently has an established connection **/
 bool remote_debug_is_connected(void);
 

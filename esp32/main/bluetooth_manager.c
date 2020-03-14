@@ -225,7 +225,7 @@ void comms_bt_send_task(void *pvParameter){
         #else
             sendMsg.switchOk = false;
         #endif
-        sendMsg.goalLength = robotState.inGoalLength;
+        sendMsg.goalLength = robotState.inGoal.mag;
         sendMsg.ballAngle = robotState.inBallPos.arg;
         sendMsg.ballDistance = robotState.inBallPos.mag;
         RS_SEM_UNLOCK

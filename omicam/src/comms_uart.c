@@ -14,7 +14,7 @@ static int serialfd;
 static bool uartInitOk = false;
 
 void comms_uart_init(){
-#if BUILD_TARGET == BUILD_TARGET_SBC
+#if BUILD_TARGET == BUILD_TARGET_SBC || UART_OVERRIDE
     // sources:
     // - https://chrisheydrick.com/2012/06/17/how-to-read-serial-data-from-an-arduino-in-linux-with-c-part-3/
     // - https://en.wikibooks.org/wiki/Serial_Programming/termios
@@ -72,7 +72,7 @@ void comms_uart_init(){
 }
 
 void comms_uart_send(uint8_t *data, size_t size){
-#if BUILD_TARGET == BUILD_TARGET_SBC
+#if BUILD_TARGET == BUILD_TARGET_SBC || UART_OVERRIDE
     if (!uartInitOk){
         log_error("Cannot write to UART because UART did not initialise correctly!");
         return;
