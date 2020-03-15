@@ -1,13 +1,12 @@
 # ESP32 firmware
-This folder contains the ESP32 firmware, written in C using the ESP-IDF. Currently, we use VSCode to edit
-but are planning to switch to Eclipse once we can upgrade to IDF v4.
+This folder contains the ESP32 firmware, written in C using the ESP-IDF. Currently, we use VSCode and CLion to edit.
 
 The "main" directory contains the actual ESP32 firmware, "components" contains some libraries that are
 linked in through the IDF's component system (which is just a wrapper around CMake), and "scripts" contains 
 various Python scripts for data generation and development assistance. 
 
 **Credits:**
-- Ethan Lo: behaviour and movement code (FSM frontend), tuning
+- Ethan Lo: behaviour and movement code (FSM frontend), tuning, comms debugging
 - Lachlan Ellis: behaviour and movement code (FSM frontend, path following algorithm, strategies)
 - Matt Young: low level software (UART/I2C/Bluetooth comms, FSM backend, FreeRTOS work)
 
@@ -15,9 +14,6 @@ various Python scripts for data generation and development assistance.
 - T.B.A.
 
 ## Building and running
-As mentioned before, VSCode is currently the only supported IDE for editing. We've had no like using
-CLion, but will try Eclipse soon.
-
 Firstly, you'll need to the ESP32 toolchain for your platform. Please 
 [visit Espressif's docs](https://docs.espressif.com/projects/esp-idf/en/v3.3/get-started-cmake/index.html) for information
 on how to install this. **Please observe the important workaround for Windows:** you need to make the default program to open
@@ -26,6 +22,7 @@ on how to install this. **Please observe the important workaround for Windows:**
 Once you've installed the toolchain, you need to open a terminal in the "esp32" directory and run `idf.py build` to 
 generate the initial build.
 
+### VSCode Instructions
 Once that's done, install the C/C++ extension for VSCode and open this folder ("esp32"). When (or if) it prompts you if you'd 
 like to configure C/C++ automatically using compile_commands.json, select "yes" and choose the one that's **NOT**
 the bootloader project. 
@@ -38,6 +35,10 @@ Assuming you've got this setup successfully, you will now have syntax highlighti
 So just use the shell scripts "b" for "build", "fm" for "flash & monitor", "f" for "flash" and "m" for "monitor" to
 compile and monitor. Remember the golden rule: if VSCode complains, try restarting it and rebuilding the IntelliSense
 cache. At worst, ignore it because it's almost always wrong in these cases.
+
+### CLion Instructions
+Open main.c from the "esp32/main" directory. CLion should ask for you to choose a CMakeLists.txt file (if it doesn't, 
+wait a couple seconds or restart CLion). Select the CMakeLists.txt file in the esp32 and you should be good to go.
 
 ## Developer notes
 ### IDF version
