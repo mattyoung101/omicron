@@ -449,6 +449,12 @@ static void *tcp_thread(void *arg){
 
     if (bind(sockfd, &serverAddr, sizeof(serverAddr)) != 0){
         log_error("Failed to bind TCP socket: %s", strerror(errno));
+        // make this error really obvous since it's breaks Omicontrol and I freak out every time that happens
+        for (int i = 0; i < 5; i++) {
+            log_error("\n========================================\nATTENTION: OMICONTROL WILL NOT WORK!!!!\nPlease wait some time"
+                    " and then relaunch Omicam.\n========================================");
+            sleep(1);
+        }
         return NULL;
     }
     if (listen(sockfd, 4) != 0){

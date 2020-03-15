@@ -1,5 +1,4 @@
 #pragma once
-#include <GLES2/gl2.h>
 #include <bits/types/FILE.h>
 #include "defines.h"
 #include "protobuf/UART.pb.h"

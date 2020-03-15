@@ -52,6 +52,7 @@ typedef enum {
     OBJ_GOAL_BLUE,
     OBJ_LINES,
 } field_objects_t;
+// enum for messages dispatched to the ESP firmware
 typedef enum {
     /** generic message */
     MSG_ANY = 0,

@@ -130,7 +130,7 @@ static auto cv_thread(void *arg) -> void *{
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-    Mat ogFrame = imread("../test_data/field5.png");
+    Mat ogFrame = imread("../test_data/field4.png");
     if (ogFrame.cols <= 0 || ogFrame.rows <= 0){
         log_error("Unable to load test image! Please check the path is correct. Cannot continue.");
         return nullptr;
@@ -303,8 +303,7 @@ static auto cv_thread(void *arg) -> void *{
         // note that we don't actually do CCL on the lines, process_object() is smart enough to automatically skip it
         auto lines = process_object(thresholded[OBJ_LINES], OBJ_LINES, realWidth, realHeight);
 
-        // transmit data to ESP32
-        // for each centroid, convert to cartesian (first by translating to have origin point as centre of frame)
+        // calculate field object vectors, relative to camera centre (in pixel coordinates)
         double cx = videoWidth / 2.0;
         double cy = videoHeight / 2.0;
         struct vec2 ballVec = {ball.centroid.x - cx, ball.centroid.y - cy};
@@ -312,27 +311,29 @@ static auto cv_thread(void *arg) -> void *{
         struct vec2 yellowGoalVec = {yellowGoal.centroid.x - cx, yellowGoal.centroid.y - cy};
 
         // encode protocol buffer to send to ESP over UART
+        // we convert each cartesian vector (in pixels) into a polar vector in centimetres
+        // then we also convert that back to an absolute field position cartesian vector in centimetres
         ObjectData data = ObjectData_init_zero;
         data.ballExists = ball.exists;
         if (ball.exists) {
-            data.ballAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(ballVec.y, ballVec.x), 360.0));
+            data.ballAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(ballVec.y, ballVec.x), 360.0f);
             data.ballMag = (float) utils_camera_dewarp(svec2_length(ballVec));
-            data.ballAbsX = data.ballMag * cosf(fmod(data.ballAngle - 90.0, 360.0) * DEG_RAD);
-            data.ballAbsY = data.ballMag * sinf(fmod(data.ballAngle - 90.0, 360.0) * DEG_RAD);
+            data.ballAbsX = (float) localisedPosition.x + data.ballMag * cosf(atan2f(ballVec.y, ballVec.x));
+            data.ballAbsY = (float) localisedPosition.y + data.ballMag * sinf(atan2f(ballVec.y, ballVec.x));
         }
         data.goalBlueExists = blueGoal.exists;
         if (blueGoal.exists) {
-            data.goalBlueAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(blueGoalVec.y, blueGoalVec.x), 360.0));
-            data.goalBlueMag = (float) utils_camera_dewarp(svec2_length(blueGoalVec));
-            data.goalBlueAbsX = data.goalBlueMag * cosf(fmod(data.goalBlueAngle - 90.0, 360.0) * DEG_RAD);
-            data.goalBlueAbsY = data.goalBlueMag * sinf(fmod(data.goalBlueAngle - 90.0, 360.0) * DEG_RAD);
+            data.goalBlueAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(blueGoalVec.y, blueGoalVec.x), 360.0f);
+            data.goalBlueMag = 183.0f / 2.0f; //(float) utils_camera_dewarp(svec2_length(blueGoalVec));
+            data.goalBlueAbsX = (float) localisedPosition.x + data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x));
+            data.goalBlueAbsY = (float) localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x));
         }
         data.goalYellowExists = yellowGoal.exists;
         if (yellowGoal.exists) {
-            data.goalYellowAngle = static_cast<float>(fmod(450.0 - RAD_DEG * atan2f(yellowGoalVec.y, yellowGoalVec.x), 360.0));
-            data.goalYellowMag = (float) utils_camera_dewarp(svec2_length(yellowGoalVec));
-            data.goalYellowAbsX = data.goalYellowMag * cosf(fmod(data.goalYellowAngle - 90.0, 360.0) * DEG_RAD);
-            data.goalYellowAbsY = data.goalYellowMag * sinf(fmod(data.goalYellowAngle - 90.0, 360.0)  * DEG_RAD);
+            data.goalYellowAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(yellowGoalVec.y, yellowGoalVec.x), 360.0f);
+            data.goalYellowMag = 183.0f / 2.0f;//(float) utils_camera_dewarp(svec2_length(yellowGoalVec));
+            data.goalYellowAbsX = (float) localisedPosition.x + data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
+            data.goalYellowAbsY = (float) localisedPosition.y + data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
         }
         utils_cv_transmit_data(data);
 

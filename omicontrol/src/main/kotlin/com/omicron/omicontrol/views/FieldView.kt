@@ -35,7 +35,7 @@ class FieldView : View() {
     private val fieldImage = Image("field_cropped_scaled.png")
     private val targetIcon = Image("target.png")
     private val robotImage = Image("robot.png")
-    private val robotUnknown = Image("robot_unknown.png")
+    private val robotUnknown = Image("robot_unknown2.png")
     private val robotSelected = Image("robot_selected.png")
     private lateinit var localiserPerfLabel: Label
     private val robots = listOf(
@@ -94,8 +94,10 @@ class FieldView : View() {
             blueGoal.position = Point2D(message.blueGoalPos.x.toDouble(), message.blueGoalPos.y.toDouble())
 
             // update labels
-            localiserPerfLabel.text = "${message.localiserRate} Hz (${1000 / message.localiserRate} ms), " +
-                    "${message.localiserEvals} evals"
+            if (message.localiserRate > 0) {
+                localiserPerfLabel.text = "${message.localiserRate} Hz (${1000 / message.localiserRate} ms), " +
+                        "${message.localiserEvals} evals"
+            }
             localiserPerfLabel.textFill = if (message.localiserStatus != "FTOL_REACHED") Color.ORANGE else Color.WHITE
 
             display.fill = Color.BLACK
@@ -129,13 +131,13 @@ class FieldView : View() {
             val centrePos = robots[connectedRobotId].position.toCanvasPosition()
 
             run {
-                display.stroke = if (blueGoal.isPositionKnown) Color.YELLOW else Color.DARKGOLDENROD
+                display.stroke = if (blueGoal.isPositionKnown) Color.YELLOW else Color.GREY
                 val pos = yellowGoal.position.toCanvasPosition()
                 display.strokeLine(centrePos.x, centrePos.y, pos.x, pos.y)
             }
 
             run {
-                display.stroke = if (blueGoal.isPositionKnown) Color.DODGERBLUE else Color.DARKBLUE
+                display.stroke = if (blueGoal.isPositionKnown) Color.DODGERBLUE else Color.GREY
                 val pos = blueGoal.position.toCanvasPosition()
                 display.strokeLine(centrePos.x, centrePos.y, pos.x, pos.y)
             }
@@ -331,6 +333,9 @@ class FieldView : View() {
                                 return@setOnMouseClicked
                             }
                         }
+
+                        // don't place target if no robot is selected
+                        if (selectedRobot == null) return@setOnMouseClicked
 
                         targetPos = if (targetPos != null && targetPos!!.distance(fieldCanvasPos) <= 24.0){
                             // user clicked on the same position, deselect target

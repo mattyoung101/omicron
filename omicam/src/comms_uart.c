@@ -10,6 +10,7 @@
 #define UART_BUS_NAME "/dev/ttyACM0"
 
 // TODO we also need to have a receive task here as well
+
 static int serialfd;
 static bool uartInitOk = false;
 
