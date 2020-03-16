@@ -71,7 +71,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
     // rs.outIsAttack = true;
     // rs.outSwitchOk = true;
     // RS_SEM_UNLOCK
-    // imu_correction(&robotState);
+    imu_correction(&robotState);
     // timer_check();
 
     // // Check criteria:

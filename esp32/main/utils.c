@@ -66,16 +66,16 @@ bool is_angle_between(float target, float angle1, float angle2){
 
 void imu_correction(robot_state_t *robotState){
     if (robotState->outMotion.mag <= IDLE_MIN_SPEED){ // Check if robot is moving
-        robotState->outOrientation = (int16_t) -pid_update(&idlePID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
+        robotState->outOrientation = (int16_t) pid_update(&idlePID, floatMod(floatMod((float)robotState->inHeading, 360.0f)
                                 + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Correct with idle PID
-        // printf("IDLE PID\n");
+         printf("IDLE PID\n");
     } else {
-        robotState->outOrientation = (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
+        robotState->outOrientation = (int16_t) pid_update(&headingPID, floatMod(floatMod((float)robotState->inHeading, 360.0f)
                                 + 180.0f, 360.0f) - 180, 0.0f, 0.0f); // Correct with heading PID
-        // printf("HEADING PID\n");
+         printf("HEADING PID\n");
     }
     
-    // printf("IMU Correcting: %d\n", robotState->outOrientation);
+     printf("IMU Correcting: %f\n", robotState->outOrientation);
 }
 
 void goal_correction(robot_state_t *robotState){

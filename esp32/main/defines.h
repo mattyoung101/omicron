@@ -83,7 +83,7 @@ typedef enum {
 #define HEADING_MAX_CORRECTION 100
 
 // --- Idle Correction --- //
-#define IDLE_KP 0.8
+#define IDLE_KP 1
 #define IDLE_KI 0
 #define IDLE_KD 0.05
 #define IDLE_MAX_CORRECTION 100

@@ -80,7 +80,7 @@ static void init_bno055(struct bno055_t *bno055){
     // see page 22 of the datasheet, Section 3.3.1
     // we don't use NDOF or NDOF_FMC_OFF because it has a habit of snapping to magnetic north which is undesierable
     // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
-    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_M4G);
+    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_IMUPLUS);
     result += bno055_read_sw_rev_id(&swRevId);
     result += bno055_read_chip_id(&chipId);
     if (result == 0){
@@ -165,7 +165,7 @@ static void master_task(void *pvParameter){
         // cam_calc();
         bno055_convert_float_euler_h_deg(&yawRaw);
         yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
-        // printf("yaw: %.2f\n", yaw);
+         printf("yaw: %.2f\n", yaw);
 
         // for camera debug
         // esp_task_wdt_reset();
@@ -235,7 +235,8 @@ static void master_task(void *pvParameter){
         comms_uart_send(MSG_ANY, buffer, 4);
         // motor_calc(0, (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState.inHeading, 360.0f) + 180.0f, 360.0f) - 180, 0.0f, 0.0f), 0);
         // motor_calc(0, 10, 0);
-        motor_calc(0, 0, 10);
+//        motor_calc(0, 0, 10);
+        motor_calc(0, robotState.outOrientation, 50);
         // TODO: SET MOTOR VALUES
 
     //     // // handle reset button
@@ -285,7 +286,7 @@ static void master_task(void *pvParameter){
     //     #endif
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(50)); // Delay main task so I can see the bloody logs
+        vTaskDelay(pdMS_TO_TICKS(5)); // Delay main task so I can see the bloody logs
     }
 }
 
