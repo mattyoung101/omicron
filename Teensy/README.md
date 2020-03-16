@@ -6,6 +6,7 @@ Furthermore the Teensy was used due to the large number of hardware serial ports
 Credits:
 - Ethan Lo: I2C code, LRF code and main programmer
 - Lachlan Ellis: light sensor code
+- Matt Young: UART comms/Protobuf
 
 ## Features list
 - Efficient and robust cluster-based light sensor processing algorithm to detect the line
@@ -17,5 +18,5 @@ Install the PlatformIO extension in VSCode, then import this folder. Can also us
 
 ## Libraries and licenses
 - [Nanopb](https://github.com/nanopb/nanopb/): zlib license
-- [Timer](https://github.com/TomFraser/FG-B-2018/tree/master/Software/lib/Timer): GPLv3 license
+- [FG&B Timer](https://github.com/TomFraser/FG-B-2018/tree/master/Software/lib/Timer): GPLv3 license
 - [Arduino](https://github.com/arduino/Arduino): GPLv2 license

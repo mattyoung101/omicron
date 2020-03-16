@@ -8,7 +8,7 @@ various Python scripts for data generation and development assistance.
 **Credits:**
 - Ethan Lo: behaviour and movement code (FSM frontend), tuning, comms debugging
 - Lachlan Ellis: behaviour and movement code (FSM frontend, path following algorithm, strategies)
-- Matt Young: low level software (UART/I2C/Bluetooth comms, FSM backend, FreeRTOS work)
+- Matt Young: low level software (UART/Bluetooth comms, FSM backend, Protobuf, FreeRTOS stuff)
 
 ## Feature list
 - T.B.A.

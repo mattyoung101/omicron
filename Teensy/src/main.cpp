@@ -27,41 +27,36 @@ Timer idleLedTimer(1000000); // LED timer when idling
 bool ledOn;
 double heading;
 
-uint8_t uartBuf[64] = {0};
-
-/** decode protobuf over UART from ESP **/
+/** Decode protobuf over UART from ESP */
 static void decodeProtobuf(void){
-    uint8_t buf[64] = {0};
-    uint8_t msg[64] = {0}; // message working space, used by nanopb
-    uint8_t i = 0;
-
-    // read in bytes from UART
-    while (true){
-        // force wait for more bytes to be available
-        // FIXME this is a large performance bottleneck
-        // we can't multi thread this (as we're on a Teensy...) but we could possibly hack up a rewrite in a way that 
-        // allows the main loop to keep polling the sensors while checking for available serial bytes to append to the 
-        // decode buffer. otherwise, we can just clock UART faster (perhaps even up to 1 MHz+?) which should help
-        // after all we only need about 250-500 Hz
-        while (!ESPSERIAL.available());
-        uint8_t byte = ESPSERIAL.read();
-        buf[i++] = byte;
-
-        // terminate decoding if stream is finished
-        if (byte == 0xEE){
-            break;
-        }    
+    // if we don't have a header, don't bother decoding right now.
+    // give the rest of the code some time to think
+    if (ESPSERIAL.available() < 3){
+        return;
+    }
+    
+    // read in the header bytes
+    uint8_t header[3] = {0};
+    for (int i = 0; i < 3; i++){
+        header[i] = ESPSERIAL.read();
     }
 
-    // now we can parse the header and decode the protobuf byte stream
-    if (buf[0] == 0xB){
+    if (header[0] == 0xB){
         msg_type_t msgId = (msg_type_t) buf[1];
-        uint8_t msgSize = buf[2];
+        uint8_t msgSize = min(buf[2], 64);
+        uint8_t buf[msgSize];
+        memset(buf, 0, msgSize); // probably un-necessary, just in case
 
-        // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
-        memcpy(msg, buf + 3, msgSize);
+        // read in the rest of the message now
+        size_t readBytes = ESPSERIAL.readBytes(buf, msgSize);
+        if (readBytes != msgSize){
+            // if this happens a lot, it's probably timing out, look into Serial.setTimeout()
+            // that's 1 second by default so likely you're going to be having more issues than
+            // just that
+            Serial.printf("[Comms] [WARN] Expected %d bytes, read %d bytes\n", msgSize, readBytes);
+        }
 
-        pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
+        pb_istream_t stream = pb_istream_from_buffer(buf, msgSize);
         void *dest = NULL;
         void *msgFields = NULL;
 
@@ -72,20 +67,16 @@ static void decodeProtobuf(void){
                 msgFields = (void*) &MasterToLSlave_fields;
                 break;
             default:
-                Serial.printf("[Comms] Unknown message ID: %d\n", msgId);
+                Serial.printf("[Comms] [WARN] Unknown message ID: %d\n", msgId);
                 return;
         }
 
         // decode the byte stream
         if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
-            Serial.printf("[Comms] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
-        } else {
-            // the data decoded successfully, woop di fucking doo, so let's reply
+            Serial.printf("[Comms] [ERROR] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
         }
-
-        // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
     } else {
-        Serial.printf("[Comms] Invalid begin character: 0x%X\n", buf[0]);
+        Serial.printf("[Comms] [WARN] Invalid begin character 0x%.2X, expected 0x0B\n", buf[0]);
         delay(15);
     }
 }
@@ -165,14 +156,20 @@ void loop() {
     #endif
 
     LSlaveToMaster reply = LSlaveToMaster_init_zero;
-    // set data here
+    // FIXME ethan can you please set data here, thanks man
 
     uint8_t replyBuf[64] = {0};
     pb_ostream_t ostream = pb_ostream_from_buffer(replyBuf, 64);
 
     if (!pb_encode(&ostream, LSlaveToMaster_fields, &reply)){
-        Serial.printf("[Comms] Error encoding reply message: %s\n", PB_GET_ERROR(&stream));
+        Serial.printf("[Comms] [ERROR] Protobuf reply message encode error: %s\n", PB_GET_ERROR(&stream));
     } else {
-        Serial.println("so guys, we did it");
+        Serial.println("managed to encode reply message, going to send it");
+        
+        // encode worked, so dispatch the message over UART, same format as the ESP32 in message
+        uint8_t header[3] = {0xB, MSG_ANY, stream.bytes_written};
+        ESPSERIAL.write(header, 3);
+        ESPSERIAL.write(replyBuf, stream.bytes_written);
+        ESPSERIAL.write(0xEE);
     }
 }
