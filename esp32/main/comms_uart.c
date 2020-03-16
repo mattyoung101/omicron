@@ -28,7 +28,7 @@ static void uart_receive_task(void *pvParameter){
         if (header[0] == 0xB){
             msg_type_t msgType = header[1];
             uint8_t msgSize = header[2];
-            ESP_LOGD(TAG, "received an OK message on device: %d, msgType: %d, msgSize: %d", device, 
+            ESP_LOGD(TAG, "received an OK message on device: %d, msgType: %d, msgSize: %d", device,
                     msgType, msgSize);
 
             // read in the rest of the data
@@ -41,7 +41,7 @@ static void uart_receive_task(void *pvParameter){
             pb_istream_t stream = pb_istream_from_buffer(data, msgSize);
             const pb_field_t *fields = NULL;
             void *dest = NULL;
-            
+
             if (device == SBC_CAMERA){
                 switch (msgType){
                     case OBJECT_DATA:
@@ -94,7 +94,7 @@ static void uart_receive_task(void *pvParameter){
         // // ESP_LOGI(TAG, "BULLSHIT");
 
         // if (buffer[0] == 0xB && buffer[1] == 0xB) {
-        //     ESP_LOGW(TAG, "Found start byte");  
+        //     ESP_LOGW(TAG, "Found start byte");
         //     if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))) {
         //         robotState.inLineAngle = (buffer[2] << 8) | (buffer[3] & 0xFF);
         //         robotState.inLineSize = buffer[4] / 100;

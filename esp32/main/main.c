@@ -174,7 +174,7 @@ static void master_task(void *pvParameter){
         // update sensors
         bno055_convert_float_euler_h_deg(&yawRaw);
         yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
-        // printf("yaw: %.2f\n", yaw);
+        printf("yaw: %.2f\n", yaw);
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -227,7 +227,7 @@ static void master_task(void *pvParameter){
         MasterToLSlave teensyMsg = MasterToLSlave_init_default;
         uint8_t teensyBuf[PROTOBUF_SIZE] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(teensyBuf, PROTOBUF_SIZE);
-        
+
         teensyMsg.heading = yaw; // IMU heading
         memcpy(teensyMsg.debugLEDs, robotState.debugLEDs, 6 * sizeof(bool));
 
