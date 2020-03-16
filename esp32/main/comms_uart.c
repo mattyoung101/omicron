@@ -14,7 +14,7 @@ static void uart_receive_task(void *pvParameter){
     static const char *TAG = "UARTReceiveTask";
     
     esp_task_wdt_add(NULL);
-    uart_endpoint_t device = *(uart_endpoint_t*) pvParameter;
+    uart_endpoint_t device = (uart_endpoint_t) pvParameter;
     uart_port_t port = device == SBC_CAMERA ? UART_NUM_2 : UART_NUM_1;
     ESP_LOGI(TAG, "UART receive task init OK on endpoint: %d", device);
 
@@ -132,6 +132,7 @@ void comms_uart_init(uart_endpoint_t device){
         validCamPacket = xSemaphoreCreateBinary();
 
         // the main task will have to wait until a valid cam packet is received, so we lock the semaphore here
+        xSemaphoreGive(validCamPacket);
         xSemaphoreTake(validCamPacket, portMAX_DELAY);
         xSemaphoreGive(uartDataSem);
         createdSemaphore = true;

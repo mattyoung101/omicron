@@ -117,6 +117,8 @@ static void master_task(void *pvParameter){
     uint8_t pbErrors = 0;
 
     print_reset_reason();
+    fflush(stdout);
+    fflush(stderr);
     robotStateSem = xSemaphoreCreateBinary();
     xSemaphoreGive(robotStateSem);
 
@@ -329,6 +331,7 @@ void app_main(){
 
     nvs_close(storageHandle);
     fflush(stdout);
+    fflush(stderr);
 
     // create the main (or test, uncomment it if you want that) task 
     xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
