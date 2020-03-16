@@ -80,7 +80,7 @@ static void decodeProtobuf(void){
         if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
             Serial.printf("[Comms] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
         } else {
-            // Serial.println("Protobuf decode OK!");
+            // the data decoded successfully, woop di fucking doo, so let's reply
         }
 
         // TODO do we need the backup and restore code (if there's a decode error or the packet is wack) like before?
@@ -140,10 +140,11 @@ void setup() {
 }
 
 void loop() {
+
     // Serial.println("  LOOP");
     // Poll UART and decode incoming protobuf message
-    // decodeProtobuf();
-    crapUart();
+    decodeProtobuf();
+//    crapUart();
     
 
     #if LS_ON
@@ -162,4 +163,16 @@ void loop() {
             ledOn = !ledOn;
         }
     #endif
+
+    LSlaveToMaster reply = LSlaveToMaster_init_zero;
+    // set data here
+
+    uint8_t replyBuf[64] = {0};
+    pb_ostream_t ostream = pb_ostream_from_buffer(replyBuf, 64);
+
+    if (!pb_encode(&ostream, LSlaveToMaster_fields, &reply)){
+        Serial.printf("[Comms] Error encoding reply message: %s\n", PB_GET_ERROR(&stream));
+    } else {
+        Serial.println("so guys, we did it");
+    }
 }

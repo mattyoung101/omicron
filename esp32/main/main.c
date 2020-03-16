@@ -176,7 +176,7 @@ static void master_task(void *pvParameter){
         // update sensors
         bno055_convert_float_euler_h_deg(&yawRaw);
         yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
-        printf("yaw: %.2f\n", yaw);
+//        printf("yaw: %.2f\n", yaw);
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -233,13 +233,15 @@ static void master_task(void *pvParameter){
         teensyMsg.heading = yaw; // IMU heading
         memcpy(teensyMsg.debugLEDs, robotState.debugLEDs, 6 * sizeof(bool));
 
-        // if (!pb_encode(&stream, MasterToLSlave_fields, &teensyMsg)){
-        //     ESP_LOGW(TAG, "Teensy Protobuf encode error: %s", PB_GET_ERROR(&stream));
-        // } else {
-        //     pbErrors = 0;
-        // }
-        uint8_t buffer[] = {0xB, 0xB, HIGH_BYTE_16((uint16_t) yaw), LOW_BYTE_16((uint16_t) yaw)};
-        comms_uart_send(MCU_TEENSY, MSG_ANY, buffer, 4);
+         if (!pb_encode(&stream, MasterToLSlave_fields, &teensyMsg)){
+             ESP_LOGW(TAG, "Teensy Protobuf encode error: %s", PB_GET_ERROR(&stream));
+         } else {
+             pbErrors = 0;
+         }
+         comms_uart_send(MCU_TEENSY, MSG_ANY, teensyBuf, stream.bytes_written);
+
+//        uint8_t buffer[] = {0xB, 0xB, HIGH_BYTE_16((uint16_t) yaw), LOW_BYTE_16((uint16_t) yaw)};
+//        comms_uart_send(MCU_TEENSY, MSG_ANY, buffer, 4);
         motor_calc(0, 0, 100);
         // TODO: SET MOTOR VALUES
 

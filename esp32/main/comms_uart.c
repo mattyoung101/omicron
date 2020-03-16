@@ -75,6 +75,7 @@ static void uart_receive_task(void *pvParameter){
                                 PB_GET_ERROR(&stream));
                     vTaskDelay(pdMS_TO_TICKS(15));
                 }
+                xSemaphoreGive(uartDataSem);
             } else {
                 ESP_LOGW(TAG, "Failed to unlock UART semaphore, can't decode message on device id %d", device);
             }
@@ -82,7 +83,7 @@ static void uart_receive_task(void *pvParameter){
             esp_task_wdt_reset();
             uart_flush_input(port);
         } else {
-            ESP_LOGW(TAG, "Received invalid UART packet, begin byte was 0x%.2X not 0x0B", header[0]);
+            ESP_LOGW(TAG, "Received invalid UART packet, begin byte was 0x%.2X not 0x0B, device: %d", header[0], device);
             uart_flush_input(port);
             esp_task_wdt_reset();
             vTaskDelay(pdMS_TO_TICKS(15));
@@ -158,6 +159,9 @@ esp_err_t comms_uart_send(uart_endpoint_t device, msg_type_t msgId, uint8_t *pbD
     uart_write_bytes(port, header, 3);
     uart_write_bytes(port, (char*) pbData, msgSize);
     uart_write_bytes(port, &end, 1);
+
+    printf("writing to device: %d, msg id: %d, %zu bytes of data\n", device, msgId, msgSize);
+
     return ESP_OK;
 }
 
