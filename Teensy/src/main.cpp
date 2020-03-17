@@ -42,8 +42,8 @@ static void decodeProtobuf(void){
     }
 
     if (header[0] == 0xB){
-        msg_type_t msgId = (msg_type_t) buf[1];
-        uint8_t msgSize = min(buf[2], 64);
+        msg_type_t msgId = (msg_type_t) header[1];
+        uint8_t msgSize = header[2];
         uint8_t buf[msgSize];
         memset(buf, 0, msgSize); // probably un-necessary, just in case
 
@@ -76,7 +76,7 @@ static void decodeProtobuf(void){
             Serial.printf("[Comms] [ERROR] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
         }
     } else {
-        Serial.printf("[Comms] [WARN] Invalid begin character 0x%.2X, expected 0x0B\n", buf[0]);
+        Serial.printf("[Comms] [WARN] Invalid begin character 0x%.2X, expected 0x0B\n", header[0]);
         delay(15);
     }
 }
@@ -157,19 +157,20 @@ void loop() {
 
     LSlaveToMaster reply = LSlaveToMaster_init_zero;
     // FIXME ethan can you please set data here, thanks man
+    // No problem
 
     uint8_t replyBuf[64] = {0};
     pb_ostream_t ostream = pb_ostream_from_buffer(replyBuf, 64);
 
     if (!pb_encode(&ostream, LSlaveToMaster_fields, &reply)){
-        Serial.printf("[Comms] [ERROR] Protobuf reply message encode error: %s\n", PB_GET_ERROR(&stream));
+        Serial.printf("[Comms] [ERROR] Protobuf reply message encode error: %s\n", PB_GET_ERROR(&ostream));
     } else {
         Serial.println("managed to encode reply message, going to send it");
         
         // encode worked, so dispatch the message over UART, same format as the ESP32 in message
-        uint8_t header[3] = {0xB, MSG_ANY, stream.bytes_written};
+        uint8_t header[3] = {0xB, MSG_ANY, (uint8_t) ostream.bytes_written};
         ESPSERIAL.write(header, 3);
-        ESPSERIAL.write(replyBuf, stream.bytes_written);
+        ESPSERIAL.write(replyBuf, ostream.bytes_written);
         ESPSERIAL.write(0xEE);
     }
 }
