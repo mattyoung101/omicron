@@ -12,3 +12,4 @@
 // inline float y(vect_2d_t robot, float a, float b, int p);
 // vect_2d_t calcAvoid(float a, float b, vect_2d_t obj, vect_2d_t robot);
 vect_2d_t avoidMethod(vect_2d_t avoid, float a, float b, vect_2d_t obj, vect_2d_t robot);
+vect_2d_t defendAvoid(vect_2d_t ball, float radius, vect_2d_t otherRobot, vect_2d_t obj, vect_2d_t robot);
