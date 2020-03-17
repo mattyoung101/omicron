@@ -87,7 +87,7 @@ static void init_bno055(struct bno055_t *bno055){
     // see page 22 of the datasheet, Section 3.3.1
     // we don't use NDOF or NDOF_FMC_OFF because it has a habit of snapping to magnetic north which is undesierable
     // instead we use IMUPLUS (acc + gyro fusion) if there is magnetic interference, otherwise M4G (basically relative mag)
-    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_M4G);
+    result += bno055_set_operation_mode(BNO055_OPERATION_MODE_IMUPLUS);
     result += bno055_read_sw_rev_id(&swRevId);
     result += bno055_read_chip_id(&chipId);
     if (result == 0){
@@ -126,15 +126,15 @@ static void master_task(void *pvParameter){
 
     comms_i2c_init_bno(I2C_NUM_1);
     comms_i2c_init_nano(I2C_NUM_0);
-    i2c_scanner(I2C_NUM_0);
-    i2c_scanner(I2C_NUM_1);
+//    i2c_scanner(I2C_NUM_0);
+//    i2c_scanner(I2C_NUM_1);
     init_bno055(&bno055);
     bno055_convert_float_euler_h_deg(&yawRaw);
     yawOffset = yawRaw;
     ESP_LOGI(TAG, "Yaw offset: %f degrees", yawOffset);
 
-    gpio_set_direction(KICKER_PIN1, GPIO_MODE_OUTPUT);
-    gpio_set_direction(KICKER_PIN2, GPIO_MODE_OUTPUT);
+//    gpio_set_direction(KICKER_PIN1, GPIO_MODE_OUTPUT);
+//    gpio_set_direction(KICKER_PIN2, GPIO_MODE_OUTPUT);
     // QueueHandle_t buttonQueue = button_init(PIN_BIT(RST_BTN));
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
 
@@ -238,9 +238,11 @@ static void master_task(void *pvParameter){
          }
          comms_uart_send(MCU_TEENSY, MSG_ANY, teensyBuf, stream.bytes_written);
 
+//         ESP_LOGI(TAG, "Lineangle: %f, Linesize: %f", lastLSlaveData.lineAngle, lastLSlaveData.lineSize);
+
 //        uint8_t buffer[] = {0xB, 0xB, HIGH_BYTE_16((uint16_t) yaw), LOW_BYTE_16((uint16_t) yaw)};
 //        comms_uart_send(MCU_TEENSY, MSG_ANY, buffer, 4);
-        motor_calc(0, 0, 100);
+        motor_calc(0, robotState.outOrientation, 100);
         // TODO: SET MOTOR VALUES
 
         // // handle reset button

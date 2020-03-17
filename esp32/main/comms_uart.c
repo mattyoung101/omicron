@@ -28,8 +28,7 @@ static void uart_receive_task(void *pvParameter){
         if (header[0] == 0xB){
             msg_type_t msgType = header[1];
             uint8_t msgSize = header[2];
-            ESP_LOGD(TAG, "received an OK message on device: %d, msgType: %d, msgSize: %d", device,
-                    msgType, msgSize);
+//            ESP_LOGD(TAG, "received an OK message on device: %d, msgType: %d, msgSize: %d", device, msgType, msgSize);
 
             // read in the rest of the data
             uint8_t data[msgSize];
@@ -75,7 +74,7 @@ static void uart_receive_task(void *pvParameter){
                                 PB_GET_ERROR(&stream));
                     vTaskDelay(pdMS_TO_TICKS(15));
                 } else {
-                    ESP_LOGI(TAG, "Wow we actually decoded a message on device: %d", device);
+//                    ESP_LOGI(TAG, "Wow we actually decoded a message on device: %d", device);
                 }
                 xSemaphoreGive(uartDataSem);
             } else {
