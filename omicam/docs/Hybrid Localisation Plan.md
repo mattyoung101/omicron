@@ -1,4 +1,6 @@
 # Hybrid localisation plan
+_Authors: Matt Young, Ethan Lo_
+
 ## Background and justification
 Currently, our localisation solution using just the lines works well when tested with Fusion renders, but struggles
 in real life due to noise and difficulty thresholding lines. The problem is that the perspective of the camera and

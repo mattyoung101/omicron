@@ -1,8 +1,6 @@
 # Omicam
 
-**ATTENTION: this is outdated, especially the localisation section.**
-
-Written by Matt Young in collaboration with Ethan Lo.
+**ATTENTION: this is outdated, especially the localisation section. You'd be better of checking our website instead.**
 
 This document describes in detail how all the systems (pipelines) in Omicam function.
 
