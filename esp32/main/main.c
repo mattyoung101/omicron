@@ -117,8 +117,6 @@ static void master_task(void *pvParameter){
     uint8_t pbErrors = 0;
 
     print_reset_reason();
-    fflush(stdout);
-    fflush(stderr);
     robotStateSem = xSemaphoreCreateBinary();
     xSemaphoreGive(robotStateSem);
 

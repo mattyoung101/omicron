@@ -74,6 +74,8 @@ static void uart_receive_task(void *pvParameter){
                     ESP_LOGW(TAG, "Failed to decode Protobuf on device %d, msg id %d, error: %s", device, msgType,
                                 PB_GET_ERROR(&stream));
                     vTaskDelay(pdMS_TO_TICKS(15));
+                } else {
+                    ESP_LOGI(TAG, "Wow we actually decoded a message on device: %d", device);
                 }
                 xSemaphoreGive(uartDataSem);
             } else {
@@ -160,7 +162,7 @@ esp_err_t comms_uart_send(uart_endpoint_t device, msg_type_t msgId, uint8_t *pbD
     uart_write_bytes(port, (char*) pbData, msgSize);
     uart_write_bytes(port, &end, 1);
 
-    printf("writing to device: %d, msg id: %d, %zu bytes of data\n", device, msgId, msgSize);
+//    printf("writing to device: %d, msg id: %d, %zu bytes of data\n", device, msgId, msgSize);
 
     return ESP_OK;
 }
