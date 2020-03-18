@@ -148,10 +148,12 @@ static auto cv_thread(void *arg) -> void *{
     VideoCapture cap("v4l2src device=/dev/video0 ! image/jpeg, width=1280, height=720 ! jpegdec ! videoconvert"
                      " ! appsink drop=true", CAP_GSTREAMER);
     if (!cap.isOpened()){
-        log_error("Failed to open OpenCV capture device in SBC build: impossible to continue running Omicam.");
+        // if we can't connect to the camera, we're essentially useless
+        log_error("Failed to open OpenCV capture device!");
+        log_error("Critical failure: cannot get any vision data in this state. Impossible to continue running Omicam.");
         fflush(stdout);
         fflush(stderr);
-        exit(EXIT_FAILURE); // TODO should we exit with EXIT_SUCCESS so that we don't keep being restarted by run.py?
+        exit(EXIT_FAILURE);
     }
 #endif
     auto fps = ROUND2INT(cap.get(CAP_PROP_FPS));

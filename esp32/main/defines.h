@@ -89,8 +89,8 @@ typedef enum {
     OBJECT_DATA,
     /** determined (x,y) positions to ESP32 **/
     LOCALISATION_DATA,
-    /** mouse sensor data to Omicam **/
-    MOUSE_DATA,
+    /** mouse sensor and sensor data to Omicam **/
+    SENSOR_DATA,
     /** debug command to ESP32 **/
     DEBUG_CMD,
 } msg_type_t;

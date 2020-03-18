@@ -60,15 +60,15 @@ typedef enum {
     OBJECT_DATA,
     /** determined (x,y) positions to ESP32 **/
     LOCALISATION_DATA,
-    /** mouse sensor data to Omicam **/
-    MOUSE_DATA,
+    /** mouse sensor and sensor data to Omicam **/
+    SENSOR_DATA,
     /** debug command to ESP32 **/
     DEBUG_CMD,
-} firmware_msg_type_t;
+} comms_msg_type_t;
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET (BUILD_TARGET_SBC) // which platform Omicam will be running on
+#define BUILD_TARGET (BUILD_TARGET_PC) // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 1 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.01 // stop optimisation if the last step size was smaller than this in centimetres

@@ -12,14 +12,14 @@ static bool createdSemaphore = false;
 
 static void uart_receive_task(void *pvParameter){
     static const char *TAG = "UARTReceiveTask";
-    
+
     esp_task_wdt_add(NULL);
     uart_endpoint_t device = (uart_endpoint_t) pvParameter;
     uart_port_t port = device == SBC_CAMERA ? UART_NUM_2 : UART_NUM_1;
     ESP_LOGI(TAG, "UART receive task init OK on endpoint: %d", device);
 
     while (true){
-        // check if we have a syncword available
+        // check if we have a begin byte available
         uint8_t byte = 0;
         uart_read_bytes(port, &byte, 1, portMAX_DELAY);
         if (byte != 0xB){
