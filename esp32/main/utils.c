@@ -301,6 +301,21 @@ void i2c_scanner(i2c_port_t port){
 	printf("\n");
 }
 
+uint8_t crc8(uint8_t *data, size_t len){
+    uint8_t crc = 0xff;
+    size_t i, j;
+    for (i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (j = 0; j < 8; j++) {
+            if ((crc & 0x80) != 0)
+                crc = (uint8_t)((crc << 1) ^ 0x31);
+            else
+                crc <<= 1;
+        }
+    }
+    return crc;
+}
+
 void print_ball_data(robot_state_t *robotState){
     static const char *TAG = "BallDebug";
     ESP_LOGD(TAG, "Ball angle: %f, Ball distance: %f", robotState->inBallPos.arg, robotState->inBallPos.mag);

@@ -19,95 +19,84 @@ static void uart_receive_task(void *pvParameter){
     ESP_LOGI(TAG, "UART receive task init OK on endpoint: %d", device);
 
     while (true){
-        // first let's read in the header and see what message id, and how much we need to read in
-        // message format is: [0xB, msg_type, size, ...data..., 0xE] - so we have a 3 byte header
-        uint8_t header[3] = {0};
-        uart_read_bytes(port, header, 3, portMAX_DELAY);
-        esp_task_wdt_reset();
-
-        if (header[0] == 0xB){
-            msg_type_t msgType = header[1];
-            uint8_t msgSize = header[2];
-//            ESP_LOGD(TAG, "received an OK message on device: %d, msgType: %d, msgSize: %d", device, msgType, msgSize);
-
-            // read in the rest of the data
-            uint8_t data[msgSize];
-            uart_read_bytes(port, data, msgSize, pdMS_TO_TICKS(250));
-            // TODO it's possible that we may also have to read in the buffer one by one in case the UART FIFO is full?
-            // like we did with the old comms_i2c.c in the 2019 deus vult repo
-
-            // set up what fields and destination structs we need to decode
-            pb_istream_t stream = pb_istream_from_buffer(data, msgSize);
-            const pb_field_t *fields = NULL;
-            void *dest = NULL;
-
-            if (device == SBC_CAMERA){
-                switch (msgType){
-                    case OBJECT_DATA:
-                        fields = ObjectData_fields;
-                        dest = &lastObjectData;
-                        break;
-                    case LOCALISATION_DATA:
-                        fields = LocalisationData_fields;
-                        dest = &lastLocaliserData;
-                        break;
-                    case DEBUG_CMD:
-                        fields = ESP32DebugCommand_fields;
-                        dest = &lastDebugCmd;
-                        break;
-                    default:
-                        ESP_LOGW(TAG, "Unhandled message id %d on device %d, going to drop message", msgType, device);
-                        continue;
-                }
-
-                // let's just hope it decodes correctly I guess? we can't know for sure, but hopefully it will
-                xSemaphoreGive(validCamPacket);
-            } else {
-                // so the Teensy actually only sends one message to the ESP32 so we can ignore the message id
-                fields = LSlaveToMaster_fields;
-                dest = &lastLSlaveData;
-            }
-
-            if (xSemaphoreTake(uartDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-                if (!pb_decode(&stream, fields, dest)){
-                    ESP_LOGW(TAG, "Failed to decode Protobuf on device %d, msg id %d, error: %s", device, msgType,
-                                PB_GET_ERROR(&stream));
-                    vTaskDelay(pdMS_TO_TICKS(15));
-                } else {
-//                    ESP_LOGI(TAG, "Wow we actually decoded a message on device: %d", device);
-                }
-                xSemaphoreGive(uartDataSem);
-            } else {
-                ESP_LOGW(TAG, "Failed to unlock UART semaphore, can't decode message on device id %d", device);
-            }
-
-            esp_task_wdt_reset();
-            uart_flush_input(port);
-        } else {
-            ESP_LOGW(TAG, "Received invalid UART packet, begin byte was 0x%.2X not 0x0B, device: %d", header[0], device);
-            uart_flush_input(port);
-            esp_task_wdt_reset();
-            vTaskDelay(pdMS_TO_TICKS(15));
+        // check if we have a syncword available
+        uint8_t byte = 0;
+        uart_read_bytes(port, &byte, 1, portMAX_DELAY);
+        if (byte != 0xB){
+            continue;
         }
 
-        // memset(buffer, 0, 5);
-        // esp_task_wdt_reset();
-        // uart_read_bytes(UART_NUM_1, buffer, 5, pdMS_TO_TICKS(4096));
-        // // ESP_LOGI(TAG, "BULLSHIT");
+        // read in the rest of the header: message id and size
+        uint8_t header[2] = {0};
+        uart_read_bytes(port, header, 2, pdMS_TO_TICKS(250));
+        msg_type_t msgType = header[0];
+        uint8_t msgSize = header[1];
 
-        // if (buffer[0] == 0xB && buffer[1] == 0xB) {
-        //     ESP_LOGW(TAG, "Found start byte");
-        //     if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))) {
-        //         robotState.inLineAngle = (buffer[2] << 8) | (buffer[3] & 0xFF);
-        //         robotState.inLineSize = buffer[4] / 100;
-        //         xSemaphoreGive(robotStateSem);
-        //     } else {
-        //         ESP_LOGW(TAG, "Unable to acquire semaphore in time!");
-        //     }
-        // }
+        // read in the rest of the data
+        uint8_t data[msgSize];
+        uart_read_bytes(port, data, msgSize, pdMS_TO_TICKS(250));
 
-        // uart_flush_input(UART_NUM_1);
-        // esp_task_wdt_reset();
+        // read in and verify checksum, if it fails flush the entire buffer for this device and try again
+        uint8_t receivedChecksum = 0;
+        uint8_t actualChecksum = crc8(data, msgSize);
+        uart_read_bytes(port, &receivedChecksum, 1, pdMS_TO_TICKS(250));
+
+        if (receivedChecksum != actualChecksum){
+            ESP_LOGW(TAG, "Data integrity checked failed on device: %d, expected 0x%.2X, got 0x%.2X", 
+                    device, actualChecksum, receivedChecksum);
+            uart_flush_input(port);
+            continue;
+        } else {
+            // ESP_LOGI(TAG, "Data integrity check passed: %d!", device);
+        }
+
+        // set up what fields and destination structs we need to decode
+        pb_istream_t stream = pb_istream_from_buffer(data, msgSize);
+        const pb_field_t *fields = NULL;
+        void *dest = NULL;
+
+        if (device == SBC_CAMERA){
+            switch (msgType){
+                case OBJECT_DATA:
+                    fields = ObjectData_fields;
+                    dest = &lastObjectData;
+                    break;
+                case LOCALISATION_DATA:
+                    fields = LocalisationData_fields;
+                    dest = &lastLocaliserData;
+                    break;
+                case DEBUG_CMD:
+                    fields = ESP32DebugCommand_fields;
+                    dest = &lastDebugCmd;
+                    break;
+                default:
+                    ESP_LOGW(TAG, "Unhandled message id %d on device %d, going to drop message", msgType, device);
+                    continue;
+            }
+
+            // let's just hope it decodes correctly I guess? we can't know for sure, but hopefully it will
+            xSemaphoreGive(validCamPacket);
+        } else {
+            // so the Teensy actually only sends one message to the ESP32 so we can ignore the message id
+            fields = LSlaveToMaster_fields;
+            dest = &lastLSlaveData;
+        }
+
+        if (xSemaphoreTake(uartDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            if (!pb_decode(&stream, fields, dest)){
+                ESP_LOGW(TAG, "Failed to decode Protobuf on device %d, msg id %d, error: %s", device, msgType,
+                            PB_GET_ERROR(&stream));
+                vTaskDelay(pdMS_TO_TICKS(15));
+            } else {
+                // ESP_LOGI(TAG, "Successful decode of message id %d on device %d", msgType, device);
+                esp_task_wdt_reset();
+            }
+            xSemaphoreGive(uartDataSem);
+        } else {
+            ESP_LOGW(TAG, "Failed to unlock UART semaphore, can't decode message on device id %d", device);
+        }
+
+        esp_task_wdt_reset();
     }
 }
 
@@ -155,12 +144,16 @@ esp_err_t comms_uart_send(uart_endpoint_t device, msg_type_t msgId, uint8_t *pbD
 
     char header[] = {0xB, msgId, msgSize};
     char end = 0xE;
+    char checksum = (char) crc8(pbData, msgSize);
     uart_port_t port = device == SBC_CAMERA ? UART_NUM_2 : UART_NUM_1;
 
     uart_write_bytes(port, header, 3);
     uart_write_bytes(port, (char*) pbData, msgSize);
+    uart_write_bytes(port, &checksum, 1);
     uart_write_bytes(port, &end, 1);
 
+    // ESP_LOG_BUFFER_HEX_LEVEL(TAG, pbData, msgSize, ESP_LOG_INFO);
+    // printf("DEVICE: %d, CHECKSUM: 0x%.2X\n", device, checksum);
 //    printf("writing to device: %d, msg id: %d, %zu bytes of data\n", device, msgId, msgSize);
 
     return ESP_OK;

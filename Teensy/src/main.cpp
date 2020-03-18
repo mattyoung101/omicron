@@ -23,87 +23,75 @@ LightSensorController ls;
 Vector lineAvoid = Vector(0, 0);
 
 // LED Stuff
-Timer idleLedTimer(1000000); // LED timer when idling
+Timer idleLedTimer(500000); // LED timer when idling
 bool ledOn;
 double heading;
 
-/** Decode protobuf over UART from ESP */
-static void decodeProtobuf(void){
-    // if we don't have a header, don't bother decoding right now.
-    // give the rest of the code some time to think
-    if (ESPSERIAL.available() < 3){
-        return;
-    }
-    
-    // read in the header bytes
-    uint8_t header[3] = {0};
-    for (int i = 0; i < 3; i++){
-        header[i] = ESPSERIAL.read();
-    }
-
-    Serial.printf("FUCK: 0x%.2X 0x%.2X 0x%.2X\n", header[0], header[1], header[2]);
-
-    if (header[0] == 0xB){
-        msg_type_t msgId = (msg_type_t) header[1];
-        uint8_t msgSize = header[2];
-        uint8_t buf[msgSize];
-        memset(buf, 0, msgSize); // probably un-necessary, just in case
-
-        // read in the rest of the message now
-        size_t readBytes = ESPSERIAL.readBytes(buf, msgSize);
-        if (readBytes != msgSize){
-            // if this happens a lot, it's probably timing out, look into Serial.setTimeout()
-            // that's 1 second by default so likely you're going to be having more issues than
-            // just that
-            Serial.printf("[Comms] [WARN] Expected %d bytes, read %d bytes\n", msgSize, readBytes);
+static uint8_t crc8(uint8_t *data, size_t len){
+    uint8_t crc = 0xff;
+    size_t i, j;
+    for (i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (j = 0; j < 8; j++) {
+            if ((crc & 0x80) != 0)
+                crc = (uint8_t)((crc << 1) ^ 0x31);
+            else
+                crc <<= 1;
         }
-
-        pb_istream_t stream = pb_istream_from_buffer(buf, msgSize);
-        void *dest = NULL;
-        void *msgFields = NULL;
-
-        // assign destination struct based on message ID
-        switch (msgId){
-            case MSG_ANY:
-                dest = (void*) &lastMasterProvide;
-                msgFields = (void*) &MasterToLSlave_fields;
-                break;
-            default:
-                Serial.printf("[Comms] [WARN] Unknown message ID: %d\n", msgId);
-                return;
-        }
-
-        // decode the byte stream
-        if (!pb_decode(&stream, (const pb_field_t *) msgFields, dest)){
-            Serial.printf("[Comms] [ERROR] Protobuf decode error: %s\n", PB_GET_ERROR(&stream));
-        } else {
-            Serial.printf("[Comms] [INFO] Wow we actually decoded the piece of shit?\n");
-        }
-        ESPSERIAL.flush();
-    } else {
-        Serial.printf("[Comms] [WARN] Invalid begin character 0x%.2X, expected 0x0B\n", header[0]);
-        ESPSERIAL.flush();
-        delay(15);
     }
+    return crc;
 }
 
-void crapUart() {
-    // Send line values and lrf stuff across
-    Serial.println("sending shit");
-    ESPSERIAL.write(0xB);
-    ESPSERIAL.write(0xB);
-    ESPSERIAL.write(highByte(int(lineAvoid.arg)));
-    ESPSERIAL.write(lowByte(int(lineAvoid.arg)));
-    ESPSERIAL.write(uint8_t(lineAvoid.mag) * 100);
+/** Decode protobuf over UART from ESP */
+static void decodeProtobuf(void){
+    // check if we have a syncword available
+    uint8_t byte = ESPSERIAL.read();
+    if (byte != 0xB){
+        digitalWrite(LED_BUILTIN, LOW);
+        return;
+    }
 
-    if (ESPSERIAL.available()) Serial.println("FUCKING KILL ME");
+    // if we do, read in the header
+    msg_type_t msgId = (msg_type_t) ESPSERIAL.read();
+    uint8_t msgSize = ESPSERIAL.read();
+    uint8_t buf[msgSize];
+    memset(buf, 0, msgSize);
 
-    if (ESPSERIAL.available() >= 4) {
-        if (ESPSERIAL.read() == 0xB && ESPSERIAL.peek() == 0xB) {
-            Serial.println("found start shit");
-            ESPSERIAL.read();
-            heading = word(ESPSERIAL.read(), ESPSERIAL.read());
-        }
+    // read in the rest of the message now
+    size_t readBytes = ESPSERIAL.readBytes(buf, msgSize);
+    if (readBytes != msgSize){
+        // if this happens a lot, it's probably timing out, look into Serial.setTimeout()
+        // that's 1 second by default so likely you're going to be having more issues than
+        // just that
+        Serial.printf("[Comms] [ERROR] Expected %d bytes, read %d bytes\n", msgSize, readBytes);
+        digitalWrite(LED_BUILTIN, LOW);
+    } else {
+        // Serial.printf("[Comms] [INFO] read the correct number of bytes\n");
+        digitalWrite(LED_BUILTIN, HIGH);
+    }
+    uint8_t receivedChecksum = ESPSERIAL.read();
+    uint8_t actualChecksum = crc8(buf, msgSize);
+
+    if (receivedChecksum != actualChecksum){
+        Serial.printf("[Comms] [WARN] Data integrity failed, expected 0x%.2X, got 0x%.2X\n", 
+                    actualChecksum, receivedChecksum);
+        // flush buffer and try again, arduino has no way to flush the input buffer so here is a delicious hack
+        while (ESPSERIAL.available()) { ESPSERIAL.read(); }
+        digitalWrite(LED_BUILTIN, LOW);
+        return;
+    } else {
+        digitalWrite(LED_BUILTIN, HIGH);
+        // Serial.println("[Comms] [INFO] Data integrity PASSED");
+    }
+
+    // we have only one message we receive, so don't bother with IDs
+    pb_istream_t istream = pb_istream_from_buffer(buf, msgSize);
+    if (!pb_decode(&istream, MasterToLSlave_fields, &lastMasterProvide)){
+        Serial.printf("[Comms] [WARN] Protobuf decode error: %s\n", PB_GET_ERROR(&istream));
+        digitalWrite(LED_BUILTIN, LOW);
+    } else {
+        Serial.printf("[Comms] [INFO] Data check passed and decode successful\n", lastMasterProvide.heading);
+        digitalWrite(LED_BUILTIN, HIGH);
     }
 }
 
@@ -137,12 +125,9 @@ void setup() {
 }
 
 void loop() {
-
     // Serial.println("  LOOP");
     // Poll UART and decode incoming protobuf message
     decodeProtobuf();
-//    crapUart();
-    
 
     #if LS_ON
         // Update line data
@@ -155,15 +140,17 @@ void loop() {
     #endif
 
     #if LED_ON
-        if(idleLedTimer.timeHasPassed()){
-            digitalWrite(LED_BUILTIN, ledOn);
-            ledOn = !ledOn;
-        }
+        // if(idleLedTimer.timeHasPassed()){
+        //     digitalWrite(LED_BUILTIN, ledOn);
+        //     ledOn = !ledOn;
+        //     Serial.println("(blink)");
+        // }
     #endif
 
     LSlaveToMaster reply = LSlaveToMaster_init_zero;
-    // FIXME ethan can you please set data here, thanks man
+    // ethan can you please set data here, thanks man
     // No problem
+    // cheers
     reply.lineAngle = lineAvoid.arg;
     reply.lineSize = lineAvoid.mag;
 
@@ -173,12 +160,15 @@ void loop() {
     if (!pb_encode(&ostream, LSlaveToMaster_fields, &reply)){
         Serial.printf("[Comms] [ERROR] Protobuf reply message encode error: %s\n", PB_GET_ERROR(&ostream));
     } else {
-//        Serial.println("managed to encode reply message, going to send it");
+        // Serial.println("managed to encode reply message, going to send it");
 
         // encode worked, so dispatch the message over UART, same format as the ESP32 in message
         uint8_t header[3] = {0xB, MSG_ANY, (uint8_t) ostream.bytes_written};
+        uint8_t checksum = crc8(replyBuf, ostream.bytes_written);
+
         ESPSERIAL.write(header, 3);
         ESPSERIAL.write(replyBuf, ostream.bytes_written);
+        ESPSERIAL.write(checksum);
         ESPSERIAL.write(0xE);
     }
 }

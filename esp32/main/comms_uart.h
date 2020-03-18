@@ -15,6 +15,7 @@
 #include "wirecomms.pb.h"
 
 // Handles communication between different devices over UART
+// message format is: [0xB, msgId, msgSize, ...PROTOBUF DATA..., CRC8_checksum, 0xE]
 
 /** enum of different UART endpoints, or physical devices */
 typedef enum {

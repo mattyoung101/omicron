@@ -81,7 +81,7 @@ typedef enum {
 #define ENEMY_GOAL GOAL_YELLOW
 
 // Protobuf
-#define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
+#define PROTOBUF_SIZE 128 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
 typedef enum {
     /** generic message */
     MSG_ANY = 0,
