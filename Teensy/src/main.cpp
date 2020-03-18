@@ -9,8 +9,6 @@
 #include "pb_encode.h"
 #include "wirecomms.pb.h"
 
-// IMPORTANT: WE ARE USING UART FOR PROTOBUF NOT I2C, WE ARE JUST TOO LAZY TO RENAME STUFF
-
 typedef enum {
     MSG_ANY = 0
 } msg_type_t;

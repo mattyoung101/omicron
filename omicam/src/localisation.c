@@ -311,13 +311,15 @@ static void *work_thread(void *arg){
             log_error("Failed to encode localisation Protobuf message: %s", PB_GET_ERROR(&stream));
         }
 
-        uint32_t arraySize = 3 + stream.bytes_written + 1;
+        uint32_t arraySize = 3 + stream.bytes_written + 2;
         uint8_t outBuf[arraySize];
         uint8_t header[3] = {0xB, LOCALISATION_DATA, stream.bytes_written};
+        uint8_t checksum = crc8(msgBuf, stream.bytes_written);
 
         memset(outBuf, 0, arraySize);
         memcpy(outBuf, header, 3); // copy the header into the buffer
         memcpy(outBuf + 3, msgBuf, stream.bytes_written); // copy the rest of the buffer in
+        outBuf[arraySize - 2] = checksum; // CRC8 checksum
         outBuf[arraySize - 1] = 0xE; // set end byte
 
         // verification:

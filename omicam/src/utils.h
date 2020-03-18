@@ -56,6 +56,8 @@ void utils_sleep_enter(void);
 void utils_sleep_exit(void);
 /** Reloads Omicam ini config file from disk **/
 void utils_reload_config(void);
+/** calculates the CRC8 hash of a buffer, source: https://stackoverflow.com/a/51773839/5007892 */
+uint8_t crc8(uint8_t *data, size_t len);
 double utils_lerp(double fromValue, double toValue, double progress);
 const char *nlopt_result_to_string(nlopt_result result);
 

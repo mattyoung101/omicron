@@ -31,7 +31,7 @@ message LocalisationData {
 }
 
 // Message that the ESP32 sends to LattePanda containing mouse sensor data
-message MouseData {
+message SensorData {
     // displacement relative to last localised position in cm
     int32 relDspX = 1;
     int32 relDspY = 2;
@@ -39,6 +39,9 @@ message MouseData {
     // absolute field displacement in cm
     int32 absDspX = 3;
     int32 absDspY = 4;
+
+    // IMU orientation
+    float orientation = 5;
 }
 
 // Message that we send to the ESP32, this is basically just forwarded through the LattePanda from Omicontrol
