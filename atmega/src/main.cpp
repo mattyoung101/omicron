@@ -13,29 +13,64 @@ int brMotor = 0;
 int blMotor = 0;
 int flMotor = 0;
 
-int dx;
-int dy;
+int dx = 0;
+int dy = 0;
 
 // LED Stuff
 Timer idleLedTimer(1000000); // LED timer when idling
 bool ledOn;
 
+static uint8_t crc8(uint8_t *data, size_t len){
+    uint8_t crc = 0xff;
+    size_t i, j;
+    for (i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (j = 0; j < 8; j++) {
+            if ((crc & 0x80) != 0)
+                crc = (uint8_t)((crc << 1) ^ 0x31);
+            else
+                crc <<= 1;
+        }
+    }
+    return crc;
+}
+
 void requestEvent(){
-    // Serial.println("BITCH");
-    Wire.write(I2C_START_BYTE);
-    Wire.write(highByte((int16_t) dx));
-    Wire.write(lowByte((int16_t) dx));
-    Wire.write(highByte((int16_t) dy));
-    Wire.write(lowByte((int16_t) dy));
+    uint8_t buf[I2C_SEND_PACKET_SIZE - 1] = {I2C_START_BYTE, highByte((int16_t) dx), lowByte((int16_t) dx),
+                                         highByte((int16_t) dy), lowByte((int16_t) dy)};
+    for(int i=0; i<I2C_SEND_PACKET_SIZE-1; i++){
+        Wire.write(buf[i]);
+    }
+    Wire.write(crc8(buf, I2C_SEND_PACKET_SIZE - 1));
 }
 
 void receiveEvent(int bytes){
-    // Serial.println("ASS");
-    if(Wire.available() >= I2C_PACKET_SIZE && Wire.read() == I2C_START_BYTE){
-        frMotor = Wire.read() - 100;
-        brMotor = Wire.read() - 100;
-        blMotor = Wire.read() - 100;
-        flMotor = Wire.read() - 100;
+    if(Wire.available() >= I2C_RCV_PACKET_SIZE && Wire.read() == I2C_START_BYTE){
+        uint8_t dataBuf[5] = {};
+        dataBuf[0] = 0xB;
+        for(int i=1; i<5; i++){
+            dataBuf[i] = Wire.read();
+        }
+
+        frMotor = dataBuf[1] - 100;
+        brMotor = dataBuf[2] - 100;
+        blMotor = dataBuf[3] - 100;
+        flMotor = dataBuf[4] - 100;
+
+        uint8_t receivedChecksum = Wire.read();
+        uint8_t actualChecksum = crc8(dataBuf, 5);
+
+        if(receivedChecksum != actualChecksum){
+            Serial.print("[COMMS] [WARN] Data integrity check failed. Expected: ");
+            Serial.print(actualChecksum);
+            Serial.print("Got: ");
+            Serial.println(receivedChecksum);
+            // Flush the buffer the dank way
+            while(Wire.available()){Wire.read();}
+            return;
+        } else {
+            // Yay CRC8 check passed
+        }
     }
 }
 

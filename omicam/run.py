@@ -7,6 +7,7 @@ import sys
 import os
 import shutil
 import uuid
+import time
 
 print("[Runner] Running Omicam...")
 os.chdir("cmake-build-release-clang") # TODO this isn't correct currently find out what it is on the SBC!
@@ -27,7 +28,10 @@ for i in range(10):
         new_name = os.path.expanduser(f"~/Documents/TeamOmicron/Omicam/omicam_crash_{uuid.uuid4().hex}.log")
         print(f"[Runner] Copying current Omicam log file to {new_name} for later analysis")
         shutil.copy(log_file, new_name)
+        time.sleep(1)
     except KeyboardInterrupt:
         print("[Runner] Terminating normally due to keyboard interrupt")
         sys.exit(0)
+
+print("[Runner] Well, shit! Looks like we couldn't get Omicam running. Not much more I can do now, run.py heading out.")
 

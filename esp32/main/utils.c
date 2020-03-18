@@ -301,6 +301,21 @@ void i2c_scanner(i2c_port_t port){
 	printf("\n");
 }
 
+uint8_t crc8(uint8_t *data, size_t len){
+    uint8_t crc = 0xff;
+    size_t i, j;
+    for (i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (j = 0; j < 8; j++) {
+            if ((crc & 0x80) != 0)
+                crc = (uint8_t)((crc << 1) ^ 0x31);
+            else
+                crc <<= 1;
+        }
+    }
+    return crc;
+}
+
 void print_ball_data(robot_state_t *robotState){
     static const char *TAG = "BallDebug";
     ESP_LOGD(TAG, "Ball angle: %f, Ball distance: %f", robotState->inBallPos.arg, robotState->inBallPos.mag);
@@ -436,34 +451,6 @@ s8 bno055_write(u8 dev_addr, u8 reg_addr, u8 *reg_data, u8 cnt){
 void bno055_delay_ms(u32 msec){
     // ets_delay_us(msec / 1000); // (if precision is required)
     vTaskDelay(pdMS_TO_TICKS(msec));
-}
-
-uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data, robot_state_t *robotState) {
-    static const char *TAG = "NanoRead";
-    uint8_t sendBytes[] = {0xB, robotState->outFRMotor + 100, robotState->outBRMotor + 100, -robotState->outBLMotor + 100, robotState->outFLMotor + 100};
-    
-    
-    // ESP_LOGI(TAG, "WRITING TO NANO");
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, (addr << 1), I2C_ACK_MODE);
-    i2c_master_write(cmd, sendBytes, 5, I2C_ACK_MODE);
-    // Send repeated start
-    i2c_master_start(cmd);
-    // now send device address (indicating read) & read data
-    i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_READ, I2C_ACK_MODE);
-    // ESP_LOGI(TAG, "READING FROM NANO");
-    if (size > 1) {
-        // ESP_LOGI(TAG, "SIZE > 1 APPARENTLY COOL");
-        i2c_master_read(cmd, data, size - 1, 0x0);
-    }
-    i2c_master_read_byte(cmd, data + size - 1, 0x1);
-    i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, portMAX_DELAY);
-    i2c_cmd_link_delete(cmd);
-
-    // I2C_ERR_CHECK(ret);
-    return ESP_OK;
 }
 
 static hmm_vec2 current = {0};

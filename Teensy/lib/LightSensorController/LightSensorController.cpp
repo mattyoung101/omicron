@@ -273,8 +273,8 @@ Vector LightSensorController::calcLine(){
         angle = 0;
         size = 0;
     }
-//	Serial.print(size);
-//	Serial.print(", ");
-//	Serial.println(angle + 5.625);
+	// Serial.print(size);
+	// Serial.print(", ");
+	// Serial.println(angle + 5.625);
 	return Vector(size, angle + 5.625, true);
 }

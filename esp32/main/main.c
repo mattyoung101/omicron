@@ -225,18 +225,18 @@ static void master_task(void *pvParameter){
         
         // encode and send Protobuf message to Teensy slave
         MasterToLSlave teensyMsg = MasterToLSlave_init_default;
-        uint8_t teensyBuf[PROTOBUF_SIZE] = {0};
-        pb_ostream_t stream = pb_ostream_from_buffer(teensyBuf, PROTOBUF_SIZE);
-
-        teensyMsg.heading = yaw; // IMU heading
+        teensyMsg.heading = yaw;
         memcpy(teensyMsg.debugLEDs, robotState.debugLEDs, 6 * sizeof(bool));
 
-         if (!pb_encode(&stream, MasterToLSlave_fields, &teensyMsg)){
-             ESP_LOGW(TAG, "Teensy Protobuf encode error: %s", PB_GET_ERROR(&stream));
-         } else {
-             pbErrors = 0;
-         }
-         comms_uart_send(MCU_TEENSY, MSG_ANY, teensyBuf, stream.bytes_written);
+        uint8_t teensyBuf[PROTOBUF_SIZE] = {0};
+        pb_ostream_t stream = pb_ostream_from_buffer(teensyBuf, PROTOBUF_SIZE);
+        
+        if (!pb_encode(&stream, MasterToLSlave_fields, &teensyMsg)){
+            ESP_LOGW(TAG, "Teensy Protobuf encode error: %s", PB_GET_ERROR(&stream));
+        } else {
+            pbErrors = 0;
+        }
+        comms_uart_send(MCU_TEENSY, MSG_ANY, teensyBuf, stream.bytes_written);
 
 //         ESP_LOGI(TAG, "Lineangle: %f, Linesize: %f", lastLSlaveData.lineAngle, lastLSlaveData.lineSize);
 

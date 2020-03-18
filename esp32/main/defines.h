@@ -46,7 +46,7 @@
 #define I2C_SLAVE_DEV_BUS I2C_NUM_0 // which bus the Teensy slave is on (I2C_NUM_0 or I2C_NUM_1)
 
 // ATMega328P (nano) comms
-#define NANO_PACKET_SIZE 5
+#define NANO_PACKET_SIZE 6
 #define I2C_NANO_SLAVE_ADDR 0x12
 
 // UART
@@ -81,7 +81,7 @@ typedef enum {
 #define ENEMY_GOAL GOAL_YELLOW
 
 // Protobuf
-#define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
+#define PROTOBUF_SIZE 128 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
 typedef enum {
     /** generic message */
     MSG_ANY = 0,
@@ -89,8 +89,8 @@ typedef enum {
     OBJECT_DATA,
     /** determined (x,y) positions to ESP32 **/
     LOCALISATION_DATA,
-    /** mouse sensor data to Omicam **/
-    MOUSE_DATA,
+    /** mouse sensor and sensor data to Omicam **/
+    SENSOR_DATA,
     /** debug command to ESP32 **/
     DEBUG_CMD,
 } msg_type_t;

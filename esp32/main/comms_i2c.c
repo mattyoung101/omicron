@@ -64,6 +64,18 @@ static void nano_comms_task(void *pvParameters){
             } else {
                 ESP_LOGE(TAG, "Failed to unlock nano data semaphore!");
             }
+            // Read in and verify checksum, NOTE: IT DOES INCLUDE START BYTE COS THIS IS NOT PROTOBUF
+            uint8_t receivedChecksum = buf[5];
+            uint8_t actualChecksum = crc8(buf, 5);
+
+            if(receivedChecksum != actualChecksum){
+                ESP_LOGW(TAG, "Data integrity checked failed, expected 0x%.2X, got 0x%.2X", actualChecksum,
+                        receivedChecksum);
+                i2c_reset_rx_fifo(I2C_NUM_0); // Flush the buffer
+                continue;
+            } else {
+                // Yay checksum verified
+            }
         } else {
             ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
         }
@@ -90,6 +102,36 @@ void comms_i2c_init_nano(i2c_port_t port){
 
     xTaskCreate(nano_comms_task, "NanoCommsTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
     ESP_LOGI("CommsI2C_M", "ATMega I2C init OK as master (RL slave) on bus %d", port);
+}
+
+uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data, robot_state_t *robotState) {
+    static const char *TAG = "NanoRead";
+    uint8_t sendBytes[] = {0xB, robotState->outFRMotor + 100, robotState->outBRMotor + 100, -robotState->outBLMotor + 100, robotState->outFLMotor + 100};
+    uint8_t checksum = crc8(sendBytes, 5);
+
+    // ESP_LOGI(TAG, "WRITING TO NANO");
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (addr << 1), I2C_ACK_MODE);
+    i2c_master_write(cmd, sendBytes, 5, I2C_ACK_MODE);
+    // Send checksum boi
+    i2c_master_write(cmd, &checksum, 1, I2C_ACK_MODE);
+    // Send repeated start
+    i2c_master_start(cmd);
+    // now send device address (indicating read) & read data
+    i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_READ, I2C_ACK_MODE);
+    // ESP_LOGI(TAG, "READING FROM NANO");
+    if (size > 1) {
+        // ESP_LOGI(TAG, "SIZE > 1 APPARENTLY COOL");
+        i2c_master_read(cmd, data, size - 1, 0x0);
+    }
+    i2c_master_read_byte(cmd, data + size - 1, 0x1);
+    i2c_master_stop(cmd);
+    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, portMAX_DELAY);
+    i2c_cmd_link_delete(cmd);
+
+    // I2C_ERR_CHECK(ret);
+    return ESP_OK;
 }
 
 esp_err_t comms_i2c_send(msg_type_t msgId, uint8_t *pbData, size_t msgSize){

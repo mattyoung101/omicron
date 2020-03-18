@@ -108,17 +108,19 @@ void utils_cv_transmit_data(ObjectData ballData){
         return;
     }
 
-    uint32_t arraySize = 3 + stream.bytes_written + 1;
+    uint32_t arraySize = 3 + stream.bytes_written + 2;
     uint8_t outBuf[arraySize];
     uint8_t header[3] = {0xB, OBJECT_DATA, stream.bytes_written};
+    uint8_t checksum = crc8(msgBuf, stream.bytes_written);
 
     memset(outBuf, 0, arraySize);
     memcpy(outBuf, header, 3); // copy the header into the buffer
     memcpy(outBuf + 3, msgBuf, stream.bytes_written); // copy the rest of the buffer in
+    outBuf[arraySize - 2] = checksum; // CRC8 checksum
     outBuf[arraySize - 1] = 0xE; // set end byte
 
     // verification:
-//    printf("PROTOBUF MESSAGE: ");
+//    printf("ESP32 Protobuf message: ");
 //    for (uint32_t i = 0; i < arraySize; i++){
 //        printf("%.2X ", outBuf[i]);
 //    }
@@ -220,6 +222,21 @@ uint8_t *utils_load_bin(char *path, long *size){
     fread(buf, 1, length, f);
     fclose(f);
     return buf;
+}
+
+uint8_t crc8(uint8_t *data, size_t len){
+    uint8_t crc = 0xff;
+    size_t i, j;
+    for (i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (j = 0; j < 8; j++) {
+            if ((crc & 0x80) != 0)
+                crc = (uint8_t)((crc << 1) ^ 0x31);
+            else
+                crc <<= 1;
+        }
+    }
+    return crc;
 }
 
 void utils_sleep_enter(void){

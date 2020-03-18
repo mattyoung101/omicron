@@ -9,7 +9,8 @@
 // --- I2C --- //
 #define I2C_ADDRESS 0x12
 #define I2C_START_BYTE 0xB
-#define I2C_PACKET_SIZE 5
+#define I2C_RCV_PACKET_SIZE 6 // 1 start, 4 data, 1 checksum
+#define I2C_SEND_PACKET_SIZE 6 // 1 start, 4 data, 1 checksum
 
 // --- Motors --- //
 #define MOTOR_FR_INA 14
