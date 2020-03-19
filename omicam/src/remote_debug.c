@@ -186,19 +186,27 @@ static void read_remote_messages(void){
                 pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, 128);
                 if (!pb_encode(&stream, ESP32DebugCommand_fields, &fwdCmd)){
                     log_error("Failed to encode debug command message to ESP32: %s", PB_GET_ERROR(&stream));
+                    free(buf);
                     return;
                 }
 
-                uint32_t arraySize = 3 + stream.bytes_written + 1;
+                uint32_t arraySize = 3 + stream.bytes_written + 2;
                 uint8_t outBuf[arraySize];
-                // FIXME send the correct message id here, get it from the ESP stuff, just copy in that enum
-                uint8_t header[3] = {0xB, 0, stream.bytes_written};
+                uint8_t header[3] = {0xB, DEBUG_CMD, stream.bytes_written};
+                uint8_t checksum = crc8(msgBuf, stream.bytes_written);
 
                 memset(outBuf, 0, arraySize);
-                memcpy(outBuf, header, 3);
-                memcpy(outBuf + 3, msgBuf, stream.bytes_written);
-                outBuf[arraySize - 1] = 0xE;
+                memcpy(outBuf, header, 3); // copy in header
+                memcpy(outBuf + 3, msgBuf, stream.bytes_written); // write protobuf data
+                outBuf[arraySize - 2] = checksum; // write checksum
+                outBuf[arraySize - 1] = 0xE; // write end byte
                 comms_uart_send(outBuf, arraySize);
+
+//                printf("remote debug message message: ");
+//                for (uint32_t i = 0; i < arraySize; i++){
+//                    printf("%.2X ", outBuf[i]);
+//                }
+//                puts("");
 
                 RD_SEND_OK_RESPONSE;
                 break;
