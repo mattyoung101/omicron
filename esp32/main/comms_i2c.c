@@ -7,19 +7,8 @@
 
 // i2c_data_t receivedData = {0};
 nano_data_t nanoData = {0};
-
 SemaphoreHandle_t nanoDataSem = NULL;
-
 static const char *TAG = "CommsI2C";
-
-/*
- * Teensy will be I2C slave, so we ask it for line data and other sensors, we process it, and then we give it back motors.
- * There are two actions we can do: pull and push data (request and provide, etc).
- * So the way this works is we begin a transaction to the slave with [0xB, MSG_PULL_SENSORDATA, 0, 0xEE]
- * All I2C runs on the main thread because it doesn't take much time and is simpler to do it that way.
- */
-
-// NOTE: THE ABOVE IS OUTDATED AND I AM TOO LAZY TO FIX IT
 
 void comms_i2c_init_bno(i2c_port_t port){
     i2c_config_t conf = {
@@ -42,13 +31,13 @@ void comms_i2c_init_bno(i2c_port_t port){
 
 /** sends/receives data from the atmega slave **/
 static void nano_comms_task(void *pvParameters){
-    static const char *TAG = "NanoCommsTask";
+    static const char *TAG = "JimBusLE";
     uint8_t buf[NANO_PACKET_SIZE] = {0};
     nanoDataSem = xSemaphoreCreateMutex();
     xSemaphoreGive(nanoDataSem);
 
     esp_task_wdt_add(NULL);
-    ESP_LOGI(TAG, "Nano comms task init OK");
+    ESP_LOGI(TAG, "Nano comms receive task init OK!");
 
     while (true){
         memset(buf, 0, NANO_PACKET_SIZE);
@@ -100,7 +89,7 @@ void comms_i2c_init_nano(i2c_port_t port){
     // TODO should probably remove this timeout workaround
     ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFF));
 
-    xTaskCreate(nano_comms_task, "NanoCommsTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(nano_comms_task, "JimBusLE", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
     ESP_LOGI("CommsI2C_M", "ATMega I2C init OK as master (RL slave) on bus %d", port);
 }
 

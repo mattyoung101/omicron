@@ -10,7 +10,7 @@ import uuid
 import time
 
 print("[Runner] Running Omicam...")
-os.chdir("cmake-build-release-clang") # TODO this isn't correct currently find out what it is on the SBC!
+os.chdir("cmake-build-release")
 
 for i in range(10):
     print(f"[Runner] Attempt #{i}")

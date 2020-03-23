@@ -1,6 +1,6 @@
 #include "comms_uart.h"
 
-static const char *TAG = "CommsUART";
+static const char *TAG = "JimBus";
 ObjectData lastObjectData = ObjectData_init_zero;
 LocalisationData lastLocaliserData = LocalisationData_init_zero;
 ESP32DebugCommand lastDebugCmd = ESP32DebugCommand_init_zero;
@@ -10,8 +10,10 @@ SemaphoreHandle_t uartDataSem = NULL;
 SemaphoreHandle_t validCamPacket = NULL;
 static bool createdSemaphore = false;
 
+// JimBus comms implementation
+
 static void uart_receive_task(void *pvParameter){
-    static const char *TAG = "UARTReceiveTask";
+    static const char *TAG = "JimBusRX";
 
     esp_task_wdt_add(NULL);
     uart_endpoint_t device = (uart_endpoint_t) pvParameter;
@@ -24,6 +26,8 @@ static void uart_receive_task(void *pvParameter){
         uart_read_bytes(port, &byte, 1, portMAX_DELAY);
         if (byte != 0xB){
             continue;
+        } else if (device == SBC_CAMERA){
+            ESP_LOGD(TAG, "got: 0x%.2X", byte);
         }
 
         // read in the rest of the header: message id and size
@@ -131,10 +135,10 @@ void comms_uart_init(uart_endpoint_t device){
     }
 
     char buf[64];
-    snprintf(buf, 64, "UARTRecvTask%d", device);
+    snprintf(buf, 64, "JimBusDev%d", device);
 
     xTaskCreate(uart_receive_task, buf, 4096, (void*) device, configMAX_PRIORITIES - 1, NULL);
-    ESP_LOGI(TAG, "UART comms init OK!");
+    ESP_LOGI(TAG, "UART init OK on device %d", device);
 }
 
 esp_err_t comms_uart_send(uart_endpoint_t device, msg_type_t msgId, uint8_t *pbData, size_t msgSize){

@@ -48,7 +48,7 @@ static void *receive_thread(void *arg){
         read(serialfd, &receivedChecksum, 1);
 
         if (receivedChecksum != actualChecksum){
-            log_warn("Data integrity check failed, expected 0x%.2X, got 0x%.2X", actualChecksum, receivedChecksum);
+            // log_warn("Data integrity check failed, expected 0x%.2X, got 0x%.2X", actualChecksum, receivedChecksum);
             tcflush(serialfd, TCIFLUSH);
             continue;
         } else {

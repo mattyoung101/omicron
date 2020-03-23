@@ -10,7 +10,11 @@
 #include "esp_task_wdt.h"
 #include "wirecomms.pb.h"
 
-// Handles slave to master communication over I2C
+// Handles I2C comms to the BNO-055 and also the ATMega328P (Nano)
+// I2C comms to the Nano are implemented using JimBusLE (JimBus Lite Edition), which is similar to the full-featured
+// UART JimBus protocol, except that it sends bitshifted data not Protobufs (because Nanopb is thought to be too
+// expensive to run on the ATMega), and also doesn't encode a message id.
+// JimBusLE message format: [0xB, ]
 // TODO: We're in Open why do we have tsop stuff :/
 
 typedef struct {

@@ -62,6 +62,7 @@ static const char *PT_TAG = "PerfTimer";
 #endif
 
 SemaphoreHandle_t robotStateSem;
+static int32_t counter = 0;
 
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
@@ -238,10 +239,8 @@ static void master_task(void *pvParameter){
         }
         comms_uart_send(MCU_TEENSY, MSG_ANY, teensyBuf, stream.bytes_written);
 
-//         ESP_LOGI(TAG, "Lineangle: %f, Linesize: %f", lastLSlaveData.lineAngle, lastLSlaveData.lineSize);
+        // ESP_LOGI(TAG, "Lineangle: %f, Linesize: %f", lastLSlaveData.lineAngle, lastLSlaveData.lineSize);
 
-//        uint8_t buffer[] = {0xB, 0xB, HIGH_BYTE_16((uint16_t) yaw), LOW_BYTE_16((uint16_t) yaw)};
-//        comms_uart_send(MCU_TEENSY, MSG_ANY, buffer, 4);
         motor_calc(0, robotState.outOrientation, 100);
         // TODO: SET MOTOR VALUES
 
@@ -306,6 +305,10 @@ static void test_music_task(void *pvParameter){
     }
 }
 
+static void responding_timer(TimerHandle_t handle){
+    puts("Device is responding.");
+}
+
 void app_main(){
     puts("====================================================================================");
     puts(" * This ESP32 belongs to a robot from Team Omicron at Brisbane Boys' College.");
@@ -334,6 +337,9 @@ void app_main(){
     nvs_close(storageHandle);
     fflush(stdout);
     fflush(stderr);
+
+    TimerHandle_t respondTimer = xTimerCreate("RespondTimer", pdMS_TO_TICKS(1000), true, NULL, responding_timer);
+    xTimerStart(respondTimer, pdMS_TO_TICKS(250));
 
     // create the main (or test, uncomment it if you want that) task 
     xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);

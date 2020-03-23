@@ -45,6 +45,11 @@ static void decodeProtobuf(void){
     // check if we have a syncword available
     uint8_t byte = ESPSERIAL.read();
     if (byte != 0xB){
+        if (byte == 0xFF){
+            // fuck this bug, clear the buffer, fuck you
+            // Serial.printf("bullshit detected byte is 0xFF\n");
+            // while (ESPSERIAL.available()) { ESPSERIAL.read(); }
+        }
         digitalWrite(LED_BUILTIN, LOW);
         return;
     }
@@ -79,7 +84,7 @@ static void decodeProtobuf(void){
         return;
     } else {
         digitalWrite(LED_BUILTIN, HIGH);
-        // Serial.println("[Comms] [INFO] Data integrity PASSED");
+        Serial.println("[Comms] [INFO] Data integrity PASSED");
     }
 
     // we have only one message we receive, so don't bother with IDs
@@ -97,6 +102,7 @@ void setup() {
     // Put other setup stuff here
     Serial.begin(9600);
     ESPSERIAL.begin(115200);
+    ESPSERIAL.setTimeout(500);
 
     #if LS_ON
         // Init light sensors

@@ -14,8 +14,11 @@
 #include "UART.pb.h"
 #include "wirecomms.pb.h"
 
-// Handles communication between different devices over UART
-// message format is: [0xB, msgId, msgSize, ...PROTOBUF DATA..., CRC8_checksum, 0xE]
+// Handles communication between different devices over UART, using the JimBus protocol (developed by us, Team Omicron)
+// JimBus can flexibly encode up to 255 different types of Protobuf messages and includes CRC8 checksum validation
+// Max Protobuf data size is currently 255 bytes, and each packet can only contain 1 message
+// Comms to simpler devices use JimBusLE, or JimBus Lite Edition. See comms_i2c.h for details.
+// Message format is: [0xB, msgId, msgSize, ...PROTOBUF DATA..., CRC8_checksum, 0xE]
 
 /** enum of different UART endpoints, or physical devices */
 typedef enum {
