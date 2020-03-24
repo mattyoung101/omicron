@@ -14,10 +14,10 @@ lineWidth = 1 # field lines are 2cm but it's 1cm each side of the line
 
 output = [[None for x in range(fieldLength)] for y in range(fieldWidth)] # Note: notation is output[y][x]
 whiteLines = [
-    linearFunction(-66, 96.5, -66, -96.5),
-    linearFunction(-66, 96.5, 66, 96.5),
-    linearFunction(66, 96.5, 66, -96.5),
-    linearFunction(66, -96.5, -66, -96.5),
+    linearFunction(-61, 91.5, -61, -91.5),
+    linearFunction(-61, 91.5, 61, 91.5),
+    linearFunction(61, 91.5, 61, -91.5),
+    linearFunction(61, -91.5, -61, -91.5),
     # linearFunction(35, 96.5, 35, 86.5),
     # linearFunction(-35, 96.5, -35, 86.5),
     # linearFunction(35, -96.5, 35, -86.5),
@@ -65,6 +65,6 @@ message.length = int(fieldLength)
 message.width = int(fieldWidth)
 message.data = bytes(output)
 
-with open("badfield.ff", "wb") as file:
+with open("ausfield.ff", "wb") as file:
     serialised = message.SerializeToString()
     file.write(serialised)
