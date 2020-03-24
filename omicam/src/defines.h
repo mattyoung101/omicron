@@ -15,7 +15,6 @@
  */
 #define OMICAM_VERSION "4.4b"
 #define VERBOSE_LOGGING 1 // whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO)
-#define CRANK_THE_MFIN_HOG 0 // if enabled, force high-performance CPU frequency governing and disable thermal throttling on Omicam startup
 
 #define VISION_SCALE_FACTOR 0.3 // scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease image size
 #define VISION_CROP_ENABLED 1 // whether or not to enable the ROI crop
@@ -68,17 +67,18 @@ typedef enum {
 
 #define BUILD_TARGET_SBC 0 // Omicam will be running on a SBC. All features enabled as normal.
 #define BUILD_TARGET_PC 1 // Omicam will be running locally on a PC. Uses test imagery and some features are disabled.
-#define BUILD_TARGET (BUILD_TARGET_SBC) // which platform Omicam will be running on
+#define BUILD_TARGET (BUILD_TARGET_PC) // which platform Omicam will be running on
 
 #define LOCALISER_ERROR_TOLERANCE 1 // stop optimisation when a coordinate with this error in centimetres is found
 #define LOCALISER_STEP_TOLERANCE 0.01 // stop optimisation if the last step size was smaller than this in centimetres
 #define LOCALISER_MAX_EVAL_TIME 100 // max evaluation time for the optimiser in milliseconds
-#define LOCALISER_NUM_RAYS 128 // the number of rays to use when raycasting on the line image
-#define LOCALISER_LARGE_ERROR 8600 // error which is 200-300 point higher than the highest usual error in the loacliser
+#define LOCALISER_NUM_RAYS 64 // the number of rays to use when raycasting on the line image
+#define LOCALISER_LARGE_ERROR 8600 // error which is 200-300 points higher than the highest usual error in the loacliser
 #define LOCALISER_DEBUG 0 // if true, renders the objective function bitmap and quits
 #define LOCALISER_DIAGNOSTICS 1 // if true, print data like vision diagnostics to console
 
-#define UART_OVERRIDE 0 // override if UART enabled
+#define UART_OVERRIDE 0 // if true, UART will be forced to be enabled even in BUILD_TARGET_PC
+#define UART_BUS_NAME "/dev/ttyACM0" // the Linux file for the UART device Omicam writes to, usually /dev/ttyACM0
 
 // maths defines are the same ones used in the ESP32 project
 

@@ -10,16 +10,16 @@
 #include "defines.h"
 #include "utils.h"
 
-#define UART_BUS_NAME "/dev/ttyACM0"
-
+#if BUILD_TARGET == BUILD_TARGET_SBC || UART_OVERRIDE
 static int serialfd;
 static bool uartInitOk = false;
 static pthread_t receiveThread;
+#endif
 SensorData lastSensorData = {0};
 
+#if BUILD_TARGET == BUILD_TARGET_SBC || UART_OVERRIDE
 /** UART receive task, based on the esp32 firmware comms_uart.c code */
 static void *receive_thread(void *arg){
-#if BUILD_TARGET == BUILD_TARGET_SBC || UART_OVERRIDE
     log_debug("UART receive task running");
 
     while (true){
@@ -66,10 +66,8 @@ static void *receive_thread(void *arg){
 
         pthread_testcancel();
     }
-#else
-    return NULL;
-#endif
 }
+#endif
 
 void comms_uart_init(){
 #if BUILD_TARGET == BUILD_TARGET_SBC || UART_OVERRIDE
@@ -118,8 +116,14 @@ void comms_uart_init(){
     toptions.c_cc[VTIME] = 025;
 
     // set the options
-    tcsetattr(serialfd, TCSANOW, &toptions);
-    uartInitOk = true;
+    int result = tcsetattr(serialfd, TCSANOW, &toptions);
+    if (result != -1){
+        uartInitOk = true;
+    } else {
+        uartInitOk = false;
+        log_error("Failed to set termios options: %s", strerror(errno));
+        goto die;
+    }
 
     // start the receive task
     int err = pthread_create(&receiveThread, NULL, receive_thread, NULL);
@@ -141,16 +145,39 @@ void comms_uart_init(){
 #endif
 }
 
-void comms_uart_send(uint8_t *data, size_t size){
+void comms_uart_send(comms_msg_type_t msgId, uint8_t *data, size_t size){
 #if BUILD_TARGET == BUILD_TARGET_SBC || UART_OVERRIDE
     if (!uartInitOk){
         log_error("Cannot write to UART because UART did not initialise correctly!");
         return;
+    } else if (size > UINT8_MAX){
+        log_warn("Message too big to send properly: %zu bytes, max is 255 bytes (id: %d)", size, msgId);
     }
-    ssize_t bytesWritten = write(serialfd, data, size);
+
+    // JimBus format: [0xB, msgId, msgSize, ...PROTOBUF DATA..., CRC8 checksum, 0xE]
+    // so a 3 byte header + 2 trailing bytes
+    uint32_t arraySize = 3 + size + 2;
+    uint8_t outBuf[arraySize];
+    uint8_t header[3] = {0xB, msgId, size};
+    uint8_t checksum = crc8(data, size);
+
+    memset(outBuf, 0, arraySize);
+    memcpy(outBuf, header, 3); // copy the header into the buffer
+    memcpy(outBuf + 3, data, size); // copy the rest of the buffer in
+    outBuf[arraySize - 2] = checksum; // CRC8 checksum
+    outBuf[arraySize - 1] = 0xE; // set end byte
+
+    ssize_t bytesWritten =write(serialfd, data, size);
     if (bytesWritten == -1){
          log_error("Failed to write to UART bus: %s", strerror(errno));
     }
+
+    // uncomment for debug
+//    printf("Protobuf message (id %d, size %zu, checksum: 0x%.2X, bytes written: %zd), data:\n", msgId, size, checksum, bytesWritten);
+//    for (uint32_t i = 0; i < arraySize; i++){
+//        printf("%.2X ", outBuf[i]);
+//    }
+//    puts("");
 #endif
 }
 

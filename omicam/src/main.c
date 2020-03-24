@@ -143,17 +143,6 @@ int main() {
 
     char *fieldFile = (char*) iniparser_getstring(config, "Localiser:fieldFile", "../fields/Ints_StandardField.ff");
 
-#if CRANK_THE_MFIN_HOG
-    log_warn("Forcing high-performance CPU governing and disabling thermal throttling service (source: CRANK_THE_MFIN_HOG=1)");
-    log_warn("This may cause the SBC to overheat! Changes will persist until the next reboot. Monitor thermals carefully.");
-    // execute "sudo cpupower frequency-set -g performance" here
-    // also execute "sudo systemctl stop thermald"
-    // then if they both return successfully print:
-    log_debug("Maximum hog cranking configured successfully");
-    // otherwise print:
-    // log_warn("Failed to crank the mfin hog: %s. Please make sure you've configured password-free sudo access.");
-#endif
-
     // initialise all the things
     remote_debug_init(width, height);
     localiser_init(fieldFile);
@@ -164,6 +153,8 @@ int main() {
     iniparser_freedict(config);
 
     vision_init();
+    // (this will block until vision errors/terminates normally)
 
     log_debug("Omicam terminating through main loop exit");
+    return EXIT_SUCCESS;
 }

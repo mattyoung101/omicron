@@ -62,7 +62,6 @@ static const char *PT_TAG = "PerfTimer";
 #endif
 
 SemaphoreHandle_t robotStateSem;
-static int32_t counter = 0;
 
 static void print_reset_reason(){
     esp_reset_reason_t resetReason = esp_reset_reason();
@@ -112,10 +111,8 @@ static void master_task(void *pvParameter){
     uint16_t ticksSinceLastWorstTime = 0;
     uint16_t ticksSinceLastBestTime = 0;
 #endif
-    button_event_t buttonEvent = {0};
     float yawOffset = 0.0f;
     float yawRaw = 0.0f; // yaw before offset
-    uint8_t pbErrors = 0;
 
     print_reset_reason();
     robotStateSem = xSemaphoreCreateBinary();
@@ -127,16 +124,14 @@ static void master_task(void *pvParameter){
 
     comms_i2c_init_bno(I2C_NUM_1);
     comms_i2c_init_nano(I2C_NUM_0);
-//    i2c_scanner(I2C_NUM_0);
-//    i2c_scanner(I2C_NUM_1);
+    // i2c_scanner(I2C_NUM_0);
+    // i2c_scanner(I2C_NUM_1);
     init_bno055(&bno055);
     bno055_convert_float_euler_h_deg(&yawRaw);
     yawOffset = yawRaw;
     ESP_LOGI(TAG, "Yaw offset: %f degrees", yawOffset);
 
-//    gpio_set_direction(KICKER_PIN1, GPIO_MODE_OUTPUT);
-//    gpio_set_direction(KICKER_PIN2, GPIO_MODE_OUTPUT);
-    // QueueHandle_t buttonQueue = button_init(PIN_BIT(RST_BTN));
+    // TODO kicker pins
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
 
     // read robot ID from NVS and init Bluetooth
@@ -161,6 +156,7 @@ static void master_task(void *pvParameter){
 #endif
 
     ESP_LOGI(TAG, "=============== Master software init OK ===============");
+    // FIXME uncomment this once UART is working
     // ESP_LOGI(TAG, "Waiting on valid cam packet...");
     // xSemaphoreTake(validCamPacket, portMAX_DELAY);
     // ESP_LOGI(TAG, "Cam packet received. Running!");
@@ -171,11 +167,10 @@ static void master_task(void *pvParameter){
 #ifdef ENABLE_DIAGNOSTICS
         int64_t begin = esp_timer_get_time();
 #endif
-
         // update sensors
         bno055_convert_float_euler_h_deg(&yawRaw);
         yaw = fmodf(yawRaw - yawOffset + 360.0f, 360.0f);
-//        printf("yaw: %.2f\n", yaw);
+        // printf("yaw: %.2f\n", yaw);
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -223,6 +218,10 @@ static void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
+
+        // calculates motor values
+        motor_calc(0, robotState.outOrientation, 100);
+        // TODO send to atmega?
         
         // encode and send Protobuf message to Teensy slave
         MasterToLSlave teensyMsg = MasterToLSlave_init_default;
@@ -230,33 +229,23 @@ static void master_task(void *pvParameter){
         memcpy(teensyMsg.debugLEDs, robotState.debugLEDs, 6 * sizeof(bool));
 
         uint8_t teensyBuf[PROTOBUF_SIZE] = {0};
-        pb_ostream_t stream = pb_ostream_from_buffer(teensyBuf, PROTOBUF_SIZE);
-        
-        if (!pb_encode(&stream, MasterToLSlave_fields, &teensyMsg)){
-            ESP_LOGW(TAG, "Teensy Protobuf encode error: %s", PB_GET_ERROR(&stream));
-        } else {
-            pbErrors = 0;
+        pb_ostream_t teensyStream = pb_ostream_from_buffer(teensyBuf, PROTOBUF_SIZE);
+        if (!pb_encode(&teensyStream, MasterToLSlave_fields, &teensyMsg)){
+            ESP_LOGW(TAG, "Failed to encode Teensy protobuf message: %s", PB_GET_ERROR(&teensyStream));
         }
-        comms_uart_send(MCU_TEENSY, MSG_ANY, teensyBuf, stream.bytes_written);
+        comms_uart_send(MCU_TEENSY, MSG_ANY, teensyBuf, teensyStream.bytes_written);
 
-        // ESP_LOGI(TAG, "Lineangle: %f, Linesize: %f", lastLSlaveData.lineAngle, lastLSlaveData.lineSize);
-
-        motor_calc(0, robotState.outOrientation, 100);
-        // TODO: SET MOTOR VALUES
-
-        // // handle reset button
-        // if (xQueueReceive(buttonQueue, &buttonEvent, 0)){
-        //     if ((buttonEvent.pin == RST_BTN) && (buttonEvent.event == BUTTON_UP)){
-        //         ESP_LOGI(TAG, "Reset button pressed");
-        //         // fsm_dump(stateMachine);
-        //         fsm_reset(stateMachine);
-
-        //         // calculate new yaw offset
-        //         bno055_convert_float_euler_h_deg(&yawRaw);
-        //         yawOffset = yawRaw;
-        //         ESP_LOGI(TAG, "New yaw offset: %f degrees", yawOffset);
-        //     }
-        // }
+        // encode and send Protobuf message to Omicam
+        SensorData sensorData = SensorData_init_default;
+        sensorData.orientation = yaw;
+        // TODO mouse sensor stuff
+        
+        uint8_t camBuf[PROTOBUF_SIZE] = {0};
+        pb_ostream_t camStream = pb_ostream_from_buffer(camBuf, PROTOBUF_SIZE);
+        if (!pb_encode(&camStream, SensorData_fields, &sensorData)){
+            ESP_LOGE(TAG, "Failed to encode Omicam protobuf message: %s", PB_GET_ERROR(&camStream));
+        }
+        comms_uart_send(SBC_CAMERA, SENSOR_DATA, camBuf, camStream.bytes_written);
         
         // main loop performance profiling code
 #ifdef ENABLE_DIAGNOSTICS
@@ -297,13 +286,13 @@ static void master_task(void *pvParameter){
     }
 }
 
-static void test_music_task(void *pvParameter){
-    static const char *TAG = "TestMusicTask";
-    buzzer_init();
-    while(true){
-        play_song(10);
-    }
-}
+// static void test_music_task(void *pvParameter){
+//     static const char *TAG = "TestMusicTask";
+//     buzzer_init();
+//     while(true){
+//         play_song(10);
+//     }
+// }
 
 static void responding_timer(TimerHandle_t handle){
     puts("Device is responding.");

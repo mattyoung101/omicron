@@ -72,6 +72,7 @@ static void uart_receive_task(void *pvParameter){
                 case DEBUG_CMD:
                     fields = ESP32DebugCommand_fields;
                     dest = &lastDebugCmd;
+                    // TODO depending on contents, notify bluetooth that we have a message to forward
                     break;
                 default:
                     ESP_LOGW(TAG, "Unhandled message id %d on device %d, going to drop message", msgType, device);

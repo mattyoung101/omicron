@@ -11,7 +11,6 @@ static const char *TAG = "CommsBT";
 TaskHandle_t receiveTaskHandle = NULL;
 TaskHandle_t sendTaskHandle = NULL;
 QueueHandle_t packetQueue = NULL;
-static uint8_t switchBuffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 static bool isMaster = false;
 static uint8_t totalErrors = 0;
 static bool firstConnection = true;

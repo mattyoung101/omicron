@@ -189,25 +189,7 @@ static void read_remote_messages(void){
                     free(buf);
                     return;
                 }
-
-                uint32_t arraySize = 3 + stream.bytes_written + 2;
-                uint8_t outBuf[arraySize];
-                uint8_t header[3] = {0xB, DEBUG_CMD, stream.bytes_written};
-                uint8_t checksum = crc8(msgBuf, stream.bytes_written);
-
-                memset(outBuf, 0, arraySize);
-                memcpy(outBuf, header, 3); // copy in header
-                memcpy(outBuf + 3, msgBuf, stream.bytes_written); // write protobuf data
-                outBuf[arraySize - 2] = checksum; // write checksum
-                outBuf[arraySize - 1] = 0xE; // write end byte
-                comms_uart_send(outBuf, arraySize);
-
-//                printf("remote debug message message: ");
-//                for (uint32_t i = 0; i < arraySize; i++){
-//                    printf("%.2X ", outBuf[i]);
-//                }
-//                puts("");
-
+                comms_uart_send(DEBUG_CMD, msgBuf, stream.bytes_written);
                 RD_SEND_OK_RESPONSE;
                 break;
             }
@@ -371,7 +353,6 @@ static void *frame_thread(void *param){
             pthread_testcancel();
             continue;
         }
-        double begin = utils_time_millis();
 
         frame_entry_t *entry = (frame_entry_t*) queueData;
         uint8_t *camFrame = entry->camFrame; // normal view from the camera
