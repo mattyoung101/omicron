@@ -3463,6 +3463,81 @@ public final class RemoteDebug {
      * <code>optional bool isBlueKnown = 27;</code>
      */
     boolean getIsBlueKnown();
+
+    /**
+     * <pre>
+     * the robot's position according to the goal estimate
+     * </pre>
+     *
+     * <code>optional .RDPointF goalEstimate = 28;</code>
+     */
+    boolean hasGoalEstimate();
+    /**
+     * <pre>
+     * the robot's position according to the goal estimate
+     * </pre>
+     *
+     * <code>optional .RDPointF goalEstimate = 28;</code>
+     */
+    RemoteDebug.RDPointF getGoalEstimate();
+    /**
+     * <pre>
+     * the robot's position according to the goal estimate
+     * </pre>
+     *
+     * <code>optional .RDPointF goalEstimate = 28;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getGoalEstimateOrBuilder();
+
+    /**
+     * <pre>
+     * localiser min estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMinBounds = 29;</code>
+     */
+    boolean hasEstimateMinBounds();
+    /**
+     * <pre>
+     * localiser min estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMinBounds = 29;</code>
+     */
+    RemoteDebug.RDPointF getEstimateMinBounds();
+    /**
+     * <pre>
+     * localiser min estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMinBounds = 29;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getEstimateMinBoundsOrBuilder();
+
+    /**
+     * <pre>
+     * localiser max estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+     */
+    boolean hasEstimateMaxBounds();
+    /**
+     * <pre>
+     * localiser max estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+     */
+    RemoteDebug.RDPointF getEstimateMaxBounds();
+    /**
+     * <pre>
+     * localiser max estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getEstimateMaxBoundsOrBuilder();
   }
   /**
    * <pre>
@@ -3784,6 +3859,45 @@ public final class RemoteDebug {
             case 216: {
 
               isBlueKnown_ = input.readBool();
+              break;
+            }
+            case 226: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (goalEstimate_ != null) {
+                subBuilder = goalEstimate_.toBuilder();
+              }
+              goalEstimate_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(goalEstimate_);
+                goalEstimate_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 234: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (estimateMinBounds_ != null) {
+                subBuilder = estimateMinBounds_.toBuilder();
+              }
+              estimateMinBounds_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(estimateMinBounds_);
+                estimateMinBounds_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 242: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (estimateMaxBounds_ != null) {
+                subBuilder = estimateMaxBounds_.toBuilder();
+              }
+              estimateMaxBounds_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(estimateMaxBounds_);
+                estimateMaxBounds_ = subBuilder.buildPartial();
+              }
+
               break;
             }
           }
@@ -4505,6 +4619,105 @@ public final class RemoteDebug {
       return isBlueKnown_;
     }
 
+    public static final int GOALESTIMATE_FIELD_NUMBER = 28;
+    private RemoteDebug.RDPointF goalEstimate_;
+    /**
+     * <pre>
+     * the robot's position according to the goal estimate
+     * </pre>
+     *
+     * <code>optional .RDPointF goalEstimate = 28;</code>
+     */
+    public boolean hasGoalEstimate() {
+      return goalEstimate_ != null;
+    }
+    /**
+     * <pre>
+     * the robot's position according to the goal estimate
+     * </pre>
+     *
+     * <code>optional .RDPointF goalEstimate = 28;</code>
+     */
+    public RemoteDebug.RDPointF getGoalEstimate() {
+      return goalEstimate_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : goalEstimate_;
+    }
+    /**
+     * <pre>
+     * the robot's position according to the goal estimate
+     * </pre>
+     *
+     * <code>optional .RDPointF goalEstimate = 28;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getGoalEstimateOrBuilder() {
+      return getGoalEstimate();
+    }
+
+    public static final int ESTIMATEMINBOUNDS_FIELD_NUMBER = 29;
+    private RemoteDebug.RDPointF estimateMinBounds_;
+    /**
+     * <pre>
+     * localiser min estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMinBounds = 29;</code>
+     */
+    public boolean hasEstimateMinBounds() {
+      return estimateMinBounds_ != null;
+    }
+    /**
+     * <pre>
+     * localiser min estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMinBounds = 29;</code>
+     */
+    public RemoteDebug.RDPointF getEstimateMinBounds() {
+      return estimateMinBounds_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : estimateMinBounds_;
+    }
+    /**
+     * <pre>
+     * localiser min estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMinBounds = 29;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getEstimateMinBoundsOrBuilder() {
+      return getEstimateMinBounds();
+    }
+
+    public static final int ESTIMATEMAXBOUNDS_FIELD_NUMBER = 30;
+    private RemoteDebug.RDPointF estimateMaxBounds_;
+    /**
+     * <pre>
+     * localiser max estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+     */
+    public boolean hasEstimateMaxBounds() {
+      return estimateMaxBounds_ != null;
+    }
+    /**
+     * <pre>
+     * localiser max estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+     */
+    public RemoteDebug.RDPointF getEstimateMaxBounds() {
+      return estimateMaxBounds_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : estimateMaxBounds_;
+    }
+    /**
+     * <pre>
+     * localiser max estimate bounds if goal is present
+     * </pre>
+     *
+     * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getEstimateMaxBoundsOrBuilder() {
+      return getEstimateMaxBounds();
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -4614,6 +4827,15 @@ public final class RemoteDebug {
       }
       if (isBlueKnown_ != false) {
         output.writeBool(27, isBlueKnown_);
+      }
+      if (goalEstimate_ != null) {
+        output.writeMessage(28, getGoalEstimate());
+      }
+      if (estimateMinBounds_ != null) {
+        output.writeMessage(29, getEstimateMinBounds());
+      }
+      if (estimateMaxBounds_ != null) {
+        output.writeMessage(30, getEstimateMaxBounds());
       }
     }
 
@@ -4757,6 +4979,18 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(27, isBlueKnown_);
       }
+      if (goalEstimate_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(28, getGoalEstimate());
+      }
+      if (estimateMinBounds_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(29, getEstimateMinBounds());
+      }
+      if (estimateMaxBounds_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(30, getEstimateMaxBounds());
+      }
       memoizedSize = size;
       return size;
     }
@@ -4851,6 +5085,21 @@ public final class RemoteDebug {
           == other.getIsBallKnown());
       result = result && (getIsBlueKnown()
           == other.getIsBlueKnown());
+      result = result && (hasGoalEstimate() == other.hasGoalEstimate());
+      if (hasGoalEstimate()) {
+        result = result && getGoalEstimate()
+            .equals(other.getGoalEstimate());
+      }
+      result = result && (hasEstimateMinBounds() == other.hasEstimateMinBounds());
+      if (hasEstimateMinBounds()) {
+        result = result && getEstimateMinBounds()
+            .equals(other.getEstimateMinBounds());
+      }
+      result = result && (hasEstimateMaxBounds() == other.hasEstimateMaxBounds());
+      if (hasEstimateMaxBounds()) {
+        result = result && getEstimateMaxBounds()
+            .equals(other.getEstimateMaxBounds());
+      }
       return result;
     }
 
@@ -4945,6 +5194,18 @@ public final class RemoteDebug {
       hash = (37 * hash) + ISBLUEKNOWN_FIELD_NUMBER;
       hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
           getIsBlueKnown());
+      if (hasGoalEstimate()) {
+        hash = (37 * hash) + GOALESTIMATE_FIELD_NUMBER;
+        hash = (53 * hash) + getGoalEstimate().hashCode();
+      }
+      if (hasEstimateMinBounds()) {
+        hash = (37 * hash) + ESTIMATEMINBOUNDS_FIELD_NUMBER;
+        hash = (53 * hash) + getEstimateMinBounds().hashCode();
+      }
+      if (hasEstimateMaxBounds()) {
+        hash = (37 * hash) + ESTIMATEMAXBOUNDS_FIELD_NUMBER;
+        hash = (53 * hash) + getEstimateMaxBounds().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5157,6 +5418,24 @@ public final class RemoteDebug {
 
         isBlueKnown_ = false;
 
+        if (goalEstimateBuilder_ == null) {
+          goalEstimate_ = null;
+        } else {
+          goalEstimate_ = null;
+          goalEstimateBuilder_ = null;
+        }
+        if (estimateMinBoundsBuilder_ == null) {
+          estimateMinBounds_ = null;
+        } else {
+          estimateMinBounds_ = null;
+          estimateMinBoundsBuilder_ = null;
+        }
+        if (estimateMaxBoundsBuilder_ == null) {
+          estimateMaxBounds_ = null;
+        } else {
+          estimateMaxBounds_ = null;
+          estimateMaxBoundsBuilder_ = null;
+        }
         return this;
       }
 
@@ -5264,6 +5543,21 @@ public final class RemoteDebug {
         result.isYellowKnown_ = isYellowKnown_;
         result.isBallKnown_ = isBallKnown_;
         result.isBlueKnown_ = isBlueKnown_;
+        if (goalEstimateBuilder_ == null) {
+          result.goalEstimate_ = goalEstimate_;
+        } else {
+          result.goalEstimate_ = goalEstimateBuilder_.build();
+        }
+        if (estimateMinBoundsBuilder_ == null) {
+          result.estimateMinBounds_ = estimateMinBounds_;
+        } else {
+          result.estimateMinBounds_ = estimateMinBoundsBuilder_.build();
+        }
+        if (estimateMaxBoundsBuilder_ == null) {
+          result.estimateMaxBounds_ = estimateMaxBounds_;
+        } else {
+          result.estimateMaxBounds_ = estimateMaxBoundsBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5461,6 +5755,15 @@ public final class RemoteDebug {
         }
         if (other.getIsBlueKnown() != false) {
           setIsBlueKnown(other.getIsBlueKnown());
+        }
+        if (other.hasGoalEstimate()) {
+          mergeGoalEstimate(other.getGoalEstimate());
+        }
+        if (other.hasEstimateMinBounds()) {
+          mergeEstimateMinBounds(other.getEstimateMinBounds());
+        }
+        if (other.hasEstimateMaxBounds()) {
+          mergeEstimateMaxBounds(other.getEstimateMaxBounds());
         }
         onChanged();
         return this;
@@ -8050,6 +8353,465 @@ public final class RemoteDebug {
         isBlueKnown_ = false;
         onChanged();
         return this;
+      }
+
+      private RemoteDebug.RDPointF goalEstimate_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> goalEstimateBuilder_;
+      /**
+       * <pre>
+       * the robot's position according to the goal estimate
+       * </pre>
+       *
+       * <code>optional .RDPointF goalEstimate = 28;</code>
+       */
+      public boolean hasGoalEstimate() {
+        return goalEstimateBuilder_ != null || goalEstimate_ != null;
+      }
+      /**
+       * <pre>
+       * the robot's position according to the goal estimate
+       * </pre>
+       *
+       * <code>optional .RDPointF goalEstimate = 28;</code>
+       */
+      public RemoteDebug.RDPointF getGoalEstimate() {
+        if (goalEstimateBuilder_ == null) {
+          return goalEstimate_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : goalEstimate_;
+        } else {
+          return goalEstimateBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * the robot's position according to the goal estimate
+       * </pre>
+       *
+       * <code>optional .RDPointF goalEstimate = 28;</code>
+       */
+      public Builder setGoalEstimate(RemoteDebug.RDPointF value) {
+        if (goalEstimateBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          goalEstimate_ = value;
+          onChanged();
+        } else {
+          goalEstimateBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the robot's position according to the goal estimate
+       * </pre>
+       *
+       * <code>optional .RDPointF goalEstimate = 28;</code>
+       */
+      public Builder setGoalEstimate(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (goalEstimateBuilder_ == null) {
+          goalEstimate_ = builderForValue.build();
+          onChanged();
+        } else {
+          goalEstimateBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the robot's position according to the goal estimate
+       * </pre>
+       *
+       * <code>optional .RDPointF goalEstimate = 28;</code>
+       */
+      public Builder mergeGoalEstimate(RemoteDebug.RDPointF value) {
+        if (goalEstimateBuilder_ == null) {
+          if (goalEstimate_ != null) {
+            goalEstimate_ =
+              RemoteDebug.RDPointF.newBuilder(goalEstimate_).mergeFrom(value).buildPartial();
+          } else {
+            goalEstimate_ = value;
+          }
+          onChanged();
+        } else {
+          goalEstimateBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the robot's position according to the goal estimate
+       * </pre>
+       *
+       * <code>optional .RDPointF goalEstimate = 28;</code>
+       */
+      public Builder clearGoalEstimate() {
+        if (goalEstimateBuilder_ == null) {
+          goalEstimate_ = null;
+          onChanged();
+        } else {
+          goalEstimate_ = null;
+          goalEstimateBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * the robot's position according to the goal estimate
+       * </pre>
+       *
+       * <code>optional .RDPointF goalEstimate = 28;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getGoalEstimateBuilder() {
+        
+        onChanged();
+        return getGoalEstimateFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * the robot's position according to the goal estimate
+       * </pre>
+       *
+       * <code>optional .RDPointF goalEstimate = 28;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getGoalEstimateOrBuilder() {
+        if (goalEstimateBuilder_ != null) {
+          return goalEstimateBuilder_.getMessageOrBuilder();
+        } else {
+          return goalEstimate_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : goalEstimate_;
+        }
+      }
+      /**
+       * <pre>
+       * the robot's position according to the goal estimate
+       * </pre>
+       *
+       * <code>optional .RDPointF goalEstimate = 28;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getGoalEstimateFieldBuilder() {
+        if (goalEstimateBuilder_ == null) {
+          goalEstimateBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getGoalEstimate(),
+                  getParentForChildren(),
+                  isClean());
+          goalEstimate_ = null;
+        }
+        return goalEstimateBuilder_;
+      }
+
+      private RemoteDebug.RDPointF estimateMinBounds_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> estimateMinBoundsBuilder_;
+      /**
+       * <pre>
+       * localiser min estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMinBounds = 29;</code>
+       */
+      public boolean hasEstimateMinBounds() {
+        return estimateMinBoundsBuilder_ != null || estimateMinBounds_ != null;
+      }
+      /**
+       * <pre>
+       * localiser min estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMinBounds = 29;</code>
+       */
+      public RemoteDebug.RDPointF getEstimateMinBounds() {
+        if (estimateMinBoundsBuilder_ == null) {
+          return estimateMinBounds_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : estimateMinBounds_;
+        } else {
+          return estimateMinBoundsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * localiser min estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMinBounds = 29;</code>
+       */
+      public Builder setEstimateMinBounds(RemoteDebug.RDPointF value) {
+        if (estimateMinBoundsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          estimateMinBounds_ = value;
+          onChanged();
+        } else {
+          estimateMinBoundsBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * localiser min estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMinBounds = 29;</code>
+       */
+      public Builder setEstimateMinBounds(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (estimateMinBoundsBuilder_ == null) {
+          estimateMinBounds_ = builderForValue.build();
+          onChanged();
+        } else {
+          estimateMinBoundsBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * localiser min estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMinBounds = 29;</code>
+       */
+      public Builder mergeEstimateMinBounds(RemoteDebug.RDPointF value) {
+        if (estimateMinBoundsBuilder_ == null) {
+          if (estimateMinBounds_ != null) {
+            estimateMinBounds_ =
+              RemoteDebug.RDPointF.newBuilder(estimateMinBounds_).mergeFrom(value).buildPartial();
+          } else {
+            estimateMinBounds_ = value;
+          }
+          onChanged();
+        } else {
+          estimateMinBoundsBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * localiser min estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMinBounds = 29;</code>
+       */
+      public Builder clearEstimateMinBounds() {
+        if (estimateMinBoundsBuilder_ == null) {
+          estimateMinBounds_ = null;
+          onChanged();
+        } else {
+          estimateMinBounds_ = null;
+          estimateMinBoundsBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * localiser min estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMinBounds = 29;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getEstimateMinBoundsBuilder() {
+        
+        onChanged();
+        return getEstimateMinBoundsFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * localiser min estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMinBounds = 29;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getEstimateMinBoundsOrBuilder() {
+        if (estimateMinBoundsBuilder_ != null) {
+          return estimateMinBoundsBuilder_.getMessageOrBuilder();
+        } else {
+          return estimateMinBounds_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : estimateMinBounds_;
+        }
+      }
+      /**
+       * <pre>
+       * localiser min estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMinBounds = 29;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getEstimateMinBoundsFieldBuilder() {
+        if (estimateMinBoundsBuilder_ == null) {
+          estimateMinBoundsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getEstimateMinBounds(),
+                  getParentForChildren(),
+                  isClean());
+          estimateMinBounds_ = null;
+        }
+        return estimateMinBoundsBuilder_;
+      }
+
+      private RemoteDebug.RDPointF estimateMaxBounds_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> estimateMaxBoundsBuilder_;
+      /**
+       * <pre>
+       * localiser max estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+       */
+      public boolean hasEstimateMaxBounds() {
+        return estimateMaxBoundsBuilder_ != null || estimateMaxBounds_ != null;
+      }
+      /**
+       * <pre>
+       * localiser max estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+       */
+      public RemoteDebug.RDPointF getEstimateMaxBounds() {
+        if (estimateMaxBoundsBuilder_ == null) {
+          return estimateMaxBounds_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : estimateMaxBounds_;
+        } else {
+          return estimateMaxBoundsBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * localiser max estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+       */
+      public Builder setEstimateMaxBounds(RemoteDebug.RDPointF value) {
+        if (estimateMaxBoundsBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          estimateMaxBounds_ = value;
+          onChanged();
+        } else {
+          estimateMaxBoundsBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * localiser max estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+       */
+      public Builder setEstimateMaxBounds(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (estimateMaxBoundsBuilder_ == null) {
+          estimateMaxBounds_ = builderForValue.build();
+          onChanged();
+        } else {
+          estimateMaxBoundsBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * localiser max estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+       */
+      public Builder mergeEstimateMaxBounds(RemoteDebug.RDPointF value) {
+        if (estimateMaxBoundsBuilder_ == null) {
+          if (estimateMaxBounds_ != null) {
+            estimateMaxBounds_ =
+              RemoteDebug.RDPointF.newBuilder(estimateMaxBounds_).mergeFrom(value).buildPartial();
+          } else {
+            estimateMaxBounds_ = value;
+          }
+          onChanged();
+        } else {
+          estimateMaxBoundsBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * localiser max estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+       */
+      public Builder clearEstimateMaxBounds() {
+        if (estimateMaxBoundsBuilder_ == null) {
+          estimateMaxBounds_ = null;
+          onChanged();
+        } else {
+          estimateMaxBounds_ = null;
+          estimateMaxBoundsBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * localiser max estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getEstimateMaxBoundsBuilder() {
+        
+        onChanged();
+        return getEstimateMaxBoundsFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * localiser max estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getEstimateMaxBoundsOrBuilder() {
+        if (estimateMaxBoundsBuilder_ != null) {
+          return estimateMaxBoundsBuilder_.getMessageOrBuilder();
+        } else {
+          return estimateMaxBounds_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : estimateMaxBounds_;
+        }
+      }
+      /**
+       * <pre>
+       * localiser max estimate bounds if goal is present
+       * </pre>
+       *
+       * <code>optional .RDPointF estimateMaxBounds = 30;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getEstimateMaxBoundsFieldBuilder() {
+        if (estimateMaxBoundsBuilder_ == null) {
+          estimateMaxBoundsBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getEstimateMaxBounds(),
+                  getParentForChildren(),
+                  isClean());
+          estimateMaxBounds_ = null;
+        }
+        return estimateMaxBoundsBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -10854,7 +11616,7 @@ public final class RemoteDebug {
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
       "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\";\n\007RDRobo" +
       "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
-      "ation\030\002 \001(\002\"\245\005\n\nDebugFrame\022\024\n\014defaultIma" +
+      "ation\030\002 \001(\002\"\222\006\n\nDebugFrame\022\024\n\014defaultIma" +
       "ge\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013tem" +
       "perature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RDRec" +
       "t\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\022\013\n\003fps",
@@ -10871,15 +11633,18 @@ public final class RemoteDebug {
       "\022 \n\ryellowGoalPos\030\027 \001(\0132\t.RDPointF\022\036\n\013bl" +
       "ueGoalPos\030\030 \001(\0132\t.RDPointF\022\025\n\risYellowKn" +
       "own\030\031 \001(\010\022\023\n\013isBallKnown\030\032 \001(\010\022\023\n\013isBlue" +
-      "Known\030\033 \001(\010\"\341\001\n\014DebugCommand\022\021\n\tmessageI" +
-      "d\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013ori" +
-      "entation\030\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014." +
-      "RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030" +
-      "\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005value\030\010 " +
-      "\001(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"" +
-      "^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFram",
-      "e\022\036\n\007command\030\002 \001(\0132\r.DebugCommand\022\024\n\014whi" +
-      "chMessage\030\003 \001(\005b\006proto3"
+      "Known\030\033 \001(\010\022\037\n\014goalEstimate\030\034 \001(\0132\t.RDPo" +
+      "intF\022$\n\021estimateMinBounds\030\035 \001(\0132\t.RDPoin" +
+      "tF\022$\n\021estimateMaxBounds\030\036 \001(\0132\t.RDPointF" +
+      "\"\341\001\n\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006" +
+      "coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 " +
+      "\001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold" +
+      "\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rco",
+      "lourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robo" +
+      "tId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFra" +
+      "me\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007comman" +
+      "d\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003" +
+      " \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -10928,7 +11693,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", "GoalEstimate", "EstimateMinBounds", "EstimateMaxBounds", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_DebugCommand_fieldAccessorTable = new

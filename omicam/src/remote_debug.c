@@ -215,9 +215,10 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     ///////////////////////////////////////////
     /// fill the protocol buffer with data  ///
     //////////////////////////////////////////
+    pthread_mutex_lock(&localiserMutex);
     if (sendDebugFrames) {
         // we're in the camera view
-        // TODO note that this 9600 value will need to be updated if the field size is changed
+        // TODO note that this 9600 value will need to be updated if the protobuf field size is changed
         memcpy(msg.defaultImage.bytes, camImg, MIN(camImgSize, 96000));
         memcpy(msg.ballThreshImage.bytes, threshImg, MIN(threshImgSize, 96000));
         msg.defaultImage.size = camImgSize;
@@ -226,11 +227,6 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
         // we're in the field view so don't send anything to save bandwidth
         msg.defaultImage.size = 0;
         msg.ballThreshImage.size = 0;
-
-        memcpy(msg.dewarpedRays, observedRays, LOCALISER_NUM_RAYS * sizeof(double));
-        memcpy(msg.rayScores, rayScores, LOCALISER_NUM_RAYS * sizeof(double));
-        msg.dewarpedRays_count = LOCALISER_NUM_RAYS;
-        msg.rayScores_count = LOCALISER_NUM_RAYS;
     }
     msg.temperature = (float) cpuTemperature;
     // TODO make the msg use RDPointF instead of integers
@@ -245,16 +241,8 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
 #else
     RDRect cropRect = {0, 0, videoWidth, videoHeight};
 #endif
-    memcpy(msg.rays, observedRaysRaw, LOCALISER_NUM_RAYS * sizeof(double));
-    msg.rays_count = LOCALISER_NUM_RAYS;
     msg.cropRect = cropRect;
     msg.mirrorRadius = visionMirrorRadius;
-    msg.robotPositions[0].x = (float) localisedPosition.x;
-    msg.robotPositions[0].y = (float) localisedPosition.y;
-    msg.robotPositions_count = 1;
-    msg.rayInterval = (float) (PI2 / LOCALISER_NUM_RAYS);
-    msg.localiserRate = localiserRate;
-    msg.localiserEvals = localiserEvals;
     msg.ballPos.x = entry->objectData.ballAbsX;
     msg.ballPos.y = entry->objectData.ballAbsY;
     msg.yellowGoalPos.x = entry->objectData.goalYellowAbsX;
@@ -264,16 +252,7 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
     msg.isBallKnown = entry->objectData.ballExists;
     msg.isBlueKnown = entry->objectData.goalBlueExists;
     msg.isYellowKnown = entry->objectData.goalYellowExists;
-    memcpy(msg.localiserStatus, localiserStatus, 32);
-
-    pthread_mutex_lock(&localiserMutex);
-    uint32_t size = MIN(da_count(localiserVisitedPoints), 128);
-    for (size_t i = 0; i < size; i++) {
-        localiser_point_t point = da_get(localiserVisitedPoints, i);
-        msg.localiserVisitedPoints[i].x = (float) point.x;
-        msg.localiserVisitedPoints[i].y = (float) point.y;
-    }
-    msg.localiserVisitedPoints_count = size;
+    remote_debug_localiser_provide(&msg);
     pthread_mutex_unlock(&localiserMutex);
 
     RDMsgFrame wrapper = RDMsgFrame_init_zero;

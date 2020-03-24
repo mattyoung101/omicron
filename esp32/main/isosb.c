@@ -12,10 +12,14 @@
 #include "bno055.h"
 #include "comms_i2c.h"
 
-#define TEST_SUCCESS do { ESP_LOGI(TAG, "----> OK!"); } while (0);
-#define TEST_FAIL do { ESP_LOGE(TAG, "-----> FAILED!"); vTaskSuspend(NULL); } while (true);
-#define TEST_WAIT_KEY do { uint8_t byte = 0; uart_read_bytes(UART_NUM_0, &byte, 1, portMAX_DELAY); } while (0);
+// ISOSB Test Suite - "I'm Sick of Shit Breaking"
+// Tries to test every peripheral (for example, BNO-055, Nano comms, etc) to its full capacity and reports any failures
+// To run ISOSB comment in the code which runs the isosb task in main.c, and comment out master_task
+// Feel free to use the enterprise friendly name: Integrated Sub-tests Ordered Similarly By (name)
 
+#define TEST_SUCCESS do { ESP_LOGI(TAG, "----> TEST OK!"); } while (0);
+#define TEST_FAIL do { ESP_LOGE(TAG, "-----> TEST FAILED!"); vTaskSuspend(NULL); } while (true);
+#define TEST_WAIT_KEY do { uint8_t byte = 0; uart_read_bytes(UART_NUM_0, &byte, 1, portMAX_DELAY); } while (0);
 static const char *TAG = "ISOSB";
 
 static bool i2c_check(const char *name, uint8_t address, i2c_port_t port){
@@ -109,6 +113,7 @@ void isosb_test_task(void *pvParameter){
         TEST_FAIL;
     }
 
+    ESP_LOGI(TAG, "=============== ISOSB TESTS PASSED SUCCESSFULLY ===============");
     ESP_LOGI(TAG, "Congratulations, looks like the robot works. Nothing left to do.");
     vTaskSuspend(NULL);
     while (true);

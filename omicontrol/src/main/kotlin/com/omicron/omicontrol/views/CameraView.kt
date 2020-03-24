@@ -215,7 +215,7 @@ class CameraView : View() {
     fun receiveRemoteShutdownEvent(message: RemoteShutdownEvent){
         Logger.info("Received remote shutdown event")
         runLater {
-            Utils.showGenericAlert(Alert.AlertType.ERROR, "The remote connection has unexpectedly terminated.\n" +
+            if (!IS_DEBUG_MODE) Utils.showGenericAlert(Alert.AlertType.ERROR, "The remote connection has unexpectedly terminated.\n" +
                     "Please check Omicam is still running and try again.\n\nError description: Protobuf message was null",
                 "Connection error")
             disconnect()

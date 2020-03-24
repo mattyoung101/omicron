@@ -130,7 +130,7 @@ static auto cv_thread(void *arg) -> void *{
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-    Mat ogFrame = imread("../test_data/field4.png");
+    Mat ogFrame = imread("../test_data/field5.png");
     if (ogFrame.cols <= 0 || ogFrame.rows <= 0){
         log_error("Unable to load test image! Please check the path is correct. Cannot continue.");
         return nullptr;

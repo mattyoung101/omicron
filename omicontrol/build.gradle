@@ -4,6 +4,18 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
+// stupid fucking piece of fucking shit known as fucking IntelliJ decided to nuke all the sources in my fucking build
+// so hopefully this shit gets them back
+// yeah and it would be nice if fucking Tony and Malcolm hadn't fucked up the NBN so I could download this shit faster
+// than a fucking drunken camel on a Friday night
+apply plugin: 'idea'
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
 group 'omicron'
 version '4.5b'
 

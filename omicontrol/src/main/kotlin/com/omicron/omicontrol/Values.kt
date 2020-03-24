@@ -22,6 +22,8 @@ import org.greenrobot.eventbus.EventBus
 const val OMICONTROL_VERSION = "4.5b"
 const val DEFAULT_IP = "192.168.12.1"
 const val DEFAULT_PORT = 42708
+/** if true, development is being done on Omicam/Omicontrol, so there is no disconnect message */
+const val IS_DEBUG_MODE = true
 
 const val FIELD_LENGTH_CM = 243 // long side, the top and bottom
 const val FIELD_WIDTH_CM = 182 // short side, the sides of the field

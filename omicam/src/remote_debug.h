@@ -28,10 +28,8 @@ extern "C" {
 
 /** Creates the remote debug TCP socket and image encoder **/
 void remote_debug_init(uint16_t w, uint16_t h);
-
 /** Destroys the TCP socket and image encoder **/
 void remote_debug_dispose(void);
-
 /**
  * Sends the specified data to the work queue (to be processed asynchronously), where it is encoded (with libjpeg-turbo
  * for JPEGs and zlib for threshold masks) and sent to Omicontrol. This function returns immediately.
@@ -48,6 +46,8 @@ void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect,
         int32_t videoWidth, int32_t videoHeight, ObjectData objectData);
 /** Checks if the remote debugger currently has an established connection **/
 bool remote_debug_is_connected(void);
+/** Asks the localiser to provide info into the RDFrame struct **/
+void remote_debug_localiser_provide(DebugFrame *debugFrame);
 
 #ifdef __cplusplus
 }

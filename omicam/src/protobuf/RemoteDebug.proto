@@ -92,6 +92,10 @@ message DebugFrame {
     bool isBlueKnown = 27;
     // the robot's position according to the goal estimate
     RDPointF goalEstimate = 28;
+    // localiser min estimate bounds if goal is present
+    RDPointF estimateMinBounds = 29;
+    // localiser max estimate bounds if goal is present
+    RDPointF estimateMaxBounds = 30;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

@@ -118,8 +118,23 @@ class FieldView : View() {
                 display.drawImage(sprite, pos.x - half, pos.y - half, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
                 display.globalAlpha = 1.0
 
-                display.fill = Color.WHITE
+                display.fill = Color.MAGENTA
                 display.fillText(robot.id.toString(), pos.x - (half / 2.0), pos.y + (half / 2.0))
+            }
+
+            // render estimate stuff
+            if (message.isBlueKnown && message.isYellowKnown) {
+                display.fill = Color.FUCHSIA
+                val pos = Point2D(message.goalEstimate.x.toDouble(), message.goalEstimate.y.toDouble()).toCanvasPosition()
+                display.fillOval(pos.x, pos.y, 16.0, 16.0)
+                display.fill = Color.WHITE
+                display.fillText("est", pos.x, pos.y)
+
+                display.stroke = Color.RED
+                display.lineWidth = 3.0
+                val bottomCorner = Point2D(message.estimateMinBounds.x.toDouble(), message.estimateMinBounds.y.toDouble()).toCanvasPosition()
+                val topCorner = Point2D(message.estimateMaxBounds.x.toDouble(), message.estimateMaxBounds.y.toDouble()).toCanvasPosition()
+                display.strokeRect(bottomCorner.x, bottomCorner.y, topCorner.x - bottomCorner.x, topCorner.y - bottomCorner.y)
             }
 
             // render ball
@@ -218,7 +233,7 @@ class FieldView : View() {
     fun receiveRemoteShutdownEvent(message: RemoteShutdownEvent){
         Logger.info("Received remote shutdown event")
         runLater {
-            Utils.showGenericAlert(
+            if (!IS_DEBUG_MODE) Utils.showGenericAlert(
                 Alert.AlertType.ERROR, "The remote connection has unexpectedly terminated.\n" +
                         "Please check Omicam is still running and try again.\n\nError description: Protobuf message was null",
                 "Connection error")

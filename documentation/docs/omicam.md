@@ -135,32 +135,41 @@ still vulnerable to all the problems the second approach suffers from as well. W
 this as not an ideal approach.
 
 ### Our solution
-This year, Team Omicron presents a novel approach to robot localisation based partly on a middle-size league paper by Lu, Li, Zhang,
-Hu & Zheng[^2]. We localise using only RGB camera data by solving a multi-variate optimisation problem in realtime, via the
-Subplex non-linear gradient-free optimisation algorithm.
+**TODO UPDATE TO INCLUDE SENSOR FUSION**
 
-The principle method of operation of our algorithm is that we need to match a virtual model of field geometry to the observed
-one from the camera, thereby inferring our position. Another way to think of it is we need to generate a transform such that
-a virtual model of the field will align with the real one, thereby also calculating our 2D position.  
-If we match the lines so that they align in both the virtual model and real-world model, then we can infer that the 
-calculated virtual robot coordinates are the same as the real, unknown robot coordinates. Essentially, we're
-taking what we know: the static layout of the field, and observed field geometry at our current position, and using it to
-infer the unknown 2D position vector.
+This year, Team Omicron presents a novel approach to robot localisation using an advanced sensor fusion algorithm.
+Our approach builds an initial estimate of the robot's position using traditional methods such as vector maths and velocity integration. 
+It then refines it to a much higher accuracy value using a novel approach that involves solving a multi-variate non-linear
+optimisation problem. Compared to just using goals, the addition of the optimisation stage increases accuracy by 
+about 4.6x, to be as little as 1.5cm error. We believe an approach of this complexity and accuracy to be a first for the 
+RoboCup Junior league.
 
-This is a form of the orthogonal Procrustes problem, which can be solved through a multitude of approaches such as iterative
-closest point (commonly used with 3D LiDARS), Monte-Carlo localisation via a particle filter or gradient fields. However,
-most of these approaches also consider rotation as a factor. Due to to our use of a high-accuracy BNO-055 IMU, we consider
-rotation to be a non-issue that can be easily corrected for, thereby reducing the complexity of the problem. 
-Thus, we developed a novel three step algorithm involving ray-casting to infer our 2D position, ignoring rotation as a factor 
-to be solved for.
+The optimisation element of our sensor fusion algorithm is inspired by a middle-size league paper by 
+Lu, Li, Zhang, Hu & Zheng[^2]. However, there are some major differences between their paper and our algorithm. While
+they generate line points and then use Monte-Carlo localisation, we instead generate rays and solve a non-linear
+minimisation problem. We found this more intuitive to implement and faster for our use case. The principle method our algorithm
+is to compare observed field line geometry from the camera, and compare this to a known model of the field. 
+By trying to optimise the robot's unknown (x,y) position to maximise the fit between the observed lines and virtual lines, 
+we can infer the robot's coordinates to very high accuracies.
 
-These steps are:
+In theory, this optimisation algorithm can already solve our localisation problem, and we did indeed observe very good
+accuracy using idealistic Fusion 360 rendered images **(TODO provide picture)**.
+However, in the real world, we found the optimiser to be incredibly unstable, because the perspective of our camera's 
+mounting obscures very far away field lines - which the optimiser needs to converge on a stable solution. 
+To solve this issue, we decided to use other lower-accuracy, but more robust estimates of the robot's position to 
+"give hints" to the optimisation algorithm, thus forming a sensor fusion approach.
 
-1. Image analysis
-2. Camera normalisation
-3. Coordinate optimisation
+1. Estimate calculation
+3. Image analysis
+4. Camera normalisation
+4. Coordinate optimisation
+
+#### Estimate calculation
+**Goal maths, mouse sensor**
 
 #### Image analysis
+**We use rays to sample the lines basically**
+
 The localiser's input is a 1-bit mask of pixels that are determined to be on field lines. This is determined by thresholding
 for the colour white, which is handled by the vision pipeline described earlier.
 
@@ -205,9 +214,7 @@ _and black pixels indicate less accurate areas._
 
 A naive approach, where every grid cell is evaluated and the lowest value is picked, would require 44,226 objective function
 evaluation which takes about 5 seconds on a fast computer. Using the Subplex optimiser, this can be reduced to just 62
-evaluations for a 1.2mm accurate fix.
-
-**TODO: cover approaches we drafted: line points, etc. Also, use more images in the docs**
+evaluations for a 1.5cm accurate fix. **TODO update**
 
 We spent a great deal of effort drafting the most efficient objective function, and the approach we present makes heavy use
 of pre-computation via a "field file". This field file is a binary Protcol Buffer file that encodes the geometry of any
@@ -248,30 +255,15 @@ the vision based approach.
 It would also be possible to use the distance to the goals as virtual information to supplement a potential lack of line
 data and thus increase accuracy. Other distance sensors such as 360 LiDARS can also be implemented with ease.
 
-### Justification for our approach
-Observant readers will notice that the objective function is technically linear (as it contains no exponentials or powers).
-Hence, it may be observed that linear programming (essentially linear optimisation) could be used to solve the problem. In
-fact, it's very plausible that something like Dantzig's Simplex/criss-cross algorithm or an interior point algorithm could
-locate the optimum far more efficiently than the Subplex/Nelder-Mead simplex optimiser.
-
-However, there is a distinct lack of easy to use and non-restrictively licensed linear optimisers for C. The best candidate
-was probably COIN-OR's CLP or Google's Glop, but both of these methods are quite complex compared to NLopt's Subplex algorithm
-(and also written in C++). We determined that given the performance of the localiser (about 30 Hz maximum) and mouse sensor 
-interpolation, it's not worth switching to a linear optimiser when the non-linear one works fine and fast enough.
-
-Finally, it was brought to our attention that it may be possible to forgo the optimisation process and sum the error of the
-rays in some geometric method to transform the robot's position. While we agree that this may be possible and worth looking into, 
-we believe that optimisation leads to more stable and less error-prone results (though this is not confirmed).
-
 ## Configuration
 Usually, we embed configuration in a "defines.h" file. Config includes information like the bounding box of the crop
 rectangle, the radius of the mirror and the dewarp function.
 
 Because this is embedded in a header, the project would have to be recompiled and relaunched every time a setting is updated
-which is not ideal. For Omicam, we used an INI file stored on the SBC's disk that is  parsed and loaded on every startup.
+which is not ideal. For Omicam, we used an INI file stored on the SBC's disk that is parsed and loaded on every startup.
 
-In addition, the config file can also be dynamically reloaded by an Omicontrol action, making even relaunching Omicam un-necessary. Because of this, we have much more flexibility and faster
-prototyping abilities when tuning to different venues.
+In addition, the config file can also be dynamically reloaded by an Omicontrol action, making even relaunching Omicam un-necessary. 
+Because of this, we have much more flexibility and faster prototyping abilities when tuning to different venues.
 
 ## Interfacing with Omicontrol
 To interface with our remote management application Omicontrol, Omicam starts a TCP server on port 42708. This server sends

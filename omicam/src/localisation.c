@@ -20,7 +20,9 @@
 #include "errno.h"
 #include "comms_uart.h"
 
+/** points visited by the Subplex optimiser */
 lp_list_t localiserVisitedPoints = {0};
+/** the bread and butter of the whole operation: NLopt!! */
 static nlopt_opt optimiser;
 static pthread_t workThread;
 static FieldFile field = {0};
@@ -32,20 +34,40 @@ _Atomic bool localiserDone = false;
 #if LOCALISER_DEBUG
 static BMP *bmp = NULL;
 #endif
-double observedRays[LOCALISER_NUM_RAYS] = {0};
-double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
-double expectedRays[LOCALISER_NUM_RAYS] = {0};
-double rayScores[LOCALISER_NUM_RAYS] = {0};
-char localiserStatus[32] = {0};
+/** rays that we observed from raycasting on the camera, with dewarping */
+static double observedRays[LOCALISER_NUM_RAYS] = {0};
+/** rays that we observed from raycasting on the camera image, no dewarping */
+static double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
+/** rays that we got from raycasting on the field file */
+static double expectedRays[LOCALISER_NUM_RAYS] = {0};
+/** score for each ray in the last localiser pass */
+static double rayScores[LOCALISER_NUM_RAYS] = {0};
+/** NLopt status for remote debug */
+static char localiserStatus[32] = {0};
 static pthread_t perfThread;
 static movavg_t *timeAvg = NULL;
 static movavg_t *evalAvg = NULL;
 static int32_t evaluations = 0;
 pthread_mutex_t localiserMutex = PTHREAD_MUTEX_INITIALIZER;
-int32_t localiserRate = 0;
-int32_t localiserEvals = 0;
+static int32_t localiserRate = 0;
+static int32_t localiserEvals = 0;
+static bool isGoalEstimateAvailable = false;
+static struct vec2 estimateMinBounds = {0};
+static struct vec2 estimateMaxBounds = {0};
+static struct vec2 goalEstimatePos = {0};
+static bool goalWasUnavailable = false;
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
+    if (x < min){
+        return min;
+    } else if (x > max){
+        return max;
+    } else {
+        return x;
+    }
+}
+
+static inline double constrainf(double x, double min, double max){
     if (x < min){
         return min;
     } else if (x > max){
@@ -259,13 +281,30 @@ static void *work_thread(void *arg){
         struct vec2 vy = svec2_subtract(h2, entry->yellowRel);
         struct vec2 numerator = svec2_add(svec2_multiply_f(vb, svec2_length(vy)), svec2_multiply_f(vy, svec2_length(vb)));
         double denominator = svec2_length(vy) + svec2_length(vb);
-        struct vec2 goalEstimatePos = svec2_divide_f(numerator, denominator);
+        goalEstimatePos = svec2_divide_f(numerator, denominator);
 
-        bool isGoalEstimateValid = entry->yellowVisible && entry->blueVisible;
-        if (!isGoalEstimateValid){
+        // generate min and max bounds, being very careful not to clip out of bounds
+        // also, sneakily we have to convert back to field file coordinates (top left corner is origin)
+        double hx = field.length / 2.0;
+        double hy = field.width / 2.0;
+        estimateMinBounds.x = constrainf(goalEstimatePos.x - LOCALISER_ESTIMATE_BOUNDS + hx, 0.0, field.length);
+        estimateMinBounds.y = constrainf(goalEstimatePos.y - LOCALISER_ESTIMATE_BOUNDS + hy, 0.0, field.width);
+
+        estimateMaxBounds.x = constrainf(goalEstimatePos.x + LOCALISER_ESTIMATE_BOUNDS + hx, 0.0, field.length);
+        estimateMaxBounds.y = constrainf(goalEstimatePos.y + LOCALISER_ESTIMATE_BOUNDS + hy, 0.0, field.width);
+
+        isGoalEstimateAvailable = entry->yellowVisible && entry->blueVisible;
+        if (isGoalEstimateAvailable && goalWasUnavailable){
+            log_debug("Goal has returned, goal estimate available again");
+            goalWasUnavailable = false;
+        }
+        if (!isGoalEstimateAvailable){
+            if (!goalWasUnavailable) {
+                log_warn("Goal estimate will not be valid (yellow exists: %s, blue exists: %s)",
+                         entry->yellowVisible ? "YES" : "NO", entry->blueVisible ? "YES" : "NO");
+                goalWasUnavailable = true;
+            }
             // TODO now set initial approximation to mouse sensor
-            log_warn("Goal estimate will not be valid (yellow exists: %s, blue exists: %s)",
-                    entry->yellowVisible ? "YES" : "NO", entry->blueVisible ? "YES" : "NO");
         }
 
         // TODO when we do mouse sensor add check to make sure it's not stale data (was received too long ago, esp not responding)
@@ -299,10 +338,16 @@ static void *work_thread(void *arg){
         // where the observed rays matches the expected rays the closest, see objective function for more info
         evaluations = 0;
         double optimiserPos[2] = {field.length / 2.0, field.width / 2.0};
-        if (isGoalEstimateValid){
+        if (isGoalEstimateAvailable){
             // if we have a goal estimate, use that as our origin; otherwise, we will just use the field centre (set already)
             optimiserPos[0] = goalEstimatePos.x + (field.length / 2.0);
             optimiserPos[1] = goalEstimatePos.y + (field.width / 2.0);
+
+            // also, if we have an estimate, use a smaller initial step size to try and converge faster
+            nlopt_set_initial_step1(optimiser, LOCALISER_SMALL_STEP);
+        } else {
+            // otherwise, use the default NLopt heuristically calculated initial step size
+            nlopt_set_initial_step(optimiser, NULL);
         }
         double optimiserError = 0.0;
         nlopt_result result = nlopt_optimize(optimiser, optimiserPos, &optimiserError);
@@ -318,6 +363,10 @@ static void *work_thread(void *arg){
 #endif
         localisedPosition.x = optimiserPos[0];
         localisedPosition.y = optimiserPos[1];
+
+        // (debug, only for use when robot is at a known (0,0) position)
+        // double accuracy = sqrt(optimiserPos[0] * optimiserPos[0] + optimiserPos[1] * optimiserPos[1]);
+        // printf("accuracy: %.2f (pos: %.2f,%.2f)\n", accuracy, optimiserPos[0], optimiserPos[1]);
 
         // dispatch data to the ESP32, using JimBus (Protobufs over UART)
         uint8_t msgBuf[128] = {0};
@@ -349,6 +398,43 @@ static void *work_thread(void *arg){
         pthread_testcancel();
     }
     return NULL;
+}
+
+void remote_debug_localiser_provide(DebugFrame *msg){
+    memcpy(msg->dewarpedRays, observedRays, LOCALISER_NUM_RAYS * sizeof(double));
+    memcpy(msg->rayScores, rayScores, LOCALISER_NUM_RAYS * sizeof(double));
+    msg->dewarpedRays_count = LOCALISER_NUM_RAYS;
+    msg->rayScores_count = LOCALISER_NUM_RAYS;
+
+    memcpy(msg->rays, observedRaysRaw, LOCALISER_NUM_RAYS * sizeof(double));
+    msg->rays_count = LOCALISER_NUM_RAYS;
+
+    msg->robotPositions[0].x = (float) localisedPosition.x;
+    msg->robotPositions[0].y = (float) localisedPosition.y;
+    msg->robotPositions_count = 1;
+
+    msg->localiserRate = localiserRate;
+    msg->localiserEvals = localiserEvals;
+    memcpy(msg->localiserStatus, localiserStatus, 32);
+    msg->rayInterval = (float) (PI2 / LOCALISER_NUM_RAYS);
+    // Omicontrol wants these in field coordinates, not screen coordinates
+    float hx = field.length / 2.0f;
+    float hy = field.width / 2.0f;
+    msg->estimateMinBounds.x = (float) estimateMinBounds.x - hx;
+    msg->estimateMinBounds.y = (float) estimateMinBounds.y - hy;
+    msg->estimateMaxBounds.x = (float) estimateMaxBounds.x - hx;
+    msg->estimateMaxBounds.y = (float) estimateMaxBounds.y - hy;
+    // these are already in field coordinates
+    msg->goalEstimate.x = (float) goalEstimatePos.x;
+    msg->goalEstimate.y = (float) goalEstimatePos.y;
+
+    uint32_t size = MIN(da_count(localiserVisitedPoints), 128);
+    for (size_t i = 0; i < size; i++) {
+        localiser_point_t point = da_get(localiserVisitedPoints, i);
+        msg->localiserVisitedPoints[i].x = (float) point.x;
+        msg->localiserVisitedPoints[i].y = (float) point.y;
+    }
+    msg->localiserVisitedPoints_count = size;
 }
 
 /** localiser performance monitoring thread */

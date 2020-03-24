@@ -26,9 +26,15 @@ object Main {
         if (SystemUtils.IS_OS_MAC){
             Logger.warn("This is a Mac, scaling/DPI workaround will be enabled")
         }
+        if (IS_DEBUG_MODE) {
+            Logger.warn("========== OMICAM DEVELOPMENT MODE IS ENABLED (make sure to turn off) ==========")
+        }
 
         importStylesheet(Paths.get("DarkTheme.css").toUri().toURL().toExternalForm())
         launch<OmicontrolApp>(args)
+        if (IS_DEBUG_MODE) {
+            Logger.warn("========== Please make sure to turn off debug mode when done developing ==========")
+        }
         exitProcess(0)
     }
 }
