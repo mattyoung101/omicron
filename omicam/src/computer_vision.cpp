@@ -130,7 +130,7 @@ static auto cv_thread(void *arg) -> void *{
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-    Mat ogFrame = imread("../test_data/field4.png");
+    Mat ogFrame = imread("../test_data/field5.png");
     if (ogFrame.cols <= 0 || ogFrame.rows <= 0){
         log_error("Unable to load test image! Please check the path is correct. Cannot continue.");
         return nullptr;
@@ -326,14 +326,14 @@ static auto cv_thread(void *arg) -> void *{
         data.goalBlueExists = blueGoal.exists;
         if (blueGoal.exists) {
             data.goalBlueAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(blueGoalVec.y, blueGoalVec.x), 360.0f);
-            data.goalBlueMag = 183.0f / 2.0f; //(float) utils_camera_dewarp(svec2_length(blueGoalVec));
+            data.goalBlueMag = (float) utils_camera_dewarp(svec2_length(blueGoalVec));
             data.goalBlueAbsX = (float) localisedPosition.x + data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x));
             data.goalBlueAbsY = (float) localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x));
         }
         data.goalYellowExists = yellowGoal.exists;
         if (yellowGoal.exists) {
             data.goalYellowAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(yellowGoalVec.y, yellowGoalVec.x), 360.0f);
-            data.goalYellowMag = 183.0f / 2.0f;//(float) utils_camera_dewarp(svec2_length(yellowGoalVec));
+            data.goalYellowMag = (float) utils_camera_dewarp(svec2_length(yellowGoalVec));
             data.goalYellowAbsX = (float) localisedPosition.x + data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
             data.goalYellowAbsY = (float) localisedPosition.y + data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
         }

@@ -186,20 +186,10 @@ static void read_remote_messages(void){
                 pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, 128);
                 if (!pb_encode(&stream, ESP32DebugCommand_fields, &fwdCmd)){
                     log_error("Failed to encode debug command message to ESP32: %s", PB_GET_ERROR(&stream));
+                    free(buf);
                     return;
                 }
-
-                uint32_t arraySize = 3 + stream.bytes_written + 1;
-                uint8_t outBuf[arraySize];
-                // FIXME send the correct message id here, get it from the ESP stuff, just copy in that enum
-                uint8_t header[3] = {0xB, 0, stream.bytes_written};
-
-                memset(outBuf, 0, arraySize);
-                memcpy(outBuf, header, 3);
-                memcpy(outBuf + 3, msgBuf, stream.bytes_written);
-                outBuf[arraySize - 1] = 0xE;
-                comms_uart_send(outBuf, arraySize);
-
+                comms_uart_send(DEBUG_CMD, msgBuf, stream.bytes_written);
                 RD_SEND_OK_RESPONSE;
                 break;
             }
@@ -363,7 +353,6 @@ static void *frame_thread(void *param){
             pthread_testcancel();
             continue;
         }
-        double begin = utils_time_millis();
 
         frame_entry_t *entry = (frame_entry_t*) queueData;
         uint8_t *camFrame = entry->camFrame; // normal view from the camera

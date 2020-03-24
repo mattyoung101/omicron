@@ -104,7 +104,6 @@ float lerp(float fromValue, float toValue, float progress);
 uint32_t str_hash(char *str);
 
 void i2c_scanner(i2c_port_t port);
-uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data, robot_state_t *robotState);
 /** calculates the CRC8 hash of a buffer, source: https://stackoverflow.com/a/51773839/5007892 */
 uint8_t crc8(uint8_t *data, size_t len);
 

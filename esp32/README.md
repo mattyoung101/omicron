@@ -11,7 +11,15 @@ various Python scripts for data generation and development assistance.
 - Matt Young: low level software (UART/Bluetooth comms, FSM backend, Protobuf, FreeRTOS stuff)
 
 ## Feature list
-- T.B.A.
+- Advanced novel orbit approach using ellipse maths
+- Advanced strategies including ball hiding, flick-shots, line-running and more
+- Hierarchical Finite State Machine (HFSM) for robot behaviour management
+- Robust Bluetooth communication between robots using the ESP32's built in Bluetooth Classic APIs
+- PID motor control with velocity feedback from mouse sensor
+- Custom UART comms protocol (JimBus) that sends Protobuf messages between devices with a CRC8 checksum
+- I2C protocol (JimBusLE) that sends manually encoded data (bitshifting) to less powerful devices, also with CRC8
+- Uses both cores of the ESP32, heavy use of FreeRTOS threads, mutexes, timers, etc
+- Written in C11 using the ESP-IDF (no Arduino here!)
 
 ## Building and running
 Firstly, you'll need to the ESP32 toolchain for your platform. Please 

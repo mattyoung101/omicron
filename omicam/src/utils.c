@@ -107,26 +107,7 @@ void utils_cv_transmit_data(ObjectData ballData){
         log_error("Failed to encode vision protocol buffer message: %s", PB_GET_ERROR(&stream));
         return;
     }
-
-    uint32_t arraySize = 3 + stream.bytes_written + 2;
-    uint8_t outBuf[arraySize];
-    uint8_t header[3] = {0xB, OBJECT_DATA, stream.bytes_written};
-    uint8_t checksum = crc8(msgBuf, stream.bytes_written);
-
-    memset(outBuf, 0, arraySize);
-    memcpy(outBuf, header, 3); // copy the header into the buffer
-    memcpy(outBuf + 3, msgBuf, stream.bytes_written); // copy the rest of the buffer in
-    outBuf[arraySize - 2] = checksum; // CRC8 checksum
-    outBuf[arraySize - 1] = 0xE; // set end byte
-
-    // verification:
-//    printf("ESP32 Protobuf message: ");
-//    for (uint32_t i = 0; i < arraySize; i++){
-//        printf("%.2X ", outBuf[i]);
-//    }
-//    puts("");
-
-    comms_uart_send(outBuf, arraySize);
+    comms_uart_send(OBJECT_DATA, msgBuf, stream.bytes_written);
 }
 
 static void write_thresholds(FILE *fp){
