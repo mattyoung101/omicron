@@ -5,6 +5,7 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include "protobuf/RemoteDebug.pb.h"
+#include "protobuf/UART.pb.h"
 #include "defines.h"
 #include "DG_dynarr.h"
 #include "mathc.h"
@@ -14,8 +15,12 @@ typedef struct {
     uint8_t *frame;
     int32_t width;
     int32_t height;
-    struct vec2 yellowGoal;
-    struct vec2 blueGoal;
+    /** goal yellow relative to robot in centimetre cartesian coordinates */
+    struct vec2 yellowRel;
+    /** goal blue relative to robot in centimetre cartesian coordinates */
+    struct vec2 blueRel;
+    bool yellowVisible;
+    bool blueVisible;
 } localiser_entry_t;
 
 /** The 4 quadrants of a field **/
@@ -61,7 +66,7 @@ extern "C" {
 /**
  * Initialises the localiser using the provided field file
  * @param fieldFile the full path including extension to the field file
- **/
+ */
 void localiser_init(char *fieldFile);
 /**
  * Posts a frame to the localiser for processing. This will be sent to a work queue and processed asynchronously so the
@@ -69,11 +74,14 @@ void localiser_init(char *fieldFile);
  * @param frame 1 bit mask of line pixels, allocated previously
  * @param width the width of the frame
  * @param height the height of the frame
- * @param yellowGoal the position of the yellow goal as a polar vector with camera centre as origin, or (0,0) if it doesn't exist
- * @param blueGoal same as yellowGoal but for the blue goal
+ * @param yellowRel goal yellow relative to robot in centimetre cartesian coordinates
+ * @param blueRel goal blue relative to robot in centimetre cartesian coordinates
+ * @param yellowVisible true if yellow goal is visible in the camera
+ * @param blueVisible true if blue goal is visible in the camera
  */
-void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowGoal, struct vec2 blueGoal);
-/** Destroys the localiser and its resources **/
+void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowRel, struct vec2 blueRel,
+        bool yellowVisible, bool blueVisible);
+/** Destroys the localiser and its resources */
 void localiser_dispose(void);
 
 #ifdef __cplusplus

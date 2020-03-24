@@ -8,16 +8,16 @@ Protocol Buffers over a TCP socket.
 
 Omicontrol is built and maintained by Matt Young.
 
-**Note:** The code quality in this project is kind of bad, because I'm not experienced with UI development (so you
-won't be seeing any proper design patterns like MVC). My apologies in advance!
+**Note:** The code quality in this project is kind of bad, because I'm not experienced with UI development, and spend
+most of my time working on Omicam. My apologies in advance!
 
 ## Features list
 - Easy to use UI with built-in tutorials
 - Decode Omicam JPEG/data stream while overlaying threshold information
 - Edit and upload camera thresholds on the fly
-- Lots of useful commands and quality of life things which you'll find beneficial
-- Visualise both robots' localised position on the field
+- Many helpful diagnostic displays in the Field View for debugging the localiser
 - Control the robots through a multitude of useful commands including automatically resetting to starting positions
+- Lots of useful commands and quality of life things which you'll find beneficial
 - Large buttons designed for tablet usage
 - Dark theme!!!
 

@@ -130,7 +130,7 @@ static auto cv_thread(void *arg) -> void *{
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-    Mat ogFrame = imread("../test_data/field5.png");
+    Mat ogFrame = imread("../test_data/field4.png");
     if (ogFrame.cols <= 0 || ogFrame.rows <= 0){
         log_error("Unable to load test image! Please check the path is correct. Cannot continue.");
         return nullptr;
@@ -337,14 +337,22 @@ static auto cv_thread(void *arg) -> void *{
             data.goalYellowAbsX = (float) localisedPosition.x + data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
             data.goalYellowAbsY = (float) localisedPosition.y + data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
         }
+        // TODO need to check that a localisation estimate works because otherwise localisedPosition.x won't work
+        // TODO consider sending relative field goal and ball coordinates in cartesian (like we send to localiser) over UART?
         utils_cv_transmit_data(data);
 
         // post data to localiser, the reason it's done so late now is because the new hybrid localisation algorithm
         // relies on a lot of data sources, including the polar vector goals which are only calculated here
         auto *localiserFrame = (uint8_t*) malloc(frame.rows * frame.cols);
         memcpy(localiserFrame, thresholded[OBJ_LINES].data, frame.rows * frame.cols);
-        localiser_post(localiserFrame, frame.cols, frame.rows, {data.goalYellowAngle, data.goalYellowMag},
-                {data.goalYellowAngle, data.goalYellowMag});
+
+        // these are the goals relative to the robot in cartesian coordinates and centimetres
+        struct vec2 goalYellowRel = {data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x)),
+                data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x))};
+        struct vec2 goalBlueRel = {data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x)),
+                localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x))};
+
+        localiser_post(localiserFrame, frame.cols, frame.rows, goalYellowRel, goalBlueRel, yellowGoal.exists, blueGoal.exists);
 
         // exclude debug time from fps measurement
         double elapsed = utils_time_millis() - begin;

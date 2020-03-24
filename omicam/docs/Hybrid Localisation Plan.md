@@ -30,8 +30,9 @@ Same approach as before, nothing different. Subplex optimiser and raycasting.
 ## Algorithm
 1. Determine an initial approximation based on goals. The uncertainty of this initial approximation is our search radius 
    or domain to run the localiser in.
-2. Seed the initial position of the localiser using the integrated mouse sensor absolute position data, fed back in
-   from the ATMega via the ESP32. _Should we calculate mouse sensor uncertainty and use it to narrow down goal radius?_
+2. Seed the initial position of the localiser using the mouse sensor data, fed back in from the ATMega via the ESP32. 
+   On the ATMega, we'll keep integrating the mouse sensor data over time with respect to our last localised position (or
+   a rough origin point if we have no position yet) to determine our absolute position in field coords.
 3. Run the Subplex optimiser _only in this domain_ and from the mouse sensor determined last position, converge on
    a final position.
 
@@ -42,6 +43,6 @@ Same approach as before, nothing different. Subplex optimiser and raycasting.
      - algorithm for this is, for the goal image, if two components distances are <= THRESH and their size is >= THRESH,
      then merge the rectangles
 - If goals are not visible, default to mouse sensor and add a static radius around it. We don't use mouse sensor constantly
-  due to compounding error
+  due to compounding error from integration (look into this though).
 - Always be conservative in estimates of uncertainty, we never want to under-estimate it
-- If the goal uncertainty is good enough we could just not bother with the Subplex optimiser (will this ever happen?)
+- If the goal uncertainty is good enough, sometimes we could just not bother with the Subplex optimiser (will this ever happen?)

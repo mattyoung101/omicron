@@ -39,6 +39,7 @@
 #include "buzzer.h"
 #include "Vector.h"
 #include "motor.h"
+#include "isosb.h"
 
 typedef struct {
     bool exists;
@@ -327,10 +328,11 @@ void app_main(){
     fflush(stdout);
     fflush(stderr);
 
-    TimerHandle_t respondTimer = xTimerCreate("RespondTimer", pdMS_TO_TICKS(1000), true, NULL, responding_timer);
+    TimerHandle_t respondTimer = xTimerCreate("RespondTimer", pdMS_TO_TICKS(5000), true, NULL, responding_timer);
     xTimerStart(respondTimer, pdMS_TO_TICKS(250));
 
     // create the main (or test, uncomment it if you want that) task 
     xTaskCreatePinnedToCore(master_task, "MasterTask", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    // xTaskCreatePinnedToCore(isosb_test_task, "ISOSB", 16384, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     // xTaskCreatePinnedToCore(test_music_task, "TestMusicTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
 }

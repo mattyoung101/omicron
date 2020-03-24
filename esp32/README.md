@@ -1,5 +1,6 @@
 # ESP32 firmware
-This folder contains the ESP32 firmware, written in C using the ESP-IDF. Currently, we use VSCode and CLion to edit.
+This folder contains the ESP32 firmware, written in C using Espressif's IoT Development Framework (ESP-IDF). 
+Currently, we use VSCode and CLion to edit.
 
 The "main" directory contains the actual ESP32 firmware, "components" contains some libraries that are
 linked in through the IDF's component system (which is just a wrapper around CMake), and "scripts" contains 
@@ -22,10 +23,10 @@ various Python scripts for data generation and development assistance.
 - Written in C11 using the ESP-IDF (no Arduino here!)
 
 ## Building and running
-Firstly, you'll need to the ESP32 toolchain for your platform. Please 
+Firstly, you'll need to the ESP32 IDF v3.3 toolchain for your platform. Please 
 [visit Espressif's docs](https://docs.espressif.com/projects/esp-idf/en/v3.3/get-started-cmake/index.html) for information
-on how to install this. **Please observe the important workaround for Windows:** you need to make the default program to open
-.py files the Python 2 interpreter in order for "idf.py" to work properly.
+on how to install this. **Important workarounds for Windows:** you need to make the default program to open
+.py files the Python 2 interpreter if you want to type "idf.py" in your shell as they do in the docs.
 
 Once you've installed the toolchain, you need to open a terminal in the "esp32" directory and run `idf.py build` to 
 generate the initial build.
@@ -50,10 +51,12 @@ wait a couple seconds or restart CLion). Select the CMakeLists.txt file in the e
 
 ## Developer notes
 ### IDF version
-Due to the fact that we sync the file `sdkconfig`, it's important that you use the exact same IDF version that we do, to avoid merge conflicts.
-This project currently uses the **[v3.3 release branch](https://github.com/espressif/esp-idf/tree/release/v3.3) version** (i.e. the latest commit on origin/release/v3.3).
+Currently, only IDF v3.3 is supported, specifically, the 
+[v3.3 release branch version](https://github.com/espressif/esp-idf/tree/release/v3.3), which is supported till 2022. 
+Please make sure you're referring to v3.3 docs on Espressif's website when developing, and have an installed the v3.3 toolchain.
 
-Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/versions.html) for more information about IDF versions.
+It _is_ possible to port to IDF v4, and we plan to do so soon; it just requires a little bit of refactoring, for example
+to code using `ets_delay_us` (as that's been moved to a different header).
 
 ## Libraries and licenses
 - [ESP-IDF](https://github.com/espressif/esp-idf/): Apache 2 license

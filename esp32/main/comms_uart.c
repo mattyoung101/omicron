@@ -159,7 +159,7 @@ esp_err_t comms_uart_send(uart_endpoint_t device, msg_type_t msgId, uint8_t *pbD
 
     // ESP_LOG_BUFFER_HEX_LEVEL(TAG, pbData, msgSize, ESP_LOG_INFO);
     // printf("DEVICE: %d, CHECKSUM: 0x%.2X\n", device, checksum);
-//    printf("writing to device: %d, msg id: %d, %zu bytes of data\n", device, msgId, msgSize);
+    // printf("writing to device: %d, msg id: %d, %zu bytes of data\n", device, msgId, msgSize);
 
     return ESP_OK;
 }

@@ -32,6 +32,7 @@ class FieldView : View() {
     private lateinit var display: GraphicsContext
     private lateinit var bandwidthLabel: Label
     private lateinit var selectedRobotLabel: Label
+    private lateinit var ballLabel: Label
     private val fieldImage = Image("field_cropped_scaled.png")
     private val targetIcon = Image("target.png")
     private val robotImage = Image("robot.png")
@@ -62,6 +63,8 @@ class FieldView : View() {
         reloadStylesheetsOnFocus()
         title = "Field View | Omicontrol v${OMICONTROL_VERSION}"
     }
+
+    // FIXME display localiser status again
 
     @ExperimentalUnsignedTypes
     @Subscribe
@@ -98,6 +101,7 @@ class FieldView : View() {
                 localiserPerfLabel.text = "${message.localiserRate} Hz (${1000 / message.localiserRate} ms), " +
                         "${message.localiserEvals} evals"
             }
+            ballLabel.text = if (ball.isPositionKnown) String.format("(%.2f, %.2f)", ball.position.x, ball.position.y) else "Unknown"
             localiserPerfLabel.textFill = if (message.localiserStatus != "FTOL_REACHED") Color.ORANGE else Color.WHITE
 
             display.fill = Color.BLACK
@@ -127,7 +131,7 @@ class FieldView : View() {
             }
 
             // render goals
-            display.lineWidth = 3.0
+            display.lineWidth = 4.0
             val centrePos = robots[connectedRobotId].position.toCanvasPosition()
 
             run {
@@ -399,7 +403,7 @@ class FieldView : View() {
                     fieldset {
                         field {
                             label("Ball:"){ addClass(Styles.boldLabel) }
-                            label("Unknown")
+                            ballLabel = label("Unknown")
                         }
                     }
 

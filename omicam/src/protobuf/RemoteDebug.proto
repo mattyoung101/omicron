@@ -90,6 +90,8 @@ message DebugFrame {
     bool isBallKnown = 26;
     // if the ball position is known
     bool isBlueKnown = 27;
+    // the robot's position according to the goal estimate
+    RDPointF goalEstimate = 28;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

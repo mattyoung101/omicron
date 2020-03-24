@@ -29,7 +29,6 @@ static FieldFile field = {0};
 // finishes optimising)
 static rpa_queue_t *queue;
 _Atomic bool localiserDone = false;
-static double orientation = 0.0; // last received orientation from ESP32
 #if LOCALISER_DEBUG
 static BMP *bmp = NULL;
 #endif
@@ -69,7 +68,8 @@ static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
  * @param maxCorner top right corner of image bounds rectangle
  * @return the length of the ray
 */
-static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double theta, int32_t imageWidth, int32_t earlyStop, struct vec2 minCorner, struct vec2 maxCorner){
+static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double theta, int32_t imageWidth, int32_t earlyStop,
+        struct vec2 minCorner, struct vec2 maxCorner){
     int32_t dist = 0;
 #if LOCALISER_DEBUG
     int32_t r = rand() % 256; // NOLINT
@@ -115,34 +115,34 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
 
 /**
  * This function will be minimised by the Subplex optimiser. For the given (x,y) coordinate it calculates the difference
- * between the observed rays and the expected rays at that coordinate.
+ * between the observed rays and the expected rays at that coordinate. By minimising this function, you get the location
+ * on the field with the least error between expected and observed rays - which is where we should be!
  * @param x the guessed x position in field coordinates
  * @param y the guessed y position in field coordinates
  * @return a score of how close the estimated position is to the real position
  */
 static inline double objective_func_impl(double x, double y){
     // HACK HACK HACK: check if out of bounds and return a huge number if so
+    // TODO clamp bounds based on goal estimate, we also need a way to visualise this
     if ((x < 28 || x > 215) || (y < 29 || y > 155)) {
         return 8600;
     }
 
-    // 1. raycast out from the guessed x and y on the field file
     double interval = PI2 / LOCALISER_NUM_RAYS;
     double x0 = x;
     double y0 = y;
-
     // note that these are in field file coordinates, not localiser coordinates (the ones with 0,0 as the field centre)
     struct vec2 minCoord = {0, 0};
     struct vec2 maxCoord = {field.length, field.width};
 
-    // 1.2. loop over the points and raycast
+    // loop over the points and raycast
     double angle = 0.0;
     for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
         expectedRays[i] = (double) raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), angle, field.length, -1, minCoord, maxCoord);
         angle += interval;
     }
 
-    // 2. compare ray lengths
+    // compare ray lengths
     double totalError = 0.0;
     for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
         // the ray didn't land, so ignore it
@@ -242,28 +242,43 @@ static void *work_thread(void *arg){
             log_warn("Failed to pop item from localisation work queue");
             continue;
         }
-
         double begin = utils_time_millis();
         localiser_entry_t *entry = (localiser_entry_t*) queueData;
-        localiserDone = false;
 
+        localiserDone = false;
         pthread_mutex_lock(&localiserMutex);
         da_clear(localiserVisitedPoints);
         pthread_mutex_unlock(&localiserMutex);
 
-        // TODO we're going to have to reconstruct the localisation pipeline from scratch with this new hyrbid algorithm
-        // but clearly the first thing we're going to want to localise with the goal positions only
-        // then calculate which quadrant we're in, and somewhere in here feed back in the mouse sensor data once we have some
+        // initial goal estimates
+        // calculate a rough approximation of where we are using vector maths and the goals, and an uncertainty radius
+        // see the file Goal maths.png (done by Ethan, thanks) in the docs folder for an explanation
+        struct vec2 h1 = {91.5, 0}; // blue goal
+        struct vec2 h2 = {-91.5, 0}; // yellow goal
+        struct vec2 vb = svec2_subtract(h1, entry->blueRel);
+        struct vec2 vy = svec2_subtract(h2, entry->yellowRel);
+        struct vec2 numerator = svec2_add(svec2_multiply_f(vb, svec2_length(vy)), svec2_multiply_f(vy, svec2_length(vb)));
+        double denominator = svec2_length(vy) + svec2_length(vb);
+        struct vec2 goalEstimatePos = svec2_divide_f(numerator, denominator);
+
+        bool isGoalEstimateValid = entry->yellowVisible && entry->blueVisible;
+        if (!isGoalEstimateValid){
+            // TODO now set initial approximation to mouse sensor
+            log_warn("Goal estimate will not be valid (yellow exists: %s, blue exists: %s)",
+                    entry->yellowVisible ? "YES" : "NO", entry->blueVisible ? "YES" : "NO");
+        }
+
+        // TODO when we do mouse sensor add check to make sure it's not stale data (was received too long ago, esp not responding)
 
         // image analysis
-        // 1. calculate begin points for rays
+        // cast rays out from the centre of the camera frame, and record the length until it hits the white line
         double interval = PI2 / LOCALISER_NUM_RAYS;
         double x0 = entry->width / 2.0;
         double y0 = entry->height / 2.0;
         struct vec2 frameMin = {0, 0};
         struct vec2 frameMax = {entry->width, entry->height};
 
-        // 1.1. cast rays from the centre of the mirror to the edge of it, to calculate the ray lengths
+        // cast out our rays, stopping if we exceed the mirror bounds, and add to the raw observed rays list
         double angle = 0.0;
         for (int32_t i = 0; i < LOCALISER_NUM_RAYS; i++) {
             observedRaysRaw[i] = (double) raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), angle, entry->width,
@@ -272,7 +287,7 @@ static void *work_thread(void *arg){
         }
 
         // image normalisation
-        // 2. dewarp ray lengths based on calculated mirror model to get centimetre field coordinates, then rotate based on robot's real orientation
+        // dewarp ray lengths based on mirror model to be in centimetres, then rotate based on BNO-055 reported orientation
         for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
             if (observedRays[i] == -1) continue;
             observedRays[i] = utils_camera_dewarp(observedRaysRaw[i]);
@@ -280,27 +295,31 @@ static void *work_thread(void *arg){
         // TODO (!!IMPORTANT!!) somehow we also need to rotate this array based on orientation of robot
 
         // coordinate optimisation
-        // 3. start the NLopt Subplex optimiser
+        // using NLopt's Subplex optimiser, solve a 2D non-linear optimisation problem to calculate the optimal point
+        // where the observed rays matches the expected rays the closest, see objective function for more info
         evaluations = 0;
-        double resultCoord[2] = {field.width / 2.0, field.width / 2.0};
-        double resultError = 0.0;
-        nlopt_result result = nlopt_optimize(optimiser, resultCoord, &resultError);
+        double optimiserPos[2] = {field.length / 2.0, field.width / 2.0};
+        if (isGoalEstimateValid){
+            // if we have a goal estimate, use that as our origin; otherwise, we will just use the field centre (set already)
+            optimiserPos[0] = goalEstimatePos.x + (field.length / 2.0);
+            optimiserPos[1] = goalEstimatePos.y + (field.width / 2.0);
+        }
+        double optimiserError = 0.0;
+        nlopt_result result = nlopt_optimize(optimiser, optimiserPos, &optimiserError);
         if (result < 0){
             log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
         }
-        resultCoord[0] -= field.length / 2.0;
-        resultCoord[1] -= field.width / 2.0;
+        // convert to field coordinates (where 0,0 is the centre of the field)
+        optimiserPos[0] -= field.length / 2.0;
+        optimiserPos[1] -= field.width / 2.0;
 #if LOCALISER_DEBUG
-        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", resultCoord[0], resultCoord[1],
-               resultError, nlopt_result_to_string(result));
+        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", optimiserPos[0], optimiserPos[1],
+               optimiserError, nlopt_result_to_string(result));
 #endif
-        localisedPosition.x = resultCoord[0];
-        localisedPosition.y = resultCoord[1];
-        const char *resultStr = nlopt_result_to_string(result);
-        memset(localiserStatus, 0, 32);
-        memcpy(localiserStatus, resultStr, MIN(strlen(resultStr), 32));
+        localisedPosition.x = optimiserPos[0];
+        localisedPosition.y = optimiserPos[1];
 
-        // 4. dispatch information to ESP32 firmware
+        // dispatch data to the ESP32, using JimBus (Protobufs over UART)
         uint8_t msgBuf[128] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, 128);
         LocalisationData localisationData = LocalisationData_init_default;
@@ -312,7 +331,7 @@ static void *work_thread(void *arg){
         }
         comms_uart_send(LOCALISATION_DATA, msgBuf, stream.bytes_written);
 
-        // dispatch information to performance monitor and clean up
+        // dispatch information to performance monitor and Omicontrol, then clean up
 #if LOCALISER_DEBUG
         log_info("Localisation debug enabled, displaying objective function and quitting...");
         render_test_image();
@@ -320,6 +339,9 @@ static void *work_thread(void *arg){
         double elapsed = utils_time_millis() - begin;
         movavg_push(timeAvg, elapsed);
         movavg_push(evalAvg, evaluations);
+        const char *resultStr = nlopt_result_to_string(result);
+        memset(localiserStatus, 0, 32);
+        memcpy(localiserStatus, resultStr, MIN(strlen(resultStr), 32));
 
         free(entry->frame);
         free(entry);
@@ -329,6 +351,7 @@ static void *work_thread(void *arg){
     return NULL;
 }
 
+/** localiser performance monitoring thread */
 static void *perf_thread(void *arg){
     while (true){
         sleep(1);
@@ -385,7 +408,7 @@ void localiser_init(char *fieldFile){
     nlopt_set_upper_bounds(optimiser, maxCoord);
 
     // create work thread
-    rpa_queue_create(&queue, 2);
+    rpa_queue_create(&queue, 1);
     int err = pthread_create(&workThread, NULL, work_thread, NULL);
     if (err != 0){
         log_error("Failed to create localiser thread: %s", strerror(err));
@@ -409,13 +432,16 @@ void localiser_init(char *fieldFile){
     pthread_testcancel();
 }
 
-void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowGoal, struct vec2 blueGoal){
+void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowRel, struct vec2 blueRel,
+        bool yellowVisible, bool blueVisible){
     localiser_entry_t *entry = malloc(sizeof(localiser_entry_t));
     entry->frame = frame;
     entry->width = width;
     entry->height = height;
-    entry->yellowGoal = yellowGoal;
-    entry->blueGoal = blueGoal;
+    entry->yellowRel = yellowRel;
+    entry->blueRel = blueRel;
+    entry->yellowVisible = yellowVisible;
+    entry->blueVisible = blueVisible;
     if (!rpa_queue_trypush(queue, entry)){
         // localiser is busy, drop frame
         free(frame);
