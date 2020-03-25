@@ -54,7 +54,7 @@ static int32_t localiserEvals = 0;
 static bool isGoalEstimateAvailable = false;
 static struct vec2 estimateMinBounds = {0};
 static struct vec2 estimateMaxBounds = {0};
-static struct vec2 goalEstimatePos = {0};
+static struct vec2 initialEstimate = {0};
 static bool goalWasUnavailable = false;
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
@@ -201,15 +201,19 @@ static void render_test_image(){
             }
         }
     }
-
     BMP_WriteFile(bmp, "../testing.bmp");
 
     double *data = calloc(field.length * field.width, sizeof(double));
     uint8_t *outImage = calloc(field.length * field.width, sizeof(uint8_t));
 
     // calculate objective function for all data points
+    printf("rendering objective function...\n");
     for (int32_t y = 0; y < field.width; y++){
         for (int32_t x = 0; x < field.length; x++){
+            if (isGoalEstimateAvailable && (y <= estimateMinBounds.y || y >= estimateMaxBounds.y || x <= estimateMinBounds.x|| x >= estimateMaxBounds.x)){
+                data[x + field.length * y] = LOCALISER_LARGE_ERROR; // kinda hacky, we do this to force the pixel to be black
+                continue;
+            }
             data[x + field.length * y] = objective_func_impl((double) x, (double) y);
         }
     }
@@ -281,34 +285,41 @@ static void *work_thread(void *arg){
         struct vec2 vy = svec2_subtract(h2, entry->yellowRel);
         struct vec2 numerator = svec2_add(svec2_multiply_f(vb, svec2_length(vy)), svec2_multiply_f(vy, svec2_length(vb)));
         double denominator = svec2_length(vy) + svec2_length(vb);
-        goalEstimatePos = svec2_divide_f(numerator, denominator);
+        initialEstimate = svec2_divide_f(numerator, denominator);
 
         // generate min and max bounds, being very careful not to clip out of bounds
         // also, sneakily we have to convert back to field file coordinates (top left corner is origin)
         double hx = field.length / 2.0;
         double hy = field.width / 2.0;
-        estimateMinBounds.x = constrainf(goalEstimatePos.x - LOCALISER_ESTIMATE_BOUNDS + hx, 0.0, field.length);
-        estimateMinBounds.y = constrainf(goalEstimatePos.y - LOCALISER_ESTIMATE_BOUNDS + hy, 0.0, field.width);
+        estimateMinBounds.x = constrainf(initialEstimate.x - LOCALISER_ESTIMATE_BOUNDS + hx, 0.0, field.length);
+        estimateMinBounds.y = constrainf(initialEstimate.y - LOCALISER_ESTIMATE_BOUNDS + hy, 0.0, field.width);
 
-        estimateMaxBounds.x = constrainf(goalEstimatePos.x + LOCALISER_ESTIMATE_BOUNDS + hx, 0.0, field.length);
-        estimateMaxBounds.y = constrainf(goalEstimatePos.y + LOCALISER_ESTIMATE_BOUNDS + hy, 0.0, field.width);
+        estimateMaxBounds.x = constrainf(initialEstimate.x + LOCALISER_ESTIMATE_BOUNDS + hx, 0.0, field.length);
+        estimateMaxBounds.y = constrainf(initialEstimate.y + LOCALISER_ESTIMATE_BOUNDS + hy, 0.0, field.width);
 
+        // handle cases if one/both of the goals aren't visible so we can't get a goal estimate
         isGoalEstimateAvailable = entry->yellowVisible && entry->blueVisible;
         if (isGoalEstimateAvailable && goalWasUnavailable){
             log_debug("Goal has returned, goal estimate available again");
             goalWasUnavailable = false;
         }
         if (!isGoalEstimateAvailable){
+            initialEstimate.x = lastSensorData.absDspX;
+            initialEstimate.y = lastSensorData.absDspY;
+
             if (!goalWasUnavailable) {
                 log_warn("Goal estimate will not be valid (yellow exists: %s, blue exists: %s)",
                          entry->yellowVisible ? "YES" : "NO", entry->blueVisible ? "YES" : "NO");
+
+                // if the last time we received a UART packet was more than 100ms ago, warn the data is invalid
+                double currentTime = utils_time_millis();
+                if (currentTime - lastUARTReceiveTime >= 100){
+                    log_warn("Mouse sensor data is stale (last received %.2f ms ago) - accuracy will suffer significantly",
+                            currentTime - lastUARTReceiveTime);
+                }
                 goalWasUnavailable = true;
             }
-            // TODO now set initial approximation to mouse sensor
         }
-
-        // TODO when we do mouse sensor add check to make sure it's not stale data (was received too long ago, esp not responding)
-
         // image analysis
         // cast rays out from the centre of the camera frame, and record the length until it hits the white line
         double interval = PI2 / LOCALISER_NUM_RAYS;
@@ -338,33 +349,47 @@ static void *work_thread(void *arg){
         // where the observed rays matches the expected rays the closest, see objective function for more info
         evaluations = 0;
         double optimiserPos[2] = {field.length / 2.0, field.width / 2.0};
+        double optimiserError = 0.0;
+
         if (isGoalEstimateAvailable){
-            // if we have a goal estimate, use that as our origin; otherwise, we will just use the field centre (set already)
-            optimiserPos[0] = goalEstimatePos.x + (field.length / 2.0);
-            optimiserPos[1] = goalEstimatePos.y + (field.width / 2.0);
+            // if we have a goal estimate, use that as our origin; otherwise, we will just use the field centre
+            optimiserPos[0] = initialEstimate.x + (field.length / 2.0);
+            optimiserPos[1] = initialEstimate.y + (field.width / 2.0);
 
             // also, if we have an estimate, use a smaller initial step size to try and converge faster
             nlopt_set_initial_step1(optimiser, LOCALISER_SMALL_STEP);
+
+            // finally, set the optimiser bounds to our estimate bounds
+            double min[2] = {estimateMinBounds.x, estimateMinBounds.y};
+            double max[2] = {estimateMaxBounds.x, estimateMaxBounds.y};
+            nlopt_set_lower_bounds(optimiser, min);
+            nlopt_set_upper_bounds(optimiser, max);
         } else {
             // otherwise, use the default NLopt heuristically calculated initial step size
             nlopt_set_initial_step(optimiser, NULL);
+
+            // and reset to default bounds
+            double min[2] = {0.0, 0.0};
+            double max[2] = {field.length, field.width};
+            nlopt_set_lower_bounds(optimiser, min);
+            nlopt_set_upper_bounds(optimiser, max);
         }
-        double optimiserError = 0.0;
+
         nlopt_result result = nlopt_optimize(optimiser, optimiserPos, &optimiserError);
+
         if (result < 0){
             log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
         }
         // convert to field coordinates (where 0,0 is the centre of the field)
         optimiserPos[0] -= field.length / 2.0;
         optimiserPos[1] -= field.width / 2.0;
+        localisedPosition.x = optimiserPos[0];
+        localisedPosition.y = optimiserPos[1];
 #if LOCALISER_DEBUG
         printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", optimiserPos[0], optimiserPos[1],
                optimiserError, nlopt_result_to_string(result));
 #endif
-        localisedPosition.x = optimiserPos[0];
-        localisedPosition.y = optimiserPos[1];
-
-        // (debug, only for use when robot is at a known (0,0) position)
+        // debug, only for use when robot is at a known (0,0) position!!
         // double accuracy = sqrt(optimiserPos[0] * optimiserPos[0] + optimiserPos[1] * optimiserPos[1]);
         // printf("accuracy: %.2f (pos: %.2f,%.2f)\n", accuracy, optimiserPos[0], optimiserPos[1]);
 
@@ -425,8 +450,8 @@ void remote_debug_localiser_provide(DebugFrame *msg){
     msg->estimateMaxBounds.x = (float) estimateMaxBounds.x - hx;
     msg->estimateMaxBounds.y = (float) estimateMaxBounds.y - hy;
     // these are already in field coordinates
-    msg->goalEstimate.x = (float) goalEstimatePos.x;
-    msg->goalEstimate.y = (float) goalEstimatePos.y;
+    msg->goalEstimate.x = (float) initialEstimate.x;
+    msg->goalEstimate.y = (float) initialEstimate.y;
 
     uint32_t size = MIN(da_count(localiserVisitedPoints), 128);
     for (size_t i = 0; i < size; i++) {
@@ -489,7 +514,7 @@ void localiser_init(char *fieldFile){
     // note we are in image coordinates (top left is 0,0), NOT field coordinates (centre is 0,0)
     double minCoord[] = {0.0, 0.0};
     double maxCoord[] = {field.length, field.width};
-    log_trace("Min bound: (%.2f,%.2f) Max bound: (%.2f,%.2f)", minCoord[0], minCoord[1], maxCoord[0], maxCoord[1]);
+    log_trace("Initial min bound: (%.2f,%.2f), max bound: (%.2f,%.2f)", minCoord[0], minCoord[1], maxCoord[0], maxCoord[1]);
     nlopt_set_lower_bounds(optimiser, minCoord);
     nlopt_set_upper_bounds(optimiser, maxCoord);
 

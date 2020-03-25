@@ -130,7 +130,7 @@ static auto cv_thread(void *arg) -> void *{
 
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_trace("Build target is PC, using test data");
-    Mat ogFrame = imread("../test_data/field5.png");
+    Mat ogFrame = imread(VISION_TEST_FILE);
     if (ogFrame.cols <= 0 || ogFrame.rows <= 0){
         log_error("Unable to load test image! Please check the path is correct. Cannot continue.");
         return nullptr;
@@ -312,7 +312,7 @@ static auto cv_thread(void *arg) -> void *{
         struct vec2 blueGoalVec = {blueGoal.centroid.x - cx, blueGoal.centroid.y - cy};
         struct vec2 yellowGoalVec = {yellowGoal.centroid.x - cx, yellowGoal.centroid.y - cy};
 
-        // encode protocol buffer to send to ESP over UART
+        // encode protocol buffer to send to ESP32 over UART
         // we convert each cartesian vector (in pixels) into a polar vector in centimetres
         // then we also convert that back to an absolute field position cartesian vector in centimetres
         ObjectData data = ObjectData_init_zero;

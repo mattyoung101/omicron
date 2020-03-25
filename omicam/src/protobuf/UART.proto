@@ -42,6 +42,9 @@ message SensorData {
 
     // IMU orientation
     float orientation = 5;
+
+    // FSM stuff
+    string fsmState = 6;
 }
 
 // Message that we send to the ESP32, this is basically just forwarded through the LattePanda from Omicontrol

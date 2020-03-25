@@ -16,6 +16,7 @@ static bool uartInitOk = false;
 static pthread_t receiveThread;
 #endif
 SensorData lastSensorData = {0};
+double lastUARTReceiveTime = 0;
 
 #if BUILD_TARGET == BUILD_TARGET_SBC || UART_OVERRIDE
 /** UART receive task, based on the esp32 firmware comms_uart.c code */
@@ -62,6 +63,7 @@ static void *receive_thread(void *arg){
             log_error("Failed to decode ESP32 Protobuf message: %s", PB_GET_ERROR(&stream));
         } else {
             log_trace("Decoded UART message successfully!! Yay, this means UART works everywhere. Nice.");
+            lastUARTReceiveTime = utils_time_millis();
         }
 
         pthread_testcancel();

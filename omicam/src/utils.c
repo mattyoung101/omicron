@@ -205,7 +205,7 @@ uint8_t *utils_load_bin(char *path, long *size){
     return buf;
 }
 
-uint8_t crc8(uint8_t *data, size_t len){
+uint8_t crc8(const uint8_t *data, size_t len){
     uint8_t crc = 0xff;
     size_t i, j;
     for (i = 0; i < len; i++) {

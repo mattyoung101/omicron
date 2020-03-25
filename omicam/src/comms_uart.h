@@ -7,6 +7,7 @@
 #include "defines.h"
 
 extern SensorData lastSensorData;
+extern double lastUARTReceiveTime;
 
 /** Initialises the UART TTY at a baud rate of 115200, which is the standard JimBus baud rate */
 void comms_uart_init();

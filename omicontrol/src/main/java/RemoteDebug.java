@@ -2360,6 +2360,16 @@ public final class RemoteDebug {
      * <code>optional float orientation = 2;</code>
      */
     float getOrientation();
+
+    /**
+     * <code>optional string fsmState = 3;</code>
+     */
+    java.lang.String getFsmState();
+    /**
+     * <code>optional string fsmState = 3;</code>
+     */
+    com.google.protobuf.ByteString
+        getFsmStateBytes();
   }
   /**
    * <pre>
@@ -2378,6 +2388,7 @@ public final class RemoteDebug {
     }
     private RDRobot() {
       orientation_ = 0F;
+      fsmState_ = "";
     }
 
     @java.lang.Override
@@ -2421,6 +2432,12 @@ public final class RemoteDebug {
             case 21: {
 
               orientation_ = input.readFloat();
+              break;
+            }
+            case 26: {
+              java.lang.String s = input.readStringRequireUtf8();
+
+              fsmState_ = s;
               break;
             }
           }
@@ -2476,6 +2493,40 @@ public final class RemoteDebug {
       return orientation_;
     }
 
+    public static final int FSMSTATE_FIELD_NUMBER = 3;
+    private volatile java.lang.Object fsmState_;
+    /**
+     * <code>optional string fsmState = 3;</code>
+     */
+    public java.lang.String getFsmState() {
+      java.lang.Object ref = fsmState_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        fsmState_ = s;
+        return s;
+      }
+    }
+    /**
+     * <code>optional string fsmState = 3;</code>
+     */
+    public com.google.protobuf.ByteString
+        getFsmStateBytes() {
+      java.lang.Object ref = fsmState_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        fsmState_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2494,6 +2545,9 @@ public final class RemoteDebug {
       if (orientation_ != 0F) {
         output.writeFloat(2, orientation_);
       }
+      if (!getFsmStateBytes().isEmpty()) {
+        com.google.protobuf.GeneratedMessageV3.writeString(output, 3, fsmState_);
+      }
     }
 
     public int getSerializedSize() {
@@ -2508,6 +2562,9 @@ public final class RemoteDebug {
       if (orientation_ != 0F) {
         size += com.google.protobuf.CodedOutputStream
           .computeFloatSize(2, orientation_);
+      }
+      if (!getFsmStateBytes().isEmpty()) {
+        size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, fsmState_);
       }
       memoizedSize = size;
       return size;
@@ -2534,6 +2591,8 @@ public final class RemoteDebug {
           java.lang.Float.floatToIntBits(getOrientation())
           == java.lang.Float.floatToIntBits(
               other.getOrientation()));
+      result = result && getFsmState()
+          .equals(other.getFsmState());
       return result;
     }
 
@@ -2551,6 +2610,8 @@ public final class RemoteDebug {
       hash = (37 * hash) + ORIENTATION_FIELD_NUMBER;
       hash = (53 * hash) + java.lang.Float.floatToIntBits(
           getOrientation());
+      hash = (37 * hash) + FSMSTATE_FIELD_NUMBER;
+      hash = (53 * hash) + getFsmState().hashCode();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -2681,6 +2742,8 @@ public final class RemoteDebug {
         }
         orientation_ = 0F;
 
+        fsmState_ = "";
+
         return this;
       }
 
@@ -2709,6 +2772,7 @@ public final class RemoteDebug {
           result.position_ = positionBuilder_.build();
         }
         result.orientation_ = orientation_;
+        result.fsmState_ = fsmState_;
         onBuilt();
         return result;
       }
@@ -2755,6 +2819,10 @@ public final class RemoteDebug {
         }
         if (other.getOrientation() != 0F) {
           setOrientation(other.getOrientation());
+        }
+        if (!other.getFsmState().isEmpty()) {
+          fsmState_ = other.fsmState_;
+          onChanged();
         }
         onChanged();
         return this;
@@ -2921,6 +2989,75 @@ public final class RemoteDebug {
       public Builder clearOrientation() {
         
         orientation_ = 0F;
+        onChanged();
+        return this;
+      }
+
+      private java.lang.Object fsmState_ = "";
+      /**
+       * <code>optional string fsmState = 3;</code>
+       */
+      public java.lang.String getFsmState() {
+        java.lang.Object ref = fsmState_;
+        if (!(ref instanceof java.lang.String)) {
+          com.google.protobuf.ByteString bs =
+              (com.google.protobuf.ByteString) ref;
+          java.lang.String s = bs.toStringUtf8();
+          fsmState_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string fsmState = 3;</code>
+       */
+      public com.google.protobuf.ByteString
+          getFsmStateBytes() {
+        java.lang.Object ref = fsmState_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          fsmState_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string fsmState = 3;</code>
+       */
+      public Builder setFsmState(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  
+        fsmState_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string fsmState = 3;</code>
+       */
+      public Builder clearFsmState() {
+        
+        fsmState_ = getDefaultInstance().getFsmState();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string fsmState = 3;</code>
+       */
+      public Builder setFsmStateBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  checkByteStringIsUtf8(value);
+        
+        fsmState_ = value;
         onChanged();
         return this;
       }
@@ -11614,37 +11751,37 @@ public final class RemoteDebug {
       "\022\t\n\001y\030\002 \001(\005\022\r\n\005width\030\003 \001(\005\022\016\n\006height\030\004 \001" +
       "(\005\"\037\n\007RDPoint\022\t\n\001x\030\001 \001(\005\022\t\n\001y\030\002 \001(\005\" \n\010R" +
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
-      "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\";\n\007RDRobo" +
+      "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"M\n\007RDRobo" +
       "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
-      "ation\030\002 \001(\002\"\222\006\n\nDebugFrame\022\024\n\014defaultIma" +
-      "ge\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013tem" +
-      "perature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RDRec" +
-      "t\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\022\013\n\003fps",
-      "\030\006 \001(\005\022\022\n\nframeWidth\030\007 \001(\005\022\023\n\013frameHeigh" +
-      "t\030\010 \001(\005\022\031\n\010cropRect\030\t \001(\0132\007.RDRect\022\014\n\004ra" +
-      "ys\030\n \003(\001\022\024\n\014dewarpedRays\030\013 \003(\001\022\024\n\014mirror" +
-      "Radius\030\014 \001(\005\022!\n\016robotPositions\030\r \003(\0132\t.R" +
-      "DPointF\022\031\n\021robotOrientations\030\016 \003(\002\022\023\n\013ra" +
-      "yInterval\030\017 \001(\002\022\026\n\016localiserEvals\030\020 \001(\005\022" +
-      "\025\n\rlocaliserTime\030\021 \001(\002\022\027\n\017localiserStatu" +
-      "s\030\022 \001(\t\022\032\n\007ballPos\030\023 \001(\0132\t.RDPointF\022)\n\026l" +
-      "ocaliserVisitedPoints\030\024 \003(\0132\t.RDPointF\022\021" +
-      "\n\trayScores\030\025 \003(\001\022\025\n\rlocaliserRate\030\026 \001(\005",
-      "\022 \n\ryellowGoalPos\030\027 \001(\0132\t.RDPointF\022\036\n\013bl" +
-      "ueGoalPos\030\030 \001(\0132\t.RDPointF\022\025\n\risYellowKn" +
-      "own\030\031 \001(\010\022\023\n\013isBallKnown\030\032 \001(\010\022\023\n\013isBlue" +
-      "Known\030\033 \001(\010\022\037\n\014goalEstimate\030\034 \001(\0132\t.RDPo" +
-      "intF\022$\n\021estimateMinBounds\030\035 \001(\0132\t.RDPoin" +
-      "tF\022$\n\021estimateMaxBounds\030\036 \001(\0132\t.RDPointF" +
-      "\"\341\001\n\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006" +
-      "coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030\003 " +
-      "\001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDThreshold" +
-      "\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rco",
-      "lourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robo" +
-      "tId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgFra" +
-      "me\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007comman" +
-      "d\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage\030\003" +
-      " \001(\005b\006proto3"
+      "ation\030\002 \001(\002\022\020\n\010fsmState\030\003 \001(\t\"\222\006\n\nDebugF" +
+      "rame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017ballThresh" +
+      "Image\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022\031\n\010ball" +
+      "Rect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentroid\030\005 \001(",
+      "\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframeWidth\030\007" +
+      " \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010cropRect\030\t " +
+      "\001(\0132\007.RDRect\022\014\n\004rays\030\n \003(\001\022\024\n\014dewarpedRa" +
+      "ys\030\013 \003(\001\022\024\n\014mirrorRadius\030\014 \001(\005\022!\n\016robotP" +
+      "ositions\030\r \003(\0132\t.RDPointF\022\031\n\021robotOrient" +
+      "ations\030\016 \003(\002\022\023\n\013rayInterval\030\017 \001(\002\022\026\n\016loc" +
+      "aliserEvals\030\020 \001(\005\022\025\n\rlocaliserTime\030\021 \001(\002" +
+      "\022\027\n\017localiserStatus\030\022 \001(\t\022\032\n\007ballPos\030\023 \001" +
+      "(\0132\t.RDPointF\022)\n\026localiserVisitedPoints\030" +
+      "\024 \003(\0132\t.RDPointF\022\021\n\trayScores\030\025 \003(\001\022\025\n\rl",
+      "ocaliserRate\030\026 \001(\005\022 \n\ryellowGoalPos\030\027 \001(" +
+      "\0132\t.RDPointF\022\036\n\013blueGoalPos\030\030 \001(\0132\t.RDPo" +
+      "intF\022\025\n\risYellowKnown\030\031 \001(\010\022\023\n\013isBallKno" +
+      "wn\030\032 \001(\010\022\023\n\013isBlueKnown\030\033 \001(\010\022\037\n\014goalEst" +
+      "imate\030\034 \001(\0132\t.RDPointF\022$\n\021estimateMinBou" +
+      "nds\030\035 \001(\0132\t.RDPointF\022$\n\021estimateMaxBound" +
+      "s\030\036 \001(\0132\t.RDPointF\"\341\001\n\014DebugCommand\022\021\n\tm" +
+      "essageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint" +
+      "\022\023\n\013orientation\030\003 \001(\002\022#\n\rallThresholds\030\004" +
+      " \003(\0132\014.RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006",
+      "minMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005v" +
+      "alue\030\010 \001(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled" +
+      "\030\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.De" +
+      "bugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCommand" +
+      "\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -11687,7 +11824,7 @@ public final class RemoteDebug {
     internal_static_RDRobot_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RDRobot_descriptor,
-        new java.lang.String[] { "Position", "Orientation", });
+        new java.lang.String[] { "Position", "Orientation", "FsmState", });
     internal_static_DebugFrame_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_DebugFrame_fieldAccessorTable = new

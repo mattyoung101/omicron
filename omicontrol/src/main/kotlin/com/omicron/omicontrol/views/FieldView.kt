@@ -72,6 +72,9 @@ class FieldView : View() {
         BANDWIDTH += message.serializedSize
         val connectedRobotId = 0
 
+        // this entire method is some really ugly code, sorry about that one, but it won't be fixed any time soon
+        // well tbf the whole of Omicontrol is bad code which makes me sad but there's too much to refactor now I think
+
         runLater {
             // update data
             for (robot in robots){
@@ -88,13 +91,16 @@ class FieldView : View() {
                 robots[i].isPositionKnown = true
                 robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f), %.2f", robot.x, robot.y, robots[i].orientation)
             }
-
+            // update positions
             ball.isPositionKnown = message.isBallKnown
-            ball.position = Point2D(message.ballPos.x.toDouble(), message.ballPos.y.toDouble())
+            if (ball.isPositionKnown)
+                ball.position = Point2D(message.ballPos.x.toDouble(), message.ballPos.y.toDouble())
             yellowGoal.isPositionKnown = message.isYellowKnown
-            yellowGoal.position = Point2D(message.yellowGoalPos.x.toDouble(), message.yellowGoalPos.y.toDouble())
+            if (yellowGoal.isPositionKnown)
+                yellowGoal.position = Point2D(message.yellowGoalPos.x.toDouble(), message.yellowGoalPos.y.toDouble())
             blueGoal.isPositionKnown = message.isBlueKnown
-            blueGoal.position = Point2D(message.blueGoalPos.x.toDouble(), message.blueGoalPos.y.toDouble())
+            if (blueGoal.isPositionKnown)
+                blueGoal.position = Point2D(message.blueGoalPos.x.toDouble(), message.blueGoalPos.y.toDouble())
 
             // update labels
             if (message.localiserRate > 0) {
@@ -104,6 +110,7 @@ class FieldView : View() {
             ballLabel.text = if (ball.isPositionKnown) String.format("(%.2f, %.2f)", ball.position.x, ball.position.y) else "Unknown"
             localiserPerfLabel.textFill = if (message.localiserStatus != "FTOL_REACHED") Color.ORANGE else Color.WHITE
 
+            // draw the field
             display.fill = Color.BLACK
             display.fillRect(0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)
             display.drawImage(fieldImage, 0.0, 0.0, FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT)

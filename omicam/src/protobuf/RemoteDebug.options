@@ -10,3 +10,4 @@ DebugFrame.rayScores max_count:128
 DebugCommand.allThresholds max_count:5 fixed_count:true
 RDThreshold.min max_count:3 fixed_count:true
 RDThreshold.max max_count:3 fixed_count:true
+RDRobot.fsmState max_size:64

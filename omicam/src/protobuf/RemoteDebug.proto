@@ -29,6 +29,7 @@ message RDThreshold {
 message RDRobot {
     RDPointF position = 1;
     float orientation = 2;
+    string fsmState = 3;
 }
 
 // Whenever a debug frame is encoded, this is sent to the remote client to be rendered over a TCP socket.
