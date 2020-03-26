@@ -156,12 +156,14 @@ class FieldView : View() {
             display.lineWidth = 4.0
             val centrePos = robots[connectedRobotId].position.toCanvasPosition()
 
+            // yellow goal
             run {
-                display.stroke = if (blueGoal.isPositionKnown) Color.YELLOW else Color.GREY
+                display.stroke = if (yellowGoal.isPositionKnown) Color.YELLOW else Color.GREY
                 val pos = yellowGoal.position.toCanvasPosition()
                 display.strokeLine(centrePos.x, centrePos.y, pos.x, pos.y)
             }
 
+            // blue goal
             run {
                 display.stroke = if (blueGoal.isPositionKnown) Color.DODGERBLUE else Color.GREY
                 val pos = blueGoal.position.toCanvasPosition()

@@ -144,12 +144,6 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
  * @return a score of how close the estimated position is to the real position
  */
 static inline double objective_func_impl(double x, double y){
-    // HACK HACK HACK: check if out of bounds and return a huge number if so
-    // TODO clamp bounds based on goal estimate, we also need a way to visualise this
-    if ((x < 28 || x > 215) || (y < 29 || y > 155)) {
-        return 8600;
-    }
-
     double interval = PI2 / LOCALISER_NUM_RAYS;
     double x0 = x;
     double y0 = y;
@@ -353,8 +347,8 @@ static void *work_thread(void *arg){
 
         if (isGoalEstimateAvailable){
             // if we have a goal estimate, use that as our origin; otherwise, we will just use the field centre
-            optimiserPos[0] = initialEstimate.x + (field.length / 2.0);
-            optimiserPos[1] = initialEstimate.y + (field.width / 2.0);
+            optimiserPos[0] = constrainf(initialEstimate.x + (field.length / 2.0), 0.0, field.length);
+            optimiserPos[1] = constrainf(initialEstimate.y + (field.width / 2.0), 0.0, field.width);
 
             // also, if we have an estimate, use a smaller initial step size to try and converge faster
             nlopt_set_initial_step1(optimiser, LOCALISER_SMALL_STEP);
@@ -379,6 +373,8 @@ static void *work_thread(void *arg){
 
         if (result < 0){
             log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
+            printf("Min bounds: %.2f,%.2f, Max bounds: %.2f,%.2f, Estimate pos: %.2f,%.2f\n", estimateMinBounds.x,
+                    estimateMinBounds.y, estimateMaxBounds.x, estimateMaxBounds.y, initialEstimate.x, initialEstimate.y);
         }
         // convert to field coordinates (where 0,0 is the centre of the field)
         optimiserPos[0] -= field.length / 2.0;

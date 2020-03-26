@@ -216,6 +216,10 @@ static auto cv_thread(void *arg) -> void *{
 #if VISION_CROP_ENABLED
         frame = frame(Rect(cropRect));
 #endif
+        // flip image if running on robot due to bullshit
+#if BUILD_TARGET == BUILD_TARGET_SBC
+        flip(frame, frame, 0);
+#endif
         // apply CLAHE normalisation if requested, source: https://stackoverflow.com/a/47370615/5007892
 #if VISION_APPLY_CLAHE
         Mat labImage;

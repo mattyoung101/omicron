@@ -48,7 +48,7 @@
 /** Omicam will be running locally on a PC. Uses test imagery and some features are disabled. */
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
-#define BUILD_TARGET (BUILD_TARGET_PC)
+#define BUILD_TARGET (BUILD_TARGET_SBC)
 
 /** stop optimisation when a coordinate with this error in centimetres is found */
 #define LOCALISER_ERROR_TOLERANCE 1
@@ -67,7 +67,7 @@
  * of missing the correct position. Finally, please note that this value is extremely sensitive, small changes can
  * increase/decrease the average evaluations by almost 10.
  */
-#define LOCALISER_ESTIMATE_BOUNDS 70
+#define LOCALISER_ESTIMATE_BOUNDS 50
 /** The number of rays to use when raycasting on line images, generally 64 or 128 are fine. */
 #define LOCALISER_NUM_RAYS 64
 /** error which is 200-300 points higher than the highest usual error in the localiser, determine through trial & error */
