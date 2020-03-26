@@ -20,6 +20,11 @@
 #include "errno.h"
 #include "comms_uart.h"
 
+// This file implements our novel sensor-fusion localisation approach. It works by using generating an initial guess
+// through traditional methods like vector maths on the goals and mouse sensor integration, but uniquely refines
+// this inaccurate initial guess by solving a non-linear multi-variate optimisation problem in real-time. For more
+// information, see our documentation website.
+
 /** points visited by the Subplex optimiser */
 lp_list_t localiserVisitedPoints = {0};
 /** the bread and butter of the whole operation: NLopt!! */
@@ -47,6 +52,8 @@ static char localiserStatus[32] = {0};
 static pthread_t perfThread;
 static movavg_t *timeAvg = NULL;
 static movavg_t *evalAvg = NULL;
+static movavg_t *xAvg = NULL;
+static movavg_t *yAvg = NULL;
 static int32_t evaluations = 0;
 pthread_mutex_t localiserMutex = PTHREAD_MUTEX_INITIALIZER;
 static int32_t localiserRate = 0;
@@ -151,7 +158,7 @@ static inline double objective_func_impl(double x, double y){
     struct vec2 minCoord = {0, 0};
     struct vec2 maxCoord = {field.length, field.width};
 
-    // loop over the points and raycast
+    // raycast on our virtual field file to generate expected rays
     double angle = 0.0;
     for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
         expectedRays[i] = (double) raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), angle, field.length, -1, minCoord, maxCoord);
@@ -162,16 +169,18 @@ static inline double objective_func_impl(double x, double y){
     double totalError = 0.0;
     for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
         // the ray didn't land, so ignore it
-        if (observedRays[i] == -1 || expectedRays[i] == -1) continue;
+        if (observedRays[i] <= 0 || expectedRays[i] <= 0){
+            rayScores[i] = -1;
+            continue;
+        }
 
         double diff = fabs(expectedRays[i] - observedRays[i]);
-        rayScores[i] = diff;
         totalError += diff;
+        rayScores[i] = diff;
     }
     evaluations++;
 
     localiser_point_t point = {x - field.length / 2.0, y - field.width / 2.0};
-
     pthread_mutex_lock(&localiserMutex);
     da_add(localiserVisitedPoints, point);
     pthread_mutex_unlock(&localiserMutex);
@@ -252,7 +261,7 @@ static double objective_function(unsigned n, const double* x, double* grad, void
     return objective_func_impl(x[0], x[1]);
 }
 
-/** The worker thread for the localiser, basically just calls nlopt_optimize() and transmits the result */
+/** The worker thread for the localiser, this is where the main code for it is */
 static void *work_thread(void *arg){
     log_trace("Localiser work thread started");
     while (true){
@@ -273,8 +282,8 @@ static void *work_thread(void *arg){
         // initial goal estimates
         // calculate a rough approximation of where we are using vector maths and the goals, and an uncertainty radius
         // see the file Goal maths.png (done by Ethan, thanks) in the docs folder for an explanation
-        struct vec2 h1 = {91.5, 0}; // blue goal
-        struct vec2 h2 = {-91.5, 0}; // yellow goal
+        struct vec2 h1 = {91.5, 0}; // blue goal field position
+        struct vec2 h2 = {-91.5, 0}; // yellow goal field position
         struct vec2 vb = svec2_subtract(h1, entry->blueRel);
         struct vec2 vy = svec2_subtract(h2, entry->yellowRel);
         struct vec2 numerator = svec2_add(svec2_multiply_f(vb, svec2_length(vy)), svec2_multiply_f(vy, svec2_length(vb)));
@@ -282,7 +291,7 @@ static void *work_thread(void *arg){
         initialEstimate = svec2_divide_f(numerator, denominator);
 
         // generate min and max bounds, being very careful not to clip out of bounds
-        // also, sneakily we have to convert back to field file coordinates (top left corner is origin)
+        // also, we have to convert back to screen coordinates (origin is top left corner) since the optimiser needs that
         double hx = field.length / 2.0;
         double hy = field.width / 2.0;
         estimateMinBounds.x = constrainf(initialEstimate.x - LOCALISER_ESTIMATE_BOUNDS + hx, 0.0, field.length);
@@ -294,22 +303,21 @@ static void *work_thread(void *arg){
         // handle cases if one/both of the goals aren't visible so we can't get a goal estimate
         isGoalEstimateAvailable = entry->yellowVisible && entry->blueVisible;
         if (isGoalEstimateAvailable && goalWasUnavailable){
-            log_debug("Goal has returned, goal estimate available again");
+            log_debug("Goals have returned, goal estimate available again");
             goalWasUnavailable = false;
         }
         if (!isGoalEstimateAvailable){
+            // use mouse sensor data instead
             initialEstimate.x = lastSensorData.absDspX;
             initialEstimate.y = lastSensorData.absDspY;
 
             if (!goalWasUnavailable) {
                 log_warn("Goal estimate will not be valid (yellow exists: %s, blue exists: %s)",
                          entry->yellowVisible ? "YES" : "NO", entry->blueVisible ? "YES" : "NO");
-
                 // if the last time we received a UART packet was more than 100ms ago, warn the data is invalid
                 double currentTime = utils_time_millis();
                 if (currentTime - lastUARTReceiveTime >= 100){
-                    log_warn("Mouse sensor data is stale (last received %.2f ms ago) - accuracy will suffer significantly",
-                            currentTime - lastUARTReceiveTime);
+                    log_warn("Mouse sensor data is stale (last received %.2f ms ago)", currentTime - lastUARTReceiveTime);
                 }
                 goalWasUnavailable = true;
             }
@@ -333,8 +341,11 @@ static void *work_thread(void *arg){
         // image normalisation
         // dewarp ray lengths based on mirror model to be in centimetres, then rotate based on BNO-055 reported orientation
         for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
-            if (observedRays[i] == -1) continue;
-            observedRays[i] = utils_camera_dewarp(observedRaysRaw[i]);
+            if (observedRaysRaw[i] <= 0){
+                observedRays[i] = -1;
+            } else {
+                observedRays[i] = utils_camera_dewarp(observedRaysRaw[i]);
+            }
         }
         // TODO (!!IMPORTANT!!) somehow we also need to rotate this array based on orientation of robot
 
@@ -379,8 +390,17 @@ static void *work_thread(void *arg){
         // convert to field coordinates (where 0,0 is the centre of the field)
         optimiserPos[0] -= field.length / 2.0;
         optimiserPos[1] -= field.width / 2.0;
+
+#if LOCALISER_ENABLE_SMOOTHING
+        movavg_push(xAvg, optimiserPos[0]);
+        movavg_push(yAvg, optimiserPos[1]);
+        localisedPosition.x = movavg_calc(xAvg);
+        localisedPosition.y = movavg_calc(yAvg);
+#else
         localisedPosition.x = optimiserPos[0];
         localisedPosition.y = optimiserPos[1];
+#endif
+
 #if LOCALISER_DEBUG
         printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", optimiserPos[0], optimiserPos[1],
                optimiserError, nlopt_result_to_string(result));
@@ -469,8 +489,8 @@ static void *perf_thread(void *arg){
         double rate = (1000.0 / avgTime);
         localiserRate = ROUND2INT(rate);
         localiserEvals = ROUND2INT(avgEval);
-        movavg_clear(timeAvg);
-        movavg_clear(evalAvg);
+//        movavg_clear(timeAvg);
+//        movavg_clear(evalAvg);
 
 #if LOCALISER_DIAGNOSTICS
         if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){
@@ -526,6 +546,8 @@ void localiser_init(char *fieldFile){
     // create performance monitor thread
     timeAvg = movavg_create(256);
     evalAvg = movavg_create(256);
+    xAvg = movavg_create(LOCALISER_SMOOTHING_SIZE);
+    yAvg = movavg_create(LOCALISER_SMOOTHING_SIZE);
     err = pthread_create(&perfThread, NULL, perf_thread, NULL);
     if (err != 0){
         log_error("Failed to create localiser perf thread: %s", strerror(err));
@@ -567,5 +589,7 @@ void localiser_dispose(void){
     rpa_queue_destroy(queue);
     movavg_free(timeAvg);
     movavg_free(evalAvg);
+    movavg_free(xAvg);
+    movavg_free(yAvg);
     da_free(localiserVisitedPoints);
 }

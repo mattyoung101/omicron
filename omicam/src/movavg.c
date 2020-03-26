@@ -2,35 +2,53 @@
 #include <string.h>
 #include <stdio.h>
 
+// Simple moving average in C, v1.1
+// Copyright (c) 2019-2020 Matt Young. Licensed into the public domain with the Unlicense.
+
 movavg_t *movavg_create(size_t size){
     movavg_t *movavg = calloc(1, sizeof(movavg_t));
-    movavg->size = size;
+    movavg->maxSize = size;
     movavg->items = calloc(size, sizeof(double));
     movavg->counter = 0;
     return movavg;
 }
 
-void movavg_free(movavg_t *mov_avg){
-    free(mov_avg->items);
-    free(mov_avg);
-    mov_avg = NULL;
+void movavg_free(movavg_t *movavg){
+    free(movavg->items);
+    free(movavg);
 }
 
-void movavg_push(movavg_t *mov_avg, double value){
-    if (mov_avg->counter + 1 >= mov_avg->size) return; // this is here to fix a bug which shouldn't exist, TODO remove?
-    mov_avg->items[mov_avg->counter++ % mov_avg->size] = value;
+void movavg_push(movavg_t *movavg, double value){
+    // believe it or not, these brackets are actually required due to operator precedence
+    movavg->counter = (movavg->counter + 1) % (movavg->maxSize);
+    movavg->items[movavg->counter] = value;
 }
 
-double movavg_calc(movavg_t *mov_avg){
+double movavg_calc(movavg_t *movavg){
     double sum = 0;
-    for (int i = 0; i < mov_avg->counter; i++){
-        sum += mov_avg->items[i];
+    for (size_t i = 0; i < movavg->counter; i++){
+        sum += movavg->items[i];
     }
-    if (mov_avg->counter == 0) return 0; // stupid hack to prevent divide by zero
-    return sum / (double) mov_avg->counter;
+    // hack so we don't divide by zero, TODO find a better solution than this
+    if (movavg->counter == 0) return movavg->items[0];
+    return sum / (double) movavg->counter;
 }
 
-void movavg_clear(movavg_t *mov_avg){
-    memset(mov_avg->items, 0, mov_avg->size * sizeof(double));
-    mov_avg->counter = 0;
+void movavg_clear(movavg_t *movavg){
+    memset(movavg->items, 0, movavg->maxSize * sizeof(double));
+    movavg->counter = 0;
+}
+
+void movavg_resize(movavg_t *movavg, size_t newSize){
+    movavg->items = realloc(movavg->items, newSize);
+    movavg->counter = 0;
+    movavg->maxSize = newSize;
+}
+
+void movavg_dump(movavg_t *movavg){
+    double value = movavg_calc(movavg);
+    printf("Moving average object: %zu items, counter at %zu, value is: %f\n", movavg->maxSize, movavg->counter, value);
+    for (size_t i = 0; i < movavg->maxSize; i++){
+        printf("    %zu. %f\n", i, movavg->items[i]);
+    }
 }

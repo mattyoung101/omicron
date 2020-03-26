@@ -216,7 +216,7 @@ static auto cv_thread(void *arg) -> void *{
 #if VISION_CROP_ENABLED
         frame = frame(Rect(cropRect));
 #endif
-        // flip image if running on robot due to bullshit
+        // flip image if running on the robot due to the current orientation of the camera
 #if BUILD_TARGET == BUILD_TARGET_SBC
         flip(frame, frame, 0);
 #endif
@@ -237,7 +237,6 @@ static auto cv_thread(void *arg) -> void *{
             bitwise_and(frame, frame, tmp, mirrorMask);
             frame = tmp;
         }
-
         // downscale for goal detection (and possibly initial ball pass)
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
 
@@ -247,7 +246,6 @@ static auto cv_thread(void *arg) -> void *{
         parallel_for_(Range(1, 5), [&](const Range& range){
             auto object = (field_objects_t) range.start;
             uint32_t *min, *max;
-
             switch (object){
                 case OBJ_BALL:
                     min = (uint32_t*) minBallData;
@@ -341,7 +339,6 @@ static auto cv_thread(void *arg) -> void *{
             data.goalYellowAbsX = (float) localisedPosition.x + data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
             data.goalYellowAbsY = (float) localisedPosition.y + data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
         }
-        // TODO need to check that a localisation estimate works because otherwise localisedPosition.x won't work
         // TODO consider sending relative field goal and ball coordinates in cartesian (like we send to localiser) over UART?
         utils_cv_transmit_data(data);
 
@@ -375,6 +372,11 @@ static auto cv_thread(void *arg) -> void *{
                      fieldObjToString[selectedFieldObject]);
             putText(debugFrame, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.6,
                     Scalar(255, 255, 255), 1, FILLED, false);
+
+            if (visionDebugRobotMask){
+                circle(debugFrame, Point(debugFrame.cols / 2, debugFrame.rows / 2), visionRobotMaskRadius,
+                        Scalar(0, 0, 0),FILLED, FILLED);
+            }
 
             // copy the frame off the Mat into some raw data that can be processed by the remote debugger code
             // frame is a 3 channel RGB image (hence the times 3)
@@ -434,7 +436,7 @@ static auto fps_counter_thread(void *arg) -> void *{
         double avgTime = movavg_calc(fpsAvg);
         if (avgTime == 0) continue; // another stupid to fix divide by zero when debugging
         lastFpsMeasurement = ROUND2INT(1000.0 / avgTime);
-        movavg_clear(fpsAvg);
+//        movavg_clear(fpsAvg);
 
 #if VISION_DIAGNOSTICS
         if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){

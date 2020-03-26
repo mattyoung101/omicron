@@ -35,9 +35,9 @@ class FieldView : View() {
     private lateinit var ballLabel: Label
     private val fieldImage = Image("field_cropped_scaled.png")
     private val targetIcon = Image("target.png")
-    private val robotImage = Image("robot.png")
-    private val robotUnknown = Image("robot_unknown2.png")
-    private val robotSelected = Image("robot_selected.png")
+    private val robotDefaultSprite = Image("robot.png")
+    private val robotUnknownSprite = Image("robot_unknown2.png")
+    private val robotSelectedSprite = Image("robot_selected.png")
     private lateinit var localiserPerfLabel: Label
     private val robots = listOf(
         Robot(0),
@@ -76,7 +76,6 @@ class FieldView : View() {
         // well tbf the whole of Omicontrol is bad code which makes me sad but there's too much to refactor now I think
 
         runLater {
-            // update data
             for (robot in robots){
                 // assume unknown first, update later if true
                 robot.isPositionKnown = false
@@ -117,9 +116,12 @@ class FieldView : View() {
 
             // render robots
             for (robot in robots) {
+                // don't draw the missing robot in debug mode since it's distracting
+                if (IS_DEBUG_MODE && !robot.isPositionKnown) continue
+
                 val half = ROBOT_CANVAS_DIAMETER / 2.0
                 val pos = robot.position.toCanvasPosition()
-                val sprite = if (selectedRobot == robot) robotSelected else if (robot.isPositionKnown) robotImage else robotUnknown
+                val sprite = if (selectedRobot == robot) robotSelectedSprite else if (robot.isPositionKnown) robotDefaultSprite else robotUnknownSprite
 
                 display.globalAlpha = if (isReduceTransparency) 0.3 else 1.0
                 display.drawImage(sprite, pos.x - half, pos.y - half, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
@@ -129,7 +131,7 @@ class FieldView : View() {
                 display.fillText(robot.id.toString(), pos.x - (half / 2.0), pos.y + (half / 2.0))
             }
 
-            // render estimate stuff
+            // render initial estimate stuff
             if (message.isBlueKnown && message.isYellowKnown) {
                 display.fill = Color.FUCHSIA
                 val pos = Point2D(message.goalEstimate.x.toDouble(), message.goalEstimate.y.toDouble()).toCanvasPosition()
@@ -154,34 +156,34 @@ class FieldView : View() {
 
             // render goals
             display.lineWidth = 4.0
-            val centrePos = robots[connectedRobotId].position.toCanvasPosition()
+            val robotCentrePos = robots[connectedRobotId].position.toCanvasPosition()
 
             // yellow goal
             run {
                 display.stroke = if (yellowGoal.isPositionKnown) Color.YELLOW else Color.GREY
                 val pos = yellowGoal.position.toCanvasPosition()
-                display.strokeLine(centrePos.x, centrePos.y, pos.x, pos.y)
+                display.strokeLine(robotCentrePos.x, robotCentrePos.y, pos.x, pos.y)
             }
 
             // blue goal
             run {
                 display.stroke = if (blueGoal.isPositionKnown) Color.DODGERBLUE else Color.GREY
                 val pos = blueGoal.position.toCanvasPosition()
-                display.strokeLine(centrePos.x, centrePos.y, pos.x, pos.y)
+                display.strokeLine(robotCentrePos.x, robotCentrePos.y, pos.x, pos.y)
             }
 
             // render target sprite
             if (targetPos != null) {
-                display.drawImage(targetIcon, targetPos!!.x - 16, targetPos!!.y - 16, 48.0, 48.0)
+                display.drawImage(targetIcon, targetPos!!.x - 16, targetPos!!.y - 16, 36.0, 36.0)
             }
 
             // draw rays if requested
             // TODO instead of picking robot 0, we need to pick the one we're connected to, to debug
             if (isRaycastDebug && robots[connectedRobotId].isPositionKnown) {
-                // find min and max ray sscore
+                // find min and max ray score
                 val rayScores = message.rayScoresList.take(message.rayScoresCount)
-                val minRayScore = rayScores.min()!!
-                val maxRayScore = rayScores.max()!!
+                val minRayScore = rayScores.filter { it > 0 }.min()!!
+                val maxRayScore = rayScores.filter { it > 0 }.max()!!
 
                 display.lineWidth = 2.0
                 display.stroke = Color.WHITE
@@ -192,13 +194,18 @@ class FieldView : View() {
                 var angle = 0.0
 
                 for ((i, rayLength) in message.dewarpedRaysList.take(message.dewarpedRaysCount).withIndex()) {
-                    if (rayLength < 0) continue // TODO may want to draw a red line to indicate missed ray
+                    if (rayLength <= 0){
+                        // the ray missed, so skip it
+                        angle += message.rayInterval
+                        continue
+                    }
                     val x1 = x0 + (toFieldLength(rayLength) * sin(angle))
                     val y1 = y0 + (toFieldLength(rayLength) * cos(angle))
 
                     val normalisedScore = (rayScores[i] - minRayScore) / (maxRayScore - minRayScore)
                     // note that we're going FROM GOOD COLOUR TO BAD COLOUR because 0 means high accuracy and 1 means low accuracy
-                    display.stroke = lerpColour(Color.WHITE, Color.RED, normalisedScore)
+                    // TODO note we're ignoring ray scores for now as I think it looks visually bad and doesn't represent error well
+                    display.stroke = Color.WHITE //lerpColour(Color.WHITE, Color.RED, normalisedScore)
                     display.strokeLine(x0, y0, x1, y1)
                     angle += message.rayInterval
                 }
@@ -302,6 +309,23 @@ class FieldView : View() {
                     }
                     accelerator = KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN)
                 }
+                menu("Select robot") {
+                    item("None"){
+                        setOnAction {
+                            selectedRobot = null
+                        }
+                    }
+                    item("Robot 0"){
+                        setOnAction {
+                            selectedRobot = robots[0]
+                        }
+                    }
+                    item("Robot 1"){
+                        setOnAction {
+                            selectedRobot = robots[1]
+                        }
+                    }
+                }
             }
             menu("Settings"){
                 checkmenuitem("Raycast debug (little buggy)"){
@@ -345,6 +369,7 @@ class FieldView : View() {
                         Logger.info("Mouse clicked at real: $fieldRealPos, canvas: $fieldCanvasPos")
 
                         for (robot in robots.reversed()){
+                            if (IS_DEBUG_MODE && !robot.isPositionKnown) continue
                             val half = ROBOT_CANVAS_DIAMETER / 2.0
                             val pos = robot.position.toCanvasPosition()
 

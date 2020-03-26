@@ -122,6 +122,12 @@ int main() {
     videoHeight = height;
     isDrawMirrorMask = iniparser_getboolean(config, "Vision:drawMirrorMask", true);
     isDrawRobotMask = iniparser_getboolean(config, "Vision:drawRobotMask", true);
+    visionDebugRobotMask = iniparser_getboolean(config, "Vision:renderRobotMask", false);
+    visionRecording = iniparser_getboolean(config, "Vision:videoRecording", false);
+    if (visionRecording && BUILD_TARGET == BUILD_TARGET_SBC){
+        log_warn("Refusing to record to disk in BUILD_TARGET_PC, there's no point in doing so.");
+        visionRecording = false;
+    }
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
     log_trace("Mirror model is: %s", mirrorModelStr);

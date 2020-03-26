@@ -51,7 +51,7 @@ class CalibrationView : View() {
         }
     private var ghostPoints = mutableListOf<Point2D>()
     private var model: Expression? = null
-    private var snapInitialPoint = false
+    private var snapInitialPoint = true
     private var isAutoIncrement = true
     private var counter = 5.0
 
@@ -188,6 +188,7 @@ class CalibrationView : View() {
             }
             menu("Settings"){
                 checkmenuitem("Snap initial point to centre"){
+                    isSelected = true
                     selectedProperty().addListener { _, _, newValue ->
                         snapInitialPoint = newValue
                     }

@@ -11,7 +11,7 @@
  * 1.4a: performance optimisations for new SBC, new FPS timing code, fixes
  * 2.4a: localisation prototype implemented, sleep mode added
  * 3.4b: Omicam enters beta, localiser work continued
- * 4.4b: (WIP) UART comms implemented, improved localiser with quadrants, fixed some bugs/oversights
+ * 4.4b: (WIP) UART comms implemented, hybrid localiser implemented, fixed lots of bugs
  */
 #define OMICAM_VERSION "4.4b"
 /** whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO) */
@@ -26,7 +26,7 @@
 /** enables CLAHE adaptive histogram normalisation to correct dogshit venue lighting, bad for performance */
 #define VISION_APPLY_CLAHE 0
 /** path to test data used in BUILD_TARGET_PC */
-#define VISION_TEST_FILE "../test_data/field5.png"
+#define VISION_TEST_FILE "../test_data/field4_obnoxious.png"
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1
@@ -48,7 +48,7 @@
 /** Omicam will be running locally on a PC. Uses test imagery and some features are disabled. */
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
-#define BUILD_TARGET (BUILD_TARGET_SBC)
+#define BUILD_TARGET (BUILD_TARGET_PC)
 
 /** stop optimisation when a coordinate with this error in centimetres is found */
 #define LOCALISER_ERROR_TOLERANCE 1
@@ -67,9 +67,13 @@
  * of missing the correct position. Finally, please note that this value is extremely sensitive, small changes can
  * increase/decrease the average evaluations by almost 10.
  */
-#define LOCALISER_ESTIMATE_BOUNDS 50
+#define LOCALISER_ESTIMATE_BOUNDS 60
 /** The number of rays to use when raycasting on line images, generally 64 or 128 are fine. */
 #define LOCALISER_NUM_RAYS 64
+/** Whether or not to use a moving average to smooth the localiser output */
+#define LOCALISER_ENABLE_SMOOTHING 1
+/** The size of the moving average history for smoothing, larger values mean smoother but less accurate */
+#define LOCALISER_SMOOTHING_SIZE 16
 /** error which is 200-300 points higher than the highest usual error in the localiser, determine through trial & error */
 #define LOCALISER_LARGE_ERROR 8600
 /** if true, renders the objective function bitmap, raycast test bitmap and then quits */

@@ -26,6 +26,7 @@ extern pthread_cond_t sleepCond;
 extern pthread_mutex_t sleepMutex;
 extern bool sendDebugFrames;
 extern struct vec2 localisedPosition;
+extern bool visionRecording, visionPlayback, visionDebugRobotMask;
 
 #ifdef __cplusplus
 extern "C" {

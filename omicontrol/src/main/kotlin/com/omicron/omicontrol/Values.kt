@@ -17,7 +17,7 @@ import org.greenrobot.eventbus.EventBus
  * 3.3a: added field display screen
  * 3.4a: camera view supports many different colour spaces now, not just RGB
  * 3.5a: fixed some bugs, added some more tools to for debugging
- * 4.5b: (WIP) Omicontrol enters beta... what else?
+ * 4.5b: (WIP) Omicontrol enters beta, added support for hybrid localiser displays, fixed some bugs
  */
 const val OMICONTROL_VERSION = "4.5b"
 const val DEFAULT_IP = "192.168.12.1"
