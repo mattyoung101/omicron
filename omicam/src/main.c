@@ -60,6 +60,7 @@ int main() {
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
     signal(SIGPIPE, SIG_IGN);
+    srand(time(NULL)); // NOLINT yes I know, and no I don't care
 
 #if VERBOSE_LOGGING
     log_set_level(LOG_TRACE);
@@ -80,6 +81,7 @@ int main() {
         fprintf(stderr, "Failed to open log file: %s\n", strerror(errno));
         fprintf(stderr, "ATTENTION: Due to a current bug, you need to make the file ~/Documents/TeamOmicron/Omicam/omicam.log manually"
                         " for logging to work properly.\n");
+        fprintf(stderr, "Continuing without logging to file, but please fix this!!");
     }
     log_info("Omicam v%s - Copyright (c) 2019-2020 Team Omicron.", OMICAM_VERSION);
     log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);
@@ -123,11 +125,7 @@ int main() {
     isDrawMirrorMask = iniparser_getboolean(config, "Vision:drawMirrorMask", true);
     isDrawRobotMask = iniparser_getboolean(config, "Vision:drawRobotMask", true);
     visionDebugRobotMask = iniparser_getboolean(config, "Vision:renderRobotMask", false);
-    visionRecording = iniparser_getboolean(config, "Vision:videoRecording", false);
-    if (visionRecording && BUILD_TARGET == BUILD_TARGET_SBC){
-        log_warn("Refusing to record to disk in BUILD_TARGET_PC, there's no point in doing so.");
-        visionRecording = false;
-    }
+    visionRecordingEnabled = iniparser_getboolean(config, "Vision:videoRecording", false);
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
     log_trace("Mirror model is: %s", mirrorModelStr);
@@ -158,8 +156,7 @@ int main() {
     fflush(logFile);
     iniparser_freedict(config);
 
-    vision_init();
-    // (this will block until vision errors/terminates normally)
+    vision_init(); // this will block until vision errors/terminates normally
 
     log_debug("Omicam terminating through main loop exit");
     return EXIT_SUCCESS;

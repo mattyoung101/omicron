@@ -31,7 +31,7 @@ pthread_cond_t sleepCond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t sleepMutex = PTHREAD_MUTEX_INITIALIZER;
 bool sendDebugFrames = true;
 struct vec2 localisedPosition = {0};
-bool visionRecording = false, visionPlayback = false, visionDebugRobotMask = false;
+bool visionRecordingEnabled = false, visionPlayback = false, visionDebugRobotMask = false;
 
 // https://stackoverflow.com/a/1726321/5007892
 static void remove_spaces(char* s) {
@@ -280,11 +280,7 @@ void utils_reload_config(void){
     isDrawMirrorMask = iniparser_getboolean(config, "Vision:drawMirrorMask", true);
     isDrawRobotMask = iniparser_getboolean(config, "Vision:drawRobotMask", true);
     visionDebugRobotMask = iniparser_getboolean(config, "Vision:renderRobotMask", false);
-    visionRecording = iniparser_getboolean(config, "Vision:videoRecording", false);
-    if (visionRecording && BUILD_TARGET == BUILD_TARGET_SBC){
-        log_warn("Refusing to record to disk in BUILD_TARGET_PC, there's no point in doing so.");
-        visionRecording = false;
-    }
+    visionRecordingEnabled = iniparser_getboolean(config, "Vision:videoRecording", false);
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
     log_trace("Mirror model is: %s", mirrorModelStr);

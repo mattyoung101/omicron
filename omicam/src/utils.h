@@ -10,23 +10,28 @@
 
 // Globals
 
+/** min and max thresholds for each field object */
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 extern int32_t *thresholds[];
 extern bool isDrawRobotMask, isDrawMirrorMask;
 extern char *fieldObjToString[];
 /** this is the UNCROPPED video width and height (i.e. what we receive raw from the camera) */
-extern int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
+extern int32_t videoWidth, videoHeight;
+extern int32_t visionRobotMaskRadius, visionMirrorRadius;
+/** (x,y,width,height) describing the frame cropping rectangle, loaded from INI file */
 extern int32_t visionCropRect[4];
-/** used by te_compile() when compiling the mirror model expression **/
+/** used by te_compile() when compiling the mirror model expression - TODO I still think this might be race condition prone */
 extern _Atomic double mirrorModelVariable;
 extern te_expr *mirrorModelExpr;
 /** true if Omicam is currently in sleep mode (low power mode) **/
 extern bool sleeping;
 extern pthread_cond_t sleepCond;
 extern pthread_mutex_t sleepMutex;
+/** if true, debug frames are sent to Omicontrol, otherwise they are still processed but not sent to save bandwidth */
 extern bool sendDebugFrames;
+/** The culmination of several months of difficult R&D: the robot's x,y position in field coordinates!!! */
 extern struct vec2 localisedPosition;
-extern bool visionRecording, visionPlayback, visionDebugRobotMask;
+extern bool visionRecordingEnabled, visionPlayback, visionDebugRobotMask;
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,8 +62,9 @@ void utils_sleep_enter(void);
 void utils_sleep_exit(void);
 /** Reloads Omicam ini config file from disk **/
 void utils_reload_config(void);
-/** calculates the CRC8 hash of a buffer, source: https://stackoverflow.com/a/51773839/5007892 */
+/** Calculates the CRC8 hash of a buffer, source: https://stackoverflow.com/a/51773839/5007892 */
 uint8_t crc8(const uint8_t *data, size_t len);
+/** Linearly interpolate between fromValue and toValue, by progress (between 0.0 and 1.0) */
 double utils_lerp(double fromValue, double toValue, double progress);
 const char *nlopt_result_to_string(nlopt_result result);
 
@@ -72,10 +78,11 @@ const char *nlopt_result_to_string(nlopt_result result);
 #define LOW_BYTE_16(num)  ((uint8_t) ((num & 0xFF)))
 /** unpack two 8 bit integers into a 16 bit integer */
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
-/** forces GCC to keep a variable */
+/** forces compiler to keep a variable */
 #define KEEP_VAR __attribute__((used))
 /** returns true if the object is a goal and would have been rescaled */
 #define VISION_IS_RESCALED (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW)
+/** rounds a double to an int, like Kotlin's roundToInt() function */
 #define ROUND2INT(x) ((int32_t) round(x))
 /** converts real field X coordinate into field file coordinate */
 #define X_TO_FF(x) (constrain(ROUND2INT(x), 0, field.length))

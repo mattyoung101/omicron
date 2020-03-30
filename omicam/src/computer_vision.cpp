@@ -5,12 +5,11 @@
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/mat.hpp>
-#include <opencv2/gapi.hpp>
-#include <opencv2/gapi/core.hpp>
-#include <opencv2/gapi/imgproc.hpp>
 #include <opencv2/core/cuda.hpp>
+#include <uuid/uuid.h>
 #include <map>
 #include <unistd.h>
+#include <pwd.h>
 #include "defines.h"
 #include "utils.h"
 #include "remote_debug.h"
@@ -50,9 +49,9 @@ static int32_t errorCount = 0;
  * @param realHeight the real size of the (potentially cropped) frame, before downscaling
  */
 static object_result_t process_object(const Mat& thresholded, field_objects_t objectId, int32_t realWidth, int32_t realHeight){
-    // shortcut just for lines
+    // fast-path just for the lines, since we don't need to do CCL for them
     if (objectId == OBJ_LINES){
-        object_result_t result = {}; // NOLINT
+        object_result_t result = {};
         result.exists = true;
         result.centroid = {0.0, 0.0};
         result.boundingBox = {};
@@ -110,7 +109,7 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
     largestCentroid.y += cropRect.y;
 #endif
 
-    object_result_t result = {}; // NOLINT
+    object_result_t result = {};
     result.exists = blobExists;
     result.centroid = {largestCentroid.x, largestCentroid.y};
     result.boundingBox = objRect;
@@ -159,6 +158,26 @@ static auto cv_thread(void *arg) -> void *{
     auto fps = ROUND2INT(cap.get(CAP_PROP_FPS));
     log_debug("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
 
+    // create OpenCV VideoWriter and generate disk filename, runs even if it's disabled for simplicity's sake
+    // if vision recording is disabled, no files are written
+    VideoWriter videoWriter;
+    struct passwd *pw = getpwuid(getuid());
+    char *homedir = pw->pw_dir;
+    char filebuf[256] = {};
+    time_t recordingId = time(nullptr);
+    snprintf(filebuf, 256, "%s/Documents/TeamOmicron/Omicam/omicam_recording_%ld.mp4", homedir, recordingId);
+
+    if (visionRecordingEnabled){
+        log_warn("Vision recording enabled. Caution: this may produce huge files at high framerates!");
+        log_debug("Vision recording will be written to: %s", filebuf);
+        // we're saving as MJPEG for now because Theora doesn't seem to work sadly, maybe try MP4 some time
+        videoWriter.open(filebuf, VideoWriter::fourcc('m', 'p', '4', 'v'), cap.get(CAP_PROP_FPS),
+                         Size(videoWidth, videoHeight));
+        if (!videoWriter.isOpened()){
+            log_error("Failed to open OpenCV VideoWriter, recording will NOT be saved to disk.");
+        }
+    }
+
     // calculate cropped frame size
     Mat junk(videoHeight, videoWidth, CV_8UC1);
 #if VISION_CROP_ENABLED
@@ -172,10 +191,6 @@ static auto cv_thread(void *arg) -> void *{
     Mat mirrorMask = Mat(cropRect.height, cropRect.width, CV_8UC1, Scalar(0));
     circle(mirrorMask, Point(mirrorMask.cols / 2, mirrorMask.rows / 2), visionMirrorRadius,
             Scalar(255, 255, 255),FILLED);
-
-#if VISION_APPLY_CLAHE
-    auto clahe = createCLAHE();
-#endif
 
     while (true){
         // handle threading crap before beginning with the vision
@@ -196,12 +211,14 @@ static auto cv_thread(void *arg) -> void *{
 
         if (frame.empty()){
 #if BUILD_TARGET == BUILD_TARGET_PC
+            // loop back to start
             cap.set(CAP_PROP_FRAME_COUNT, 0);
             cap.set(CAP_PROP_POS_FRAMES, 0);
             cap.set(CAP_PROP_POS_AVI_RATIO, 0);
 #else
+            // camerae may have disconnected, warn the user
             log_warn("Received empty frame from capture!");
-            if (errorCount++ > 16){
+            if (errorCount++ > 32){
                 log_error("Too many empty frames, going to quit! Please make sure the camera is functioning correctly.");
                 return nullptr;
             }
@@ -219,17 +236,6 @@ static auto cv_thread(void *arg) -> void *{
         // flip image if running on the robot due to the current orientation of the camera
 #if BUILD_TARGET == BUILD_TARGET_SBC
         flip(frame, frame, 0);
-#endif
-        // apply CLAHE normalisation if requested, source: https://stackoverflow.com/a/47370615/5007892
-#if VISION_APPLY_CLAHE
-        Mat labImage;
-        cvtColor(frame, labImage, COLOR_RGB2Lab);
-        Mat labPlanes[3];
-        split(labImage, labPlanes);
-        clahe->apply(labPlanes[0], labPlanes[0]);
-        Mat labFinal;
-        merge(labPlanes, 3, labFinal);
-        cvtColor(labFinal, frame, COLOR_Lab2RGB);
 #endif
         // apply mirror mask if that's enabled
         if (isDrawMirrorMask) {
@@ -281,21 +287,16 @@ static auto cv_thread(void *arg) -> void *{
                            Scalar(0, 0, 0), FILLED);
                     inRange(frameCpy, minScalar, maxScalar, thresholded[object]);
                 } else {
+                    // we're not masking out the robot, so no need to make a copy
                     inRange(frame, minScalar, maxScalar, thresholded[object]);
                 }
             } else if (object == OBJ_GOAL_YELLOW || object == OBJ_GOAL_BLUE){
+                // use downscaled frames for goal detection
                 inRange(frameScaled, minScalar, maxScalar, thresholded[object]);
             } else {
+                // everything else (currently only the ball) gets the normal image
                 inRange(frame, minScalar, maxScalar, thresholded[object]);
             }
-
-            // morphology isn't actually very helpful here because lines are too small
-//            if (object == OBJ_LINES){
-//                double morphSize =1;
-//                Mat element = getStructuringElement(MORPH_RECT, Size(2 * morphSize + 1, 2 * morphSize + 1),
-//                        Size(morphSize, morphSize));
-//                morphologyEx(thresholded[object], thresholded[object], MORPH_OPEN, element);
-//            }
         }, 4);
 
         // process all our field objects
@@ -355,6 +356,49 @@ static auto cv_thread(void *arg) -> void *{
 
         localiser_post(localiserFrame, frame.cols, frame.rows, goalYellowRel, goalBlueRel, yellowGoal.exists, blueGoal.exists);
 
+        // write frame to disk if vision recording is enabled
+        if (visionRecordingEnabled){
+            // we actually write full 1280x720 uncropped images, because when we're loading up the file again, Omicam will
+            // expect a full 720p frame, not a cropped one. otherwise, we would be cropping twice.
+            Mat fileFrame(videoHeight, videoWidth, frame.type());
+            fileFrame.setTo(0);
+            frame.copyTo(fileFrame(cropRect));
+
+            // TODO if we're exceeding the framerate of the video file (60 fps), drop frame (else video is absurdly long and inaccurate)
+
+            // TODO also render date to video? (if we get a coin cell battery this is)
+            // also consider CPU usage as well, might be useful but mainly just looks cool
+
+            char buf[128] = {0};
+            snprintf(buf, 128, "Frame %d (Omicam v%s), File: omicam_recording_%ld.mp4",
+                    frameCounter, OMICAM_VERSION, recordingId);
+            putText(fileFrame, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.6,
+                    Scalar(255, 255, 255), 1, FILLED);
+
+            char buf2[64] = {0};
+            snprintf(buf2, 64, "Localiser position: %.2f, %.2f", localisedPosition.x, localisedPosition.y);
+            putText(fileFrame, buf2, Point(10, 45), FONT_HERSHEY_DUPLEX, 0.6,
+                    Scalar(255, 255, 255), 1, FILLED);
+
+            string visibleStr = "Visible objects: ";
+            if (ball.exists){
+                visibleStr.append("BALL ");
+            }
+            if (yellowGoal.exists){
+                visibleStr.append("GOAL_YELLOW ");
+            }
+            if (blueGoal.exists){
+                visibleStr.append("GOAL_BLUE ");
+            }
+            putText(fileFrame, visibleStr, Point(10, 65), FONT_HERSHEY_DUPLEX, 0.6,
+                    Scalar(255, 255, 255), 1, FILLED);
+
+            putText(fileFrame, "(c) 2019-2020 Team Omicron.", Point(10, videoHeight - 25),
+                    FONT_HERSHEY_DUPLEX, 0.6, Scalar(255, 255, 255), 1, FILLED);
+
+            videoWriter.write(fileFrame);
+        }
+
         // exclude debug time from fps measurement
         double elapsed = utils_time_millis() - begin;
         movavg_push(fpsAvg, elapsed);
@@ -363,7 +407,6 @@ static auto cv_thread(void *arg) -> void *{
 #if REMOTE_ENABLED
         if (frameCounter++ % REMOTE_FRAME_INTERVAL == 0 && remote_debug_is_connected()) {
             // we optimised out the cvtColor in the main loop so we gotta do it here instead
-            // we can remove it by simply swapping the order of the threshold values to save calling BGR2RGB
             Mat debugFrame;
             cvtColor(frame, debugFrame, COLOR_BGR2RGB);
 
@@ -373,6 +416,7 @@ static auto cv_thread(void *arg) -> void *{
             putText(debugFrame, buf, Point(10, 25), FONT_HERSHEY_DUPLEX, 0.6,
                     Scalar(255, 255, 255), 1, FILLED, false);
 
+            // draw robot mask debug preview if enabled
             if (visionDebugRobotMask){
                 circle(debugFrame, Point(debugFrame.cols / 2, debugFrame.rows / 2), visionRobotMaskRadius,
                         Scalar(0, 0, 0),FILLED, FILLED);
@@ -423,7 +467,6 @@ static auto cv_thread(void *arg) -> void *{
             }
         }
 #endif
-
         pthread_testcancel();
     }
     destroyAllWindows();

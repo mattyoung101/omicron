@@ -11,9 +11,10 @@
  * 1.4a: performance optimisations for new SBC, new FPS timing code, fixes
  * 2.4a: localisation prototype implemented, sleep mode added
  * 3.4b: Omicam enters beta, localiser work continued
- * 4.4b: (WIP) UART comms implemented, hybrid localiser implemented, fixed lots of bugs
+ * 4.4b: UART comms implemented, hybrid localiser implemented, fixed lots of bugs
+ * 4.5b: (WIP) implemented hybrid localiser smoothing, recording vision to disk, and ...?
  */
-#define OMICAM_VERSION "4.4b"
+#define OMICAM_VERSION "4.5b"
 /** whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO) */
 #define VERBOSE_LOGGING 1
 
@@ -23,10 +24,8 @@
 #define VISION_CROP_ENABLED 1
 /** enable or disable performance (i.e. FPS) diagnostics */
 #define VISION_DIAGNOSTICS 1
-/** enables CLAHE adaptive histogram normalisation to correct dogshit venue lighting, bad for performance */
-#define VISION_APPLY_CLAHE 0
 /** path to test data used in BUILD_TARGET_PC */
-#define VISION_TEST_FILE "../test_data/field4_obnoxious.png"
+#define VISION_TEST_FILE "../test_data/field5.png"
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1
