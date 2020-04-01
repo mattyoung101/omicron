@@ -1,8 +1,9 @@
 #pragma once
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
-// Simple moving average in C, v1.1
+// Simple moving average in C, v1.2
 // Copyright (c) 2019-2020 Matt Young. Licensed into the public domain with the Unlicense.
 
 typedef struct {
@@ -12,6 +13,8 @@ typedef struct {
     size_t counter;
     /** array of values, size of this array is always maxSize */
     double *items;
+    /** array the same size of the items array, each element is true if it's been written at some point */
+    bool *writtenValues;
 } movavg_t;
 
 #ifdef __cplusplus
@@ -29,7 +32,7 @@ void movavg_free(movavg_t *movavg);
 void movavg_push(movavg_t *movavg, double value);
 /** Calculates the moving average of the buffer. */
 double movavg_calc(movavg_t *movavg);
-/** Resets the moving average buffer to the beginning. */
+/** Resets the moving average buffer to the beginning. Does not free any memory. */
 void movavg_clear(movavg_t *movavg);
 /** Grows/shrinks the moving average buffer to the new size specified. */
 void movavg_resize(movavg_t *movavg, size_t newSize);

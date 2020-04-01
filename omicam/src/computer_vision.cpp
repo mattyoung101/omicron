@@ -33,12 +33,13 @@ typedef struct {
     Mat threshMask;
 } object_result_t;
 
-static pthread_t cvThread = {0};
-static pthread_t fpsCounterThread = {0};
+static pthread_t cvThread = {};
+static pthread_t fpsCounterThread = {};
 static _Atomic int32_t lastFpsMeasurement = 0;
 static Rect cropRect;
 static movavg_t *fpsAvg;
 static int32_t errorCount = 0;
+static VideoWriter videoWriter;
 
 /**
  * Uses the specified threshold values to threshold the given frame and detect the specified object on the field.
@@ -125,6 +126,7 @@ static object_result_t process_object(const Mat& thresholded, field_objects_t ob
 /** this task runs all the computer vision for Omicam, using OpenCV */
 static auto cv_thread(void *arg) -> void *{
     uint32_t frameCounter = 0;
+    double lastRecTime = utils_time_millis();
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
@@ -160,7 +162,6 @@ static auto cv_thread(void *arg) -> void *{
 
     // create OpenCV VideoWriter and generate disk filename, runs even if it's disabled for simplicity's sake
     // if vision recording is disabled, no files are written
-    VideoWriter videoWriter;
     struct passwd *pw = getpwuid(getuid());
     char *homedir = pw->pw_dir;
     char filebuf[256] = {};
@@ -168,10 +169,8 @@ static auto cv_thread(void *arg) -> void *{
     snprintf(filebuf, 256, "%s/Documents/TeamOmicron/Omicam/omicam_recording_%ld.mp4", homedir, recordingId);
 
     if (visionRecordingEnabled){
-        log_warn("Vision recording enabled. Caution: this may produce huge files at high framerates!");
-        log_debug("Vision recording will be written to: %s", filebuf);
-        // we're saving as MJPEG for now because Theora doesn't seem to work sadly, maybe try MP4 some time
-        videoWriter.open(filebuf, VideoWriter::fourcc('m', 'p', '4', 'v'), cap.get(CAP_PROP_FPS),
+        log_info("Vision recording enabled, video file will be written to: %s", filebuf);
+        videoWriter.open(filebuf, VideoWriter::fourcc('m', 'p', '4', 'v'), VISION_RECORDING_FRAMERATE,
                          Size(videoWidth, videoHeight));
         if (!videoWriter.isOpened()){
             log_error("Failed to open OpenCV VideoWriter, recording will NOT be saved to disk.");
@@ -356,15 +355,14 @@ static auto cv_thread(void *arg) -> void *{
 
         localiser_post(localiserFrame, frame.cols, frame.rows, goalYellowRel, goalBlueRel, yellowGoal.exists, blueGoal.exists);
 
-        // write frame to disk if vision recording is enabled
-        if (visionRecordingEnabled){
+        // write frame to disk if vision recording is enabled, constrained to our target framerate
+        bool shouldWriteFrame = (utils_time_millis() - lastRecTime) >= (1000.0 / VISION_RECORDING_FRAMERATE);
+        if (shouldWriteFrame && visionRecordingEnabled){
             // we actually write full 1280x720 uncropped images, because when we're loading up the file again, Omicam will
             // expect a full 720p frame, not a cropped one. otherwise, we would be cropping twice.
             Mat fileFrame(videoHeight, videoWidth, frame.type());
             fileFrame.setTo(0);
             frame.copyTo(fileFrame(cropRect));
-
-            // TODO if we're exceeding the framerate of the video file (60 fps), drop frame (else video is absurdly long and inaccurate)
 
             // TODO also render date to video? (if we get a coin cell battery this is)
             // also consider CPU usage as well, might be useful but mainly just looks cool
@@ -393,10 +391,11 @@ static auto cv_thread(void *arg) -> void *{
             putText(fileFrame, visibleStr, Point(10, 65), FONT_HERSHEY_DUPLEX, 0.6,
                     Scalar(255, 255, 255), 1, FILLED);
 
-            putText(fileFrame, "(c) 2019-2020 Team Omicron.", Point(10, videoHeight - 25),
+            putText(fileFrame, "(c) 2019-2020 Team Omicron (teamomicron.github.io)", Point(10, videoHeight - 25),
                     FONT_HERSHEY_DUPLEX, 0.6, Scalar(255, 255, 255), 1, FILLED);
 
             videoWriter.write(fileFrame);
+            lastRecTime = utils_time_millis();
         }
 
         // exclude debug time from fps measurement
@@ -474,12 +473,13 @@ static auto cv_thread(void *arg) -> void *{
 
 /** monitors the FPS of the vision thread **/
 static auto fps_counter_thread(void *arg) -> void *{
+    log_trace("Vision FPS counter thread started");
+
     while (true){
         sleep(1);
         double avgTime = movavg_calc(fpsAvg);
         if (avgTime == 0) continue; // another stupid to fix divide by zero when debugging
         lastFpsMeasurement = ROUND2INT(1000.0 / avgTime);
-//        movavg_clear(fpsAvg);
 
 #if VISION_DIAGNOSTICS
         if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){
@@ -531,4 +531,8 @@ void vision_dispose(void){
     pthread_join(cvThread, nullptr);
     pthread_join(fpsCounterThread, nullptr);
     movavg_free(fpsAvg);
+    if (visionRecordingEnabled){
+        log_debug("Finalising vision recording");
+        videoWriter.release();
+    }
 }

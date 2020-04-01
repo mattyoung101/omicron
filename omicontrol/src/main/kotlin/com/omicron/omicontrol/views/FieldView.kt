@@ -58,13 +58,13 @@ class FieldView : View() {
     private var isIgnorePosition = false
     private var isReduceTransparency = false
     private var lastGoodPointList = listOf<RemoteDebug.RDPointF>()
+    private var mousePos = Point2D(0.0, 0.0)
+    private var isDrawCrosshair = false
 
     init {
         reloadStylesheetsOnFocus()
         title = "Field View | Omicontrol v${OMICONTROL_VERSION}"
     }
-
-    // FIXME display localiser status again
 
     @ExperimentalUnsignedTypes
     @Subscribe
@@ -175,6 +175,14 @@ class FieldView : View() {
             // render target sprite
             if (targetPos != null) {
                 display.drawImage(targetIcon, targetPos!!.x - 16, targetPos!!.y - 16, 36.0, 36.0)
+            }
+
+            // draw crosshair
+            if (isDrawCrosshair) {
+                display.lineWidth = 2.0
+                display.stroke = Color.BLACK
+                display.strokeLine(0.0, mousePos.y, FIELD_CANVAS_WIDTH, mousePos.y)
+                display.strokeLine(mousePos.x, 0.0, mousePos.x, FIELD_CANVAS_HEIGHT)
             }
 
             // draw rays if requested
@@ -328,7 +336,7 @@ class FieldView : View() {
                 }
             }
             menu("Settings"){
-                checkmenuitem("Raycast debug (little buggy)"){
+                checkmenuitem("Raycast debug"){
                     selectedProperty().addListener { _, _, value ->
                         isRaycastDebug = value
                     }
@@ -348,6 +356,11 @@ class FieldView : View() {
                         isReduceTransparency = value
                     }
                 }
+                checkmenuitem("Draw crosshair"){
+                    selectedProperty().addListener { _, _, value ->
+                        isDrawCrosshair = value
+                    }
+                }
             }
             menu("Help") {
                 item("About").setOnAction {
@@ -362,6 +375,10 @@ class FieldView : View() {
             vbox {
                 canvas(FIELD_CANVAS_WIDTH, FIELD_CANVAS_HEIGHT) {
                     display = graphicsContext2D
+
+                    setOnMouseMoved {
+                        mousePos = Point2D(it.x, it.y)
+                    }
 
                     setOnMouseClicked {
                         val fieldCanvasPos = Point2D(it.x, it.y)

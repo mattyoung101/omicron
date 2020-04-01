@@ -21,15 +21,17 @@ single board computer (SBC). In terms of localisation, in the past we managed to
 a low-fidelity approach based on detecting the goals in the image.
 
 ## Performance and results
+**TODO provide some more empiric data (tables and stuff) here. Maybe also provide a Pitfalls section at the end.**
+
 Omicam is capable of detecting the ball, both goals and lines at **60-70fps at 720p (1280x720) resolution**. 
 Compared to the previous OpenMV H7, this is **23x higher resolution at 3x the framerate.<sup>1</sup>**
 
 In addition, using the novel vision-based localisation algorithm we developed this year, we can now determine the
-robot's position to **&lt;1cm accuracy** at around 30 Hz. This is over **5x/25x more accurate<sup>2</sup>** 
+robot's position to around **1.5cm accuracy** at roughly 30 Hz. This is over **5x/25x more accurate<sup>2</sup>** 
 than any previous methods used at BBC Robotics, and has been shown to be much more reliable and stable.
 
-Finally, using the e-con Systems Hyperyon based around the ultra low-light performance IMX290 sensor, our vision pipeline
-is robust against lighting conditions ranging from near pitch black to direct sunlight.
+Using the e-con Systems Hyperyon camera based around the ultra low-light performance IMX290 sensor, Omicam
+is robust against lighting conditions ranging from near pitch darkness to direct LED light.
 
 _<sup>1 previous results based on mediocre lighting conditions running well optimised OpenMV H7 code at QVGA resolution.</sup>_ 
 
@@ -37,8 +39,7 @@ _<sup>2 depending on whether LRF based/goal based localisation was used.</sup>_
 
 ## Hardware
 Omicam supports any single board computer (SBC) that can run Linux. In our case, we use a LattePanda Delta 432 with a 
-2.4 GHz quad-core Intel Celeron N4100, 4GB of dual-channel DDR4 RAM, 32GB of storage, WiFi, Bluetooth, gigabit Ethernet
-and a UART bus via the on-board ATMega32U4 MCU.
+2.4 GHz quad-core Intel Celeron N4100, 4GB RAM, 32GB of storage, WiFi, Bluetooth, gigabit Ethernet and a UART bus.
 
 The current camera we use is an e-con Systems Hyperyon, based on the Sony Starvis IMX290 ultra low-light sensor capable
 of seeing in almost pitch black at high framerates. This is a USB 2.0 camera module, since the LattePanda has no 
@@ -66,7 +67,7 @@ we observed the GPU was significantly slower than even the weaker Cortex-A43 CPU
 were unable to optimise this to standard after weeks of development, thus we decided to move on from this prototype.
 
 **Prototype 4 (January-February 2020):** After much research, we decided to use the LattePanda Delta 432. The OpenCV
-pipeline is now entirely CPU bound, and despite not using the GPU at all, we are able to achieve very good performance.
+pipeline is now entirely CPU bound, and despite not using the GPU at all, we are able to achieve good performance.
 
 ### Camera module iterations
 We have spent a great deal of time and money trying to find the absolute best camera module to use in our hardware
@@ -95,21 +96,42 @@ lighting over latency and use the Hyperyon.
 ## Field object detection
 The primary responsibility of Omicam is to detect the bounding box and centroid of field objects: the ball, goals and also lines. 
 To do this, we use the popular computer vision library OpenCV (v4.2.0). 
-We use Video4Linux2 (V4L2) to acquire an MJPEG stream from the USB camera, via the popular gstreamer library.
-Then, we apply our pre-processing steps which are: crop the image, mask out the outside of the mirror, mask out the robot
-and downscale for the goal processing.
+We use a Gstreamer pipeline to decode the camera's MJPEG stream at our target resolution of 1280x720 pixels, and with
+OpenCV's `VideoCapture` this is copied across to OpenCV code.
 
-Next, we threshold all objects in parallel to make use of our quad-core CPU, using OpenCV's `inRange` thresholder but a custom
-parallel framework (as it doesn't run in parallel by default). Thresholding generates a 1-bit binary mask of the image, where
-each pixel is 255 (true) if it's inside the RGB range specified, and 0 (false) if it's not.
-Then, we use OpenCV's parallel connected component labeller, specifically the algorithm by Grana et al.[^1] to detect regions
+### Pre-processing
+With the camera frame in OpenCV memory, we then apply the following pre-processing steps to the image:
+
+1. Crop the frame to only leave a rectangle around the mirror visible
+2. Flip the image, if necessary, to account for the mounting of the camera on the robot
+3. Apply a circular mask to the image to mask out any pixels that aren't exactly on the mirror
+4. Downscale the frame for use when processing the blue and yellow goals, since we don't need much accuracy on them and they're large.
+5. (only for the field lines) Mask out the robot from the centre of the mirror (as it has reflective plastic on it which comes up as white)
+
+### Thresholding and component labelling
+After pre-processing, we then use OpenCV's `parallel_for` and `inRange` functions to threshold three objects at a time using
+three threads (one free core is left for the localisation, although Linux may schedule threads differently). This produces
+a 1-bit binary mask of the image, where each pixel is 255 (true) if it's inside the RGB range specified, and 0 (false) if it's not.
+
+Finally, we use OpenCV's parallel connected component labeller, specifically the algorithm by Grana et al.[^1] to detect regions
 of the same colour in the image. The largest connected region will be the field object we are looking for. OpenCV automatically
 calculates the bounding box and centroid for each of these connected regions.
 
-We then dispatch the largest detected blob's centroid via UART to the ESP32, encoded using Protocol Buffers and using
-POSIX termios for UART configuration.
+For the lines, the vision processing step is finished here as we only need a binary mask.
+
+### Coordinate transforms and dispatch
+Considering the centroid for the ball and goals as a Cartesian vector in pixels coordinates, we convert this vector to
+polar form and run the magnitude through our mirror dewarping function (see below) to convert it to centimetres. This
+leaves us with an angle and distance to each object. We then convert it back to Cartesian and use the last localiser
+position to get the field object's absolute position in centimetres. Finally, for the goals we also calculate the relative
+Cartesian coordinates (convert polar to Cartesian but don't add localiser position) for use in the localiser's initial
+estimate calculations.
+
+This information is encoded into a Protobuf format with nanopb, and is sent over UART to the ESP32 using POSIX termios.
 
 **TODO images and/or video of thresholded field**
+
+**TODO more detail on dewarp function here (maybe move stuff up from localisation section)**
 
 ## Localisation
 ### Previous methods and background
@@ -119,43 +141,49 @@ to develop advanced strategies and precise movement control, instead of just dri
 Currently, teams use three main ways of localisation. Firstly, the simplest approach uses the detected goals
 in the camera to estimate the robot's position. This approach is very inaccurate because of the low resolution of
 most cameras (such as the OpenMV), the fact that there are only two goals to work with as well as the fact that sometimes
-the goals are not visible (especially in super team). Expected accuracy is 15-25cm.
+the goals are not visible (especially in super team). Expected accuracy is 15+ cm on an OpenMV, but using a similar approach
+we got about 4-6 cm accuracy using Omicam at 720p. Although it's inaccurate, this is the approach most teams use in localisation.
 
 The second approach in use is based on distance sensors such laser range finders (LRFs) or ultrasonic sensors. By using
-several of these sensors on a robot, the position of the robot can be inferred with trigonometry, by measuring the distance
+a few of these sensors on a robot, the position of the robot can be inferred with trigonometry by measuring the distance
 to the walls. This approach has a major drawback: it is impossible to reliably distinguish between anomalous objects,
 such as a hand or another robot, compared to a wall. This means that although this approach is somewhat accurate on an empty
 field, it is very difficult to use reliably in actual games. Thus, localisation data was almost never trusted by teams
 who used this approach and so is not very helpful. In addition, distances sensors, especially ultrasonics, are slow and suffer 
-from inaccuracy at long distances. Expected accuracy is 5-10cm, but data is invalidated every time a robot moves in the way of a sensor,
-which is impossible to know.
+from inaccuracy at long distances. Expected accuracy is 5-10cm, but data is often invalid and can't be used well in practice.
 
 The third approach in use by some teams is one based on 360 degree LiDARS. These are expensive, heavy, difficult to use, slow and are
 still vulnerable to all the problems the second approach suffers from as well. We are not aware of expected accuracy, but regard
 this as not an ideal approach.
 
+The final approach is to not localise at all. This is the method most teams use, including us in the past, and works by
+simply manoeuvring directly to the ball. Until advanced strategies start being worked on, knowing the robot's position
+on the field is just a "nice to have" and not strictly necessary. However, with the introduction of strategies this year,
+we decided it was necessary to improve our localisation.
+
 ### Our solution
-**TODO UPDATE TO INCLUDE SENSOR FUSION**
+This year, Team Omicron presents a novel approach to robot localisation using a custom-developed sensor fusion algorithm.
+Our approach builds an initial estimate of the robot's position using traditional methods such as visual positioning using
+vector calculations on the field goal positions, and summing the displacements of a PWM3360 mouse sensor. 
+It then refines this estimate to a much higher accuracy value using another novel algorithm that solves a 2D non-linear
+optimisation problem. Compared to just using the aforementioned goal vector maths, the addition of the optimisation step increases 
+accuracy by about 4.6x, to be as little as 1.5cm error. We believe an approach of this complexity and accuracy to be a first 
+for the RoboCup Junior league.
 
-This year, Team Omicron presents a novel approach to robot localisation using an advanced sensor fusion algorithm.
-Our approach builds an initial estimate of the robot's position using traditional methods such as vector maths and velocity integration. 
-It then refines it to a much higher accuracy value using a novel approach that involves solving a multi-variate non-linear
-optimisation problem. Compared to just using goals, the addition of the optimisation stage increases accuracy by 
-about 4.6x, to be as little as 1.5cm error. We believe an approach of this complexity and accuracy to be a first for the 
-RoboCup Junior league.
+The optimisation stage of our sensor fusion algorithm is based on a Middle-Size League paper published in _Advanced Robotics_[^2]. 
+However, there are some differences between their paper and our approach. While they generate line points and then 
+use a particle filter (Monte-Carlo localisation), we instead cast rays over the image and solve a non-linear minimisation problem
+based on ray distances, rather than point locations. However, both methods generally follow the same approach of sampling 
+the line and solving an optimisation problem to figure out the location of the robot. 
 
-The optimisation element of our sensor fusion algorithm is inspired by a middle-size league paper by 
-Lu, Li, Zhang, Hu & Zheng[^2]. However, there are some major differences between their paper and our algorithm. While
-they generate line points and then use Monte-Carlo localisation, we instead generate rays and solve a non-linear
-minimisation problem. We found this more intuitive to implement and faster for our use case. The principle method our algorithm
-is to compare observed field line geometry from the camera, and compare this to a known model of the field. 
-By trying to optimise the robot's unknown (x,y) position to maximise the fit between the observed lines and virtual lines, 
-we can infer the robot's coordinates to very high accuracies.
+Our optimisation algorithm works by comparing observed field line geometry from the camera (sampled via raycasting), and 
+comparing this to a known model of the field. By trying to optimise the robot's unknown (x,y) position such that they minimise 
+the error between the observed lines and virtual lines, we can infer the robot's coordinates to very high accuracies.
 
 In theory, this optimisation algorithm can already solve our localisation problem, and we did indeed observe very good
-accuracy using idealistic Fusion 360 rendered images **(TODO provide picture)**.
+accuracy using idealistic Fusion 360 rendered images such as the one above **(TODO provide picture)**.
 However, in the real world, we found the optimiser to be incredibly unstable, because the perspective of our camera's 
-mounting obscures very far away field lines - which the optimiser needs to converge on a stable solution. 
+mounting obscures very far away field lines that the optimiser needs to converge on a stable solution. 
 To solve this issue, we decided to use other lower-accuracy, but more robust estimates of the robot's position to 
 "give hints" to the optimisation algorithm, thus forming a sensor fusion approach.
 
@@ -204,68 +232,34 @@ The main part of our solution is the Subplex local derivative-free non-linear op
 part of the NLopt package[^4]. This algorithm essentially acts as an efficiency and stability improvement over the well-known 
 Nelder-Mead Simplex algorithm.
 
+Our problem description is as follows:
+
+![Mathematical description of optimisation problem](images/problem.png)
+
 The most critical part of this process is the _objective function_, which is a function that takes an N-dimensional vector
 (in our case, an estimated 2D position) and calculates essentially a "score" of how accurate the value is. This
 objective function must be highly optimised as it could be evaluated hundreds of times by the optimisation algorithm.
 
 ![Objective function](images/objective_function.png)   
 _Figure 3: map of objective function for a robot placed at the centre of the field. White pixels indicate high accuracy areas_
-_and black pixels indicate less accurate areas._
+_and black pixels indicate less accurate areas. This takes up to 30 seconds to calculate for all 44,226 positions._
 
-A naive approach, where every grid cell is evaluated and the lowest value is picked, would require 44,226 objective function
-evaluation which takes about 5 seconds on a fast computer. Using the Subplex optimiser, this can be reduced to just 62
-evaluations for a 1.5cm accurate fix. **TODO update**
-
-We spent a great deal of effort drafting the most efficient objective function, and the approach we present makes heavy use
-of pre-computation via a "field file". This field file is a binary Protcol Buffer file that encodes the geometry of any
-RoboCup field by dividing it into a grid, where each cell is true if on a line, otherwise false. Increasing
-the resolution of the grid will increase its accuracy, but also significantly increase its file size. We use a 1cm grid,
+The known geometry of the RoboCup field is encoded into a "field file". This is a binary Protcol Buffer file that encodes the 
+geometry of any RoboCup field (including SuperTeam) by dividing it into a grid, where each cell is true if on a line, otherwise false. 
+Increasing the resolution of the grid will increase its accuracy, but also significantly increase its file size. We use a 1cm grid,
 which stores 44,226 cells and is 42 KiB on disk. This takes about 2 seconds to generate on a fast desktop computer, and
 is copied across to the LattePanda.
 The field file is generated by a Python script which can be easily modified to support an arbitrary number of different 
 field layouts, such as SuperTeam or our regional Australian field. 
 
-Although the field file could theoretically be loaded
-via the bitmap image below, images are more difficult to load than Protobuf files and it would not support grid cell sizes
-smaller or larger than 1cm.
-
 ![Field file](images/field_file.png)    
-_Figure 3: bitmap image displaying generated field file. In the original 243x182 image, 1 pixel = 1cm_
-
-The objective function essentially compares the difference between the ray lengths, as follows:
-
-1. Consider the estimated position (eX, eY). Move to (eX, eY) in the field file and raycast out to generate the array
-   `expectedRays`.
-2. For each ray in the dewarped `observedRays` from the camera (which are now in field units, same as `expectedRays`),
-   do the following: `totalError += abs(expectedRays[i] - observedRays[i])`
+_Figure 3: visualisation of the field data component of the field file. In the original 243x182 image, 1 pixel = 1cm_
 
 Although a derivative-based algorithm may be more efficient at solving the problem, we deemed it far too difficult to calculate
 the derivative of the objective function.
 
-### Adding new sensor data to the world model
-Our localisation algorithm is also flexible with new sensor inputs. Due to the use of a "virtual world model" approach, if
-any sensors can be modelled as a measurement of a distance to a static object, then they can be integrated as extra data
-in the world model.
-
-This is extremely helpful when vision data runs into limitations, for example, in SuperTeam where it may be difficult
-to see enough field lines in one frame due to the size of the field. We integrate the LRFs on the robot as
-extra distance sensors, using their reported distance to the field walls just as we use the raycasted "line points" in
-the vision based approach.
-
-It would also be possible to use the distance to the goals as virtual information to supplement a potential lack of line
-data and thus increase accuracy. Other distance sensors such as 360 LiDARS can also be implemented with ease.
-
-## Configuration
-Usually, we embed configuration in a "defines.h" file. Config includes information like the bounding box of the crop
-rectangle, the radius of the mirror and the dewarp function.
-
-Because this is embedded in a header, the project would have to be recompiled and relaunched every time a setting is updated
-which is not ideal. For Omicam, we used an INI file stored on the SBC's disk that is parsed and loaded on every startup.
-
-In addition, the config file can also be dynamically reloaded by an Omicontrol action, making even relaunching Omicam un-necessary. 
-Because of this, we have much more flexibility and faster prototyping abilities when tuning to different venues.
-
-## Interfacing with Omicontrol
+## Extra/miscellaneous features
+### Interfacing with Omicontrol
 To interface with our remote management application Omicontrol, Omicam starts a TCP server on port 42708. This server sends
 Protocol Buffer packets containing JPEG encoded frames, zlib compressed threshold data as well as other information such as
 the temperature of the SBC. Although C isn't an officially supported language by Google for Protocol Buffers, we use the mature
@@ -279,7 +273,20 @@ it was determined that zlib could compress them more efficiently (around about 4
 With all these optimisations, even at high framerates (60+ packets per second), the remote debug system uses no more than
 1 MB/s of outgoing bandwidth, which is small enough to work reliably on both local and Internet networks.
 
-## Debugging and performance optimisation
+### Configuration
+Usually, we embed configuration in a "defines.h" file. Config includes information like the bounding box of the crop
+rectangle, the radius of the mirror and the dewarp function.
+
+Because this is embedded in a header, the project would have to be recompiled and relaunched every time a setting is updated
+which is not ideal. For Omicam, we used an INI file stored on the SBC's disk that is parsed and loaded on every startup.
+
+In addition, the config file can also be dynamically reloaded by an Omicontrol action, making even relaunching Omicam un-necessary. 
+Because of this, we have much more flexibility and faster prototyping abilities when tuning to different venues.
+
+### Video recording and match replay
+**TODO explain this**
+
+### Debugging and performance optimisation
 To achieve Omicam's performance, we made heavy use of parallel programming techniques, OpenCV's x86 SIMD CPU optimisations,
 Clang optimiser flags as well as intelligent image downscaling for the goal threshold images (as they are mostly unused).
 In addition, the localisation, vision and remote debug pipelines all run in parallel to each other so the entire application

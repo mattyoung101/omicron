@@ -26,21 +26,21 @@ we have previously developed.
 Some new innovations we have developed this year include:
 
 - **Omicam**: Our advanced, custom-developed vision application. Omicam is capable of 70 FPS ball, goal and line detection at 
-1280x720 resolution, and ~1.5cm accurate localisation by using a novel sensor-fusion approach involving a multi-variate
-non-linear optimisation problem.
-- **Omicontrol**: Our custom, wireless/wired, all-in-one robot control software. Written in Kotlin, this program is used to
-tune our cameras, move robots around and visualise sensor data.
-- **Mouse sensor and velocity control**: Our robots have fully working PWM-3360 mouse sensors, which we use to accurately
+1280x720 resolution. It's also capable of 1.5cm accurate localisation by using a novel sensor-fusion algorithm that involves
+solving a non-linear optimisation problem.
+- **Omicontrol**: Our custom, WiFi/Ethernet linked robot control software. Written in Kotlin, this program is used to
+tune Omicam, move robots around and visualise sensor data.
+- **Mouse sensor and velocity control**: Our robots use PixArt PWM3360 mouse sensor, which we use to accurately
 estimate and control our robot's velocity on the field, in addition to interpolating our localisation data.
-- **Advanced game strategies**: Using the above projects, our movement software developers have combined highly accurate localisation
-data with precise velocity control to enable the execution of advanced ball-manipulation strategies on the field, designed to
-get the upper edge on our opponents.
+- **Advanced game strategies**: Using the above projects, our movement software developers have developed interesting
+and complex ball-manipulation strategies that we use to a competitive advantage on the field such as flick-shots and
+"line running".
 - **Double dribbler and kicker:** (TODO hardware team write info)
 - Wheels(?)
 
 Some technologies we build upon this year include:
 
-- **FSM**: In 2019, we introduced the concept of a Hierarchical Finite State Machine (HFSM) as a novel method of organising
+- **FSM**: In 2019, we introduced the concept of a Hierarchical Finite State Machine (HFSM) as a method of organising
 robot behaviour through a graph of inter-connected state machines, each which contains a series of states that can be
 "switched" through. This year, we continue to build upon this technology, introducing more states to our FSM.
 - **Protocol Buffers:** In 2019, we unveiled Protocol Buffers as a an easy and intuitive way of passing complex data

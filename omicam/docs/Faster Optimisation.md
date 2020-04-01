@@ -3,6 +3,8 @@ _Author: Matt Young_
 
 (Note: this ties in with our Hybrid localisation plan, see Hybrid Localisation Plan.md)
 
+**Note: kept for historical reasons, pretty much all of the ideas in this document don't work**
+
 ## The problem
 The main problem is that I think we're using an algorithm too complex for our problem. So, certainly the Subplex
 optimiser does work, but it's designed for high dimensional non-linear problems, right, and our problem is two dimensional,

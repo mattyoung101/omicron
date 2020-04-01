@@ -1,6 +1,6 @@
 # Omicam
 
-**ATTENTION: this is outdated, especially the localisation section. You'd be better of checking our website instead.**
+**ATTENTION: this is outdated, especially the localisation section. You'd be better of [checking out our website](teamomicron.github.io) instead.**
 
 This document describes in detail how all the systems (pipelines) in Omicam function.
 

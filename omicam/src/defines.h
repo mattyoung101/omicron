@@ -24,6 +24,8 @@
 #define VISION_CROP_ENABLED 1
 /** enable or disable performance (i.e. FPS) diagnostics */
 #define VISION_DIAGNOSTICS 1
+/** constant framerate that vision recording files are */
+#define VISION_RECORDING_FRAMERATE 60
 /** path to test data used in BUILD_TARGET_PC */
 #define VISION_TEST_FILE "../test_data/field5.png"
 
@@ -49,32 +51,41 @@
 /** which platform Omicam will be running on */
 #define BUILD_TARGET (BUILD_TARGET_PC)
 
-/** stop optimisation when a coordinate with this error in centimetres is found */
+/** stop optimisation when a coordinate with less than this error in centimetres is found */
 #define LOCALISER_ERROR_TOLERANCE 1
 /** stop optimisation if the last step size was smaller than this in centimetres */
 #define LOCALISER_STEP_TOLERANCE 0.1
 /** max evaluation time for the optimiser in milliseconds */
 #define LOCALISER_MAX_EVAL_TIME 100
 /**
- * Step size to use if a goal estimate is available (original is about 60), decided with trial & error.
- * If this value is too low/high, accuracy will suffer.
+ * Step size in cm to use if an initial estimate is available (original is about 60 with no estimate).
+ * If this value is too low/high, accuracy and performance will suffer. Evaluate with trial & error.
  */
 #define LOCALISER_SMALL_STEP 10.0
 /**
  * If a goal estimate is available, NLopt bounds are constrained to a square of this size (in cm) around the estimated position.
- * Set this value conservatively, because if it's too small and the goal magnitudes suck, you run into the real risk
- * of missing the correct position. Finally, please note that this value is extremely sensitive, small changes can
- * increase/decrease the average evaluations by almost 10.
+ * Set this value conservatively, because if it's too small and the goal magnitudes are wonky, you could miss the real position.
+ * Finally, please note that this value is extremely sensitive, small changes can ncrease/decrease the average evaluations by
+ * almost 10 evaluations.
  */
 #define LOCALISER_ESTIMATE_BOUNDS 60
-/** The number of rays to use when raycasting on line images, generally 64 or 128 are fine. */
+/** The number of rays to use when raycasting on line images, generally 64 is fine but 128 in extreme situations will be useful. */
 #define LOCALISER_NUM_RAYS 64
-/** Whether or not to use a moving average to smooth the localiser output */
+/**
+ * Whether or not to use a moving average to smooth the localiser output. May decrease accuracy when moving fast, but
+ * significantly improves jitter and noise.
+ */
 #define LOCALISER_ENABLE_SMOOTHING 1
-/** The size of the moving average history for smoothing, larger values mean smoother but less accurate */
+/** The size of the moving average history for smoothing, larger values mean smoother but less precision. */
 #define LOCALISER_SMOOTHING_SIZE 16
 /** error which is 200-300 points higher than the highest usual error in the localiser, determine through trial & error */
 #define LOCALISER_LARGE_ERROR 8600
+/**
+ * If true, the localiser uses the mouse sensor for initial estimate calculation. If false, it only uses the goals.
+ * Generally if you're running on a robot with a working mouse sensor, you'll want to enable this because it's more accurate
+ * and requires less calibration than the goals. Otherwise, if debugging or the mouse sensor is missing/broken, set this to false.
+ */
+#define LOCALISER_USE_MOUSE_SENSOR 1
 /** if true, renders the objective function bitmap, raycast test bitmap and then quits */
 #define LOCALISER_DEBUG 0
 /** if true, prints localisation performance information to the console (just like vision diagnostics) */

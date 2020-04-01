@@ -1,8 +1,7 @@
 # Omicam
 Omicam is Team Omicron's custom, high-performance vision and localisation application that runs on a single board computer.
 
-For the full technical writeup on our vision pipeline, please see our website. The "Omicam Design Doc.md" file in the docs
-folder is a bit outdated and probably won't be updated.
+For the full technical writeup on our vision pipeline, please see [the relevant page on our website](https://teamomicron.github.io/omicam/).
 
 **Credits:**
 - Matt Young: main C/C++ programmer, Markdown docs, project maintainer

@@ -279,9 +279,8 @@ static void *work_thread(void *arg){
         da_clear(localiserVisitedPoints);
         pthread_mutex_unlock(&localiserMutex);
 
-        // initial goal estimates
-        // calculate a rough approximation of where we are using vector maths and the goals, and an uncertainty radius
-        // see the file Goal maths.png (done by Ethan, thanks) in the docs folder for an explanation
+        // initial estimate calculation, currently using goals (as mouse sensor is unavailable)
+        // see the file Goal maths.png (done by Ethan, thanks) in the docs folder for an explanation on how this works
         struct vec2 h1 = {91.5, 0}; // blue goal field position
         struct vec2 h2 = {-91.5, 0}; // yellow goal field position
         struct vec2 vb = svec2_subtract(h1, entry->blueRel);
@@ -307,7 +306,8 @@ static void *work_thread(void *arg){
             goalWasUnavailable = false;
         }
         if (!isGoalEstimateAvailable){
-            // use mouse sensor data instead
+            // use mouse sensor data instead - which currently we don't have (so basically do nothing)
+            // TODO use mouse sensor data by default (prioritise over goals) once UART and mouse sensor both work
             initialEstimate.x = lastSensorData.absDspX;
             initialEstimate.y = lastSensorData.absDspY;
 

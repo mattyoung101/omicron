@@ -10,10 +10,12 @@ nav:
         - Structural design: structural_design.md
         - Electrical design: electrical_design.md
     - Software:
-        - Omicam (vision and localisastion): omicam.md
-        - Omicontrol (debugging and control): omicontrol.md
+        - Omicam: omicam.md
+        - Omicontrol: omicontrol.md
         - Game strategies: strategy.md
         - Protocol Buffers: protobuf.md
+        - Finite State Machine: fsm.md
+        - Low-level code: lowlevel.md
     - Open source: open_source.md
 
 plugins:
