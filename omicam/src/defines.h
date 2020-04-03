@@ -25,7 +25,7 @@
 /** enable or disable performance (i.e. FPS) diagnostics */
 #define VISION_DIAGNOSTICS 1
 /** constant framerate that vision recording files are */
-#define VISION_RECORDING_FRAMERATE 60
+#define VISION_RECORDING_FRAMERATE 30
 /** path to test data used in BUILD_TARGET_PC */
 #define VISION_TEST_FILE "../test_data/field5.png"
 

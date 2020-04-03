@@ -1,8 +1,9 @@
 #include "movavg.h"
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
-// Simple moving average in C, v1.2
+// Simple moving average in C, v1.3
 // Copyright (c) 2019-2020 Matt Young. Licensed into the public domain with the Unlicense.
 
 movavg_t *movavg_create(size_t size){
@@ -42,6 +43,25 @@ double movavg_calc(movavg_t *movavg){
     return sum / visitedValues;
 }
 
+double movavg_calc_median(movavg_t *movavg){
+    // find number of written values that we can use
+    size_t i = 0;
+    for (i = 0; i < movavg->maxSize; i++){
+        if (!movavg->writtenValues[i]) break;
+    }
+
+    double medianIndex = ((double) i + 1) / 2.0;
+    if (round(medianIndex) == medianIndex){
+        // whole number so we return the value directly
+        return movavg->items[(size_t) medianIndex];
+    } else {
+        // otherwise if it's a decimal average the above and below indices
+        size_t aboveIndex = ceil(medianIndex);
+        size_t belowIndex = floor(medianIndex);
+        return (movavg->items[aboveIndex] + movavg->items[belowIndex]) / 2.0;
+    }
+}
+
 void movavg_clear(movavg_t *movavg){
     memset(movavg->items, 0, movavg->maxSize * sizeof(double));
     memset(movavg->writtenValues, 0, movavg->maxSize * sizeof(bool));
@@ -49,11 +69,12 @@ void movavg_clear(movavg_t *movavg){
 }
 
 void movavg_resize(movavg_t *movavg, size_t newSize){
-    // TODO unsure if items and writtenValues will line up again after resize?
     movavg->items = realloc(movavg->items, newSize);
     movavg->writtenValues = realloc(movavg->writtenValues, newSize);
-    movavg->counter = 0;
     movavg->maxSize = newSize;
+
+    // we must reset here to ensure defined behaviour (if we grow, the newly allocated contents is undefined)
+    movavg_clear(movavg);
 }
 
 void movavg_dump(movavg_t *movavg){

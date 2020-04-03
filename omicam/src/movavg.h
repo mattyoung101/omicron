@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// Simple moving average in C, v1.2
+// Simple moving average in C, v1.3
 // Copyright (c) 2019-2020 Matt Young. Licensed into the public domain with the Unlicense.
 
 typedef struct {
@@ -34,10 +34,12 @@ void movavg_push(movavg_t *movavg, double value);
 double movavg_calc(movavg_t *movavg);
 /** Resets the moving average buffer to the beginning. Does not free any memory. */
 void movavg_clear(movavg_t *movavg);
-/** Grows/shrinks the moving average buffer to the new size specified. */
+/** Grows/shrinks the moving average buffer to the new size specified. movavg_clear() will be called once resized. */
 void movavg_resize(movavg_t *movavg, size_t newSize);
 /** Prints the backing array to stdout */
 void movavg_dump(movavg_t *movavg);
+/** Calculates the median of the buffer (provides a moving median instead of moving average) */
+double movavg_calc_median(movavg_t *movavg);
 
 #ifdef __cplusplus
 };
