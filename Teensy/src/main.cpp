@@ -151,6 +151,12 @@ void loop() {
         // }
     #endif
 
+    Serial.println(lastMasterProvide.heading);
+    // Serial.println(lastMasterProvide.debugLEDs[0]);
+    Serial.print(lineAvoid.arg);
+    Serial.print("\t");
+    Serial.println(lineAvoid.mag);
+
     LSlaveToMaster reply = LSlaveToMaster_init_zero;
     // ethan can you please set data here, thanks man
     // No problem

@@ -165,10 +165,10 @@ void LightSensorController::read(){
 	// 	isOnLine[28] = false;
 	// }
 
-	// for(int i = 0; i < LS_RING_NUM; i++) {
-	// 	// Serial.print(isOnLine[i]);
-	// }
-	// Serial.println("");
+	for(int i = 0; i < LS_RING_NUM; i++) {
+		Serial.print(isOnLine[i]);
+	}
+	Serial.println("");
 }
 
 void LightSensorController::calculateClusters() {

@@ -40,6 +40,7 @@
 #include "Vector.h"
 #include "motor.h"
 #include "isosb.h"
+#include "lsavoid.h"
 
 typedef struct {
     bool exists;
@@ -188,6 +189,10 @@ static void master_task(void *pvParameter){
                 robotState.outMotion = vect_2d(0, 0, false);
                 robotState.outSwitchOk = false;
 
+                // light sensor stuff
+                robotState.inLineAngle = lastLSlaveData.lineAngle;
+                robotState.inLineSize = lastLSlaveData.lineSize;
+
                 // update FSM in values
                 robotState.inBallPos = lastObjectData.ballExists ? 
                                 vect_2d(lastObjectData.ballMag, lastObjectData.ballAngle, true) : 
@@ -210,12 +215,21 @@ static void master_task(void *pvParameter){
                 robotState.inHeading = yaw;
                 robotState.inRobotPos = vect_2d(lastLocaliserData.estimatedX, lastLocaliserData.estimatedY, false);
 
+                // Testing LED thing
+                robotState.debugLEDs[0] = true;
+                robotState.debugLEDs[1] = false;
+
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
                 xSemaphoreGive(uartDataSem);
         } else {
             ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
         }
+
+        // Hey matt shouldn't all this crap go into a semaphore?
+        movement_avoid_line(vect_2d(robotState.inLineSize, robotState.inLineAngle, true));
+        ESP_LOGI(TAG, "lineAngle: %f, lineSize %f, Direction: %f, Speed: %f", robotState.inLineAngle, robotState.inLineSize,  
+        robotState.outMotion.arg, robotState.outMotion.mag);
 
         // update the actual FSM
         fsm_update(stateMachine);
@@ -283,7 +297,7 @@ static void master_task(void *pvParameter){
         // is this necessary anymore?
         // No - Ethan
         // thanks, got rid of it - Matt
-        // vTaskDelay(pdMS_TO_TICKS(5)); // Random delay at of loop to allow motors to spin
+        vTaskDelay(pdMS_TO_TICKS(50)); // Random delay at of loop to allow motors to spin OR TO LET ME READ THE BLOODY LOG
     }
 }
 
