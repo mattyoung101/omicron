@@ -168,3 +168,4 @@ _deps
 __pycache__
 .idea/deployment.xml
 .idea/other.xml
+recordings/

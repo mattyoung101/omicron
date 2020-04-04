@@ -6,7 +6,6 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/cuda.hpp>
-//#include <uuid/uuid.h>
 #include <map>
 #include <unistd.h>
 #include <pwd.h>
@@ -162,14 +161,12 @@ static auto cv_thread(void *arg) -> void *{
 
     // create OpenCV VideoWriter and generate disk filename, runs even if it's disabled for simplicity's sake
     // if vision recording is disabled, no files are written
-    struct passwd *pw = getpwuid(getuid());
-    char *homedir = pw->pw_dir;
     char filebuf[256] = {};
     time_t recordingId = time(nullptr);
-    snprintf(filebuf, 256, "%s/Documents/TeamOmicron/Omicam/omicam_recording_%ld.mp4", homedir, recordingId);
+    snprintf(filebuf, 256, "../recordings/omicam_recording_%ld.mp4", recordingId);
 
     if (visionRecordingEnabled){
-        log_info("Vision recording enabled, video file will be written to: %s", filebuf);
+        log_info("Vision recording enabled (target: %d fps), video path: %s", VISION_RECORDING_FRAMERATE, filebuf);
         videoWriter.open(filebuf, VideoWriter::fourcc('m', 'p', '4', 'v'), VISION_RECORDING_FRAMERATE,
                          Size(videoWidth, videoHeight));
         if (!videoWriter.isOpened()){
