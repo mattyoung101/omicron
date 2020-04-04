@@ -6,7 +6,7 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/cuda.hpp>
-#include <uuid/uuid.h>
+//#include <uuid/uuid.h>
 #include <map>
 #include <unistd.h>
 #include <pwd.h>

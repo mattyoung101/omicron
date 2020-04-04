@@ -2,11 +2,10 @@
 <project version="4">
   <component name="PublishConfigData">
     <serverData>
-      <paths name="Remote Host (feb0ca4e-001a-4467-af58-2d82f030a1a3)">
+      <paths name="SBC (0096367f-f0ba-4629-a413-d5be3a1eb45e)">
         <serverdata>
           <mappings>
             <mapping local="$PROJECT_DIR$" web="/" />
-            <mapping local="$USER_HOME$/esp/esp-idf" web="/" />
           </mappings>
         </serverdata>
       </paths>
