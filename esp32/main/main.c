@@ -235,7 +235,11 @@ static void master_task(void *pvParameter){
         fsm_update(stateMachine);
 
         // calculates motor values
-        motor_calc(0, robotState.outOrientation, 100);
+        if(robotState.inLineSize > 0.0f){
+            motor_calc(robotState.outMotion.arg, robotState.outOrientation, robotState.outMotion.mag);
+        } else {
+            motor_calc(0, robotState.outOrientation, 0);
+        }
         // TODO send to atmega?
         
         // encode and send Protobuf message to Teensy slave
@@ -297,7 +301,7 @@ static void master_task(void *pvParameter){
         // is this necessary anymore?
         // No - Ethan
         // thanks, got rid of it - Matt
-        vTaskDelay(pdMS_TO_TICKS(50)); // Random delay at of loop to allow motors to spin OR TO LET ME READ THE BLOODY LOG
+        // vTaskDelay(pdMS_TO_TICKS(50)); // Random delay at of loop to allow motors to spin OR TO LET ME READ THE BLOODY LOG
     }
 }
 

@@ -125,7 +125,7 @@ void setup() {
     //     Serial.println("cool done ok");
     // }
 
-    Serial.println("INIT DONE");
+    // Serial.println("INIT DONE");
 }
 
 void loop() {

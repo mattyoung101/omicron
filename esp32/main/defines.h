@@ -105,15 +105,15 @@ typedef enum {
 // PIDs
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.8
+#define HEADING_KP 0.7
 #define HEADING_KI 0
-#define HEADING_KD 0.1
+#define HEADING_KD 0.08
 #define HEADING_MAX_CORRECTION 100
 
 // --- Idle Correction --- //
-#define IDLE_KP 0.8
+#define IDLE_KP 0.7
 #define IDLE_KI 0
-#define IDLE_KD 0.05
+#define IDLE_KD 0.08
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
