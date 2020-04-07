@@ -129,19 +129,23 @@ static auto cv_thread(void *arg) -> void *{
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-    log_trace("Build target is PC, using test data");
+    log_info("Build target is PC, using test data");
+
+#if LOADING_REPLAY_FILE
+    log_info("Loading vision recording video file");
+    VideoCapture cap(VISION_TEST_FILE);
+    if (!cap.isOpened()) {
+        log_error("Failed to load video file, cannot continue. Please check the path is correct.");
+        return nullptr;
+    }
+#else
+    log_debug("Loading still image test data");
     Mat ogFrame = imread(VISION_TEST_FILE);
     if (ogFrame.cols <= 0 || ogFrame.rows <= 0){
         log_error("Unable to load test image! Please check the path is correct. Cannot continue.");
         return nullptr;
     }
-    VideoCapture cap("../test_data/test_footage_2.m4v");
-    if (!cap.isOpened()) {
-        log_error("Failed to load OpenCV test video, cannot continue");
-        fflush(stdout);
-        fflush(stderr);
-        exit(EXIT_FAILURE);
-    }
+#endif
 #else
     log_trace("Build target is SBC, initialising VideoCapture");
     // TODO make the width be "videoWidth" and the height also be "videoHeight"
@@ -151,13 +155,14 @@ static auto cv_thread(void *arg) -> void *{
         // if we can't connect to the camera, we're essentially useless
         log_error("Failed to open OpenCV capture device!");
         log_error("Critical failure: cannot get any vision data in this state. Impossible to continue running Omicam.");
-        fflush(stdout);
-        fflush(stderr);
-        exit(EXIT_FAILURE);
+        return nullptr;
     }
 #endif
+
+#if LOADING_REPLAY_FILE || BUILD_TARGET == BUILD_TARGET_SBC
     auto fps = ROUND2INT(cap.get(CAP_PROP_FPS));
     log_debug("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
+#endif
 
     // create OpenCV VideoWriter and generate disk filename, runs even if it's disabled for simplicity's sake
     // if vision recording is disabled, no files are written
@@ -198,13 +203,13 @@ static auto cv_thread(void *arg) -> void *{
         pthread_mutex_unlock(&sleepMutex);
         double begin = utils_time_millis();
 
+        // acquire our frame and check for errors
         Mat frame, frameScaled;
-#if BUILD_TARGET == BUILD_TARGET_SBC
+#if BUILD_TARGET == BUILD_TARGET_SBC || LOADING_REPLAY_FILE
         cap.read(frame);
 #else
         ogFrame.copyTo(frame);
 #endif
-
         if (frame.empty()){
 #if BUILD_TARGET == BUILD_TARGET_PC
             // loop back to start
@@ -212,7 +217,7 @@ static auto cv_thread(void *arg) -> void *{
             cap.set(CAP_PROP_POS_FRAMES, 0);
             cap.set(CAP_PROP_POS_AVI_RATIO, 0);
 #else
-            // camerae may have disconnected, warn the user
+            // camera may have disconnected, warn the user
             log_warn("Received empty frame from capture!");
             if (errorCount++ > 32){
                 log_error("Too many empty frames, going to quit! Please make sure the camera is functioning correctly.");
@@ -363,6 +368,7 @@ static auto cv_thread(void *arg) -> void *{
 
             // TODO also render date to video? (if we get a coin cell battery this is)
             // also consider CPU usage as well, might be useful but mainly just looks cool
+            // TODO don't render inside vision circle (truncate maybe before touching it?)
 
             char buf[128] = {0};
             snprintf(buf, 128, "Frame %d (Omicam v%s), File: omicam_recording_%ld.mp4",

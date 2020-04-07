@@ -126,7 +126,7 @@ static void write_thresholds(FILE *fp){
 }
 
 void utils_write_thresholds_disk(){
-#if BUILD_TARGET == BUILD_TARGET_SBC
+#if BUILD_TARGET == BUILD_TARGET_SBC || LOADING_REPLAY_FILE
     char *oldFile = "../omicam.ini";
 #else
     char *oldFile = "../omicam_local.ini";
@@ -241,7 +241,7 @@ void utils_sleep_exit(void){
 
 void utils_reload_config(void){
     log_debug("Reloading Omicam INI config from disk...");
-#if BUILD_TARGET == BUILD_TARGET_SBC
+#if BUILD_TARGET == BUILD_TARGET_SBC || LOADING_REPLAY_FILE
     dictionary *config = iniparser_load("../omicam.ini");
 #else
     dictionary *config = iniparser_load("../omicam_local.ini");
@@ -281,6 +281,11 @@ void utils_reload_config(void){
     isDrawRobotMask = iniparser_getboolean(config, "Vision:drawRobotMask", true);
     visionDebugRobotMask = iniparser_getboolean(config, "Vision:renderRobotMask", false);
     visionRecordingEnabled = iniparser_getboolean(config, "Vision:videoRecording", false);
+    if (LOADING_REPLAY_FILE && visionRecordingEnabled){
+        // this would create duplicates and is easy to forget about
+        log_warn("Refusing to enable vision recording whilst playing back a vision recording!");
+        visionRecordingEnabled = false;
+    }
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
     log_trace("Mirror model is: %s", mirrorModelStr);
