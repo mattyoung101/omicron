@@ -13,6 +13,7 @@
 #include "pb_decode.h"
 #include "UART.pb.h"
 #include "wirecomms.pb.h"
+#include "esp_timer.h"
 
 // Handles communication between different devices over UART, using the JimBus protocol (developed by us, Team Omicron)
 // JimBus can flexibly encode up to 255 different types of Protobuf messages and includes CRC8 checksum validation

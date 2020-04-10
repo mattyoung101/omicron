@@ -228,8 +228,10 @@ static void master_task(void *pvParameter){
 
         // Hey matt shouldn't all this crap go into a semaphore?
         movement_avoid_line(vect_2d(robotState.inLineSize, robotState.inLineAngle, true));
-        ESP_LOGI(TAG, "lineAngle: %f, lineSize %f, Direction: %f, Speed: %f", robotState.inLineAngle, robotState.inLineSize,  
-        robotState.outMotion.arg, robotState.outMotion.mag);
+        // ESP_LOGI(TAG, "lineAngle: %f, lineSize %f, Direction: %f, Speed: %f", robotState.inLineAngle, robotState.inLineSize,  
+        // robotState.outMotion.arg, robotState.outMotion.mag);
+
+        ESP_LOGI(TAG, "ballAngle: %f", lastObjectData.ballAngle);
 
         // update the actual FSM
         fsm_update(stateMachine);

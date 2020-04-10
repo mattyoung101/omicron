@@ -53,7 +53,7 @@ static void *receive_thread(void *arg){
             tcflush(serialfd, TCIFLUSH);
             continue;
         } else {
-             log_trace("Data integrity check passed!");
+//             log_trace("Data integrity check passed!");
         }
 
         pb_istream_t stream = pb_istream_from_buffer(data, msgSize);
@@ -62,7 +62,7 @@ static void *receive_thread(void *arg){
         if (!pb_decode(&stream, SensorData_fields, &lastSensorData)){
             log_error("Failed to decode ESP32 Protobuf message: %s", PB_GET_ERROR(&stream));
         } else {
-            log_trace("Decoded UART message successfully!! Yay, this means UART works everywhere. Nice.");
+//            log_trace("Decoded UART message successfully!! Yay, this means UART works everywhere. Nice.");
             lastUARTReceiveTime = utils_time_millis();
         }
 
@@ -156,9 +156,9 @@ void comms_uart_send(comms_msg_type_t msgId, uint8_t *data, size_t size){
         log_warn("Message too big to send properly: %zu bytes, max is 255 bytes (id: %d)", size, msgId);
     }
 
-    // JimBus format: [0xB, msgId, msgSize, ...PROTOBUF DATA..., CRC8 checksum, 0xE]
+    // JimBus format: [0xB, msgId, msgSize, ...PROTOBUF DATA..., CRC8 checksum]
     // so a 3 byte header + 2 trailing bytes
-    uint32_t arraySize = 3 + size + 2;
+    uint32_t arraySize = 3 + size + 1;
     uint8_t outBuf[arraySize];
     uint8_t header[3] = {0xB, msgId, size};
     uint8_t checksum = crc8(data, size);
@@ -166,10 +166,10 @@ void comms_uart_send(comms_msg_type_t msgId, uint8_t *data, size_t size){
     memset(outBuf, 0, arraySize);
     memcpy(outBuf, header, 3); // copy the header into the buffer
     memcpy(outBuf + 3, data, size); // copy the rest of the buffer in
-    outBuf[arraySize - 2] = checksum; // CRC8 checksum
-    outBuf[arraySize - 1] = 0xE; // set end byte
+    outBuf[arraySize - 1] = checksum; // CRC8 checksum
+//    outBuf[arraySize - 1] = 0xE; // set end byte
 
-    ssize_t bytesWritten =write(serialfd, data, size);
+    ssize_t bytesWritten = write(serialfd, outBuf, arraySize);
     if (bytesWritten == -1){
          log_error("Failed to write to UART bus: %s", strerror(errno));
     }

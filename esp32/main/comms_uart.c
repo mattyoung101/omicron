@@ -22,12 +22,13 @@ static void uart_receive_task(void *pvParameter){
 
     while (true){
         // check if we have a begin byte available
+        // ESP_LOGD(TAG, "device: %d", device);
         uint8_t byte = 0;
         uart_read_bytes(port, &byte, 1, portMAX_DELAY);
         if (byte != 0xB){
             continue;
         } else if (device == SBC_CAMERA){
-            ESP_LOGD(TAG, "got: 0x%.2X", byte);
+            // ESP_LOGD(TAG, "got: 0x%.2X", byte);
         }
 
         // read in the rest of the header: message id and size
@@ -114,8 +115,8 @@ void comms_uart_init(uart_endpoint_t device){
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
     };
     uart_port_t port = device == SBC_CAMERA ? UART_NUM_2 : UART_NUM_1;
-    gpio_num_t txPin = device == SBC_CAMERA ? 17 : 19;
-    gpio_num_t rxPin = device == SBC_CAMERA ? 16 : 18;
+    gpio_num_t txPin = device == SBC_CAMERA ? 16 : 19;
+    gpio_num_t rxPin = device == SBC_CAMERA ? 17 : 18;
     ESP_LOGD(TAG, "UART endpoint is: %d, port is: %d, tx pin: %d, rx pin: %d", device, port, txPin, rxPin);
 
     // Configure UART parameters
