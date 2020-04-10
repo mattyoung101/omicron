@@ -394,8 +394,14 @@ static void *work_thread(void *arg){
 #if LOCALISER_ENABLE_SMOOTHING
         movavg_push(xAvg, optimiserPos[0]);
         movavg_push(yAvg, optimiserPos[1]);
+
+#if LOCALISER_SMOOTHING_MEDIAN
+        localisedPosition.x = movavg_calc_median(xAvg);
+        localisedPosition.y = movavg_calc_median(yAvg);
+#else
         localisedPosition.x = movavg_calc(xAvg);
         localisedPosition.y = movavg_calc(yAvg);
+#endif
 #else
         localisedPosition.x = optimiserPos[0];
         localisedPosition.y = optimiserPos[1];
@@ -489,8 +495,6 @@ static void *perf_thread(void *arg){
         double rate = (1000.0 / avgTime);
         localiserRate = ROUND2INT(rate);
         localiserEvals = ROUND2INT(avgEval);
-//        movavg_clear(timeAvg);
-//        movavg_clear(evalAvg);
 
 #if LOCALISER_DIAGNOSTICS
         if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){

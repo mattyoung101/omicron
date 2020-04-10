@@ -27,7 +27,7 @@
 /** constant framerate that vision recording files are */
 #define VISION_RECORDING_FRAMERATE 30
 /** path to test data used in BUILD_TARGET_PC */
-#define VISION_TEST_FILE "../test_data/field5.png"
+#define VISION_TEST_FILE "../recordings/omicam_recording_1586137538.mp4"
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1
@@ -49,7 +49,9 @@
 /** Omicam will be running locally on a PC. Uses test imagery and some features are disabled. */
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
-#define BUILD_TARGET (BUILD_TARGET_SBC)
+#define BUILD_TARGET (BUILD_TARGET_PC)
+/** if true, we are loading previously recorded replays instead of a still test image */
+#define LOADING_REPLAY_FILE 1
 
 /** stop optimisation when a coordinate with less than this error in centimetres is found */
 #define LOCALISER_ERROR_TOLERANCE 1
@@ -78,6 +80,8 @@
 #define LOCALISER_ENABLE_SMOOTHING 1
 /** The size of the moving average history for smoothing, larger values mean smoother but less precision. */
 #define LOCALISER_SMOOTHING_SIZE 16
+/** If true, smooths using the moving median instead of the moving average */
+#define LOCALISER_SMOOTHING_MEDIAN 0
 /** error which is 200-300 points higher than the highest usual error in the localiser, determine through trial & error */
 #define LOCALISER_LARGE_ERROR 8600
 /**

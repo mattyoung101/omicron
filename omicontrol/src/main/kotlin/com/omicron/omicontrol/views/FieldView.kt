@@ -190,8 +190,8 @@ class FieldView : View() {
             if (isRaycastDebug && robots[connectedRobotId].isPositionKnown) {
                 // find min and max ray score
                 val rayScores = message.rayScoresList.take(message.rayScoresCount)
-                val minRayScore = rayScores.filter { it > 0 }.min()!!
-                val maxRayScore = rayScores.filter { it > 0 }.max()!!
+                val minRayScore = rayScores.filter { it > 0 }.min() ?: 0.0
+                val maxRayScore = rayScores.filter { it > 0 }.max() ?: 0.0
 
                 display.lineWidth = 2.0
                 display.stroke = Color.WHITE

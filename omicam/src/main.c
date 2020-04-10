@@ -86,8 +86,12 @@ int main() {
     log_info("Omicam v%s - Copyright (c) 2019-2020 Team Omicron.", OMICAM_VERSION);
     log_debug("Last full rebuild: %s %s", __DATE__, __TIME__);
 
+#if LOADING_REPLAY_FILE
+    log_info("Note: loading replay data instead of test data from disk!");
+#endif
+
     log_debug("Loading and parsing config...");
-#if BUILD_TARGET == BUILD_TARGET_SBC
+#if BUILD_TARGET == BUILD_TARGET_SBC || LOADING_REPLAY_FILE
     dictionary *config = iniparser_load("../omicam.ini");
 #else
     dictionary *config = iniparser_load("../omicam_local.ini");
@@ -126,6 +130,11 @@ int main() {
     isDrawRobotMask = iniparser_getboolean(config, "Vision:drawRobotMask", true);
     visionDebugRobotMask = iniparser_getboolean(config, "Vision:renderRobotMask", false);
     visionRecordingEnabled = iniparser_getboolean(config, "Vision:videoRecording", false);
+    if (LOADING_REPLAY_FILE && visionRecordingEnabled){
+        // this would create duplicates and is easy to forget about
+        log_warn("Refusing to enable vision recording whilst playing back a vision recording!");
+        visionRecordingEnabled = false;
+    }
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
     log_trace("Mirror model is: %s", mirrorModelStr);
