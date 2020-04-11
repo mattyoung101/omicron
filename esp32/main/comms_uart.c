@@ -69,6 +69,9 @@ static void uart_receive_task(void *pvParameter){
                 case LOCALISATION_DATA:
                     fields = LocalisationData_fields;
                     dest = &lastLocaliserData;
+                    RS_SEM_LOCK
+                    robotState.outResetMouse = true;
+                    RS_SEM_UNLOCK
                     break;
                 case DEBUG_CMD:
                     fields = ESP32DebugCommand_fields;

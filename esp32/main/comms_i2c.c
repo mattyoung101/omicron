@@ -11,14 +11,14 @@ SemaphoreHandle_t nanoDataSem = NULL;
 static const char *TAG = "CommsI2C";
 
 static uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data, robot_state_t *robotState) {
-    uint8_t sendBytes[] = {0xB, robotState->outFRMotor + 100, robotState->outBRMotor + 100, -robotState->outBLMotor + 100, robotState->outFLMotor + 100};
-    uint8_t checksum = crc8(sendBytes, 5);
+    uint8_t sendBytes[] = {0xB, robotState->outFRMotor + 100, robotState->outBRMotor + 100, -robotState->outBLMotor + 100, robotState->outFLMotor + 100, robotState->outResetMouse};
+    uint8_t checksum = crc8(sendBytes, 6);
 
     // ESP_LOGI(TAG, "WRITING TO NANO");
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
     i2c_master_write_byte(cmd, (addr << 1), I2C_ACK_MODE);
-    i2c_master_write(cmd, sendBytes, 5, I2C_ACK_MODE);
+    i2c_master_write(cmd, sendBytes, 6, I2C_ACK_MODE);
     // Send checksum boi
     i2c_master_write(cmd, &checksum, 1, I2C_ACK_MODE);
     // Send repeated start
@@ -91,7 +91,10 @@ static void nano_comms_task(void *pvParameters){
                 i2c_reset_rx_fifo(I2C_NUM_0); // Flush the buffer
                 continue;
             } else {
-                // Yay checksum verified
+                // Yay checksum verified, now check if reset flag has been received (not really)
+                RS_SEM_LOCK
+                if (robotState.outResetMouse) robotState.outResetMouse = false;
+                RS_SEM_UNLOCK
             }
         } else {
             ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);

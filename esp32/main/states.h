@@ -53,6 +53,7 @@ typedef struct {
     int16_t outBLMotor;
     int16_t outFLMotor;
     bool debugLEDs[6];
+    bool outResetMouse;
 } robot_state_t;
 
 typedef struct {

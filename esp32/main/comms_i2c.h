@@ -18,14 +18,6 @@
 // TODO: We're in Open why do we have tsop stuff :/
 
 typedef struct {
-    uint16_t tsopAngle;
-    uint16_t tsopStrength;
-    uint16_t lineAngle;
-    uint16_t lineSize;
-    uint16_t heading;
-} i2c_data_t;
-
-typedef struct {
     int16_t mouseDX;
     int16_t mouseDY;
 } nano_data_t;
