@@ -105,8 +105,8 @@ void loop(){
 
         PMW3360_DATA data = mouse.readBurst();
         if (data.isMotion){
-            dx += data.dx;
-            dy += data.dy;
+            dx += data.dx / 1969; // Config1 register (0x0F) is set to 0x31 by default which is 5000cpi
+            dy += data.dy / 1969; // (counts per inch). Convert inch to cm to get dank number
             isLifted = !data.isOnSurface;
         }
     #endif
