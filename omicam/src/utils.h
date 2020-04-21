@@ -67,6 +67,8 @@ uint8_t crc8(const uint8_t *data, size_t len);
 /** Linearly interpolate between fromValue and toValue, by progress (between 0.0 and 1.0) */
 double utils_lerp(double fromValue, double toValue, double progress);
 const char *nlopt_result_to_string(nlopt_result result);
+/** returns true if the given null-terminated string contains only numbers */
+bool utils_only_numbers(char *s);
 
 #ifdef __cplusplus
 }

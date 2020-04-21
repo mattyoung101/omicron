@@ -17,6 +17,8 @@
 #define OMICAM_VERSION "4.5b"
 /** whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO) */
 #define VERBOSE_LOGGING 1
+/** if true, attempts to kill all other Omicam instances on launch (stops duplicate processes) */
+#define THERE_CAN_BE_ONLY_ONE 1
 
 /** scale factor for goal detection frame between 0.0 and 1.0, decrease to decrease image size */
 #define VISION_SCALE_FACTOR 0.3
@@ -27,7 +29,7 @@
 /** constant framerate that vision recording files are */
 #define VISION_RECORDING_FRAMERATE 30
 /** path to test data used in BUILD_TARGET_PC */
-#define VISION_TEST_FILE "../recordings/omicam_recording_1586137538.mp4"
+#define VISION_TEST_FILE "../recordings/omicam_recording_1586137290.mp4"
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1

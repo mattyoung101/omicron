@@ -10,7 +10,7 @@ import uuid
 import time
 
 print("[Runner] Running Omicam...")
-os.chdir("cmake-build-release")
+os.chdir("cmake-build-debug-clang") # FIXME ONLY FOR TESTING
 
 for i in range(10):
     print(f"[Runner] Attempt #{i}")

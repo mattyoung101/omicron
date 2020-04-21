@@ -16,6 +16,7 @@
 #include <pthread.h>
 #include <nlopt.h>
 #include <iniparser/iniparser.h>
+#include <ctype.h>
 
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
@@ -317,6 +318,13 @@ double utils_time_millis(){
 
 double utils_lerp(double fromValue, double toValue, double progress){
     return fromValue + (toValue - fromValue) * progress;
+}
+
+bool utils_only_numbers(char *s){
+    while (*s){
+        if (!isdigit(*s++)) return false;
+    }
+    return true;
 }
 
 // backported function from new NLopt
