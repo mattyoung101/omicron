@@ -195,7 +195,7 @@ static void master_task(void *pvParameter){
 
                 // update FSM in values
                 robotState.inBallPos = lastObjectData.ballExists ? 
-                                vect_2d(lastObjectData.ballMag, lastObjectData.ballAngle, true) : 
+                                vect_2d(lastObjectData.ballMag, (lastObjectData.ballAngle - 90.0f) * -1, true) : 
                                 vect_2d(0.0f, 0.0f, true);
                 robotState.inBallVisible = lastObjectData.ballExists;
 
@@ -227,21 +227,27 @@ static void master_task(void *pvParameter){
         }
 
         // Hey matt shouldn't all this crap go into a semaphore?
-        movement_avoid_line(vect_2d(robotState.inLineSize, robotState.inLineAngle, true));
+        // robotState.outMotion.arg = (lastObjectData.ballAngle - 90.0f) * -1;
+        // robotState.outMotion.mag = robotState.inBallVisible ? 30 : 0;
         // ESP_LOGI(TAG, "lineAngle: %f, lineSize %f, Direction: %f, Speed: %f", robotState.inLineAngle, robotState.inLineSize,  
         // robotState.outMotion.arg, robotState.outMotion.mag);
 
-        ESP_LOGI(TAG, "ballAngle: %f", lastObjectData.ballAngle);
+        // ESP_LOGI(TAG, "ballAngle: %f", lastObjectData.ballAngle);
+        // ESP_LOGI(TAG, "bruh: %d", robotState.inBallVisible);
 
         // update the actual FSM
         fsm_update(stateMachine);
 
+        movement_avoid_line(vect_2d(robotState.inLineSize, robotState.inLineAngle, true));
+
         // calculates motor values
-        if(robotState.inLineSize > 0.0f){
+        // if(robotState.inLineSize > 0.0f){
             motor_calc(robotState.outMotion.arg, robotState.outOrientation, robotState.outMotion.mag);
-        } else {
-            motor_calc(0, robotState.outOrientation, 0);
-        }
+        // } else if (robotState.inBallVisible){
+        //     motor_calc(robotState.inBallPos.arg, robotState.outOrientation, 30);
+        // } else {
+        //     motor_calc(0, robotState.outOrientation, 0);
+        // }
         // TODO send to atmega?
         
         // encode and send Protobuf message to Teensy slave
