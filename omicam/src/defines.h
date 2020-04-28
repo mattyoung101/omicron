@@ -49,7 +49,7 @@
 /** Omicam will be running locally on a PC. Uses test imagery and some features are disabled. */
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
-#define BUILD_TARGET (BUILD_TARGET_PC)
+#define BUILD_TARGET (BUILD_TARGET_SBC)
 /** if true, we are loading previously recorded replays instead of a still test image */
 #define LOADING_REPLAY_FILE 1
 

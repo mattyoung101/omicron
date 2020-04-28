@@ -143,7 +143,7 @@ void LightSensorController::read(){
  		} else {
 			isOnLine[i] = false;
 		}
-		// Serial.print(isOnLine[i]);
+		Serial.print(isOnLine[i]);
 	}
 	// Serial.println("");
 

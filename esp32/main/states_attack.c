@@ -64,27 +64,29 @@ void state_attack_pursue_enter(state_machine_t *fsm){
 }
 
 void state_attack_pursue_update(state_machine_t *fsm){
-    // static const char *TAG = "PursueState";
+    static const char *TAG = "PursueState";
     
     // accelProgress = 0;
-    // RS_SEM_LOCK
-    // rs.outIsAttack = true;
-    // rs.outSwitchOk = true;
-    // RS_SEM_UNLOCK
+    RS_SEM_LOCK
+    rs.outIsAttack = true;
+    rs.outSwitchOk = true;
+    RS_SEM_UNLOCK
     imu_correction(&robotState);
-    // timer_check();
+    timer_check();
 
-    // // Check criteria:
-    // // Ball not visible (brake) and ball too close (switch to orbit)
-    // if (!orangeBall.exists){
-    //     LOG_ONCE(TAG, "Ball is not visible, braking");
-    //     om_timer_start(&noBallTimer);
-    //     FSM_MOTOR_BRAKE;
-    // } else if (rs.inBallPos.mag >= ORBIT_DIST){
-    //     if (is_angle_between(rs.inBallPos.arg, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
-    //         LOG_ONCE(TAG, "Ball close enough and ball is in forward range, switching to front orbit, distance: %f, orbit dist thresh: %d, angle: %f", 
-    //         rs.inBallPos.mag, ORBIT_DIST, rs.inBallPos.arg);
-    //         FSM_CHANGE_STATE(FrontOrbit);
+    // Check criteria:
+    // Ball not visible (brake) and ball too close (switch to orbit)
+    if (!rs.inBallVisible){
+        LOG_ONCE(TAG, "Ball is not visible, braking");
+        om_timer_start(&noBallTimer);
+        FSM_MOTOR_BRAKE;
+    } else if (rs.inBallPos.mag >= ORBIT_DIST){
+        // if (is_angle_between(rs.inBallPos.arg, FORWARD_ORBIT_MIN_ANGLE, FORWARD_ORBIT_MAX_ANGLE)){
+            LOG_ONCE(TAG, "Ball close enough and ball is in forward range, switching to front orbit, distance: %f, orbit dist thresh: %d, angle: %f", 
+            rs.inBallPos.mag, ORBIT_DIST, rs.inBallPos.arg);
+            FSM_CHANGE_STATE(FrontOrbit);
+        // }
+    }
     //     } else {
     //         LOG_ONCE(TAG, "Ball close enough and ball is in back range, switching to reverse orbit, distance: %f, orbit dist thresh: %d, angle: %f", 
     //         rs.inBallPos.mag, ORBIT_DIST, rs.inBallPos.arg);
@@ -92,29 +94,40 @@ void state_attack_pursue_update(state_machine_t *fsm){
     //     }
     // }
 
-    // // LOG_ONCE(TAG, "Ball is visible, pursuing");
-    // // Quickly approach the ball
-    // robotState.outSpeed = 100; // TODO: using mm/s speed now :D
-    // robotState.outDirection = robotState.inBallPos.arg;
+    // LOG_ONCE(TAG, "Ball is visible, pursuing");
+    // Quickly approach the ball
+    robotState.outMotion.mag = 30; // TODO: using mm/s speed now :D
+    robotState.outMotion.arg = robotState.inBallPos.arg;
 }
 
 // Orbit
 void state_attack_frontorbit_update(state_machine_t *fsm){
+    static const char *TAG = "FrontOrbitState";
+    
+    // accelProgress = 0;
+    RS_SEM_LOCK
+    rs.outIsAttack = true;
+    rs.outSwitchOk = true;
+    RS_SEM_UNLOCK
+    imu_correction(&robotState);
+    timer_check();
+
+    if (!rs.inBallVisible){
+        LOG_ONCE(TAG, "Ball is not visible, braking");
+        om_timer_start(&noBallTimer);
+        FSM_MOTOR_BRAKE;
+    }
+
     vect_2d_t tempVect = subtract_vect_2d(rs.inRobotPos, rs.inBallPos);
     if (sign(tempVect.y) == 1) {
         rs.outMotion = avoidMethod(rs.inBallPos, ORBIT_RADIUS, ORBIT_RADIUS, vect_2d(rs.inBallPos.x, rs.inBallPos.y - ORBIT_RADIUS, false), rs.inRobotPos);
-        return;
     } else {
         if(sign(tempVect.x) == 1) {
             rs.outMotion = avoidMethod(vect_2d(rs.inBallPos.x + ORBIT_RADIUS/2, rs.inBallPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, rs.inBallPos, rs.inRobotPos);
-            return;
         } else {
             rs.outMotion = avoidMethod(vect_2d(rs.inBallPos.x - ORBIT_RADIUS/2, rs.inBallPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, rs.inBallPos, rs.inRobotPos);
-            return;
         }
     }
-    rs.outMotion = vect_2d(0, 0, true);
-    return;
 }
 
 void state_attack_reverseorbit_update(state_machine_t *fsm){
