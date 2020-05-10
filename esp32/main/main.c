@@ -204,7 +204,7 @@ static void master_task(void *pvParameter){
                     robotState.inGoal = AWAY_GOAL.vec;
 
                     robotState.inOtherGoalVisible = HOME_GOAL.exists;
-                    robotState.inGoal = HOME_GOAL.vec;
+                    robotState.inOtherGoal = HOME_GOAL.vec;
                 } else {
                     robotState.inOtherGoalVisible = AWAY_GOAL.exists;
                     robotState.inOtherGoal = AWAY_GOAL.vec;
@@ -213,7 +213,7 @@ static void master_task(void *pvParameter){
                     robotState.inGoal = HOME_GOAL.vec;
                 }
                 robotState.inHeading = yaw;
-                robotState.inRobotPos = vect_2d(lastLocaliserData.estimatedX, lastLocaliserData.estimatedY, false);
+                robotState.inRobotPos = vect_2d(lastLocaliserData.estimatedX + nanoData.dx, lastLocaliserData.estimatedY + nanoData.dy, false);
 
                 // Testing LED thing
                 robotState.debugLEDs[0] = true;
@@ -227,17 +227,11 @@ static void master_task(void *pvParameter){
         }
 
         // Hey matt shouldn't all this crap go into a semaphore?
-        // robotState.outMotion.arg = (lastObjectData.ballAngle - 90.0f) * -1;
-        // robotState.outMotion.mag = robotState.inBallVisible ? 30 : 0;
-        // ESP_LOGI(TAG, "lineAngle: %f, lineSize %f, Direction: %f, Speed: %f", robotState.inLineAngle, robotState.inLineSize,  
-        // robotState.outMotion.arg, robotState.outMotion.mag);
-
-        // ESP_LOGI(TAG, "ballAngle: %f", lastObjectData.ballAngle);
-        // ESP_LOGI(TAG, "bruh: %d", robotState.inBallVisible);
 
         // update the actual FSM
         fsm_update(stateMachine);
 
+        RS_SEM_LOCK
         movement_avoid_line(vect_2d(robotState.inLineSize, robotState.inLineAngle, true));
 
         ESP_LOGI(TAG, "Ball angle: %f, Ball distance %f, Direction: %f, Speed: %f", robotState.inBallPos.arg, robotState.inBallPos.mag, robotState.outMotion.arg, robotState.outMotion.mag);
@@ -268,7 +262,18 @@ static void master_task(void *pvParameter){
         // encode and send Protobuf message to Omicam
         SensorData sensorData = SensorData_init_default;
         sensorData.orientation = yaw;
-        // TODO mouse sensor stuff
+        sensorData.absDspX = robotState.inRobotPos.x;
+        sensorData.absDspY = robotState.inRobotPos.y;
+        sensorData.relDspX = nanoData.dx;
+        sensorData.relDspY = nanoData.dy;
+        if (xSemaphoreTake(stateMachine->updateInProgress, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            char *stateName = fsm_get_current_state_name(stateMachine);
+            strcpy(sensorData.fsmState, stateName);
+            free(stateName);
+            xSemaphoreGive(stateMachine->updateInProgress);
+        } else {
+            ESP_LOGE(TAG, "Failed to unlock updateInProgress semaphore, cannot get current state name");
+        }
         
         uint8_t camBuf[PROTOBUF_SIZE] = {0};
         pb_ostream_t camStream = pb_ostream_from_buffer(camBuf, PROTOBUF_SIZE);

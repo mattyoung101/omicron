@@ -12,9 +12,11 @@ int frMotor = 0;
 int brMotor = 0;
 int blMotor = 0;
 int flMotor = 0;
+bool resetFlag = false;
 
-int dx = 0;
-int dy = 0;
+int16_t dx = 0; // X and Y displacement of robot since atmega boot in cm
+int16_t dy = 0;
+bool isLifted = false;
 
 // LED Stuff
 Timer idleLedTimer(1000000); // LED timer when idling
@@ -36,7 +38,7 @@ static uint8_t crc8(uint8_t *data, size_t len){
 }
 
 void requestEvent(){
-    uint8_t buf[I2C_SEND_PACKET_SIZE - 1] = {I2C_START_BYTE, highByte((int16_t) dx), lowByte((int16_t) dx),
+    uint8_t buf[I2C_SEND_PACKET_SIZE-1] = {I2C_START_BYTE, highByte((int16_t) dx), lowByte((int16_t) dx),
                                          highByte((int16_t) dy), lowByte((int16_t) dy)};
     for(int i=0; i<I2C_SEND_PACKET_SIZE-1; i++){
         Wire.write(buf[i]);
@@ -46,9 +48,9 @@ void requestEvent(){
 
 void receiveEvent(int bytes){
     if(Wire.available() >= I2C_RCV_PACKET_SIZE && Wire.read() == I2C_START_BYTE){
-        uint8_t dataBuf[5] = {};
+        uint8_t dataBuf[I2C_RCV_PACKET_SIZE-1] = {};
         dataBuf[0] = 0xB;
-        for(int i=1; i<5; i++){
+        for(int i=1; i<I2C_RCV_PACKET_SIZE-1; i++){
             dataBuf[i] = Wire.read();
         }
 
@@ -57,8 +59,10 @@ void receiveEvent(int bytes){
         blMotor = dataBuf[3] - 100;
         flMotor = dataBuf[4] - 100;
 
+        resetFlag = dataBuf[5];
+
         uint8_t receivedChecksum = Wire.read();
-        uint8_t actualChecksum = crc8(dataBuf, 5);
+        uint8_t actualChecksum = crc8(dataBuf, I2C_RCV_PACKET_SIZE-1);
 
         if(receivedChecksum != actualChecksum){
             Serial.print("[COMMS] [WARN] Data integrity check failed. Expected: ");
@@ -77,14 +81,12 @@ void receiveEvent(int bytes){
 void setup(){
     Serial.begin(9600);
 
-    // #if I2C_ON
-        Wire.begin(I2C_ADDRESS);
-        Wire.onRequest(requestEvent);
-        Wire.onReceive(receiveEvent);
-    // #endif
+    Wire.begin(I2C_ADDRESS);
+    Wire.onRequest(requestEvent);
+    Wire.onReceive(receiveEvent);
     
     #if MOUSE_ON
-        // Serial.println(mouse.begin(10)); // I think 10 is the SS (CS) pin
+        Serial.println(mouse.begin(10)); // I think 10 is the SS (CS) pin
     #endif
 
     #if LED_ON
@@ -95,16 +97,18 @@ void setup(){
 }
 
 void loop(){
-    // #if MOUSE_ON
-    //     PMW3360_DATA data = mouse.readBurst();
-    //     Serial.print(data.dx);
-    //     Serial.print("\t");
-    //     Serial.println(data.dy);
-    // #endif
+    #if MOUSE_ON
+        if (resetFlag){
+            dx = 0;
+            dy = 0;
+        }
 
-    #if I2C_ON
-        // dx = data.dx;
-        // dy = data.dy;
+        PMW3360_DATA data = mouse.readBurst();
+        if (data.isMotion){
+            dx += data.dx / 1969; // Config1 register (0x0F) is set to 0x31 by default which is 5000cpi
+            dy += data.dy / 1969; // (counts per inch). Convert inch to cm to get dank number
+            isLifted = !data.isOnSurface;
+        }
     #endif
 
     #if LED_ON
