@@ -120,11 +120,14 @@ void state_attack_frontorbit_update(state_machine_t *fsm){
 
     vect_2d_t tempVect = subtract_vect_2d(rs.inRobotPos, rs.inBallPos);
     if (sign(tempVect.y) == 1) {
+        LOG_ONCE(TAG, "Ball is in front");
         rs.outMotion = avoidMethod(rs.inBallPos, ORBIT_RADIUS, ORBIT_RADIUS, vect_2d(rs.inBallPos.x, rs.inBallPos.y - ORBIT_RADIUS, false), rs.inRobotPos);
     } else {
         if(sign(tempVect.x) == 1) {
+            LOG_ONCE(TAG, "Ball is behind to the right");
             rs.outMotion = avoidMethod(vect_2d(rs.inBallPos.x + ORBIT_RADIUS/2, rs.inBallPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, rs.inBallPos, rs.inRobotPos);
         } else {
+            LOG_ONCE(TAG, "Ball is behind to the left");
             rs.outMotion = avoidMethod(vect_2d(rs.inBallPos.x - ORBIT_RADIUS/2, rs.inBallPos.y, false), ORBIT_RADIUS/2, ORBIT_RADIUS, rs.inBallPos, rs.inRobotPos);
         }
     }

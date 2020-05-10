@@ -195,7 +195,7 @@ extern uint8_t ORBIT_SPEED_FAST;
 #define ORBIT_SlOW_ANGLE_MIN 45
 #define ORBIT_SLOW_ANGLE_MAX 360 - ORBIT_SlOW_ANGLE_MIN
 #define ORBIT_SLOW_STRENGTH 150
-#define ORBIT_SLOW_SPEED_THING 20
+#define ORBIT_SLOW_SPEED_THING 30
 
 extern float ORBIT_CONST;
 
@@ -220,7 +220,7 @@ extern uint16_t IN_FRONT_MAX_ANGLE;
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot
 #define FORWARD_ORBIT_MIN_ANGLE 120 // the range where the robot will orbit forward
 #define FORWARD_ORBIT_MAX_ANGLE 240
-#define ORBIT_RADIUS 1
+#define ORBIT_RADIUS 50
 
 #define MOTOR_FL_ANGLE 315
 #define MOTOR_FL_REVERSED false

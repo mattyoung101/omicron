@@ -195,7 +195,7 @@ static void master_task(void *pvParameter){
 
                 // update FSM in values
                 robotState.inBallPos = lastObjectData.ballExists ? 
-                                vect_2d(lastObjectData.ballMag, (lastObjectData.ballAngle - 90.0f) * -1, true) : 
+                                vect_2d(lastObjectData.ballMag, fmodf(360.0f + ((lastObjectData.ballAngle - 90.0f) * -1), 360.0f), true) : 
                                 vect_2d(0.0f, 0.0f, true);
                 robotState.inBallVisible = lastObjectData.ballExists;
 
@@ -240,13 +240,16 @@ static void master_task(void *pvParameter){
 
         movement_avoid_line(vect_2d(robotState.inLineSize, robotState.inLineAngle, true));
 
+        ESP_LOGI(TAG, "Ball angle: %f, Ball distance %f, Direction: %f, Speed: %f", robotState.inBallPos.arg, robotState.inBallPos.mag, robotState.outMotion.arg, robotState.outMotion.mag);
+
+
         // calculates motor values
         // if(robotState.inLineSize > 0.0f){
-            motor_calc(robotState.outMotion.arg, robotState.outOrientation, robotState.outMotion.mag);
+            // motor_calc(robotState.outMotion.arg, robotState.outOrientation, robotState.outMotion.mag);
         // } else if (robotState.inBallVisible){
         //     motor_calc(robotState.inBallPos.arg, robotState.outOrientation, 30);
         // } else {
-        //     motor_calc(0, robotState.outOrientation, 0);
+            motor_calc(135, robotState.outOrientation, 40);
         // }
         // TODO send to atmega?
         
@@ -309,7 +312,7 @@ static void master_task(void *pvParameter){
         // is this necessary anymore?
         // No - Ethan
         // thanks, got rid of it - Matt
-        // vTaskDelay(pdMS_TO_TICKS(50)); // Random delay at of loop to allow motors to spin OR TO LET ME READ THE BLOODY LOG
+        vTaskDelay(pdMS_TO_TICKS(50)); // Random delay at of loop to allow motors to spin OR TO LET ME READ THE BLOODY LOG
     }
 }
 

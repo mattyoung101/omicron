@@ -44,7 +44,7 @@ void defines_init(uint8_t robotId){
         BALL_FAR_STRENGTH = 120;
         BALL_CLOSE_STRENGTH = 45;
         ORBIT_SPEED_SLOW = 60;
-        ORBIT_SPEED_FAST = 25;
+        ORBIT_SPEED_FAST = 35;
         ORBIT_CONST = 0.6;
         DRIBBLE_BALL_TOO_FAR = 60;
         ORBIT_DIST = 0;

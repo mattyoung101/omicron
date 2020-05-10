@@ -67,5 +67,6 @@ static vect_2d_t calcAvoid(float a, float b, vect_2d_t obj, vect_2d_t robot)
 
 vect_2d_t avoidMethod(vect_2d_t avoid, float a, float b, vect_2d_t obj, vect_2d_t robot) {
     vect_2d_t movement = calcAvoid(a, b, obj, vect_2d(robot.x - avoid.x, robot.y - avoid.y, false));
-    return vect_2d(movement.x + avoid.x, movement.y + avoid.y, false);
+    vect_2d_t bruh = vect_2d(40.0f, movement.arg, true);
+    return vect_2d(bruh.x + avoid.x, bruh.y + avoid.y, false);
 }
