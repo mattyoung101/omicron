@@ -1,4 +1,4 @@
-# Omicontrol
+![Omicam logo](images/omicontrol_logo_dark.png)    
 Omicontrol is Team Omicron's wireless robot/camera debugging and management application. With the creation of Omicam,
 we needed a way of visualising camera output, managing the SBC and editing thresholds. In the past, we used the OpenMV IDE,
 but given that Omicam is entirely custom developed, this meant we also had to custom-develop our own camera application.

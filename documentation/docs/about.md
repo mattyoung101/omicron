@@ -13,7 +13,7 @@ Deus Vult). Our team members are:
 
 **(TODO: will need to be fixed for stupid robocup rules)**
 
-Our members are all very experienced, having competed in 2-3 previous internationals competitions. Our team collectively
+Our members are experienced, having competed in 2-3 previous internationals competitions. Our team collectively
 also has many victories and podium placements in Australian Nationals, States and Regionals competitions.
 
 We have been preparing for this competition for about **(TODO: how many?)** months and we estimate to have a combined
@@ -25,10 +25,9 @@ we have previously developed.
 
 Some new innovations we have developed this year include:
 
-- **Omicam**: Our advanced, custom-developed vision application. Omicam is capable of 70 FPS ball, goal and line detection at 
-1280x720 resolution. It's also capable of 1.5cm accurate localisation by using a novel sensor-fusion algorithm that involves
-solving a non-linear optimisation problem.
-- **Omicontrol**: Our custom, WiFi/Ethernet linked robot control software. Written in Kotlin, this program is used to
+- **Omicam**: Our advanced vision and localisation application, capable of 70 FPS ball, goal and line detection at 
+1280x720 resolution. It's also capable of 1.5cm accurate localisation by using a using a novel hybrid sensor-fusion/non-linear optimisation algorithm.
+- **Omicontrol**: Our custom, WiFi/Ethernet robot control software. Written in Kotlin, this program is used to
 tune Omicam, move robots around and visualise sensor data.
 - **Mouse sensor and velocity control**: Our robots use PixArt PWM3360 mouse sensor, which we use to accurately
 estimate and control our robot's velocity on the field, in addition to interpolating our localisation data.
