@@ -49,7 +49,7 @@ for cables, troubleshooting connection problems and more. There are a variety of
 Bluetooth Classic, Bluetooth LE, Zigbee and others. However, we decided to use TCP/IP over WiFi because it's easy to
 setup and reliable, compared to Bluetooth which has issues on many platforms.
 
-To accomplish this, the LattePanda SBC creates a WiFi access point (AP) (with no internet connection() that the client computer
+To accomplish this, the LattePanda SBC creates a WiFi access point (AP) (with no internet connection) that the client computer
 then connects to, establishing a direct link between the two computers. As shown in Figure 1, the user simply types
 the local IP to connect and everything else is handled for them.
 
@@ -78,6 +78,8 @@ and Omicontrol as the client.
 
 Communication between the two devices makes heavy use of Protocol Buffers, on the Omicam side via nanopb, and on the 
 Omicontrol end in Kotlin via the official Java API from Google (which also works with Kotlin).
+
+**Should put more info here, stuff like how we basically have budget RPC**
 
 ## Design considerations
 The Omicontrol UI was designed to look professional, be simple to use, friendly to use as a tablet and work cross-platform.

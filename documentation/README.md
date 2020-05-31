@@ -15,6 +15,8 @@ You will need to install mkdocs and the material theme in order to deploy the si
 
 `pip install mkdocs-material`
 
+`pip install markdown`
+
 To deploy the website, go to the path of the github team (which should be ~/teamomicron.github.io) and use this command:
 
 `mkdocs gh-deploy --config-file ../documentation/mkdocs.yml --remote-branch master`

@@ -94,7 +94,7 @@ Hyperyon described above. After testing both, we decided the Hyperon fit our nee
 due to its extremely good low light performance.
 
 ## Field object detection
-The primary responsibility of Omicam is to detect the bounding box and centroid of field objects: the ball, goals and also lines. 
+One of the responsibilities of Omicam is to detect the bounding box and centroid of field objects: the ball, goals and also lines. 
 This is accomplished by using the open-source computer vision library OpenCV (v4.2.0). 
 We use a Gstreamer pipeline to decode the camera's MJPEG stream at our target resolution of 1280x720 pixels, which is
 read in through an OpenCV `VideoCapture` object.
@@ -161,42 +161,40 @@ but data is often invalid and can't be used reliably in real games.
 The third approach in use by some teams is one based on 360 degree LiDARS. This approach, being similar to the second
 approach, has similar accuracy and drawbacks. One additional drawback is the expensive cost and heavy weight of LiDARS.
 
+Another approach that can be used is summing displacement values from a mouse sensor, or integrating acceleration data
+from an IMU. While these approaches have high levels of accuracy initially, the repeated integration of the data 
+gradually builds error over time, and if the robot is on for a particularly long time, the localised position may be
+several centimetres inaccurate by the end. In addition, these approaches all return relative displacement to the 
+initial position, not an absolute position on the field - meaning a method for calculating the robot's initial
+position accurately is still required.
+
 Some teams, including us in the past, do not localise at all. Strictly speaking, with many gameplay behaviours,
 knowing the robot's position is not necessary. However, with our advanced strategies, localisation is a necessity.
-
-**TODO cover mouse sensor here too**
-
-**TODO talk about moving average as well**
 
 ### Our approach
 This year, Team Omicron presents a novel approach to robot localisation based on a hybrid
 sensor-fusion/non-linear optimisation algorithm.
 Our approach builds an initial estimate of the robot's position using faster, more inaccurate methods like goal
-triangulation and mouse sensor velocity integration.
-It then refines this estimate to a much higher accuracy by solving a 2D non-linear minimisation problem in realtime.
+triangulation and mouse sensor displacement.
+It then refines this estimate to a much higher accuracy by solving a 2D non-linear optimisation problem in realtime.
 The addition of the optimisation stage to the algorithm increases accuracy by about 4.6x, to be as little as 1.5cm error.
-
-**TODO use new paper**
-
-The optimisation stage of our sensor fusion algorithm is based on a Middle-Size League paper published in _Advanced Robotics_[^2]. 
-However, there are some differences between their paper and our approach. While they generate line points and then 
-use a particle filter (Monte-Carlo localisation), we instead cast rays over the image and solve a non-linear minimisation problem
-based on ray distances, rather than point locations. However, both methods generally follow the same approach of sampling 
-the line and solving an optimisation problem to figure out the location of the robot. 
 
 Our optimisation algorithm works by comparing observed field line geometry from the camera (sampled via raycasting), 
 to a known model of the field. By trying to optimise the robot's unknown (x,y) position such that it minimises 
 the error between the observed lines and expected lines at each position, we can infer the robot's coordinates to a 
 very high level of accuracy.
 
-**TODO move this paragraph to drawbacks section?**
+The optimisation stage of our sensor fusion algorithm is based on a paper by Lauer, Lange and Redmiller (2006) [^2],
+as covered in the paper by Lu, Li, Hu and Zheng (2013) [^3].
 
-In theory, this optimisation algorithm can already solve our localisation problem, and we did indeed observe very good
-accuracy using idealistic Fusion 360 rendered images such as the one above **(TODO provide picture)**.
-However, in the real world, we found the optimiser to be very unstable, because the perspective of our camera's 
-mounting obscures very far away field lines that the optimiser needs to converge on a stable solution. 
-To solve this issue, we decided to use other lower-accuracy, but more robust estimates of the robot's position to 
-"give hints" to the optimisation algorithm, thus forming a sensor fusion approach.
+However, our approaches are different in certain areas, with us making some concessions and improvements to better suit
+the RoboCup Junior league (as the paper was written for middle-size league). Lauer et al's approach casts rays and
+marks points where these rays intersect the lines, whereas we work with these rays and their lengths directly. Their
+approach also calculates the orientation of the robot, while we trust the value of the IMU for orientation to simplify
+our algorithm. Their optimisation stage uses the RPROP algorithm to minimise error, while we use Subplex (based on
+the Nelder-Mead simplex algorithm). Finally, Lauer et al's approach has more complex global localisation and smoothing
+that can handle unstable localisations with multiple local minima, while our approach assumes only one minimum is
+present in the objective function.
 
 Our approach has the following 4 main steps:
 
@@ -206,23 +204,41 @@ Our approach has the following 4 main steps:
 4. Coordinate optimisation and interpolation
 
 ### Estimate calculation
-**Goal maths, mouse sensor, estimate bounds**
+The localiser first constructs an initial estimate of the robot's position using faster but more inaccurate methods.
+The preferred method is to sum the displacement data from our PWM3360 mouse sensor to determine our current position 
+since last localisation. However, in certain cases such as the initial localisation after the robot is powered on,
+we also use the blue and yellow goals to triangulate our position since there's no initial position for the mouse 
+sensor to use. Once we have an initial localisation though, we can go back to using the mouse sensor data.
+
+![Method for calculating position using goals](images/goal_maths.png)    
+_Figure 1: method for triangulating position using goals coordinates and vectors_
+
+Once the initial estimate is calculated, which is usually accurate to about 6-10cm, we constrain the optimiser's bounds
+to a certain sized rectangle around the centre of the estimated position. We also change the optimiser's initial
+estimate position to the estimated position, and scale down its step size significantly. We assume that the estimate
+is close to the actual position, so a smaller step size means that it won't overshoot the minimum and will hopefully
+converge faster. The combination of the estimate bounds with changing localiser settings means that we can often
+stably converge on the real position of the robot with around 40 objective function evaluations.
+
+If the localiser isn't constrained to the initial estimate bounds, especially on the internationals field we found it
+could be very unstable and would often get stuck in nonsensical positions like the corners of the field or inside
+the goals. Constraining the optimiser to the estimate bounds is very helpful to reduce these problems.
 
 ### Image analysis
 The localiser's input is a 1-bit mask of pixels that are determined to be on field lines. This is determined by thresholding
 for the colour white, which is handled by the vision pipeline described earlier.
 
-With the input provided, a certain number of rays (usually 128) are emitted from the centre of the line image. A ray
+With the input provided, a certain number of rays (usually 64) are emitted from the centre of the line image. A ray
 terminates when it touches a line, reaches the edge of the image or reaches the edge of the mirror (as it would be a
-waste of time to check outside the mirror). The theory of operation behind this is, essentially, for each field position
-each ray should have its own unique distance.
+waste of time to check outside the mirror). Currently we use simple trigonometry to project this ray, although we could
+use the Bresenham line algorithm for more performance.
 
 Rays are stored as only a length in a regular C array, as we can infer the angle between each ray as: 2pi / n_rays
 
 This step can be summarised as essentially "sampling" the line around us on the field.
 
 ![Raycasting](images/raycasting.png)   
-_Figure 1: example of ray casting on field, with a position near to the centre_
+_Figure 2: example of ray casting on field, with a position near to the centre_
 
 ### Camera normalisation
 These rays are then dewarped to counter the distortion of the 360 degree mirror. The equation to do so is determined by
@@ -234,7 +250,7 @@ with each ray essentially in field coordinates (or field lengths) rather than ca
 This dewarping equation is also used by the vision pipeline to determine the distance to the ball and goals in centimetres.
 
 ![Dewarped](images/dewarped.png)    
-_Figure 2: example of applying the dewarp function to an entire image, on the low resolution OpenMV H7._
+_Figure 3: example of applying the dewarp function to an entire image, on the low resolution OpenMV H7._
 
 The second phase of the camera normalisation is to rotate the rays relative to the robot's heading, using a rotation matrix.
 The robot's heading value, which is relative to when it was powered on, is transmitted by the ESP32 (again using Protocol Buffers).
@@ -242,7 +258,7 @@ For information about how this value is calculated using the IMU, see the ESP32 
 
 ### Coordinate optimisation and interpolation
 The coordinate optimisation stage is achieved by using the Subplex local derivative-free non-linear optimisation algorithm
-[^3], re-implemented as part of the NLopt package[^4]. 
+[^4], re-implemented as part of the NLopt package[^5]. 
 This algorithm essentially acts as an efficiency and stability improvement over the well-known Nelder-Mead Simplex algorithm.
 
 **Talk more about numerical optimisation here? compared to solving**
@@ -256,11 +272,11 @@ The most important part of this process is the _objective function_, which is a 
 objective function must be highly optimised as it could be evaluated hundreds of times by the optimisation algorithm.
 
 ![Objective function](images/objective_function.png)   
-_Figure 3: map of objective function for a robot placed at the centre of the field. White pixels indicate high accuracy areas_
+_Figure 4: map of objective function for a robot placed at the centre of the field. White pixels indicate high accuracy areas_
 _and black pixels indicate less accurate areas. This takes up to 30 seconds to calculate for all 44,226 positions._
 
 ![Objective function 3D visualisation](images/field_heightmap3.png)    
-_Figure 4: if we treat the value of the objective function as a heightmap, we can also generate a 3D visualisation of it_
+_Figure 5: if we treat the value of the objective function as a heightmap, we can also generate a 3D visualisation of it_
 
 The known geometry of the RoboCup field is encoded into a "field file". This is a binary Protcol Buffer file that encodes the 
 geometry of any RoboCup field (including SuperTeam) by dividing it into a grid, where each cell is true if on a line, otherwise false. 
@@ -271,7 +287,7 @@ The field file is generated by a Python script which can be easily modified to s
 field layouts, such as SuperTeam or our regional Australian field. 
 
 ![Field file](images/field_file.png)    
-_Figure 3: visualisation of the field data component of the field file. In the original 243x182 image, 1 pixel = 1cm_
+_Figure 6: visualisation of the field data component of the field file. In the original 243x182 image, 1 pixel = 1cm_
 
 Although a derivative-based algorithm may be more efficient at solving the problem, we could not determine a way to
 calculate the derivative of the objective function in a way that was easier than just using a derivative-free
@@ -280,14 +296,14 @@ required.
 
 With the robot's position now determined to the highest accuracy possible, the final step in the localisation process
 is to smooth and interpolate this coordinate. The optimisation algorithm can produce unstable results, especially in
-environments where the line is not very visible or mistaken for other objects on the field. This is accomplished through
-by using a simple windowed mean. A windowed median was also tried but led to more unstable results. In future, we would
-like to investigate more complex digital signal processing such as a low pass filter to use on this value and judge
-if it improves the localisation result.
+environments where the line is not very visible or mistaken for other objects on the field. Smoothing is currently 
+accomplished by using a simple windowed mean. A windowed median was also tried but led to more unstable results. 
+In future, we would like to investigate more complex digital signal processing such as a low pass filter to use on 
+this value and judge if it improves the localisation result.
 
-**TODO cover dynamic size of moving mean**
+**TODO cover dynamic size of moving mean when it's added**
 
-### Drawbacks
+### Limitations and refinements
 Although a lot of effort has been spent improving the performance of our approach, some issues with it remain:
 
 - Accuracy can still be improved. Although 1.5cm is good, it's still a margin of error that may make some more precise
@@ -295,6 +311,10 @@ movements difficult.
 - The algorithm can be unstable, especially on internationals fields where lines are harder to see. The initial estimate
 stage and optimiser bounds helps to correct this, but a better algorithm for detecting lines (perhaps using a Sobel filter)
 should be looked into.
+- On a related note, the optimiser probably needs too many lines visible to generate a stable position. In fact, this
+limitation is what led us to develop the hybrid sensor-fusion/optimisation algorithm instead of just optimising
+directly. In the real world, just optimising was too unstable when lines weren't visible, compared to idealistic
+simulation renders.
 - The optimisation stage is still slow, even with only 40 or so objective function evaluations. In the Nelder-Mead simplex
 algorithm (which Subplex is based on), the evaluation of the simplex's vertices could be multi-threaded to speed it up if
 more CPU cores were available. May also be possible to run this algorithm on the GPU, if we had one.
@@ -305,8 +325,9 @@ why the algorithm won't localise sometimes, which could be a problem at competit
 ### Interfacing with Omicontrol
 To interface with our remote management application Omicontrol, Omicam starts a TCP server on port 42708. This server sends
 Protocol Buffer packets containing JPEG encoded frames, zlib compressed threshold data as well as other information such as
-the temperature of the SBC. Although C isn't an officially supported language by Google for Protocol Buffers, we use 
-the mature nanopb library to do the encoding.
+the temperature of the SBC. The TCP listen thread receives messages from the Omicontrol client, decodes them and executes
+the specified action ID (for example, save data to disk) if one is specified. The TCP send thread receives data from
+the vision and localisation pipelines, and encodes them an sends them over network.
 
 We use the SIMD optimised libjpeg-turbo to efficiently encode JPEG frames, so as to not waste performance on the remote 
 debugger (which is disabled during competition). Instead of compressing threshold frames with JPEG, because they are 1-bit 
@@ -327,7 +348,11 @@ In addition, the config file can also be dynamically reloaded by an Omicontrol a
 Because of this, we have much more flexibility and faster prototyping abilities when tuning to different venues.
 
 ### Video recording and match replay
-**TODO explain this**
+Omicam can record its vision output to disk as an mp4 file. When this is enabled in the configuration, a thread is started
+that writes video frames to an OpenCV `VideoWriter` at the correct framerate to produce a stable 60 fps video. These
+generated videos can be loaded as Omicam input (instead of using a live camera), thus enabling a capture and replay system.
+
+In this way, games can be recorded for later analysis of Omicam's performance and accuracy, or for entertainment value.
 
 ### Debugging and performance optimisation
 **TODO we may use gcc not clang so talk about that too**
@@ -337,7 +362,8 @@ Clang optimiser flags as well as image downscaling for the goal threshold images
 In addition, the localisation, vision and remote debug pipelines all run in parallel to each other so the entire application
 is asynchronous.
 
-Low-level compiled languages such as C and C++ can be difficult to debug in case of memory corruption bugs. 
+Low-level compiled languages such as C and C++ can be difficult to debug when memory corruption or undefined behaviour
+issues manifest. In addition, many latent bugs can go undetected in code written in these languages.
 In order to improve the stability of Omicam
 and fix bugs, we used Google's Address Sanitizer (ASan) and Undefined Behaviour Sanitizer (UBSan) to easily find and trace a variety of bugs such as buffer overflows, memory leaks and more. 
 In addition, we used the LLVM toolchain's debugger lldb (or just gdb) to analyse the application frequently.
@@ -355,8 +381,10 @@ a it's already relatively close to the true position.
 ## References
 [^1]: C. Grana, D. Borghesani, and R. Cucchiara, “Optimized Block-Based Connected Components Labeling With Decision Trees,” IEEE Trans. Image Process., vol. 19, no. 6, pp. 1596–1609, 2010, doi: 10.1109/TIP.2010.2044963.
 
-[^2]: H. Lu, X. Li, H. Zhang, M. Hu, and Z. Zheng, “Robust and real-time self-localization based on omnidirectional vision for soccer robots,” Adv. Robot., vol. 27, no. 10, pp. 799–811, Jul. 2013, doi: 10.1080/01691864.2013.785473.
+[^2]: Lauer, M., Lange, S. and Riedmiller, M., 2006. Calculating the Perfect Match: An Efficient and Accurate Approach for Robot Self-localization. RoboCup 2005: Robot Soccer World Cup IX, pp.142-153.
 
-[^3]: T. H. Rowan, “Functional stability analysis of numerical algorithms,” Unpuplished Diss., p. 218, 1990.
+[^3]: H. Lu, X. Li, H. Zhang, M. Hu, and Z. Zheng, “Robust and real-time self-localization based on omnidirectional vision for soccer robots,” Adv. Robot., vol. 27, no. 10, pp. 799–811, Jul. 2013, doi: 10.1080/01691864.2013.785473.
 
-[^4]: Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
+[^4]: T. H. Rowan, “Functional stability analysis of numerical algorithms,” Unpuplished Diss., p. 218, 1990.
+
+[^5]: Steven G. Johnson, The NLopt nonlinear-optimization package, http://github.com/stevengj/nlopt
