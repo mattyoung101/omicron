@@ -43,8 +43,6 @@ static BMP *bmp = NULL;
 static double observedRays[LOCALISER_NUM_RAYS] = {0};
 /** rays that we observed from raycasting on the camera image, no dewarping */
 static double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
-/** rays that we got from raycasting on the field file */
-static double expectedRays[LOCALISER_NUM_RAYS] = {0};
 /** score for each ray in the last localiser pass */
 static double rayScores[LOCALISER_NUM_RAYS] = {0};
 /** NLopt status for remote debug */
@@ -157,6 +155,7 @@ static inline double objective_func_impl(double x, double y){
     // note that these are in field file coordinates, not localiser coordinates (the ones with 0,0 as the field centre)
     struct vec2 minCoord = {0, 0};
     struct vec2 maxCoord = {field.length, field.width};
+    double expectedRays[LOCALISER_NUM_RAYS] = {0};
 
     // raycast on our virtual field file to generate expected rays
     double angle = 0.0;
@@ -322,6 +321,7 @@ static void *work_thread(void *arg){
                 goalWasUnavailable = true;
             }
         }
+
         // image analysis
         // cast rays out from the centre of the camera frame, and record the length until it hits the white line
         double interval = PI2 / LOCALISER_NUM_RAYS;
@@ -383,8 +383,8 @@ static void *work_thread(void *arg){
         nlopt_result result = nlopt_optimize(optimiser, optimiserPos, &optimiserError);
 
         if (result < 0){
-            log_warn("The optimiser may have failed to converge on a solution: status %s", nlopt_result_to_string(result));
-            printf("Min bounds: %.2f,%.2f, Max bounds: %.2f,%.2f, Estimate pos: %.2f,%.2f\n", estimateMinBounds.x,
+            log_warn("NLopt error: status %s", nlopt_result_to_string(result));
+            log_debug("Diagnostics: Min bounds: %.2f,%.2f, Max bounds: %.2f,%.2f, Estimate pos: %.2f,%.2f\n", estimateMinBounds.x,
                     estimateMinBounds.y, estimateMaxBounds.x, estimateMaxBounds.y, initialEstimate.x, initialEstimate.y);
         }
         // convert to field coordinates (where 0,0 is the centre of the field)
@@ -437,7 +437,7 @@ static void *work_thread(void *arg){
         movavg_push(evalAvg, evaluations);
         const char *resultStr = nlopt_result_to_string(result);
         memset(localiserStatus, 0, 32);
-        memcpy(localiserStatus, resultStr, MIN(strlen(resultStr), 32));
+        strncpy(localiserStatus, resultStr, 32);
 
         free(entry->frame);
         free(entry);
@@ -459,11 +459,13 @@ void remote_debug_localiser_provide(DebugFrame *msg){
     msg->robotPositions[0].x = (float) localisedPosition.x;
     msg->robotPositions[0].y = (float) localisedPosition.y;
     msg->robotPositions_count = 1;
+    // TODO here we would actually need to provide the received robot position over Bluetooth too
 
     msg->localiserRate = localiserRate;
     msg->localiserEvals = localiserEvals;
-    memcpy(msg->localiserStatus, localiserStatus, 32);
+    strncpy(msg->localiserStatus, localiserStatus, 32);
     msg->rayInterval = (float) (PI2 / LOCALISER_NUM_RAYS);
+
     // Omicontrol wants these in field coordinates, not screen coordinates
     float hx = field.length / 2.0f;
     float hy = field.width / 2.0f;
@@ -471,10 +473,12 @@ void remote_debug_localiser_provide(DebugFrame *msg){
     msg->estimateMinBounds.y = (float) estimateMinBounds.y - hy;
     msg->estimateMaxBounds.x = (float) estimateMaxBounds.x - hx;
     msg->estimateMaxBounds.y = (float) estimateMaxBounds.y - hy;
+
     // these are already in field coordinates
     msg->goalEstimate.x = (float) initialEstimate.x;
     msg->goalEstimate.y = (float) initialEstimate.y;
 
+    // copy a max of 128 points over
     uint32_t size = MIN(da_count(localiserVisitedPoints), 128);
     for (size_t i = 0; i < size; i++) {
         localiser_point_t point = da_get(localiserVisitedPoints, i);
@@ -498,7 +502,8 @@ static void *perf_thread(void *arg){
 
 #if LOCALISER_DIAGNOSTICS
         if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){
-            printf("Average localiser time: %.2f ms (rate: %.2f Hz), average evaluations: %d\n", avgTime, rate, ROUND2INT(avgEval));
+            //printf("Average localiser time: %.2f ms (rate: %.2f Hz), average evaluations: %d\n", avgTime, rate, ROUND2INT(avgEval));
+            printf("Localiser average evals: %d, time: %.2f ms, rate: %.2f Hz\n", ROUND2INT(avgEval), avgTime, rate);
             fflush(stdout);
         }
 #endif

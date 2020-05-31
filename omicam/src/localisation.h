@@ -23,14 +23,6 @@ typedef struct {
     bool blueVisible;
 } localiser_entry_t;
 
-/** The 4 quadrants of a field **/
-typedef enum {
-    TOP_LEFT = 0,
-    TOP_RIGHT,
-    BOTTOM_LEFT,
-    BOTTOM_RIGHT
-} field_quadrant_t;
-
 typedef struct {
     double x, y;
 } localiser_point_t;

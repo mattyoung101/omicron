@@ -17,9 +17,10 @@ import org.greenrobot.eventbus.EventBus
  * 3.3a: added field display screen
  * 3.4a: camera view supports many different colour spaces now, not just RGB
  * 3.5a: fixed some bugs, added some more tools to for debugging
- * 4.5b: (WIP) Omicontrol enters beta, added support for hybrid localiser displays, fixed some bugs
+ * 4.5b: Omicontrol enters beta, added support for hybrid localiser displays, fixed some bugs
+ * 4.6b: (WIP) Omicontrol can now calculate mirror model itself (instead of using Excel)
  */
-const val OMICONTROL_VERSION = "4.5b"
+const val OMICONTROL_VERSION = "4.6b"
 const val DEFAULT_IP = "192.168.12.1"
 const val DEFAULT_PORT = 42708
 /** if true, development is being done on Omicam/Omicontrol, so there is no disconnect message */

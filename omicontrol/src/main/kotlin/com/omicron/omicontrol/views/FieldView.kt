@@ -107,7 +107,8 @@ class FieldView : View() {
                         "${message.localiserEvals} evals"
             }
             ballLabel.text = if (ball.isPositionKnown) String.format("(%.2f, %.2f)", ball.position.x, ball.position.y) else "Unknown"
-            localiserPerfLabel.textFill = if (message.localiserStatus != "FTOL_REACHED") Color.ORANGE else Color.WHITE
+            // TODO display actual status instead of making it orange (it's not very helpful to just display a colour)
+            // localiserPerfLabel.textFill = if (message.localiserStatus != "FTOL_REACHED") Color.ORANGE else Color.WHITE
 
             // draw the field
             display.fill = Color.BLACK
