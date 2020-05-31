@@ -50,9 +50,13 @@ class CalibrationView : View() {
             modelStatusLabel.text = "Model status: ${if(value) "Loaded" else "Not loaded"}"
         }
     private var ghostPoints = mutableListOf<Point2D>()
+    /** loaded or calculated mirror model */
     private var model: Expression? = null
+    /** if true, snap initial point to centre of screen */
     private var snapInitialPoint = true
+    /** if true, automatically add 5 centimetres (TODO configurable) to centimetres column */
     private var isAutoIncrement = true
+    /** counter for centimetres value when using auto increment */
     private var counter = 5.0
 
     init {
@@ -158,7 +162,7 @@ class CalibrationView : View() {
         } catch (e: Exception){
             Logger.error("Model appears to be invalid!")
             Logger.error(e)
-            Utils.showGenericAlert(Alert.AlertType.ERROR, "Details: $e\n\nPlease check function arguments and" +
+            Utils.showGenericAlert(Alert.AlertType.ERROR, "Details: ${e.message}\n\nPlease check function arguments and" +
                     " syntax are correct.", "Model \"$function\" appears to be invalid.")
             return
         }
@@ -184,6 +188,26 @@ class CalibrationView : View() {
                         disconnect()
                     }
                     accelerator = KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)
+                }
+            }
+            menu("Actions"){
+                item("Export as CSV"){
+                    setOnAction {
+                        val chooser = FileChooser().apply {
+                            initialDirectory = Paths.get(".").toFile()
+                            extensionFilters.add(FileChooser.ExtensionFilter("CSV file", "*.csv"))
+                        }
+                        val csvFile = chooser.showSaveDialog(currentWindow) ?: return@setOnAction
+
+                        val writer = FileWriter(csvFile)
+                        writer.append("Pixel dist,Real dist").appendln()
+                        for (row in measurements){
+                            writer.append("${row.pixelDistance},${row.realDistance}").appendln()
+                        }
+                        writer.close()
+                        Utils.showGenericAlert(Alert.AlertType.INFORMATION,
+                            "Saved to: $csvFile", "Export completed successfully.")
+                    }
                 }
             }
             menu("Settings"){
@@ -229,7 +253,6 @@ class CalibrationView : View() {
                             selecting = false
                             end = Point2D(it.x, it.y)
                             if (!loadedModel) {
-                                // FIXME test that this works
                                 if (isAutoIncrement){
                                     measurements.add(DewarpPoint(origin!!.distance(end), counter))
                                     counter += 5
@@ -295,32 +318,15 @@ class CalibrationView : View() {
                                 }
                             }
                         }
-                    }
 
-                    fieldset{
                         field {
-                            button("Export as CSV"){
+                            button("Calculate model"){
                                 setOnAction {
-                                    val chooser = FileChooser().apply {
-                                        initialDirectory = Paths.get(".").toFile()
-                                        extensionFilters.add(FileChooser.ExtensionFilter("CSV file", "*.csv"))
-                                    }
-                                    val csvFile = chooser.showSaveDialog(currentWindow) ?: return@setOnAction
-
-                                    val writer = FileWriter(csvFile)
-                                    writer.append("Pixel dist,Real dist").appendln()
-                                    for (row in measurements){
-                                        writer.append("${row.pixelDistance},${row.realDistance}").appendln()
-                                    }
-                                    writer.close()
-                                    Utils.showGenericAlert(Alert.AlertType.INFORMATION,
-                                        "Saved to: $csvFile", "Export completed successfully.")
+                                    // TODO do some epic maths here
                                 }
                             }
                         }
-                    }
 
-                    fieldset {
                         field {
                             button("Load model"){
                                 setOnAction {
@@ -330,9 +336,7 @@ class CalibrationView : View() {
                                 }
                             }
                         }
-                    }
 
-                    fieldset {
                         field {
                             modelStatusLabel = label("Model status: Not loaded")
                         }

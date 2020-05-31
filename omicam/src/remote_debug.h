@@ -26,9 +26,13 @@ typedef struct {
 extern "C" {
 #endif
 
-/** Creates the remote debug TCP socket and image encoder **/
+/**
+ * Creates the remote debugger and its resources (TCP socket, JPEG encoder, etc).
+ * @param w width of the frames
+ * @param h height of the frames
+ */
 void remote_debug_init(uint16_t w, uint16_t h);
-/** Destroys the TCP socket and image encoder **/
+/** Destroys the remote debugger and its resources */
 void remote_debug_dispose(void);
 /**
  * Sends the specified data to the work queue (to be processed asynchronously), where it is encoded (with libjpeg-turbo
@@ -41,12 +45,12 @@ void remote_debug_dispose(void);
  * @param videoWidth the actual width of the video, especially if cropping is enabled
  * @param videoHeight the actual height of the video, especialy if cropping is enabled
  * @param objectData copy of the data sent over UART to the ESP32, used mainly for ball and goal positions for Omicontrol
- **/
+ */
 void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPointF ballCentroid, int32_t fps,
         int32_t videoWidth, int32_t videoHeight, ObjectData objectData);
-/** Checks if the remote debugger currently has an established connection **/
+/** Checks if the remote debugger currently has an established connection */
 bool remote_debug_is_connected(void);
-/** Asks the localiser to provide info into the RDFrame struct **/
+/** Asks the localiser to provide info into the provided DebugFrame struct */
 void remote_debug_localiser_provide(DebugFrame *debugFrame);
 
 #ifdef __cplusplus
