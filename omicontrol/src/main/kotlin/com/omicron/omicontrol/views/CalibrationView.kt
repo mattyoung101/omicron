@@ -2,6 +2,8 @@ package com.omicron.omicontrol.views
 
 import RemoteDebug
 import com.omicron.omicontrol.*
+import com.omicron.omicontrol.maths.ModelApproach
+import com.omicron.omicontrol.maths.PolynomialFitApproach
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.canvas.GraphicsContext
@@ -16,6 +18,7 @@ import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import net.objecthunter.exp4j.Expression
 import net.objecthunter.exp4j.ExpressionBuilder
+import org.apache.commons.math3.fitting.WeightedObservedPoints
 import org.greenrobot.eventbus.Subscribe
 import org.tinylog.kotlin.Logger
 import tornadofx.*
@@ -58,6 +61,7 @@ class CalibrationView : View() {
     private var isAutoIncrement = true
     /** counter for centimetres value when using auto increment */
     private var counter = 5.0
+    private val modelCalculator: ModelApproach = PolynomialFitApproach(3)
 
     init {
         reloadStylesheetsOnFocus()
@@ -74,10 +78,14 @@ class CalibrationView : View() {
             display.drawImage(latestImage!!, cropRect!!.x.toDouble(), cropRect!!.y.toDouble(), latestImage!!.width, latestImage!!.height)
         }
 
-        // draw the line between the two points
-        if (origin != null && end != null){
+        if (snapInitialPoint && origin != null){
+            // if we're in snap initial point mode, always draw a line from origin to cursor if possible
+            display.strokeLine(origin!!.x, origin!!.y, mousePos.x, mousePos.y)
+        } else if (!snapInitialPoint && origin != null && end != null){
+            // otherwise, if we're in normal mode and we have both points, keep the line between them drawn
             display.strokeLine(origin!!.x, origin!!.y, end!!.x, end!!.y)
-        } else if (selecting){
+        } else if (!snapInitialPoint && origin != null){
+            // finally, try and draw a line between the origin and mouse
             display.strokeLine(origin!!.x, origin!!.y, mousePos.x, mousePos.y)
         }
 
@@ -240,6 +248,8 @@ class CalibrationView : View() {
 
                     setOnMouseClicked {
                         if (!selecting){
+                            // first click, put down point
+                            println("SELECTING")
                             origin = if (snapInitialPoint && cropRect != null){
                                 val centreX = cropRect!!.x + (cropRect!!.width / 2.0)
                                 val centreY = cropRect!!.y + (cropRect!!.height / 2.0)
@@ -250,8 +260,10 @@ class CalibrationView : View() {
                             selecting = true
                             end = null
                         } else {
-                            selecting = false
+                            // in snap initial point mode, we are always selecting
+                            if (!snapInitialPoint) selecting = false
                             end = Point2D(it.x, it.y)
+
                             if (!loadedModel) {
                                 if (isAutoIncrement){
                                     measurements.add(DewarpPoint(origin!!.distance(end), counter))
@@ -309,8 +321,11 @@ class CalibrationView : View() {
                             button("Clear"){
                                 setOnAction {
                                     measurements.clear()
-                                    selecting = false
-                                    origin = null
+                                    // in snap initial point mode, we are always selecting and always have same origin
+                                    if (!snapInitialPoint){
+                                        selecting = false
+                                        origin = null
+                                    }
                                     end = null
                                     loadedModel = false
                                     ghostPoints.clear()
@@ -322,7 +337,19 @@ class CalibrationView : View() {
                         field {
                             button("Calculate model"){
                                 setOnAction {
-                                    // TODO do some epic maths here
+                                    Logger.info("Calculating model from data points")
+
+                                    val dataPoints = WeightedObservedPoints()
+                                    println("Data points:")
+                                    for (point in measurements){
+                                        // x axis is pixel distance, y axis is centimetre distance
+                                        dataPoints.add(point.pixelDistance, point.realDistance)
+                                        println("${point.pixelDistance},${point.realDistance}")
+                                    }
+
+                                    val coefficients = modelCalculator.calculateModel(dataPoints.toList())
+                                    Logger.info("Calculated coefficients: ${coefficients.joinToString(",")}")
+                                    Logger.info("Model function: ${modelCalculator.formatFunction(coefficients)}")
                                 }
                             }
                         }
