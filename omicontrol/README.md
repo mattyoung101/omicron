@@ -1,5 +1,5 @@
 # Omicontrol
-Omicontrol is Team Omicron's custom wireless debugging and management app that we use to communicate with Omicam running
+Omicontrol is Team Omicron's custom remote debugging and management application that we use to communicate with Omicam running
 on our single board computer. It enables team members to control the robot's movement, view helpful debug information as well
 as tune and view camera output.
 
@@ -12,12 +12,12 @@ Omicontrol is built and maintained by Matt Young.
 most of my time working on Omicam. My apologies in advance!
 
 ## Features list
-- Easy to use UI with built-in tutorials
+- (Relatively) Easy to use UI
 - Decode Omicam JPEG/data stream while overlaying threshold information
 - Edit and upload camera thresholds on the fly
 - Many helpful diagnostic displays in the Field View for debugging the localiser
 - Control the robots through a multitude of useful commands including automatically resetting to starting positions
-- Lots of useful commands and quality of life things which you'll find beneficial
+- Lots of useful shortcuts and other quality of life improvements built-in
 - Large buttons designed for tablet usage
 - Dark theme!!!
 
@@ -35,7 +35,7 @@ You may need to add the OpenJFX directory to IntelliJ if it doesn't pick it up, 
 
 ### Mac and Windows
 I recommend using [Amazon Corretto 11](https://aws.amazon.com/corretto/) or [AdotOpenJDK 11](https://adoptopenjdk.net/).
-The Oracle JDKs should also work too, but due to Oracle and its associated licensing garbage I suggest you avoid them.
+The Oracle JDKs should also work too, but due to Oracle and their associated licencing garbage I suggest you avoid them.
 
 Next, follow [these instructions](https://developer.tizen.org/development/articles/openjdk-and-openjfx-installation-guide#install_openjfx)
 to install OpenJFX for your specific platform.
@@ -69,13 +69,14 @@ cause all manner of platform specific issues with JavaFX.
 - Tested on a normal DPI monitor, scaling is fine
 - Frequent bug where dialogue boxes will show up incredibly small (with no content). Workaround is to press ALT+F4 and
 try again, it will eventually pop up.
-- Linux is fully supported because it's my development machine. I only use KDE, but GTK-based desktops may be more reliable.
+- Linux is fully supported because it's my development machine. I only use KDE, but GTK-based desktop environments 
+should be supported too.
 
 ### Windows 10
 - Tested on a high DPI display, scaling is bugged if you use Windows' fantastically named "make everything bigger" setting.
 Workaround is to add either `Dprism.allowhidpi=false` or `-Dglass.win.uiScale=100%` to the VM options to disable DPI scaling.
 - This will make fonts smaller, but fixes everything else.
-- Windows is well supported because it's installed on our laptops.
+- Windows is well supported because it's installed on our laptops that we use at the venue.
 
 ### Mac OS X
 - Tested on a high DPI (Retina?) display, not only is scaling bugged but the Windows workaround doesn't work. Instead, I

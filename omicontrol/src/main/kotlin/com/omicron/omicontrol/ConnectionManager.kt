@@ -111,7 +111,7 @@ class ConnectionManager {
                 synchronized (cmdReceivedToken){
                     val assertedReceivedCmd = receivedCmd ?: return@synchronized
 
-                    // yeah this is a stupid hack but for some reason there's no fuckin clone function
+                    // yeah this is a stupid hack but for some reason there's no clone function
                     val copy = RemoteDebug.DebugCommand.parseFrom(assertedReceivedCmd.toByteArray())
                     val end = System.currentTimeMillis() - begin
                     receivedCmd = null

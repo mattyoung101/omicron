@@ -13,7 +13,7 @@ class PolynomialFitApproach(private val order: Int) : ModelApproach {
     private val fitter = PolynomialCurveFitter.create(order)
 
     override fun calculateModel(dataPoints: Collection<WeightedObservedPoint>): DoubleArray {
-        Logger.debug("Calculating a model for ${dataPoints.size} data points with an order of $order")
+        Logger.debug("Calculating a polynomial model for ${dataPoints.size} points, order of $order")
         return fitter.fit(dataPoints)
     }
 

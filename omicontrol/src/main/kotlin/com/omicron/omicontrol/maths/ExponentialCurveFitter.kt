@@ -6,7 +6,13 @@ import org.apache.commons.math3.fitting.AbstractCurveFitter
 import org.apache.commons.math3.fitting.WeightedObservedPoint
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem
+import org.apache.commons.math3.linear.DiagonalMatrix
 
+/**
+ * This is a curve fitter implementation for an exponential model given by f(x) = a * exp(b * x)
+ *
+ * Based on the PolynomialCurveFitter from Apache Commons Math
+ */
 class ExponentialCurveFitter : AbstractCurveFitter() {
     override fun getProblem(points: MutableCollection<WeightedObservedPoint>): LeastSquaresProblem {
         // initialise points to supply to least squares regression
@@ -20,10 +26,18 @@ class ExponentialCurveFitter : AbstractCurveFitter() {
         }
 
         // set up the value function
-        //val model = AbstractCurveFitter.TheoreticalValuesFunction()
+        val function = ExpFunction()
+        val initialGuess = doubleArrayOf(0.0, 0.0)
+        val model = TheoreticalValuesFunction(function, points)
 
-        // TODO finish this
-
-        return LeastSquaresBuilder().build()
+        // and build the least squares problem
+        return LeastSquaresBuilder()
+            .maxEvaluations(Integer.MAX_VALUE)
+            .maxIterations(Integer.MAX_VALUE)
+            .start(initialGuess)
+            .target(target)
+            .weight(DiagonalMatrix(weights))
+            .model(model.modelFunction, model.modelFunctionJacobian)
+            .build()
     }
 }

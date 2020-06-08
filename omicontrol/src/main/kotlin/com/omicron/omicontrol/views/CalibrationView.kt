@@ -75,7 +75,7 @@ class CalibrationView : View() {
         display.fillRect(0.0, 0.0, CANVAS_WIDTH, CANVAS_HEIGHT)
         if (latestImage != null && cropRect != null) {
             // since Kotlin's automatic null cast checking is useless as fuck, we have to null assert these all manually
-            display.drawImage(latestImage!!, cropRect!!.x.toDouble(), cropRect!!.y.toDouble(), latestImage!!.width, latestImage!!.height)
+            display.drawImage(latestImage, cropRect!!.x.toDouble(), cropRect!!.y.toDouble(), latestImage!!.width, latestImage!!.height)
         }
 
         if (snapInitialPoint && origin != null){
@@ -160,8 +160,8 @@ class CalibrationView : View() {
         Logger.debug("Setting model to: $function")
 
         try {
-            val tmpModel = ExpressionBuilder(function).variables("x").build()
             // evaluate a simple test case to make sure it actually works
+            val tmpModel = ExpressionBuilder(function).variables("x").build()
             tmpModel.setVariable("x", 1.0).evaluate()
             model = tmpModel
             loadedModel = true
@@ -264,11 +264,14 @@ class CalibrationView : View() {
                             if (!snapInitialPoint) selecting = false
                             end = Point2D(it.x, it.y)
 
+                            // if we haven't yet loaded a model, add it to the point list
                             if (!loadedModel) {
                                 if (isAutoIncrement){
+                                    // auto increment is on: add to list, then increment counter
                                     measurements.add(DewarpPoint(origin!!.distance(end), counter))
                                     counter += 5
                                 } else {
+                                    // auto increment is off, just add to list
                                     measurements.add(DewarpPoint(origin!!.distance(end)))
                                 }
 
@@ -350,6 +353,8 @@ class CalibrationView : View() {
                                     val coefficients = modelCalculator.calculateModel(dataPoints.toList())
                                     Logger.info("Calculated coefficients: ${coefficients.joinToString(",")}")
                                     Logger.info("Model function: ${modelCalculator.formatFunction(coefficients)}")
+
+                                    // TODO display a popup here (or an alternate view) with a graph
                                 }
                             }
                         }
