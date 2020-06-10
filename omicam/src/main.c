@@ -164,7 +164,7 @@ int main() {
 #endif
 
     log_debug("Loading and parsing config...");
-#if BUILD_TARGET == BUILD_TARGET_SBC || LOADING_REPLAY_FILE
+#if BUILD_TARGET == BUILD_TARGET_SBC || VISION_LOAD_TEST_VIDEO
     dictionary *config = iniparser_load("../omicam.ini");
 #else
     dictionary *config = iniparser_load("../omicam_local.ini");
@@ -203,9 +203,10 @@ int main() {
     isDrawRobotMask = iniparser_getboolean(config, "Vision:drawRobotMask", true);
     visionDebugRobotMask = iniparser_getboolean(config, "Vision:renderRobotMask", false);
     visionRecordingEnabled = iniparser_getboolean(config, "Vision:videoRecording", false);
-    if (LOADING_REPLAY_FILE && visionRecordingEnabled){
+    if (VISION_LOAD_TEST_VIDEO && visionRecordingEnabled){
         // this would create duplicates and is easy to forget about
-        log_warn("Refusing to enable vision recording whilst playing back a vision recording!");
+        // FIXME also check if we are loading a Protobuf replay (not just a test video)
+        log_warn("Refusing to enable vision recording whilst playing back test video!");
         visionRecordingEnabled = false;
     }
 

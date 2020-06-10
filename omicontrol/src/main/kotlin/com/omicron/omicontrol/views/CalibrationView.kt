@@ -2,13 +2,13 @@ package com.omicron.omicontrol.views
 
 import RemoteDebug
 import com.omicron.omicontrol.*
+import com.omicron.omicontrol.maths.ExponentialFitApproach
 import com.omicron.omicontrol.maths.ModelApproach
 import com.omicron.omicontrol.maths.PolynomialFitApproach
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
 import javafx.scene.canvas.GraphicsContext
-import javafx.scene.control.Alert
-import javafx.scene.control.Label
+import javafx.scene.control.*
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
@@ -45,13 +45,8 @@ class CalibrationView : View() {
     private var mousePos = Point2D(0.0, 0.0)
     private var latestImage: Image? = null
     private var cropRect: RemoteDebug.RDRect? = null
-    private lateinit var modelStatusLabel: Label
     /** whether the model has been loaded yet **/
     private var loadedModel = false
-        set(value) {
-            field = value
-            modelStatusLabel.text = "Model status: ${if(value) "Loaded" else "Not loaded"}"
-        }
     private var ghostPoints = mutableListOf<Point2D>()
     /** loaded or calculated mirror model */
     private var model: Expression? = null
@@ -61,7 +56,8 @@ class CalibrationView : View() {
     private var isAutoIncrement = true
     /** counter for centimetres value when using auto increment */
     private var counter = 5.0
-    private val modelCalculator: ModelApproach = PolynomialFitApproach(3)
+    private var modelApproach: ModelApproach = ExponentialFitApproach()
+    private lateinit var resultsField: TextField
 
     init {
         reloadStylesheetsOnFocus()
@@ -155,6 +151,7 @@ class CalibrationView : View() {
         Utils.transitionMetro(this@CalibrationView, ConnectView())
     }
 
+    /** load a new model **/
     private fun updateModel(function: String){
         // parse the expression
         Logger.debug("Setting model to: $function")
@@ -199,7 +196,7 @@ class CalibrationView : View() {
                 }
             }
             menu("Actions"){
-                item("Export as CSV"){
+                item("Export table as CSV"){
                     setOnAction {
                         val chooser = FileChooser().apply {
                             initialDirectory = Paths.get(".").toFile()
@@ -217,6 +214,24 @@ class CalibrationView : View() {
                             "Saved to: $csvFile", "Export completed successfully.")
                     }
                 }
+                item("Deselect"){
+                    setOnAction {
+                        origin = null
+                        end = null
+                        selecting = false
+                    }
+                    accelerator = KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN)
+                }
+                item("View model graph"){
+                    setOnAction {
+                        if (!loadedModel){
+                            Utils.showGenericAlert(Alert.AlertType.ERROR,
+                                "You must calculate or load a model before using this action.",
+                                "No model loaded!")
+                            return@setOnAction
+                        }
+                    }
+                }
             }
             menu("Settings"){
                 checkmenuitem("Snap initial point to centre"){
@@ -229,6 +244,31 @@ class CalibrationView : View() {
                     isSelected = true
                     selectedProperty().addListener { _, _, newValue ->
                         isAutoIncrement = newValue
+                    }
+                }
+                menu("Regression type"){
+                    // yeah I basically hacked together a radio select in menus, yeah this sucks, such is UI dev I spose
+                    lateinit var polySelect: MenuItem
+                    lateinit var expSelect: MenuItem
+
+                    polySelect = item("Polynomial"){
+                        setOnAction {
+                            expSelect.text = "Exponential"
+                            text = "✓ Polynomial"
+
+                            Logger.debug("Selected polynomial model")
+                            // TODO prompt for polynomial order?
+                            modelApproach = PolynomialFitApproach(POLYNOMIAL_REGRESSION_ORDER)
+                        }
+                    }
+                    expSelect = item("✓ Exponential"){
+                        setOnAction {
+                            polySelect.text = "Polynomial"
+                            text = "✓ Exponential"
+
+                            Logger.debug("Selected exponential model")
+                            modelApproach = ExponentialFitApproach()
+                        }
                     }
                 }
             }
@@ -249,7 +289,6 @@ class CalibrationView : View() {
                     setOnMouseClicked {
                         if (!selecting){
                             // first click, put down point
-                            println("SELECTING")
                             origin = if (snapInitialPoint && cropRect != null){
                                 val centreX = cropRect!!.x + (cropRect!!.width / 2.0)
                                 val centreY = cropRect!!.y + (cropRect!!.height / 2.0)
@@ -350,11 +389,18 @@ class CalibrationView : View() {
                                         println("${point.pixelDistance},${point.realDistance}")
                                     }
 
-                                    val coefficients = modelCalculator.calculateModel(dataPoints.toList())
+                                    val coefficients = modelApproach.calculateModel(dataPoints.toList())
+                                    val modelText = modelApproach.formatFunction(coefficients)
                                     Logger.info("Calculated coefficients: ${coefficients.joinToString(",")}")
-                                    Logger.info("Model function: ${modelCalculator.formatFunction(coefficients)}")
+                                    Logger.info("Model function: $modelText")
 
-                                    // TODO display a popup here (or an alternate view) with a graph
+                                    resultsField.text = modelText
+                                    updateModel(modelText)
+
+                                    if (!IS_DEBUG_MODE){
+                                        Utils.showGenericAlert(Alert.AlertType.INFORMATION,
+                                            "Function: $modelText\nAccuracy: TODO", "Model calculated successfully.")
+                                    }
                                 }
                             }
                         }
@@ -370,7 +416,13 @@ class CalibrationView : View() {
                         }
 
                         field {
-                            modelStatusLabel = label("Model status: Not loaded")
+                            label("Regression results:")
+                        }
+
+                        field {
+                            resultsField = textfield("Regression results will go here."){
+                                isEditable = false
+                            }
                         }
                     }
                 }

@@ -21,7 +21,7 @@ class ExpFunction : ParametricUnivariateFunction {
         val b = parameters[1]
 
         // return or derivatives with respect to parameters: dy/da, dy/db
-        // not sure if this is correct, but it's what Riley reckons
+        // thanks to riley bowyer for help with this
         val dyda = FastMath.exp(b * x)
         val dydb = a * x * FastMath.exp(b * x)
 

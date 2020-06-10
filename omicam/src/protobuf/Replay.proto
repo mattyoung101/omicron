@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+// This file contains the data for a Omicam Replay which is basically where we write out the important messages and
+// a timecode so we can play it back later
+
+import "RemoteDebug.proto";
+
+// The ReplayFrame is essentially a very stripped down version of DebugFrame with only the essentials for displaying
+// data in the Field View in Omicontrol
+message ReplayFrame {
+    // time in milliseconds since Omicam launch (basically, delta time sort of thing)
+    int32 timestamp = 1;
+    // robot information, main thing we want to display
+    repeated RDRobot robots = 2;
+    // average number of localiser evaluations
+    int32 localiserEvals = 4;
+    // NLopt returned status, for example, "MAXTIME_REACHED"
+    // TODO note this would bloat the files too much(?), so instead we just assume it says "FTOL_REACHED" as a hack
+    // string localiserStatus = 6;
+    // ball position in field coords
+    RDPointF ballPos = 7;
+    // localiser rate in Hz
+    int32 localiserRate = 8;
+    // yellow goal position in field coordinates
+    RDPointF yellowGoalPos = 9;
+    // blue goal position in field coordinates
+    RDPointF blueGoalPos = 10;
+    // if the yellow goal position is known (it's visible)
+    bool isYellowKnown = 11;
+    // if the blue goal position is known
+    bool isBallKnown = 12;
+    // if the ball position is known
+    bool isBlueKnown = 13;
+    // the robot's position according to the goal estimate
+    RDPointF goalEstimate = 14;
+    // localiser min estimate bounds if goal is present
+    RDPointF estimateMinBounds = 15;
+    // localiser max estimate bounds if goal is present
+    RDPointF estimateMaxBounds = 16;
+};
+
+message Replay {
+    // width of images from the camera in pixels, must stay constant across all frames
+    int32 frameWidth = 1;
+    // height of frames from the camera in pixels, must stay constant
+    int32 frameHeight = 2;
+
+    // all the recorded frames of the replay
+    repeated ReplayFrame frames = 3;
+};

@@ -18,7 +18,7 @@ import org.greenrobot.eventbus.EventBus
  * 3.4a: camera view supports many different colour spaces now, not just RGB
  * 3.5a: fixed some bugs, added some more tools to for debugging
  * 4.5b: Omicontrol enters beta, added support for hybrid localiser displays, fixed some bugs
- * 4.6b: (WIP) Omicontrol can now calculate mirror model itself (instead of using Excel)
+ * 4.6b: (WIP) added built-in mirror model calculation with exponential and polynomial (instead of CSV export)
  */
 const val OMICONTROL_VERSION = "4.6b"
 const val DEFAULT_IP = "192.168.12.1"
@@ -35,6 +35,9 @@ val FIELD_CANVAS_WIDTH = if (SystemUtils.IS_OS_MAC) 1280.0 * 0.9 * 0.90 else 128
 val FIELD_CANVAS_HEIGHT = if (SystemUtils.IS_OS_MAC) 962.0 * 0.9 * 0.90 else 962.0 * 0.9
 val ROBOT_CANVAS_DIAMETER = 21.0 / FIELD_LENGTH_CM * FIELD_CANVAS_WIDTH // diameter of our robot on field canvas
 val BALL_CANVAS_DIAMETER = 6.5 / FIELD_LENGTH_CM * FIELD_CANVAS_WIDTH // diameter of ball on field canvas
+
+/** order to use during polynomial regression for mirror model */
+const val POLYNOMIAL_REGRESSION_ORDER = 3
 
 val CONNECTION_MANAGER = ConnectionManager()
 val EVENT_BUS = EventBus.getDefault()!!

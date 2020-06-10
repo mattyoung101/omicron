@@ -12,9 +12,10 @@
  * 2.4a: localisation prototype implemented, sleep mode added
  * 3.4b: Omicam enters beta, localiser work continued
  * 4.4b: UART comms implemented, hybrid localiser implemented, fixed lots of bugs
- * 4.5b: (WIP) implemented hybrid localiser smoothing, recording vision to disk, and ...?
+ * 4.5b: implemented hybrid localiser smoothing and recording vision to disk
+ * 4.6b: (WIP) refactor replay system, some improvements to localiser, and ...?
  */
-#define OMICAM_VERSION "4.5b"
+#define OMICAM_VERSION "4.6b"
 /** whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO) */
 #define VERBOSE_LOGGING 1
 /** if true, attempts to kill all other Omicam instances on launch (stops duplicate processes) */
@@ -30,6 +31,8 @@
 #define VISION_RECORDING_FRAMERATE 30
 /** path to test data used in BUILD_TARGET_PC */
 #define VISION_TEST_FILE "../recordings/omicam_recording_1586137290.mp4"
+/** if true, we should load the test video specified in the VISION_TEST_FILE macro */
+#define VISION_LOAD_TEST_VIDEO 1
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1
@@ -52,8 +55,6 @@
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
 #define BUILD_TARGET (BUILD_TARGET_PC)
-/** if true, we are loading previously recorded replays instead of a still test image */
-#define LOADING_REPLAY_FILE 1
 
 /** stop optimisation when a coordinate with less than this error in centimetres is found */
 #define LOCALISER_ERROR_TOLERANCE 1

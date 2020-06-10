@@ -131,7 +131,7 @@ static auto cv_thread(void *arg) -> void *{
 #if BUILD_TARGET == BUILD_TARGET_PC
     log_info("Build target is PC, using test data");
 
-#if LOADING_REPLAY_FILE
+#if VISION_LOAD_TEST_VIDEO
     log_info("Loading vision recording video file");
     VideoCapture cap(VISION_TEST_FILE);
     if (!cap.isOpened()) {
@@ -159,7 +159,7 @@ static auto cv_thread(void *arg) -> void *{
     }
 #endif
 
-#if LOADING_REPLAY_FILE || BUILD_TARGET == BUILD_TARGET_SBC
+#if VISION_LOAD_TEST_VIDEO || BUILD_TARGET == BUILD_TARGET_SBC
     auto fps = ROUND2INT(cap.get(CAP_PROP_FPS));
     log_debug("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
 #endif
@@ -205,7 +205,7 @@ static auto cv_thread(void *arg) -> void *{
 
         // acquire our frame and check for errors
         Mat frame, frameScaled;
-#if BUILD_TARGET == BUILD_TARGET_SBC || LOADING_REPLAY_FILE
+#if BUILD_TARGET == BUILD_TARGET_SBC || VISION_LOAD_TEST_VIDEO
         cap.read(frame);
 #else
         ogFrame.copyTo(frame);
