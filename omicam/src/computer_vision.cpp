@@ -486,6 +486,8 @@ static auto fps_counter_thread(void *arg) -> void *{
 
     while (true){
         sleep(1);
+        if (sleeping) continue;
+
         double avgTime = movavg_calc(fpsAvg);
         if (avgTime == 0) continue; // another stupid to fix divide by zero when debugging
         lastFpsMeasurement = ROUND2INT(1000.0 / avgTime);

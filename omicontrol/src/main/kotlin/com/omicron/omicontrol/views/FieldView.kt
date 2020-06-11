@@ -80,15 +80,16 @@ class FieldView : View() {
                 // assume unknown first, update later if true
                 robot.isPositionKnown = false
             }
-            for ((i, robot) in message.robotPositionsList.take(message.robotPositionsCount).withIndex()){
+            for ((i, robot) in message.robotsList.take(message.robotsCount).withIndex()){
                 if (!isIgnorePosition){
-                    robots[i].position = Point2D(robot.x.toDouble(), robot.y.toDouble())
+                    robots[i].position = Point2D(robot.position.x.toDouble(), robot.position.y.toDouble())
                 } else {
                     robots[i].position = Point2D(0.0, 0.0)
                 }
-                // robots[i].orientation = message.robotOrientationsList[i] // FIXME broken right now
+                robots[i].orientation = robot.orientation
                 robots[i].isPositionKnown = true
-                robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f), %.2f", robot.x, robot.y, robots[i].orientation)
+                robots[i].positionLabel?.text = String.format("Position: (%.2f, %.2f), %.2f", robot.position.x, robot.position.y,
+                    robots[i].orientation)
             }
             // update positions
             ball.isPositionKnown = message.isBallKnown

@@ -23,7 +23,7 @@ extern int32_t visionCropRect[4];
 /** used by te_compile() when compiling the mirror model expression - TODO I still think this might be race condition prone */
 extern _Atomic double mirrorModelVariable;
 extern te_expr *mirrorModelExpr;
-/** true if Omicam is currently in sleep mode (low power mode) **/
+/** true if Omicam is currently in sleep mode (low power mode) */
 extern bool sleeping;
 extern pthread_cond_t sleepCond;
 extern pthread_mutex_t sleepMutex;

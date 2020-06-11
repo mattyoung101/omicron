@@ -3304,77 +3304,47 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    java.util.List<RemoteDebug.RDPointF> 
-        getRobotPositionsList();
+    java.util.List<RemoteDebug.RDRobot> 
+        getRobotsList();
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    RemoteDebug.RDPointF getRobotPositions(int index);
+    RemoteDebug.RDRobot getRobots(int index);
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    int getRobotPositionsCount();
+    int getRobotsCount();
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    java.util.List<? extends RemoteDebug.RDPointFOrBuilder> 
-        getRobotPositionsOrBuilderList();
+    java.util.List<? extends RemoteDebug.RDRobotOrBuilder> 
+        getRobotsOrBuilderList();
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    RemoteDebug.RDPointFOrBuilder getRobotPositionsOrBuilder(
+    RemoteDebug.RDRobotOrBuilder getRobotsOrBuilder(
         int index);
-
-    /**
-     * <pre>
-     * orientations of robots on the field
-     * </pre>
-     *
-     * <code>repeated float robotOrientations = 14;</code>
-     */
-    java.util.List<java.lang.Float> getRobotOrientationsList();
-    /**
-     * <pre>
-     * orientations of robots on the field
-     * </pre>
-     *
-     * <code>repeated float robotOrientations = 14;</code>
-     */
-    int getRobotOrientationsCount();
-    /**
-     * <pre>
-     * orientations of robots on the field
-     * </pre>
-     *
-     * <code>repeated float robotOrientations = 14;</code>
-     */
-    float getRobotOrientations(int index);
 
     /**
      * <pre>
@@ -3397,11 +3367,12 @@ public final class RemoteDebug {
     /**
      * <pre>
      * average time for localiser to run
+     * TODO deprecated, never used (localiserRate is used instead); remove later
      * </pre>
      *
-     * <code>optional float localiserTime = 17;</code>
+     * <code>optional float localiserTime = 17 [deprecated = true];</code>
      */
-    float getLocaliserTime();
+    @java.lang.Deprecated float getLocaliserTime();
 
     /**
      * <pre>
@@ -3703,8 +3674,7 @@ public final class RemoteDebug {
       rays_ = java.util.Collections.emptyList();
       dewarpedRays_ = java.util.Collections.emptyList();
       mirrorRadius_ = 0;
-      robotPositions_ = java.util.Collections.emptyList();
-      robotOrientations_ = java.util.Collections.emptyList();
+      robots_ = java.util.Collections.emptyList();
       rayInterval_ = 0F;
       localiserEvals_ = 0;
       localiserTime_ = 0F;
@@ -3860,32 +3830,11 @@ public final class RemoteDebug {
             }
             case 106: {
               if (!((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
-                robotPositions_ = new java.util.ArrayList<RemoteDebug.RDPointF>();
+                robots_ = new java.util.ArrayList<RemoteDebug.RDRobot>();
                 mutable_bitField0_ |= 0x00001000;
               }
-              robotPositions_.add(
-                  input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry));
-              break;
-            }
-            case 117: {
-              if (!((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
-                robotOrientations_ = new java.util.ArrayList<java.lang.Float>();
-                mutable_bitField0_ |= 0x00002000;
-              }
-              robotOrientations_.add(input.readFloat());
-              break;
-            }
-            case 114: {
-              int length = input.readRawVarint32();
-              int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00002000) == 0x00002000) && input.getBytesUntilLimit() > 0) {
-                robotOrientations_ = new java.util.ArrayList<java.lang.Float>();
-                mutable_bitField0_ |= 0x00002000;
-              }
-              while (input.getBytesUntilLimit() > 0) {
-                robotOrientations_.add(input.readFloat());
-              }
-              input.popLimit(limit);
+              robots_.add(
+                  input.readMessage(RemoteDebug.RDRobot.parser(), extensionRegistry));
               break;
             }
             case 125: {
@@ -3923,18 +3872,18 @@ public final class RemoteDebug {
               break;
             }
             case 162: {
-              if (!((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
+              if (!((mutable_bitField0_ & 0x00040000) == 0x00040000)) {
                 localiserVisitedPoints_ = new java.util.ArrayList<RemoteDebug.RDPointF>();
-                mutable_bitField0_ |= 0x00080000;
+                mutable_bitField0_ |= 0x00040000;
               }
               localiserVisitedPoints_.add(
                   input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry));
               break;
             }
             case 169: {
-              if (!((mutable_bitField0_ & 0x00100000) == 0x00100000)) {
+              if (!((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
                 rayScores_ = new java.util.ArrayList<java.lang.Double>();
-                mutable_bitField0_ |= 0x00100000;
+                mutable_bitField0_ |= 0x00080000;
               }
               rayScores_.add(input.readDouble());
               break;
@@ -3942,9 +3891,9 @@ public final class RemoteDebug {
             case 170: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00100000) == 0x00100000) && input.getBytesUntilLimit() > 0) {
+              if (!((mutable_bitField0_ & 0x00080000) == 0x00080000) && input.getBytesUntilLimit() > 0) {
                 rayScores_ = new java.util.ArrayList<java.lang.Double>();
-                mutable_bitField0_ |= 0x00100000;
+                mutable_bitField0_ |= 0x00080000;
               }
               while (input.getBytesUntilLimit() > 0) {
                 rayScores_.add(input.readDouble());
@@ -4052,15 +4001,12 @@ public final class RemoteDebug {
           dewarpedRays_ = java.util.Collections.unmodifiableList(dewarpedRays_);
         }
         if (((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
-          robotPositions_ = java.util.Collections.unmodifiableList(robotPositions_);
+          robots_ = java.util.Collections.unmodifiableList(robots_);
         }
-        if (((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
-          robotOrientations_ = java.util.Collections.unmodifiableList(robotOrientations_);
-        }
-        if (((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
+        if (((mutable_bitField0_ & 0x00040000) == 0x00040000)) {
           localiserVisitedPoints_ = java.util.Collections.unmodifiableList(localiserVisitedPoints_);
         }
-        if (((mutable_bitField0_ & 0x00100000) == 0x00100000)) {
+        if (((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
           rayScores_ = java.util.Collections.unmodifiableList(rayScores_);
         }
         makeExtensionsImmutable();
@@ -4339,100 +4285,60 @@ public final class RemoteDebug {
       return mirrorRadius_;
     }
 
-    public static final int ROBOTPOSITIONS_FIELD_NUMBER = 13;
-    private java.util.List<RemoteDebug.RDPointF> robotPositions_;
+    public static final int ROBOTS_FIELD_NUMBER = 13;
+    private java.util.List<RemoteDebug.RDRobot> robots_;
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    public java.util.List<RemoteDebug.RDPointF> getRobotPositionsList() {
-      return robotPositions_;
+    public java.util.List<RemoteDebug.RDRobot> getRobotsList() {
+      return robots_;
     }
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    public java.util.List<? extends RemoteDebug.RDPointFOrBuilder> 
-        getRobotPositionsOrBuilderList() {
-      return robotPositions_;
+    public java.util.List<? extends RemoteDebug.RDRobotOrBuilder> 
+        getRobotsOrBuilderList() {
+      return robots_;
     }
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    public int getRobotPositionsCount() {
-      return robotPositions_.size();
+    public int getRobotsCount() {
+      return robots_.size();
     }
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    public RemoteDebug.RDPointF getRobotPositions(int index) {
-      return robotPositions_.get(index);
+    public RemoteDebug.RDRobot getRobots(int index) {
+      return robots_.get(index);
     }
     /**
      * <pre>
-     * TODO use new robot struct instead of these arrays
-     * position of robots on the field
+     * position, orientation and FSM info for robots on the feld
      * </pre>
      *
-     * <code>repeated .RDPointF robotPositions = 13;</code>
+     * <code>repeated .RDRobot robots = 13;</code>
      */
-    public RemoteDebug.RDPointFOrBuilder getRobotPositionsOrBuilder(
+    public RemoteDebug.RDRobotOrBuilder getRobotsOrBuilder(
         int index) {
-      return robotPositions_.get(index);
+      return robots_.get(index);
     }
-
-    public static final int ROBOTORIENTATIONS_FIELD_NUMBER = 14;
-    private java.util.List<java.lang.Float> robotOrientations_;
-    /**
-     * <pre>
-     * orientations of robots on the field
-     * </pre>
-     *
-     * <code>repeated float robotOrientations = 14;</code>
-     */
-    public java.util.List<java.lang.Float>
-        getRobotOrientationsList() {
-      return robotOrientations_;
-    }
-    /**
-     * <pre>
-     * orientations of robots on the field
-     * </pre>
-     *
-     * <code>repeated float robotOrientations = 14;</code>
-     */
-    public int getRobotOrientationsCount() {
-      return robotOrientations_.size();
-    }
-    /**
-     * <pre>
-     * orientations of robots on the field
-     * </pre>
-     *
-     * <code>repeated float robotOrientations = 14;</code>
-     */
-    public float getRobotOrientations(int index) {
-      return robotOrientations_.get(index);
-    }
-    private int robotOrientationsMemoizedSerializedSize = -1;
 
     public static final int RAYINTERVAL_FIELD_NUMBER = 15;
     private float rayInterval_;
@@ -4465,11 +4371,12 @@ public final class RemoteDebug {
     /**
      * <pre>
      * average time for localiser to run
+     * TODO deprecated, never used (localiserRate is used instead); remove later
      * </pre>
      *
-     * <code>optional float localiserTime = 17;</code>
+     * <code>optional float localiserTime = 17 [deprecated = true];</code>
      */
-    public float getLocaliserTime() {
+    @java.lang.Deprecated public float getLocaliserTime() {
       return localiserTime_;
     }
 
@@ -4912,15 +4819,8 @@ public final class RemoteDebug {
       if (mirrorRadius_ != 0) {
         output.writeInt32(12, mirrorRadius_);
       }
-      for (int i = 0; i < robotPositions_.size(); i++) {
-        output.writeMessage(13, robotPositions_.get(i));
-      }
-      if (getRobotOrientationsList().size() > 0) {
-        output.writeUInt32NoTag(114);
-        output.writeUInt32NoTag(robotOrientationsMemoizedSerializedSize);
-      }
-      for (int i = 0; i < robotOrientations_.size(); i++) {
-        output.writeFloatNoTag(robotOrientations_.get(i));
+      for (int i = 0; i < robots_.size(); i++) {
+        output.writeMessage(13, robots_.get(i));
       }
       if (rayInterval_ != 0F) {
         output.writeFloat(15, rayInterval_);
@@ -5043,20 +4943,9 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(12, mirrorRadius_);
       }
-      for (int i = 0; i < robotPositions_.size(); i++) {
+      for (int i = 0; i < robots_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(13, robotPositions_.get(i));
-      }
-      {
-        int dataSize = 0;
-        dataSize = 4 * getRobotOrientationsList().size();
-        size += dataSize;
-        if (!getRobotOrientationsList().isEmpty()) {
-          size += 1;
-          size += com.google.protobuf.CodedOutputStream
-              .computeInt32SizeNoTag(dataSize);
-        }
-        robotOrientationsMemoizedSerializedSize = dataSize;
+          .computeMessageSize(13, robots_.get(i));
       }
       if (rayInterval_ != 0F) {
         size += com.google.protobuf.CodedOutputStream
@@ -5179,10 +5068,8 @@ public final class RemoteDebug {
           .equals(other.getDewarpedRaysList());
       result = result && (getMirrorRadius()
           == other.getMirrorRadius());
-      result = result && getRobotPositionsList()
-          .equals(other.getRobotPositionsList());
-      result = result && getRobotOrientationsList()
-          .equals(other.getRobotOrientationsList());
+      result = result && getRobotsList()
+          .equals(other.getRobotsList());
       result = result && (
           java.lang.Float.floatToIntBits(getRayInterval())
           == java.lang.Float.floatToIntBits(
@@ -5282,13 +5169,9 @@ public final class RemoteDebug {
       }
       hash = (37 * hash) + MIRRORRADIUS_FIELD_NUMBER;
       hash = (53 * hash) + getMirrorRadius();
-      if (getRobotPositionsCount() > 0) {
-        hash = (37 * hash) + ROBOTPOSITIONS_FIELD_NUMBER;
-        hash = (53 * hash) + getRobotPositionsList().hashCode();
-      }
-      if (getRobotOrientationsCount() > 0) {
-        hash = (37 * hash) + ROBOTORIENTATIONS_FIELD_NUMBER;
-        hash = (53 * hash) + getRobotOrientationsList().hashCode();
+      if (getRobotsCount() > 0) {
+        hash = (37 * hash) + ROBOTS_FIELD_NUMBER;
+        hash = (53 * hash) + getRobotsList().hashCode();
       }
       hash = (37 * hash) + RAYINTERVAL_FIELD_NUMBER;
       hash = (53 * hash) + java.lang.Float.floatToIntBits(
@@ -5463,7 +5346,7 @@ public final class RemoteDebug {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
-          getRobotPositionsFieldBuilder();
+          getRobotsFieldBuilder();
           getLocaliserVisitedPointsFieldBuilder();
         }
       }
@@ -5505,14 +5388,12 @@ public final class RemoteDebug {
         bitField0_ = (bitField0_ & ~0x00000400);
         mirrorRadius_ = 0;
 
-        if (robotPositionsBuilder_ == null) {
-          robotPositions_ = java.util.Collections.emptyList();
+        if (robotsBuilder_ == null) {
+          robots_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00001000);
         } else {
-          robotPositionsBuilder_.clear();
+          robotsBuilder_.clear();
         }
-        robotOrientations_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00002000);
         rayInterval_ = 0F;
 
         localiserEvals_ = 0;
@@ -5529,12 +5410,12 @@ public final class RemoteDebug {
         }
         if (localiserVisitedPointsBuilder_ == null) {
           localiserVisitedPoints_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00080000);
+          bitField0_ = (bitField0_ & ~0x00040000);
         } else {
           localiserVisitedPointsBuilder_.clear();
         }
         rayScores_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00100000);
+        bitField0_ = (bitField0_ & ~0x00080000);
         localiserRate_ = 0;
 
         if (yellowGoalPosBuilder_ == null) {
@@ -5629,20 +5510,15 @@ public final class RemoteDebug {
         }
         result.dewarpedRays_ = dewarpedRays_;
         result.mirrorRadius_ = mirrorRadius_;
-        if (robotPositionsBuilder_ == null) {
+        if (robotsBuilder_ == null) {
           if (((bitField0_ & 0x00001000) == 0x00001000)) {
-            robotPositions_ = java.util.Collections.unmodifiableList(robotPositions_);
+            robots_ = java.util.Collections.unmodifiableList(robots_);
             bitField0_ = (bitField0_ & ~0x00001000);
           }
-          result.robotPositions_ = robotPositions_;
+          result.robots_ = robots_;
         } else {
-          result.robotPositions_ = robotPositionsBuilder_.build();
+          result.robots_ = robotsBuilder_.build();
         }
-        if (((bitField0_ & 0x00002000) == 0x00002000)) {
-          robotOrientations_ = java.util.Collections.unmodifiableList(robotOrientations_);
-          bitField0_ = (bitField0_ & ~0x00002000);
-        }
-        result.robotOrientations_ = robotOrientations_;
         result.rayInterval_ = rayInterval_;
         result.localiserEvals_ = localiserEvals_;
         result.localiserTime_ = localiserTime_;
@@ -5653,17 +5529,17 @@ public final class RemoteDebug {
           result.ballPos_ = ballPosBuilder_.build();
         }
         if (localiserVisitedPointsBuilder_ == null) {
-          if (((bitField0_ & 0x00080000) == 0x00080000)) {
+          if (((bitField0_ & 0x00040000) == 0x00040000)) {
             localiserVisitedPoints_ = java.util.Collections.unmodifiableList(localiserVisitedPoints_);
-            bitField0_ = (bitField0_ & ~0x00080000);
+            bitField0_ = (bitField0_ & ~0x00040000);
           }
           result.localiserVisitedPoints_ = localiserVisitedPoints_;
         } else {
           result.localiserVisitedPoints_ = localiserVisitedPointsBuilder_.build();
         }
-        if (((bitField0_ & 0x00100000) == 0x00100000)) {
+        if (((bitField0_ & 0x00080000) == 0x00080000)) {
           rayScores_ = java.util.Collections.unmodifiableList(rayScores_);
-          bitField0_ = (bitField0_ & ~0x00100000);
+          bitField0_ = (bitField0_ & ~0x00080000);
         }
         result.rayScores_ = rayScores_;
         result.localiserRate_ = localiserRate_;
@@ -5787,41 +5663,31 @@ public final class RemoteDebug {
         if (other.getMirrorRadius() != 0) {
           setMirrorRadius(other.getMirrorRadius());
         }
-        if (robotPositionsBuilder_ == null) {
-          if (!other.robotPositions_.isEmpty()) {
-            if (robotPositions_.isEmpty()) {
-              robotPositions_ = other.robotPositions_;
+        if (robotsBuilder_ == null) {
+          if (!other.robots_.isEmpty()) {
+            if (robots_.isEmpty()) {
+              robots_ = other.robots_;
               bitField0_ = (bitField0_ & ~0x00001000);
             } else {
-              ensureRobotPositionsIsMutable();
-              robotPositions_.addAll(other.robotPositions_);
+              ensureRobotsIsMutable();
+              robots_.addAll(other.robots_);
             }
             onChanged();
           }
         } else {
-          if (!other.robotPositions_.isEmpty()) {
-            if (robotPositionsBuilder_.isEmpty()) {
-              robotPositionsBuilder_.dispose();
-              robotPositionsBuilder_ = null;
-              robotPositions_ = other.robotPositions_;
+          if (!other.robots_.isEmpty()) {
+            if (robotsBuilder_.isEmpty()) {
+              robotsBuilder_.dispose();
+              robotsBuilder_ = null;
+              robots_ = other.robots_;
               bitField0_ = (bitField0_ & ~0x00001000);
-              robotPositionsBuilder_ = 
+              robotsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getRobotPositionsFieldBuilder() : null;
+                   getRobotsFieldBuilder() : null;
             } else {
-              robotPositionsBuilder_.addAllMessages(other.robotPositions_);
+              robotsBuilder_.addAllMessages(other.robots_);
             }
           }
-        }
-        if (!other.robotOrientations_.isEmpty()) {
-          if (robotOrientations_.isEmpty()) {
-            robotOrientations_ = other.robotOrientations_;
-            bitField0_ = (bitField0_ & ~0x00002000);
-          } else {
-            ensureRobotOrientationsIsMutable();
-            robotOrientations_.addAll(other.robotOrientations_);
-          }
-          onChanged();
         }
         if (other.getRayInterval() != 0F) {
           setRayInterval(other.getRayInterval());
@@ -5843,7 +5709,7 @@ public final class RemoteDebug {
           if (!other.localiserVisitedPoints_.isEmpty()) {
             if (localiserVisitedPoints_.isEmpty()) {
               localiserVisitedPoints_ = other.localiserVisitedPoints_;
-              bitField0_ = (bitField0_ & ~0x00080000);
+              bitField0_ = (bitField0_ & ~0x00040000);
             } else {
               ensureLocaliserVisitedPointsIsMutable();
               localiserVisitedPoints_.addAll(other.localiserVisitedPoints_);
@@ -5856,7 +5722,7 @@ public final class RemoteDebug {
               localiserVisitedPointsBuilder_.dispose();
               localiserVisitedPointsBuilder_ = null;
               localiserVisitedPoints_ = other.localiserVisitedPoints_;
-              bitField0_ = (bitField0_ & ~0x00080000);
+              bitField0_ = (bitField0_ & ~0x00040000);
               localiserVisitedPointsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getLocaliserVisitedPointsFieldBuilder() : null;
@@ -5868,7 +5734,7 @@ public final class RemoteDebug {
         if (!other.rayScores_.isEmpty()) {
           if (rayScores_.isEmpty()) {
             rayScores_ = other.rayScores_;
-            bitField0_ = (bitField0_ & ~0x00100000);
+            bitField0_ = (bitField0_ & ~0x00080000);
           } else {
             ensureRayScoresIsMutable();
             rayScores_.addAll(other.rayScores_);
@@ -6848,428 +6714,316 @@ public final class RemoteDebug {
         return this;
       }
 
-      private java.util.List<RemoteDebug.RDPointF> robotPositions_ =
+      private java.util.List<RemoteDebug.RDRobot> robots_ =
         java.util.Collections.emptyList();
-      private void ensureRobotPositionsIsMutable() {
+      private void ensureRobotsIsMutable() {
         if (!((bitField0_ & 0x00001000) == 0x00001000)) {
-          robotPositions_ = new java.util.ArrayList<RemoteDebug.RDPointF>(robotPositions_);
+          robots_ = new java.util.ArrayList<RemoteDebug.RDRobot>(robots_);
           bitField0_ |= 0x00001000;
          }
       }
 
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> robotPositionsBuilder_;
+          RemoteDebug.RDRobot, RemoteDebug.RDRobot.Builder, RemoteDebug.RDRobotOrBuilder> robotsBuilder_;
 
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public java.util.List<RemoteDebug.RDPointF> getRobotPositionsList() {
-        if (robotPositionsBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(robotPositions_);
+      public java.util.List<RemoteDebug.RDRobot> getRobotsList() {
+        if (robotsBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(robots_);
         } else {
-          return robotPositionsBuilder_.getMessageList();
+          return robotsBuilder_.getMessageList();
         }
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public int getRobotPositionsCount() {
-        if (robotPositionsBuilder_ == null) {
-          return robotPositions_.size();
+      public int getRobotsCount() {
+        if (robotsBuilder_ == null) {
+          return robots_.size();
         } else {
-          return robotPositionsBuilder_.getCount();
+          return robotsBuilder_.getCount();
         }
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public RemoteDebug.RDPointF getRobotPositions(int index) {
-        if (robotPositionsBuilder_ == null) {
-          return robotPositions_.get(index);
+      public RemoteDebug.RDRobot getRobots(int index) {
+        if (robotsBuilder_ == null) {
+          return robots_.get(index);
         } else {
-          return robotPositionsBuilder_.getMessage(index);
+          return robotsBuilder_.getMessage(index);
         }
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public Builder setRobotPositions(
-          int index, RemoteDebug.RDPointF value) {
-        if (robotPositionsBuilder_ == null) {
+      public Builder setRobots(
+          int index, RemoteDebug.RDRobot value) {
+        if (robotsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureRobotPositionsIsMutable();
-          robotPositions_.set(index, value);
+          ensureRobotsIsMutable();
+          robots_.set(index, value);
           onChanged();
         } else {
-          robotPositionsBuilder_.setMessage(index, value);
+          robotsBuilder_.setMessage(index, value);
         }
         return this;
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public Builder setRobotPositions(
-          int index, RemoteDebug.RDPointF.Builder builderForValue) {
-        if (robotPositionsBuilder_ == null) {
-          ensureRobotPositionsIsMutable();
-          robotPositions_.set(index, builderForValue.build());
+      public Builder setRobots(
+          int index, RemoteDebug.RDRobot.Builder builderForValue) {
+        if (robotsBuilder_ == null) {
+          ensureRobotsIsMutable();
+          robots_.set(index, builderForValue.build());
           onChanged();
         } else {
-          robotPositionsBuilder_.setMessage(index, builderForValue.build());
+          robotsBuilder_.setMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public Builder addRobotPositions(RemoteDebug.RDPointF value) {
-        if (robotPositionsBuilder_ == null) {
+      public Builder addRobots(RemoteDebug.RDRobot value) {
+        if (robotsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureRobotPositionsIsMutable();
-          robotPositions_.add(value);
+          ensureRobotsIsMutable();
+          robots_.add(value);
           onChanged();
         } else {
-          robotPositionsBuilder_.addMessage(value);
+          robotsBuilder_.addMessage(value);
         }
         return this;
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public Builder addRobotPositions(
-          int index, RemoteDebug.RDPointF value) {
-        if (robotPositionsBuilder_ == null) {
+      public Builder addRobots(
+          int index, RemoteDebug.RDRobot value) {
+        if (robotsBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          ensureRobotPositionsIsMutable();
-          robotPositions_.add(index, value);
+          ensureRobotsIsMutable();
+          robots_.add(index, value);
           onChanged();
         } else {
-          robotPositionsBuilder_.addMessage(index, value);
+          robotsBuilder_.addMessage(index, value);
         }
         return this;
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public Builder addRobotPositions(
-          RemoteDebug.RDPointF.Builder builderForValue) {
-        if (robotPositionsBuilder_ == null) {
-          ensureRobotPositionsIsMutable();
-          robotPositions_.add(builderForValue.build());
+      public Builder addRobots(
+          RemoteDebug.RDRobot.Builder builderForValue) {
+        if (robotsBuilder_ == null) {
+          ensureRobotsIsMutable();
+          robots_.add(builderForValue.build());
           onChanged();
         } else {
-          robotPositionsBuilder_.addMessage(builderForValue.build());
+          robotsBuilder_.addMessage(builderForValue.build());
         }
         return this;
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public Builder addRobotPositions(
-          int index, RemoteDebug.RDPointF.Builder builderForValue) {
-        if (robotPositionsBuilder_ == null) {
-          ensureRobotPositionsIsMutable();
-          robotPositions_.add(index, builderForValue.build());
+      public Builder addRobots(
+          int index, RemoteDebug.RDRobot.Builder builderForValue) {
+        if (robotsBuilder_ == null) {
+          ensureRobotsIsMutable();
+          robots_.add(index, builderForValue.build());
           onChanged();
         } else {
-          robotPositionsBuilder_.addMessage(index, builderForValue.build());
+          robotsBuilder_.addMessage(index, builderForValue.build());
         }
         return this;
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public Builder addAllRobotPositions(
-          java.lang.Iterable<? extends RemoteDebug.RDPointF> values) {
-        if (robotPositionsBuilder_ == null) {
-          ensureRobotPositionsIsMutable();
+      public Builder addAllRobots(
+          java.lang.Iterable<? extends RemoteDebug.RDRobot> values) {
+        if (robotsBuilder_ == null) {
+          ensureRobotsIsMutable();
           com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, robotPositions_);
+              values, robots_);
           onChanged();
         } else {
-          robotPositionsBuilder_.addAllMessages(values);
+          robotsBuilder_.addAllMessages(values);
         }
         return this;
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public Builder clearRobotPositions() {
-        if (robotPositionsBuilder_ == null) {
-          robotPositions_ = java.util.Collections.emptyList();
+      public Builder clearRobots() {
+        if (robotsBuilder_ == null) {
+          robots_ = java.util.Collections.emptyList();
           bitField0_ = (bitField0_ & ~0x00001000);
           onChanged();
         } else {
-          robotPositionsBuilder_.clear();
+          robotsBuilder_.clear();
         }
         return this;
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public Builder removeRobotPositions(int index) {
-        if (robotPositionsBuilder_ == null) {
-          ensureRobotPositionsIsMutable();
-          robotPositions_.remove(index);
+      public Builder removeRobots(int index) {
+        if (robotsBuilder_ == null) {
+          ensureRobotsIsMutable();
+          robots_.remove(index);
           onChanged();
         } else {
-          robotPositionsBuilder_.remove(index);
+          robotsBuilder_.remove(index);
         }
         return this;
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public RemoteDebug.RDPointF.Builder getRobotPositionsBuilder(
+      public RemoteDebug.RDRobot.Builder getRobotsBuilder(
           int index) {
-        return getRobotPositionsFieldBuilder().getBuilder(index);
+        return getRobotsFieldBuilder().getBuilder(index);
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public RemoteDebug.RDPointFOrBuilder getRobotPositionsOrBuilder(
+      public RemoteDebug.RDRobotOrBuilder getRobotsOrBuilder(
           int index) {
-        if (robotPositionsBuilder_ == null) {
-          return robotPositions_.get(index);  } else {
-          return robotPositionsBuilder_.getMessageOrBuilder(index);
+        if (robotsBuilder_ == null) {
+          return robots_.get(index);  } else {
+          return robotsBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public java.util.List<? extends RemoteDebug.RDPointFOrBuilder> 
-           getRobotPositionsOrBuilderList() {
-        if (robotPositionsBuilder_ != null) {
-          return robotPositionsBuilder_.getMessageOrBuilderList();
+      public java.util.List<? extends RemoteDebug.RDRobotOrBuilder> 
+           getRobotsOrBuilderList() {
+        if (robotsBuilder_ != null) {
+          return robotsBuilder_.getMessageOrBuilderList();
         } else {
-          return java.util.Collections.unmodifiableList(robotPositions_);
+          return java.util.Collections.unmodifiableList(robots_);
         }
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public RemoteDebug.RDPointF.Builder addRobotPositionsBuilder() {
-        return getRobotPositionsFieldBuilder().addBuilder(
-            RemoteDebug.RDPointF.getDefaultInstance());
+      public RemoteDebug.RDRobot.Builder addRobotsBuilder() {
+        return getRobotsFieldBuilder().addBuilder(
+            RemoteDebug.RDRobot.getDefaultInstance());
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public RemoteDebug.RDPointF.Builder addRobotPositionsBuilder(
+      public RemoteDebug.RDRobot.Builder addRobotsBuilder(
           int index) {
-        return getRobotPositionsFieldBuilder().addBuilder(
-            index, RemoteDebug.RDPointF.getDefaultInstance());
+        return getRobotsFieldBuilder().addBuilder(
+            index, RemoteDebug.RDRobot.getDefaultInstance());
       }
       /**
        * <pre>
-       * TODO use new robot struct instead of these arrays
-       * position of robots on the field
+       * position, orientation and FSM info for robots on the feld
        * </pre>
        *
-       * <code>repeated .RDPointF robotPositions = 13;</code>
+       * <code>repeated .RDRobot robots = 13;</code>
        */
-      public java.util.List<RemoteDebug.RDPointF.Builder> 
-           getRobotPositionsBuilderList() {
-        return getRobotPositionsFieldBuilder().getBuilderList();
+      public java.util.List<RemoteDebug.RDRobot.Builder> 
+           getRobotsBuilderList() {
+        return getRobotsFieldBuilder().getBuilderList();
       }
       private com.google.protobuf.RepeatedFieldBuilderV3<
-          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
-          getRobotPositionsFieldBuilder() {
-        if (robotPositionsBuilder_ == null) {
-          robotPositionsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
-                  robotPositions_,
+          RemoteDebug.RDRobot, RemoteDebug.RDRobot.Builder, RemoteDebug.RDRobotOrBuilder> 
+          getRobotsFieldBuilder() {
+        if (robotsBuilder_ == null) {
+          robotsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              RemoteDebug.RDRobot, RemoteDebug.RDRobot.Builder, RemoteDebug.RDRobotOrBuilder>(
+                  robots_,
                   ((bitField0_ & 0x00001000) == 0x00001000),
                   getParentForChildren(),
                   isClean());
-          robotPositions_ = null;
+          robots_ = null;
         }
-        return robotPositionsBuilder_;
-      }
-
-      private java.util.List<java.lang.Float> robotOrientations_ = java.util.Collections.emptyList();
-      private void ensureRobotOrientationsIsMutable() {
-        if (!((bitField0_ & 0x00002000) == 0x00002000)) {
-          robotOrientations_ = new java.util.ArrayList<java.lang.Float>(robotOrientations_);
-          bitField0_ |= 0x00002000;
-         }
-      }
-      /**
-       * <pre>
-       * orientations of robots on the field
-       * </pre>
-       *
-       * <code>repeated float robotOrientations = 14;</code>
-       */
-      public java.util.List<java.lang.Float>
-          getRobotOrientationsList() {
-        return java.util.Collections.unmodifiableList(robotOrientations_);
-      }
-      /**
-       * <pre>
-       * orientations of robots on the field
-       * </pre>
-       *
-       * <code>repeated float robotOrientations = 14;</code>
-       */
-      public int getRobotOrientationsCount() {
-        return robotOrientations_.size();
-      }
-      /**
-       * <pre>
-       * orientations of robots on the field
-       * </pre>
-       *
-       * <code>repeated float robotOrientations = 14;</code>
-       */
-      public float getRobotOrientations(int index) {
-        return robotOrientations_.get(index);
-      }
-      /**
-       * <pre>
-       * orientations of robots on the field
-       * </pre>
-       *
-       * <code>repeated float robotOrientations = 14;</code>
-       */
-      public Builder setRobotOrientations(
-          int index, float value) {
-        ensureRobotOrientationsIsMutable();
-        robotOrientations_.set(index, value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * orientations of robots on the field
-       * </pre>
-       *
-       * <code>repeated float robotOrientations = 14;</code>
-       */
-      public Builder addRobotOrientations(float value) {
-        ensureRobotOrientationsIsMutable();
-        robotOrientations_.add(value);
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * orientations of robots on the field
-       * </pre>
-       *
-       * <code>repeated float robotOrientations = 14;</code>
-       */
-      public Builder addAllRobotOrientations(
-          java.lang.Iterable<? extends java.lang.Float> values) {
-        ensureRobotOrientationsIsMutable();
-        com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, robotOrientations_);
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * orientations of robots on the field
-       * </pre>
-       *
-       * <code>repeated float robotOrientations = 14;</code>
-       */
-      public Builder clearRobotOrientations() {
-        robotOrientations_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00002000);
-        onChanged();
-        return this;
+        return robotsBuilder_;
       }
 
       private float rayInterval_ ;
@@ -7352,21 +7106,23 @@ public final class RemoteDebug {
       /**
        * <pre>
        * average time for localiser to run
+       * TODO deprecated, never used (localiserRate is used instead); remove later
        * </pre>
        *
-       * <code>optional float localiserTime = 17;</code>
+       * <code>optional float localiserTime = 17 [deprecated = true];</code>
        */
-      public float getLocaliserTime() {
+      @java.lang.Deprecated public float getLocaliserTime() {
         return localiserTime_;
       }
       /**
        * <pre>
        * average time for localiser to run
+       * TODO deprecated, never used (localiserRate is used instead); remove later
        * </pre>
        *
-       * <code>optional float localiserTime = 17;</code>
+       * <code>optional float localiserTime = 17 [deprecated = true];</code>
        */
-      public Builder setLocaliserTime(float value) {
+      @java.lang.Deprecated public Builder setLocaliserTime(float value) {
         
         localiserTime_ = value;
         onChanged();
@@ -7375,11 +7131,12 @@ public final class RemoteDebug {
       /**
        * <pre>
        * average time for localiser to run
+       * TODO deprecated, never used (localiserRate is used instead); remove later
        * </pre>
        *
-       * <code>optional float localiserTime = 17;</code>
+       * <code>optional float localiserTime = 17 [deprecated = true];</code>
        */
-      public Builder clearLocaliserTime() {
+      @java.lang.Deprecated public Builder clearLocaliserTime() {
         
         localiserTime_ = 0F;
         onChanged();
@@ -7631,9 +7388,9 @@ public final class RemoteDebug {
       private java.util.List<RemoteDebug.RDPointF> localiserVisitedPoints_ =
         java.util.Collections.emptyList();
       private void ensureLocaliserVisitedPointsIsMutable() {
-        if (!((bitField0_ & 0x00080000) == 0x00080000)) {
+        if (!((bitField0_ & 0x00040000) == 0x00040000)) {
           localiserVisitedPoints_ = new java.util.ArrayList<RemoteDebug.RDPointF>(localiserVisitedPoints_);
-          bitField0_ |= 0x00080000;
+          bitField0_ |= 0x00040000;
          }
       }
 
@@ -7827,7 +7584,7 @@ public final class RemoteDebug {
       public Builder clearLocaliserVisitedPoints() {
         if (localiserVisitedPointsBuilder_ == null) {
           localiserVisitedPoints_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00080000);
+          bitField0_ = (bitField0_ & ~0x00040000);
           onChanged();
         } else {
           localiserVisitedPointsBuilder_.clear();
@@ -7932,7 +7689,7 @@ public final class RemoteDebug {
           localiserVisitedPointsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
                   localiserVisitedPoints_,
-                  ((bitField0_ & 0x00080000) == 0x00080000),
+                  ((bitField0_ & 0x00040000) == 0x00040000),
                   getParentForChildren(),
                   isClean());
           localiserVisitedPoints_ = null;
@@ -7942,9 +7699,9 @@ public final class RemoteDebug {
 
       private java.util.List<java.lang.Double> rayScores_ = java.util.Collections.emptyList();
       private void ensureRayScoresIsMutable() {
-        if (!((bitField0_ & 0x00100000) == 0x00100000)) {
+        if (!((bitField0_ & 0x00080000) == 0x00080000)) {
           rayScores_ = new java.util.ArrayList<java.lang.Double>(rayScores_);
-          bitField0_ |= 0x00100000;
+          bitField0_ |= 0x00080000;
          }
       }
       /**
@@ -8029,7 +7786,7 @@ public final class RemoteDebug {
        */
       public Builder clearRayScores() {
         rayScores_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00100000);
+        bitField0_ = (bitField0_ & ~0x00080000);
         onChanged();
         return this;
       }
@@ -11753,35 +11510,34 @@ public final class RemoteDebug {
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
       "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"M\n\007RDRobo" +
       "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
-      "ation\030\002 \001(\002\022\020\n\010fsmState\030\003 \001(\t\"\222\006\n\nDebugF" +
+      "ation\030\002 \001(\002\022\020\n\010fsmState\030\003 \001(\t\"\362\005\n\nDebugF" +
       "rame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017ballThresh" +
       "Image\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022\031\n\010ball" +
       "Rect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentroid\030\005 \001(",
       "\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframeWidth\030\007" +
       " \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010cropRect\030\t " +
       "\001(\0132\007.RDRect\022\014\n\004rays\030\n \003(\001\022\024\n\014dewarpedRa" +
-      "ys\030\013 \003(\001\022\024\n\014mirrorRadius\030\014 \001(\005\022!\n\016robotP" +
-      "ositions\030\r \003(\0132\t.RDPointF\022\031\n\021robotOrient" +
-      "ations\030\016 \003(\002\022\023\n\013rayInterval\030\017 \001(\002\022\026\n\016loc" +
-      "aliserEvals\030\020 \001(\005\022\025\n\rlocaliserTime\030\021 \001(\002" +
-      "\022\027\n\017localiserStatus\030\022 \001(\t\022\032\n\007ballPos\030\023 \001" +
-      "(\0132\t.RDPointF\022)\n\026localiserVisitedPoints\030" +
-      "\024 \003(\0132\t.RDPointF\022\021\n\trayScores\030\025 \003(\001\022\025\n\rl",
-      "ocaliserRate\030\026 \001(\005\022 \n\ryellowGoalPos\030\027 \001(" +
-      "\0132\t.RDPointF\022\036\n\013blueGoalPos\030\030 \001(\0132\t.RDPo" +
-      "intF\022\025\n\risYellowKnown\030\031 \001(\010\022\023\n\013isBallKno" +
-      "wn\030\032 \001(\010\022\023\n\013isBlueKnown\030\033 \001(\010\022\037\n\014goalEst" +
-      "imate\030\034 \001(\0132\t.RDPointF\022$\n\021estimateMinBou" +
-      "nds\030\035 \001(\0132\t.RDPointF\022$\n\021estimateMaxBound" +
-      "s\030\036 \001(\0132\t.RDPointF\"\341\001\n\014DebugCommand\022\021\n\tm" +
-      "essageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint" +
-      "\022\023\n\013orientation\030\003 \001(\002\022#\n\rallThresholds\030\004" +
-      " \003(\0132\014.RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006",
-      "minMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005v" +
-      "alue\030\010 \001(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled" +
-      "\030\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.De" +
-      "bugFrame\022\036\n\007command\030\002 \001(\0132\r.DebugCommand" +
-      "\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
+      "ys\030\013 \003(\001\022\024\n\014mirrorRadius\030\014 \001(\005\022\030\n\006robots" +
+      "\030\r \003(\0132\010.RDRobot\022\023\n\013rayInterval\030\017 \001(\002\022\026\n" +
+      "\016localiserEvals\030\020 \001(\005\022\031\n\rlocaliserTime\030\021" +
+      " \001(\002B\002\030\001\022\027\n\017localiserStatus\030\022 \001(\t\022\032\n\007bal" +
+      "lPos\030\023 \001(\0132\t.RDPointF\022)\n\026localiserVisite" +
+      "dPoints\030\024 \003(\0132\t.RDPointF\022\021\n\trayScores\030\025 " +
+      "\003(\001\022\025\n\rlocaliserRate\030\026 \001(\005\022 \n\ryellowGoal",
+      "Pos\030\027 \001(\0132\t.RDPointF\022\036\n\013blueGoalPos\030\030 \001(" +
+      "\0132\t.RDPointF\022\025\n\risYellowKnown\030\031 \001(\010\022\023\n\013i" +
+      "sBallKnown\030\032 \001(\010\022\023\n\013isBlueKnown\030\033 \001(\010\022\037\n" +
+      "\014goalEstimate\030\034 \001(\0132\t.RDPointF\022$\n\021estima" +
+      "teMinBounds\030\035 \001(\0132\t.RDPointF\022$\n\021estimate" +
+      "MaxBounds\030\036 \001(\0132\t.RDPointF\"\341\001\n\014DebugComm" +
+      "and\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010" +
+      ".RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n\rallThre" +
+      "sholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010objectId\030\005" +
+      " \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 ",
+      "\001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\ti" +
+      "sEnabled\030\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 " +
+      "\001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r.Debu" +
+      "gCommand\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -11830,7 +11586,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "RobotPositions", "RobotOrientations", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", "GoalEstimate", "EstimateMinBounds", "EstimateMaxBounds", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "Robots", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", "GoalEstimate", "EstimateMinBounds", "EstimateMaxBounds", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_DebugCommand_fieldAccessorTable = new

@@ -456,9 +456,10 @@ void remote_debug_localiser_provide(DebugFrame *msg){
     memcpy(msg->rays, observedRaysRaw, LOCALISER_NUM_RAYS * sizeof(double));
     msg->rays_count = LOCALISER_NUM_RAYS;
 
-    msg->robotPositions[0].x = (float) localisedPosition.x;
-    msg->robotPositions[0].y = (float) localisedPosition.y;
-    msg->robotPositions_count = 1;
+    msg->robots[0].position.x = (float) localisedPosition.x;
+    msg->robots[0].position.y = (float) localisedPosition.y;
+    msg->robots_count = 1;
+    // TODO set yaw and FSM state and stuff for robots
     // TODO here we would actually need to provide the received robot position over Bluetooth too
 
     msg->localiserRate = localiserRate;
@@ -492,6 +493,8 @@ void remote_debug_localiser_provide(DebugFrame *msg){
 static void *perf_thread(void *arg){
     while (true){
         sleep(1);
+        if (sleeping) continue;
+
         double avgTime = movavg_calc(timeAvg);
         double avgEval = movavg_calc(evalAvg);
         if (avgTime == 0) continue;
