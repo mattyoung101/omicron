@@ -24,25 +24,30 @@
 #include "comms_uart.h"
 #include <sys/reboot.h>
 #include <sys/param.h>
+#include <inttypes.h>
 
 // Manages encoding camera frames to JPG images (with turbo-jpeg) and sending them over a TCP socket to Omicontrol
 // Also handles receiving data from Omicontrol
 // source for libjpeg-turbo usage: https://stackoverflow.com/a/17671012/5007892
 
 static tjhandle compressor;
+/** frame width */
 static _Atomic int32_t width = 0;
+/** frame height */
 static _Atomic int32_t height = 0;
 static pthread_t frameThread, tcpThread, thermalThread;
 static rpa_queue_t *frameQueue = NULL;
-/** the file descriptor of the server socket **/
+/** the file descriptor of the server socket */
 static _Atomic int sockfd = -1;
-/** the file descriptor of the connection to the client **/
+/** the file descriptor of the connection to the client */
 static _Atomic int connfd = -1;
 _Atomic double cpuTemperature = 0.0f;
-/** true if the device is likely to be thermal throttling **/
+/** true if the device is likely to be thermal throttling */
 static bool thermalThrottling = false;
 field_objects_t selectedFieldObject = OBJ_NONE;
+/** the total number of times we've had connection problems with this client */
 static int32_t totalFailures = 0;
+/** true if we have already acknowledged a connection error occuring */
 static bool wasError = false;
 
 static void init_tcp_socket(void);
@@ -189,7 +194,7 @@ static void read_remote_messages(void){
                     free(buf);
                     return;
                 }
-                comms_uart_send(DEBUG_CMD, msgBuf, stream.bytes_written);
+                comms_uart_send(MSG_DEBUG_CMD, msgBuf, stream.bytes_written);
                 RD_SEND_OK_RESPONSE;
                 break;
             }

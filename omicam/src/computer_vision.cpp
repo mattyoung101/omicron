@@ -15,6 +15,7 @@
 #include "rpa_queue.h"
 #include "movavg.h"
 #include "localisation.h"
+#include "replay.h"
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
 using namespace std;
@@ -129,10 +130,10 @@ static auto cv_thread(void *arg) -> void *{
     log_trace("Vision thread started");
 
 #if BUILD_TARGET == BUILD_TARGET_PC
-    log_info("Build target is PC, using test data");
+    log_info("Build target is PC, using VISION_TEST_FILE instead of camera");
 
 #if VISION_LOAD_TEST_VIDEO
-    log_info("Loading vision recording video file");
+    log_info("Loading VISION_TEST_FILE: " VISION_TEST_FILE);
     VideoCapture cap(VISION_TEST_FILE);
     if (!cap.isOpened()) {
         log_error("Failed to load video file, cannot continue. Please check the path is correct.");
@@ -164,14 +165,18 @@ static auto cv_thread(void *arg) -> void *{
     log_debug("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
 #endif
 
+    if (!replay_is_recording() && visionRecordingEnabled){
+        log_error("WE FUCKED UP: vision recording is enabled but no replay has been started. Things are likely to go wrong now.");
+    }
     // create OpenCV VideoWriter and generate disk filename, runs even if it's disabled for simplicity's sake
-    // if vision recording is disabled, no files are written
     char filebuf[256] = {};
-    time_t recordingId = time(nullptr);
+    time_t recordingId = replay_get_id();
     snprintf(filebuf, 256, "../recordings/omicam_recording_%ld.mp4", recordingId);
 
-    if (visionRecordingEnabled){
-        log_info("Vision recording enabled (target: %d fps), video path: %s", VISION_RECORDING_FRAMERATE, filebuf);
+    // only actually write the files to disk if a replay is currently being recorded
+    // this is because for the replay we save both the mp4 and omirec at the same time
+    if (replay_is_recording()){
+        log_info("Vision recording started (target: %d fps), video path: %s", VISION_RECORDING_FRAMERATE, filebuf);
         videoWriter.open(filebuf, VideoWriter::fourcc('m', 'p', '4', 'v'), VISION_RECORDING_FRAMERATE,
                          Size(videoWidth, videoHeight));
         if (!videoWriter.isOpened()){
@@ -342,6 +347,7 @@ static auto cv_thread(void *arg) -> void *{
             data.goalYellowAbsY = (float) localisedPosition.y + data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
         }
         // TODO consider sending relative field goal and ball coordinates in cartesian (like we send to localiser) over UART?
+        // TODO remove utils_cv_transmit() and put it here instead
         utils_cv_transmit_data(data);
 
         // post data to localiser, the reason it's done so late now is because the new hybrid localisation algorithm

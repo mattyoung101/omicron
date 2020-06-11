@@ -11,12 +11,15 @@
 #include "nanopb/pb_encode.h"
 #include "comms_uart.h"
 #include "computer_vision.hpp"
+#include "replay.h"
 #include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <nlopt.h>
 #include <iniparser/iniparser.h>
 #include <ctype.h>
+#include <dirent.h>
+#include <wait.h>
 
 int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
 int32_t videoWidth, videoHeight, visionRobotMaskRadius, visionMirrorRadius;
@@ -109,7 +112,7 @@ void utils_cv_transmit_data(ObjectData ballData){
         log_error("Failed to encode vision protocol buffer message: %s", PB_GET_ERROR(&stream));
         return;
     }
-    comms_uart_send(OBJECT_DATA, msgBuf, stream.bytes_written);
+    comms_uart_send(MSG_OBJECT_DATA, msgBuf, stream.bytes_written);
 }
 
 static void write_thresholds(FILE *fp){
@@ -281,11 +284,14 @@ void utils_reload_config(void){
     isDrawMirrorMask = iniparser_getboolean(config, "Vision:drawMirrorMask", true);
     isDrawRobotMask = iniparser_getboolean(config, "Vision:drawRobotMask", true);
     visionDebugRobotMask = iniparser_getboolean(config, "Vision:renderRobotMask", false);
-    visionRecordingEnabled = iniparser_getboolean(config, "Vision:videoRecording", false);
-    if (VISION_LOAD_TEST_VIDEO && visionRecordingEnabled){
-        // FIXME also check if we are loading a Protobuf replay (not just a test video)
-        log_warn("Refusing to enable vision recording whilst playing back test video!");
+
+    visionRecordingEnabled = iniparser_getboolean(config, "Vision:saveReplay", false);
+    if (visionRecordingEnabled && VISION_LOAD_TEST_VIDEO){
+        log_warn("Cannot record a replay while loading test video. Replay recording has been disabled.");
         visionRecordingEnabled = false;
+    }
+    if (visionRecordingEnabled){
+        replay_begin();
     }
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
@@ -313,7 +319,15 @@ void utils_reload_config(void){
 double utils_time_millis(){
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC_RAW, &time);
-    return (time.tv_sec) * 1000.0 + (time.tv_nsec / 1000.0) / 1000.0; // convert tv_sec & tv_usec to millisecond
+    return (time.tv_sec) * 1000.0 + (time.tv_nsec / 1000.0) / 1000.0;
+}
+
+// source: https://github.com/wayland-project/weston/blob/master/shared/timespec-util.h function timespec_to_usec()
+// TODO is double large enough to store the potential value of this thing?
+double utils_time_micros(){
+    struct timespec time;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &time);
+    return time.tv_sec * 1000000.0 + time.tv_nsec / 1000.0;
 }
 
 double utils_lerp(double fromValue, double toValue, double progress){
@@ -345,4 +359,76 @@ const char *nlopt_result_to_string(nlopt_result result)
         case NLOPT_MAXTIME_REACHED: return "MAXTIME_REACHED";
     }
     return NULL;
+}
+
+uint32_t utils_go_sicko_mode(){
+    log_info("Attempting to kill all other Omicam instances (THERE_CAN_BE_ONLY_ONE=true)");
+
+    // get our own PID and executable path
+    pid_t mypid = getpid();
+    char myexepath[256];
+    ssize_t myPathLen = readlink("/proc/self/exe", myexepath, 256);
+    if (myPathLen != -1){
+        // null terminate result of readlink()
+        myexepath[myPathLen] = '\0';
+    } else {
+        log_error("Failed to open /proc/self/exe somehow: %s", strerror(errno));
+        return 0;
+    }
+    log_trace("Self process: PID %d, path: %s", mypid, myexepath);
+    size_t totalCount = 0, killed = 0, skipped = 0;
+
+    // enumerate /proc and look for all directories starting with a number (they'll be PIDs)
+    DIR *proc = opendir("/proc");
+    if (proc == NULL){
+        log_error("Failed to open /proc: %s", strerror(errno));
+        return 0;
+    }
+
+    struct dirent *entry = NULL;
+    while ((entry = readdir(proc))){
+        if (utils_only_numbers(entry->d_name)) {
+            // /proc/[PID]/exe contains a symlink to the real executable path, so read the link
+            char symlink[256];
+            sprintf(symlink, "/proc/%s/exe", entry->d_name);
+
+            char exepath[256];
+            ssize_t pathLen = readlink(symlink, exepath, 256);
+            if (pathLen != -1){
+                // readlink() does NOT null terminate so add our own if successful
+                exepath[pathLen] = '\0';
+            } else {
+                // we're probably just trying to read a restricted process (like init) so ignore
+                continue;
+            }
+
+            // check if we found a running instance of Omicam that's not ourselves
+            if (strcmp(exepath, myexepath) == 0){
+                log_trace("FOUND running instance of Omicam! PID %s, path: %s", entry->d_name, exepath);
+                pid_t pid = strtol(entry->d_name, NULL, 10);
+
+                if (pid != mypid && pid > 0){
+                    log_info("Sending SIGTERM to PID %d", pid);
+
+                    if (kill(pid, SIGTERM) != 0) {
+                        log_warn("Failed to kill process, error: %s", strerror(errno));
+                    } else {
+                        log_trace("Waiting for process to exit...");
+                        int status;
+                        waitpid(pid, &status, WUNTRACED);
+                        log_trace("Process terminated with exit code: %d", WEXITSTATUS(status));
+                        killed++;
+                    }
+                } else {
+                    log_trace("Skipping self process");
+                    skipped++;
+                }
+            }
+            totalCount++;
+        } // only numbers
+    } // readdir
+    closedir(proc);
+
+    log_debug("Successfully enumerated %zu processes, killed %zu, skipped %zu", totalCount, killed, skipped);
+    return killed;
 }

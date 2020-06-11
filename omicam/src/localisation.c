@@ -425,7 +425,7 @@ static void *work_thread(void *arg){
         if (!pb_encode(&stream, LocalisationData_fields, &localisationData)){
             log_error("Failed to encode localisation Protobuf message: %s", PB_GET_ERROR(&stream));
         }
-        comms_uart_send(LOCALISATION_DATA, msgBuf, stream.bytes_written);
+        comms_uart_send(MSG_LOCALISATION_DATA, msgBuf, stream.bytes_written);
 
         // dispatch information to performance monitor and Omicontrol, then clean up
 #if LOCALISER_DEBUG

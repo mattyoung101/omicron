@@ -43,6 +43,8 @@ void utils_parse_thresh(char *threshStr, int32_t *array);
 void utils_parse_rect(char *rectStr, int32_t *array);
 /** Gets the timestamp in milliseconds **/
 double utils_time_millis();
+/** Gets the timestamp in microseconds **/
+double utils_time_micros();
 /** Writes all thresholds to the INI file using their current values **/
 void utils_write_thresholds_disk();
 /** Utility function to encode the vision data into a protobuf packet and sent it over UART, using the comms_uart module. */
@@ -69,6 +71,8 @@ double utils_lerp(double fromValue, double toValue, double progress);
 const char *nlopt_result_to_string(nlopt_result result);
 /** returns true if the given null-terminated string contains only numbers */
 bool utils_only_numbers(char *s);
+/** Hunts down and eliminates all other running instances of Omicam, used if THERE_CAN_BE_ONLY_ONE=1 */
+uint32_t utils_go_sicko_mode();
 
 #ifdef __cplusplus
 }
@@ -86,6 +90,7 @@ bool utils_only_numbers(char *s);
 #define VISION_IS_RESCALED (objectId == OBJ_GOAL_BLUE || objectId == OBJ_GOAL_YELLOW)
 /** rounds a double to an int, like Kotlin's roundToInt() function */
 #define ROUND2INT(x) ((int32_t) round(x))
+#define ROUND2UINT(x) ((uint32_t) round(x))
 /** converts real field X coordinate into field file coordinate */
 #define X_TO_FF(x) (constrain(ROUND2INT(x), 0, field.length))
 /** converts real field Y coordinate into field file coordinate */

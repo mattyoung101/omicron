@@ -27,11 +27,14 @@
 #define VISION_CROP_ENABLED 1
 /** enable or disable performance (i.e. FPS) diagnostics */
 #define VISION_DIAGNOSTICS 1
-/** constant framerate that vision recording files are */
+/** constant framerate that vision recording files are - should be guaranteed that vision can reach this FPS (so don't make it 60) */
 #define VISION_RECORDING_FRAMERATE 30
-/** path to test data used in BUILD_TARGET_PC */
+/** path to test data used in BUILD_TARGET_PC and when using VISION_LOAD_TEST_VIDEO */
 #define VISION_TEST_FILE "../recordings/omicam_recording_1586137290.mp4"
-/** if true, we should load the test video specified in the VISION_TEST_FILE macro */
+/**
+ * If true, we should load the test video specified in the VISION_TEST_FILE macro.
+ * NOTE - this is DIFFERENT to loading an omirec file, this just plays back a loaded vision file but nothing more.
+ */
 #define VISION_LOAD_TEST_VIDEO 1
 
 /** send a debug frame every N real frames */
@@ -105,7 +108,7 @@
 
 // maths defines are the same ones used in the ESP32 project
 
-#define PI 3.14159265358979323846
+#define PI  3.141592653589793
 #define PI2 6.283185307179586
 /** multiply to convert degrees to radians */
 #define DEG_RAD 0.017453292519943295
@@ -142,11 +145,11 @@ typedef enum {
     /** generic message */
     MSG_ANY = 0,
     /** object data containing positions for field objects to ESP32 */
-    OBJECT_DATA,
+    MSG_OBJECT_DATA,
     /** determined (x,y) positions to ESP32 **/
-    LOCALISATION_DATA,
+    MSG_LOCALISATION_DATA,
     /** mouse sensor and sensor data to Omicam **/
-    SENSOR_DATA,
+    MSG_SENSOR_DATA,
     /** debug command to ESP32 **/
-    DEBUG_CMD,
+    MSG_DEBUG_CMD,
 } comms_msg_type_t;
