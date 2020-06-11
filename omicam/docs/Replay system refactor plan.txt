@@ -1,0 +1,21 @@
+Packet A: delta time = 0 (display immediately after file loaded into memory)
+Packet B: delta time = current time - last packet time (use nanosleep, convert to nanoseconds, wait this amount of time)
+Packet C .. etc, etc ...
+
+so we'll have a global called lastPacketTime
+and packetIdx
+
+keep the time in microseconds (need to add function utils_time_micros())
+
+
+when we're loading up the file again we'll also need to keep track of what message we're reading
+one thing we could do is add all the messages to a DG_dynarr linked list, reverse it, then da_pop()
+need to be very careful we don't cause like a stack overflow because of how much crap we're allocating
+
+should we:
+- allocate each protobuf message onto a huge linked list, then write it all to disk at the end of the program
+  what if we exit unexpectedly? then the replay is gone!
+  we can't really write it out in chunks can we? maybe what we could do is overwrite the whole file every ~5 seconds
+  that would gradually become slower over time, we really need a chunked format which would have to be custom
+- ditch the ReplayFile protobuf message, just have a ReplayFrame, and write it out like we do with UART
+  then we could potentially stream it in as well

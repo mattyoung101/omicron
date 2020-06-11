@@ -1,0 +1,27 @@
+- TODO: wouldn't it make more sense to write a delimited protobuf message which has a repeated
+field which contains ReplayFrame messages?
+
+OMIREPLAY
+OmicamVersion
+
+MessageBegin
+MessageId
+MessageSize
+MessageContents
+MessageEnd
+
+
+What we need to encode:
+- Time in miliseconds since application launch to nearest int (this is a timestamp)
+Do we need to use microseconds?
+- Localised position
+- Received orientation
+- Goal data: seen, x, y, etc
+
+What we could also add:
+- Localisation status code (may need to add anyways)
+- JPEG image of field (LARGE FILE)
+- Thresholds too? (LARGE FILE)
+
+Would it make sense just to write out RemoteDebug packets to disk???
+Could add two modes, verbose replay and lite replay

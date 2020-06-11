@@ -16,7 +16,7 @@ nav:
         - Protocol Buffers: protobuf.md
         - Finite State Machine: fsm.md
         - Low-level code: lowlevel.md
-    - Open source: open_source.md
+        - Open source info: open_source.md
 
 plugins:
     - search

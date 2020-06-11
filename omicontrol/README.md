@@ -86,9 +86,9 @@ workaround is not required, and actually makes things worse (blurry).
 - Mac OS X is partially supported because only one team member uses a Mac, but should still mostly work.
 
 ## Open source libraries used
-- [Protocol Buffers](https://github.com/protocolbuffers/protobuf): BSD 3-clause
-- [TornadoFX](https://github.com/edvin/tornadofx): Apache 2
-- [Apache Commons](https://commons.apache.org/): Apache 2
-- [GreenRobot EventBus](https://github.com/greenrobot/EventBus): Apache 2
-- [Google Guava](https://github.com/google/guava): Apache 2
-- [exp4j](https://www.objecthunter.net/exp4j/): Apache 2
+- [Protocol Buffers](https://github.com/protocolbuffers/protobuf): BSD 3-clause licence
+- [TornadoFX](https://github.com/edvin/tornadofx): Apache 2 licence
+- [Apache Commons Math, Lang, IO](https://commons.apache.org/): Apache 2 licence
+- [GreenRobot EventBus](https://github.com/greenrobot/EventBus): Apache 2 licence
+- [Guava](https://github.com/google/guava): Apache 2 licence
+- [exp4j](https://www.objecthunter.net/exp4j/): Apache 2 licence

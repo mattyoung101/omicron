@@ -297,9 +297,9 @@ required.
 With the robot's position now determined to the highest accuracy possible, the final step in the localisation process
 is to smooth and interpolate this coordinate. The optimisation algorithm can produce unstable results, especially in
 environments where the line is not very visible or mistaken for other objects on the field. Smoothing is currently 
-accomplished by using a simple windowed mean. A windowed median was also tried but led to more unstable results. 
-In future, we would like to investigate more complex digital signal processing such as a low pass filter to use on 
-this value and judge if it improves the localisation result.
+accomplished by using a simple moving average. A moving median was also tried but led to more unstable results. 
+In future, we would like to investigate more complex digital signal processing such as a low-pass filter or Kalman filter
+to improve our accuracy.
 
 **TODO cover dynamic size of moving mean when it's added**
 
@@ -319,7 +319,10 @@ simulation renders.
 algorithm (which Subplex is based on), the evaluation of the simplex's vertices could be multi-threaded to speed it up if
 more CPU cores were available. May also be possible to run this algorithm on the GPU, if we had one.
 - The algorithm is difficult to debug. Despite programming tools for Omicontrol, it's still difficult to determine exactly
-why the algorithm won't localise sometimes, which could be a problem at competitions.
+why the algorithm won't localise sometimes, which could be a problem at competitions. Although this is expected from a 
+complex approach, more debugging tools should be programmed to assist with this.
+- To generate a better final position, a low pass filter or even Kalman filter could be used instead of a simple moving
+average.
 
 ## Extra/miscellaneous features
 ### Interfacing with Omicontrol
