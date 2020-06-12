@@ -418,7 +418,7 @@ static void *work_thread(void *arg){
         // dispatch data to the ESP32, using JimBus (Protobufs over UART)
         uint8_t msgBuf[128] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, 128);
-        LocalisationData localisationData = LocalisationData_init_default;
+        LocalisationData localisationData = LocalisationData_init_zero;
         localisationData.estimatedX = (float) localisedPosition.x;
         localisationData.estimatedY = (float) localisedPosition.y;
 

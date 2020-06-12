@@ -19,4 +19,8 @@ class ExponentialFitApproach : ModelApproach {
     override fun formatFunction(coefficients: DoubleArray): String {
         return "${coefficients[0]} * exp(${coefficients[1]} * x)"
     }
+
+    override fun evaluate(x: Double, coefficients: DoubleArray): Double {
+        return ExpFunction().value(x, *coefficients)
+    }
 }

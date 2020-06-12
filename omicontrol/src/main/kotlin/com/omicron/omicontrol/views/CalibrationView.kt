@@ -18,6 +18,7 @@ import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import net.objecthunter.exp4j.Expression
 import net.objecthunter.exp4j.ExpressionBuilder
+import org.apache.commons.math3.fitting.WeightedObservedPoint
 import org.apache.commons.math3.fitting.WeightedObservedPoints
 import org.greenrobot.eventbus.Subscribe
 import org.tinylog.kotlin.Logger
@@ -58,6 +59,7 @@ class CalibrationView : View() {
     private var counter = 5.0
     private var modelApproach: ModelApproach = ExponentialFitApproach()
     private lateinit var resultsField: TextField
+    private lateinit var rSquaredLabel: Label
 
     init {
         reloadStylesheetsOnFocus()
@@ -212,6 +214,13 @@ class CalibrationView : View() {
                         writer.close()
                         Utils.showGenericAlert(Alert.AlertType.INFORMATION,
                             "Saved to: $csvFile", "Export completed successfully.")
+                    }
+                }
+                item("Load model"){
+                    setOnAction {
+                        val funcStr = Utils.showTextInputDialog("", "Enter model function").trim()
+                        if (funcStr == "") return@setOnAction
+                        updateModel(funcStr)
                     }
                 }
                 item("Deselect"){
@@ -381,36 +390,37 @@ class CalibrationView : View() {
                                 setOnAction {
                                     Logger.info("Calculating model from data points")
 
-                                    val dataPoints = WeightedObservedPoints()
+                                    val dataPoints = mutableListOf<WeightedObservedPoint>()
                                     println("Data points:")
                                     for (point in measurements){
                                         // x axis is pixel distance, y axis is centimetre distance
-                                        dataPoints.add(point.pixelDistance, point.realDistance)
+                                        dataPoints.add(WeightedObservedPoint(1.0, point.pixelDistance, point.realDistance))
                                         println("${point.pixelDistance},${point.realDistance}")
                                     }
 
-                                    val coefficients = modelApproach.calculateModel(dataPoints.toList())
+                                    if (dataPoints.size < 2){
+                                        Utils.showGenericAlert(Alert.AlertType.ERROR,
+                                            "Not enough data points. At least 2 are required.",
+                                            "Cannot calculate model")
+                                        return@setOnAction
+                                    }
+
+                                    val coefficients = modelApproach.calculateModel(dataPoints)
                                     val modelText = modelApproach.formatFunction(coefficients)
+                                    val rSquared = calculateRSquared(modelApproach, coefficients, dataPoints)
                                     Logger.info("Calculated coefficients: ${coefficients.joinToString(",")}")
                                     Logger.info("Model function: $modelText")
+                                    Logger.info("R-squared value: $rSquared")
 
                                     resultsField.text = modelText
+                                    rSquaredLabel.text = String.format("R^2 value: %.5f", rSquared)
                                     updateModel(modelText)
 
                                     if (!IS_DEBUG_MODE){
                                         Utils.showGenericAlert(Alert.AlertType.INFORMATION,
-                                            "Function: $modelText\nAccuracy: TODO", "Model calculated successfully.")
+                                            "Function: $modelText\n\nR-squared value: $rSquared",
+                                            "Model calculated successfully.")
                                     }
-                                }
-                            }
-                        }
-
-                        field {
-                            button("Load model"){
-                                setOnAction {
-                                    val funcStr = Utils.showTextInputDialog("", "Enter model function").trim()
-                                    if (funcStr == "") return@setOnAction
-                                    updateModel(funcStr)
                                 }
                             }
                         }
@@ -423,6 +433,10 @@ class CalibrationView : View() {
                             resultsField = textfield("Regression results will go here."){
                                 isEditable = false
                             }
+                        }
+
+                        field {
+                            rSquaredLabel = label("R^2 value: No model")
                         }
                     }
                 }

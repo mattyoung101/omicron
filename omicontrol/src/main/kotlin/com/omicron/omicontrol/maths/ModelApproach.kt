@@ -14,4 +14,9 @@ interface ModelApproach {
      * Formats the list of coefficients for the function in a mathematically proper format
      */
     fun formatFunction(coefficients: DoubleArray): String
+
+    /**
+     * Evaluates the model function at the specified point
+     */
+    fun evaluate(x: Double, coefficients: DoubleArray): Double
 }

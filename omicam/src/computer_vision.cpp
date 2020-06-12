@@ -165,7 +165,7 @@ static auto cv_thread(void *arg) -> void *{
     log_debug("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
 #endif
 
-    if (!replay_is_recording() && visionRecordingEnabled){
+    if (replay_get_status() == REPLAY_NONE && visionRecordingEnabled){
         log_error("WE FUCKED UP: vision recording is enabled but no replay has been started. Things are likely to go wrong now.");
     }
     // create OpenCV VideoWriter and generate disk filename, runs even if it's disabled for simplicity's sake
@@ -175,12 +175,12 @@ static auto cv_thread(void *arg) -> void *{
 
     // only actually write the files to disk if a replay is currently being recorded
     // this is because for the replay we save both the mp4 and omirec at the same time
-    if (replay_is_recording()){
+    if (replay_get_status() == REPLAY_RECORDING){
         log_info("Vision recording started (target: %d fps), video path: %s", VISION_RECORDING_FRAMERATE, filebuf);
         videoWriter.open(filebuf, VideoWriter::fourcc('m', 'p', '4', 'v'), VISION_RECORDING_FRAMERATE,
                          Size(videoWidth, videoHeight));
         if (!videoWriter.isOpened()){
-            log_error("Failed to open OpenCV VideoWriter, recording will NOT be saved to disk.");
+            log_error("Failed to open OpenCV VideoWriter, recording will NOT be saved to disk!");
         }
     }
 

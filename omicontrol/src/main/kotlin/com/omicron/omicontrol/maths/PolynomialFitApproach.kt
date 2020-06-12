@@ -20,4 +20,8 @@ class PolynomialFitApproach(private val order: Int) : ModelApproach {
     override fun formatFunction(coefficients: DoubleArray): String {
         return PolynomialFunction(coefficients).toString()
     }
+
+    override fun evaluate(x: Double, coefficients: DoubleArray): Double {
+        return PolynomialFunction(coefficients).value(x)
+    }
 }

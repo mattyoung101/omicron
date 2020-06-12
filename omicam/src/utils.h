@@ -12,6 +12,7 @@
 
 /** min and max thresholds for each field object */
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
+/** array of each threshold data in order */
 extern int32_t *thresholds[];
 extern bool isDrawRobotMask, isDrawMirrorMask;
 extern char *fieldObjToString[];
@@ -42,9 +43,9 @@ void utils_parse_thresh(char *threshStr, int32_t *array);
 /** Similar to utils_parse_thresh, but expects a 4 element rectangle of (x, y, width, height) **/
 void utils_parse_rect(char *rectStr, int32_t *array);
 /** Gets the timestamp in milliseconds **/
-double utils_time_millis();
+double utils_time_millis(void);
 /** Gets the timestamp in microseconds **/
-double utils_time_micros();
+double utils_time_micros(void);
 /** Writes all thresholds to the INI file using their current values **/
 void utils_write_thresholds_disk();
 /** Utility function to encode the vision data into a protobuf packet and sent it over UART, using the comms_uart module. */
@@ -72,7 +73,7 @@ const char *nlopt_result_to_string(nlopt_result result);
 /** returns true if the given null-terminated string contains only numbers */
 bool utils_only_numbers(char *s);
 /** Hunts down and eliminates all other running instances of Omicam, used if THERE_CAN_BE_ONLY_ONE=1 */
-uint32_t utils_go_sicko_mode();
+uint32_t utils_go_sicko_mode(void);
 
 #ifdef __cplusplus
 }

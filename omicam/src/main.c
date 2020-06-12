@@ -29,8 +29,7 @@ static pthread_mutex_t logLock;
 /** free resources allocated by the app **/
 static void disposeResources(){
     log_trace("Disposing resources");
-    replay_end();
-    replay_dispose();
+    replay_close();
     vision_dispose();
     remote_debug_dispose();
     localiser_dispose();
@@ -146,7 +145,7 @@ int main() {
         visionRecordingEnabled = false;
     }
     if (visionRecordingEnabled){
-        replay_begin();
+        replay_record();
     }
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");

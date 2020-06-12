@@ -2,6 +2,7 @@ package com.omicron.omicontrol
 
 import RemoteDebug
 import com.github.ajalt.colormath.*
+import com.omicron.omicontrol.maths.ModelApproach
 import com.omicron.omicontrol.views.ConnectView
 import javafx.application.Platform
 import javafx.geometry.Point2D
@@ -11,10 +12,11 @@ import javafx.scene.control.TextInputDialog
 import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.util.Duration
+import org.apache.commons.math3.fitting.WeightedObservedPoint
 import org.tinylog.kotlin.Logger
 import tornadofx.View
 import tornadofx.ViewTransition
-import kotlin.math.roundToInt
+import kotlin.math.pow
 
 
 // TODO remove this class and just put all methods in the global scope
@@ -149,4 +151,30 @@ fun colourSpaceToColour(colourSpace: ColourSpace, colour: IntArray): Convertible
         is XYZ.Companion -> XYZ(colour[0].toDouble(), colour[1].toDouble(), colour[2].toDouble())
         else -> throw IllegalArgumentException("Invalid colour space: $colourSpace with channels: $colour")
     }
+}
+
+/**
+ * Calculate the coefficient of determination, or R^2 value, of the dataset
+ * Source: https://en.wikipedia.org/wiki/Coefficient_of_determination#Definitions
+ */
+fun calculateRSquared(approach: ModelApproach, coefficients: DoubleArray, points: List<WeightedObservedPoint>): Double {
+    val mean = points.sumByDouble { it.y } / points.size
+
+    // calculate sum of squares of residuals, SSres
+    var ssRes = 0.0
+    for ((i, point) in points.withIndex()){
+        val yi = point.y
+        val fi = approach.evaluate(point.x, coefficients)
+        ssRes += (yi - fi).pow(2.0)
+    }
+
+    // calcualte the total sum of squares, SStot
+    var ssTot = 0.0
+    for (point in points){
+        val yi = point.y
+        ssTot += (yi - mean).pow(2.0)
+    }
+
+    // finally calculate the r squared value
+    return 1 - (ssRes / ssTot)
 }

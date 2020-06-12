@@ -291,7 +291,7 @@ void utils_reload_config(void){
         visionRecordingEnabled = false;
     }
     if (visionRecordingEnabled){
-        replay_begin();
+        replay_record();
     }
 
     const char *mirrorModelStr = iniparser_getstring(config, "Vision:mirrorModel", "x");
@@ -316,7 +316,7 @@ void utils_reload_config(void){
 }
 
 // source: https://stackoverflow.com/a/3756954/5007892 and https://stackoverflow.com/a/17371925/5007892
-double utils_time_millis(){
+double utils_time_millis(void){
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC_RAW, &time);
     return (time.tv_sec) * 1000.0 + (time.tv_nsec / 1000.0) / 1000.0;
@@ -324,7 +324,7 @@ double utils_time_millis(){
 
 // source: https://github.com/wayland-project/weston/blob/master/shared/timespec-util.h function timespec_to_usec()
 // TODO is double large enough to store the potential value of this thing?
-double utils_time_micros(){
+double utils_time_micros(void){
     struct timespec time;
     clock_gettime(CLOCK_MONOTONIC_RAW, &time);
     return time.tv_sec * 1000000.0 + time.tv_nsec / 1000.0;
@@ -361,7 +361,7 @@ const char *nlopt_result_to_string(nlopt_result result)
     return NULL;
 }
 
-uint32_t utils_go_sicko_mode(){
+uint32_t utils_go_sicko_mode(void){
     log_info("Attempting to kill all other Omicam instances (THERE_CAN_BE_ONLY_ONE=true)");
 
     // get our own PID and executable path

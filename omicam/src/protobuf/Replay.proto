@@ -42,7 +42,7 @@ message ReplayFrame {
     // string localiserStatus = 6;
 };
 
-message Replay {
+message ReplayFile {
     // width of images from the camera in pixels, must stay constant across all frames
     int32 frameWidth = 1;
     // height of frames from the camera in pixels, must stay constant

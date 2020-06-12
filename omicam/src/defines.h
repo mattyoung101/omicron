@@ -30,7 +30,7 @@
 /** constant framerate that vision recording files are - should be guaranteed that vision can reach this FPS (so don't make it 60) */
 #define VISION_RECORDING_FRAMERATE 30
 /** path to test data used in BUILD_TARGET_PC and when using VISION_LOAD_TEST_VIDEO */
-#define VISION_TEST_FILE "../recordings/omicam_recording_1586137290.mp4"
+#define VISION_TEST_FILE "../recordings/omicam_recording_1586137601.mp4"
 /**
  * If true, we should load the test video specified in the VISION_TEST_FILE macro.
  * NOTE - this is DIFFERENT to loading an omirec file, this just plays back a loaded vision file but nothing more.
@@ -133,6 +133,7 @@ typedef enum {
     CMD_SET_SEND_FRAMES, // set whether or not to send frames (useful for saving data in the field view)
     CMD_RELOAD_CONFIG, // reloads Omicam INI config from disk
 } debug_commands_t;
+
 typedef enum {
     OBJ_NONE = 0,
     OBJ_BALL,
@@ -140,6 +141,7 @@ typedef enum {
     OBJ_GOAL_BLUE,
     OBJ_LINES,
 } field_objects_t;
+
 /** enum for messages dispatched to the ESP32 firmware */
 typedef enum {
     /** generic message */
@@ -153,3 +155,12 @@ typedef enum {
     /** debug command to ESP32 **/
     MSG_DEBUG_CMD,
 } comms_msg_type_t;
+
+typedef enum {
+    /** A replay is not being recorded or loaded */
+    REPLAY_NONE = 0,
+    /** Replay is being recorded */
+    REPLAY_RECORDING,
+    /** Replay is being loaded from an already recorded file */
+    REPLAY_LOADING
+} replay_status_t;
