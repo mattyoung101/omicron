@@ -27,7 +27,10 @@
 #define VISION_CROP_ENABLED 1
 /** enable or disable performance (i.e. FPS) diagnostics */
 #define VISION_DIAGNOSTICS 1
-/** constant framerate that vision recording files are - should be guaranteed that vision can reach this FPS (so don't make it 60) */
+/**
+ * Constant framerate target to try and write vision recordings at - should be guaranteed that vision can reach this FPS!
+ * Also should be the same as REPLAY_FRAMERATE if you want vision and replay files to sync up.
+ */
 #define VISION_RECORDING_FRAMERATE 30
 /** path to test data used in BUILD_TARGET_PC and when using VISION_LOAD_TEST_VIDEO */
 #define VISION_TEST_FILE "../recordings/omicam_recording_1586137601.mp4"
@@ -51,6 +54,13 @@
 #define REMOTE_ALWAYS_SEND 0
 /** record the temperature every this many seconds */
 #define REMOTE_TEMP_REPORTING_INTERVAL 2
+
+/** Max size of Omicam replay (omirec file) in binary megabytes */
+#define REPLAY_MAX_SIZE 32
+/** Write the replay file to disk every this many seconds */
+#define REPLAY_WRITE_INTERVAL 5
+/** Target number of replay frames to write per second. Should be less than the average localiser rate. */
+#define REPLAY_FRAMERATE 30
 
 /** Omicam will be running on a SBC. All features enabled as normal. */
 #define BUILD_TARGET_SBC 0

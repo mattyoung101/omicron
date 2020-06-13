@@ -11,7 +11,10 @@ interface ModelApproach {
     fun calculateModel(dataPoints: Collection<WeightedObservedPoint>): DoubleArray
 
     /**
-     * Formats the list of coefficients for the function in a mathematically proper format
+     * Formats the list of coefficients for the function in a string that can later be evaluated by a mathematical expression
+     * parser.
+     *
+     * Must be valid for both exp4j (the once we use in Omicontrol) and tinyexpr (the one we use in Omicam).
      */
     fun formatFunction(coefficients: DoubleArray): String
 

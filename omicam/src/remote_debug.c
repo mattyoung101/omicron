@@ -485,7 +485,7 @@ void remote_debug_init(uint16_t w, uint16_t h){
     }
 
     init_tcp_socket();
-    log_debug("Remote debugger initialised successfully");
+    log_info("Remote debugger initialised successfully");
 }
 
 void remote_debug_post(uint8_t *camFrame, uint8_t *threshFrame, RDRect ballRect, RDPointF ballCentroid, int32_t fps,

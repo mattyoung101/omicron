@@ -5,8 +5,10 @@ import org.apache.commons.math3.fitting.WeightedObservedPoint
 import org.tinylog.kotlin.Logger
 
 /**
- * Calculates a mirror model by doing a least-squares regression to fit an exponential function, using
+ * Calculates a mirror model by doing a least-squares regression to fit an [ExpFunction], using
  * Apache Commons Math.
+ *
+ * The form of an exp function is: f(x) = ae^(bx)
  */
 class ExponentialFitApproach : ModelApproach {
     private val fitter = ExponentialCurveFitter()

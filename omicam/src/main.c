@@ -140,10 +140,10 @@ int main() {
     visionDebugRobotMask = iniparser_getboolean(config, "Vision:renderRobotMask", false);
 
     visionRecordingEnabled = iniparser_getboolean(config, "Vision:saveReplay", false);
-    if (visionRecordingEnabled && VISION_LOAD_TEST_VIDEO){
-        log_warn("Cannot record a replay while loading test video. Replay recording has been disabled.");
-        visionRecordingEnabled = false;
-    }
+//    if (visionRecordingEnabled && VISION_LOAD_TEST_VIDEO){
+//        log_warn("Cannot record a replay while loading test video. Replay recording has been disabled.");
+//        visionRecordingEnabled = false;
+//    }
     if (visionRecordingEnabled){
         replay_record();
     }

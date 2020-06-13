@@ -19,6 +19,8 @@
 #include "remote_debug.h"
 #include "errno.h"
 #include "comms_uart.h"
+#include "protobuf/Replay.pb.h"
+#include "replay.h"
 
 // This file implements our novel sensor-fusion localisation approach. It works by using generating an initial guess
 // through traditional methods like vector maths on the goals and mouse sensor integration, but uniquely refines
@@ -439,6 +441,37 @@ static void *work_thread(void *arg){
         memset(localiserStatus, 0, 32);
         strncpy(localiserStatus, resultStr, 32);
 
+        // dispatch to replay file, if one is recording
+        // TODO clean up this code or dispatch it elsewhere (to another function call?) - maybe use macros?
+        ReplayFrame replay = ReplayFrame_init_zero;
+        replay.robots[0].position.x = localisedPosition.x;
+        replay.robots[0].position.y = localisedPosition.y;
+        replay.robots_count = 1;
+
+        replay.isYellowKnown = entry->objectData.goalYellowExists;
+        replay.isBlueKnown = entry->objectData.goalBlueExists;
+        replay.isBallKnown = entry->objectData.ballExists;
+        if (replay.isYellowKnown) {
+            replay.yellowGoalPos.x = entry->objectData.goalYellowAbsX;
+            replay.yellowGoalPos.y = entry->objectData.goalYellowAbsY;
+        }
+        if (replay.isBlueKnown){
+            replay.blueGoalPos.x = entry->objectData.goalBlueAbsX;
+            replay.blueGoalPos.y = entry->objectData.goalBlueAbsY;
+        }
+        if (replay.isBallKnown){
+            replay.ballPos.x = entry->objectData.ballAbsX;
+            replay.ballPos.y = entry->objectData.ballAbsY;
+        }
+
+        replay.estimateMaxBounds.x = estimateMaxBounds.x;
+        replay.estimateMaxBounds.y = estimateMaxBounds.y;
+        replay.estimateMinBounds.x = estimateMinBounds.x;
+        replay.estimateMinBounds.y = estimateMinBounds.y;
+        replay.localiserEvals = localiserEvals;
+        replay.localiserRate = localiserRate;
+        replay_post_frame(replay);
+
         free(entry->frame);
         free(entry);
         localiserDone = true;
@@ -573,16 +606,16 @@ void localiser_init(char *fieldFile){
     pthread_testcancel();
 }
 
-void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowRel, struct vec2 blueRel,
-        bool yellowVisible, bool blueVisible){
+void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowRel, struct vec2 blueRel, ObjectData objectData){
     localiser_entry_t *entry = malloc(sizeof(localiser_entry_t));
     entry->frame = frame;
     entry->width = width;
     entry->height = height;
     entry->yellowRel = yellowRel;
     entry->blueRel = blueRel;
-    entry->yellowVisible = yellowVisible;
-    entry->blueVisible = blueVisible;
+    entry->yellowVisible = objectData.goalYellowExists;
+    entry->blueVisible = objectData.goalBlueExists;
+    entry->objectData = objectData;
     if (!rpa_queue_trypush(queue, entry)){
         // localiser is busy, drop frame
         free(frame);

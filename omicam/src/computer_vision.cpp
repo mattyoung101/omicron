@@ -361,7 +361,7 @@ static auto cv_thread(void *arg) -> void *{
         struct vec2 goalBlueRel = {data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x)),
                 localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x))};
 
-        localiser_post(localiserFrame, frame.cols, frame.rows, goalYellowRel, goalBlueRel, yellowGoal.exists, blueGoal.exists);
+        localiser_post(localiserFrame, frame.cols, frame.rows, goalYellowRel, goalBlueRel, data);
 
         // write frame to disk if vision recording is enabled, constrained to our target framerate
         bool shouldWriteFrame = (utils_time_millis() - lastRecTime) >= (1000.0 / VISION_RECORDING_FRAMERATE);

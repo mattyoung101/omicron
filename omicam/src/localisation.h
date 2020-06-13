@@ -21,6 +21,9 @@ typedef struct {
     struct vec2 blueRel;
     bool yellowVisible;
     bool blueVisible;
+
+    // note: this crap is only for the localiser pretty much
+    ObjectData objectData;
 } localiser_entry_t;
 
 typedef struct {
@@ -52,11 +55,9 @@ void localiser_init(char *fieldFile);
  * @param height the height of the frame
  * @param yellowRel goal yellow relative to robot in centimetre cartesian coordinates
  * @param blueRel goal blue relative to robot in centimetre cartesian coordinates
- * @param yellowVisible true if yellow goal is visible in the camera
- * @param blueVisible true if blue goal is visible in the camera
+ * @param objectData goal data protobuf struct (usually submitted to ESP32) which used to infer some stuff and for replay
  */
-void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowRel, struct vec2 blueRel,
-        bool yellowVisible, bool blueVisible);
+void localiser_post(uint8_t *frame, int32_t width, int32_t height, struct vec2 yellowRel, struct vec2 blueRel, ObjectData objectData);
 /** Destroys the localiser and its resources */
 void localiser_dispose(void);
 

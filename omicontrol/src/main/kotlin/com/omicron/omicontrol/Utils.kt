@@ -160,9 +160,10 @@ fun colourSpaceToColour(colourSpace: ColourSpace, colour: IntArray): Convertible
 fun calculateRSquared(approach: ModelApproach, coefficients: DoubleArray, points: List<WeightedObservedPoint>): Double {
     val mean = points.sumByDouble { it.y } / points.size
 
+    // TODO change both of these to use sumByDouble since it's more Kotlin correct
     // calculate sum of squares of residuals, SSres
     var ssRes = 0.0
-    for ((i, point) in points.withIndex()){
+    for (point in points){
         val yi = point.y
         val fi = approach.evaluate(point.x, coefficients)
         ssRes += (yi - fi).pow(2.0)

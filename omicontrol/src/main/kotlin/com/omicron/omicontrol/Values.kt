@@ -42,7 +42,8 @@ const val POLYNOMIAL_REGRESSION_ORDER = 3
 val CONNECTION_MANAGER = ConnectionManager()
 val EVENT_BUS = EventBus.getDefault()!!
 const val DEBUG_CAMERA_VIEW = false
-const val GRAB_SEND_TIMER_PERIOD = 100L // ms
+/** when dragging a slider, send an update packet every this many milliseconds */
+const val GRAB_SEND_TIMER_PERIOD = 100L
 /** bytes sent/received in the last second **/
 var BANDWIDTH = 0L
 var lastPingLabel: Label? = null
