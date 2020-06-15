@@ -9,6 +9,7 @@ nav:
     - Hardware:
         - Structural design: structural_design.md
         - Electrical design: electrical_design.md
+        - SBC: sbc.md
     - Software:
         - Omicam: omicam.md
         - Omicontrol: omicontrol.md

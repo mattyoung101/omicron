@@ -1,7 +1,7 @@
 ![Omicam logo](images/omicam_logo_dark.png)    
-One of the biggest innovation Team Omicron brings this year is our advanced, custom developed vision and
-localisation application called _Omicam_. Omicam handles the complex process of detecting the ball and goals, determining
-the robot's position on the field as well as encoding/transmitting this information, in one codebase.
+One of the biggest innovation Team Omicron brings this year is our high-performance, custom vision and
+localisation application (i.e. camera) called _Omicam_. Omicam handles the complex process of detecting the ball and goals, determining the robot's position on the field as well as encoding/transmitting this information, all in one highly
+optimised codebase.
 
 The application is developed mostly in C, with some C++ code to interface with OpenCV. 
 It runs on the LattePanda Delta 432 single board computer and uses Linux (Xubuntu 18.04) as its OS.
@@ -40,58 +40,6 @@ is robust against lighting conditions ranging from near pitch darkness to direct
 _<sup>1 previous results based on mediocre lighting conditions running well optimised OpenMV H7 code at QVGA resolution.</sup>_ 
 
 _<sup>2 depending on whether LRF based/goal based localisation was used.</sup>_
-
-## Hardware
-Omicam supports any single board computer (SBC) that can run Linux. In our case, we use a LattePanda Delta 432 with a 
-2.4 GHz quad-core Intel Celeron N4100, 4GB RAM, 32GB of storage, WiFi, Bluetooth, gigabit Ethernet and a UART bus.
-
-The current camera we use is an e-con Systems Hyperyon, based on the Sony Starvis IMX290 ultra low-light sensor capable
-of seeing in almost pitch black at high framerates. This is a USB 2.0 camera module, since the LattePanda has no 
-MIPI port.
-
-### SBC iterations
-The current iteration of Omicam's SBC setup is the cumulation of around 2 years of prototyping iterations in both
-hardware and software approaches.
-
-**Prototype 1 (December 2018-January 2019):** This consisted of a Raspberry Pi Zero W, with a 1 GHz single-core CPU.
-It was our initial prototype for a single-board computer, however, we quickly found it was far too weak to do any vision,
-and our inexperience at the time didn't help. Thus, we canned the SBC project for around a year.
-
-**Prototype 2 (December 2019):** After resurrecting the SBC R&D project for our 2020 Internationals, we started development
-with the Raspberry Pi 4. This has a 1.5 GHz quad-core ARM Cortex-A72 CPU. We began developing a custom computer vision
-library tailored specifically to our task, using the Pi's MMAL API for GPU-accelerated camera decoding. Initial results
-showed we could threshold images successfully, but we believed it would be too slow to localise and run a
-connected-component labeller in real time.
-
-**Prototype 3 (January 2020):** Next, we moved onto the NVIDIA Jetson Nano, containing a 1.43 GHz quad-core Cortex-A57,
-but far more importantly a 128-core Maxwell GPU. At this time we also switched to using OpenCV 4 for our computer vision.
-In theory, using the GPU for processing would lead to a huge performance boost due to the parallelism, however, in practice
-we observed the GPU was significantly slower than even the weaker Cortex-A43 CPU, (presumably) due to copying times. We
-were unable to optimise this to standard after weeks of development, thus we decided to move on from this prototype.
-
-**Prototype 4 (January-February 2020):** After much research, we decided to use the LattePanda Delta 432. The OpenCV
-pipeline is now entirely CPU bound, and despite not using the GPU at all, we are able to achieve good performance.
-
-### Camera module iterations
-In addition to the SBC, the camera module has undergone many iterations, as it's also an important element in the 
-vision pipeline.
-
-**Pi Camera:** The initial camera we used in hardware prototypes 1-3, was the Raspberry Pi Camera. 
-In prototype 1, we used the Pi Cam v1.3 which is an OV5647 connected via MIPI, and in prototypes 2 and 3 we used the 
-Pi Cam v2 which is an IMX219 again connected via MIPI. We had to drop this camera in later iterations because
-the LattePanda doesn't have a MIPI port. Both of these cameras were capable of around 720p at 60 fps.
-
-**OV4689-based module:** We experimented with a generic OV4689 USB 2.0 camera module from Amazon, which is capable of
-streaming JPEGs (aka an MJPEG stream) at 720p at 120 fps (we could get around 90 fps in practice with no processing).
-While this framerate was useful, the camera module suffered from noise and flickering in relatively good
-lighting conditions, so it was dropped.
-
-**e-con Hyperyon:** After these two failures, we began looking into industrial-grade cameras to use on
-our robot. While most of these, from companies like FLIR, are out of our price range, we found e-con Systems as a
-relatively affordable vendor of high quality cameras. We narrowed down our selection to two devices: the
-See3CAM_CU30 USB 2/USB 3 2MP camera module, which is fairly standard and affordable, as well as the more expensive
-Hyperyon described above. After testing both, we decided the Hyperon fit our needs better, despite its higher latency,
-due to its extremely good low light performance.
 
 ## Field object detection
 One of the responsibilities of Omicam is to detect the bounding box and centroid of field objects: the ball, goals and also lines. 
@@ -357,13 +305,27 @@ generated videos can be loaded as Omicam input (instead of using a live camera),
 
 In this way, games can be recorded for later analysis of Omicam's performance and accuracy, or for entertainment value.
 
-### Debugging and performance optimisation
-**TODO we may use gcc not clang so talk about that too**
+**TODO describe in more depth the new replay system**
 
-To achieve Omicam's performance, we made heavy use of parallel programming techniques, OpenCV's x86 SIMD CPU optimisations,
-Clang optimiser flags as well as image downscaling for the goal threshold images (as they are mostly unused).
-In addition, the localisation, vision and remote debug pipelines all run in parallel to each other so the entire application
-is asynchronous.
+### Code optimisation methods
+Here are a sample of some of th techniques we used, both in code and with the Clang compiler, to optimise Omicam's
+performance:
+
+- Use `-O3` optimisation setting in release builds
+- (NOT DONE YET) Use link time optimisation (LTO) with Clang
+- (NOT DONE YET) Use profile guided optimisation (PGO) with Clang
+- Extensive use of multi-threading, especially with OpenCV, to process multiple objects at once. The localisation and
+vision pipelines are also independent of each other as much as is possible.
+- Enable OpenCV's CPU-specific optimisations for x86 architecture, such as SSE and AVX instructions
+- Downscale the goal threshold image before processing as less accuracy is required
+- In the localiser, we use the last extrapolated position from the mouse sensor as a seed for the initial
+position of the next search. This means instead of starting from a random position, the localiser will complete much quickly
+as it's already relatively close to the true position.
+
+**Also cover Linux CPU optimisation and associated thermal issues if relevant**
+
+### Debugging and diagnostics
+**TODO we may use gcc not clang so talk about that too**
 
 Low-level compiled languages such as C and C++ can be difficult to debug when memory corruption or undefined behaviour
 issues manifest. In addition, many latent bugs can go undetected in code written in these languages.
@@ -375,11 +337,13 @@ To assist in performance evaluation, we used the Linux tool OProfile to determin
 Although the Clang compiler may have marginally worse performance than GCC, we chose Clang because it's more modern and has
 better debugging support (namely, GCC's Adress Sanitizer implementation is broken for us).
 
-To improve performance of the localiser, we use the last extrapolated position from the mouse sensor as a seed for the initial
-position of the next search. This means instead of starting from a random position, the localiser will complete much quickly
-a it's already relatively close to the true position.
-
-**Also cover Linux CPU optimisation and associated thermal issues if relevant**
+## Conclusion
+This year, Team Omicron presents a high-performance, custom vision and localisation application called Omicam. It is 
+written mainly in C, and runs on a LattePanda Delta 432. It is capable of processing vision at orders of magnitude faster
+than our previous solution, the OpenMV H7. We also present a novel approach to robot localisation, based on sensor-fusion
+and 2D non-linear optimisation. This approach is significantly more accurate and robust than previous methods. Finally,
+we introduce support for communication to our visualisation and managemetn application, Omicontrol (covered separately)
+using Protocol Buffers.
 
 ## References
 [^1]: C. Grana, D. Borghesani, and R. Cucchiara, “Optimized Block-Based Connected Components Labeling With Decision Trees,” IEEE Trans. Image Process., vol. 19, no. 6, pp. 1596–1609, 2010, doi: 10.1109/TIP.2010.2044963.
