@@ -8,22 +8,37 @@ For the full technical writeup on our vision pipeline, please see [the relevant 
 - Ethan Lo: field file generator, localisation research, maths assistance
 
 ## Features list
-- Efficient camera decoding using V4L2 via the popular GStreamer library
-- State of the art, high-performance image processing using OpenCV 4
-- Advanced custom localisation algorithm using a novel three step non-linear optimisation method, accurate to ~1cm
-- Wireless frame streaming over TCP/IP using SIMD accelerated libjpeg-turbo, to custom Kotlin remote management app (Omicontrol)
-    - Custom network protocol uses Protocol Buffers with zlib compression (low bandwidth requirements)
-    - Also transmits misc. data like temperature of the SBC
-- UART comms using termios for communicating to MCU (also using Protocol Buffers)
+- High performance field object detection (ball, lines, goals) using OpenCV 4
+    - Colour thresholding followed by connected component labelling (CCL)
+    - Uses parallel programming to make most use of multi-core CPUs
+    - Works with localiser to accurately determine absolute positions of field objects
+- Novel localisation algorithm using a sensor-fusion/non-linear optimisation method, accurate to ~1.5cm
+    - Constructs an initial estimate using fast but inaccurate methods, then refines it by solving a 2D non-linear minimisation problem.
+    - Initial estimate is used to constrain and seed optimisation stage for faster and more stable results
+    - Support for arbitrary number of field geometries by defining field file (Australian fields, SuperTeam, etc)
+    - Dynamic moving average smoothing based on robot velocity with configurable parameters
+- Feature rich remote debugging and visualisation module. Viewable in custom Kotlin/JavaFX desktop app (Omicontrol).
+    - Works locally using WiFi or Ethernet, and even remotely over the Internet
+    - Camera frame streaming over TCP/IP using SIMD accelerated libjpeg-turbo
+    - Custom network protocol uses Protocol Buffers with zlib compression
+    - Transmits detailed information about robot position, debug info, field object bounding boxes, etc.
+    - Receives and executes commands from remote (e.g. switch objects, save config, etc)
+- Efficient replay file format using Protocol Buffers
+    - Encodes robot data (localised position, orientation, FSM state, etc) at 30 Hz into a Protobuf file
+    - Fault tolerant: file is periodically re-written every 5 seconds
+    - Should be able to encode around ~45 minutes of data in around ~16 MB
+- UART communication to ESP32 also using Protocol Buffers format
+- INI config files can be reloaded from disk
 - Written mostly in C11 (just a little C++ for interfacing with OpenCV)
-- Well-documented code and design document
+- Well-documented code (see our website for a full writeup on the process as well)
 
 ## Building, running and configuration
 ### Initial setup
-While Omicam should in theory work on any Linux-based single board computer with a bit of effort, we use a LattePanda Delta 432
-running Xubuntu 18.04. It will only work under Linux.
+Omicam will probably only run under Linux. At Team Omicron, we use a LattePanda Delta 432 SBC running Xubuntu 18.04, so
+that's the only setup we can confirm it works reliably under.
+In saying that, there's no reason it shouldn't work with any other SBCs (except maybe for UART stuff).
 
-This guide is written assuming you have booted and installed a Debian-based distro with apt, but the general principle applies to
+This guide is written assuming you have booted and installed a Debian-based distro with apt, but the general principles applies to
 any package manager or distro.
 
 - CMake: To work around various issues (see below), a newer version of CMake than the one provided by the Ubuntu repos is provided.
@@ -44,13 +59,18 @@ any package manager or distro.
 
 **Note:** It may be advisable to remove a bunch of the useless packages Ubuntu installs by default such as LibreOffice.
 
+### LattePanda specific instructions
+Because the UART port is owned by the ATMega32U4, you need to download and install Arduino to upload the `PandaUARTHack`
+sketch which forwards UART I/O. Follow the Linux Arduino install instructions [here](https://www.arduino.cc/en/guide/linux)
+and make sure you definitely run the Linux setup shell script or it will not be possible to upload to the device.
+
 ### Network setup
 We have tested Ethernet and WiFi to connect to the SBC. Due to the latency requirements of Omicam and Omicontrol, we 
 suggest Ethernet as the best approach. While WiFi can be convenient to use, we received significant stuttering and disconnects 
 using the LattePanda Delta's built-in WiFi chip. It's possible that there are also some more obscure approaches like Bluetooth 
 or USB that may or may not work.
 
-**To configure Ethernet**, we used [this guide](https://superuser.com/a/306703/599535). Essentially, buy an Ethernet crossover
+**To configure Ethernet**, we used [this guide](https://superuser.com/a/306703/599535). Essentially, find an Ethernet crossover
 cable and plug it into your computer and the SBC. Then, set your host's Ethernet connection to have a static IP of `10.0.0.1` and
 subnet mask of `255.255.255.0`. On your SBC, set the Ethernet static IP to `10.0.0.2` and the subnet mask to `255.255.255.0`.
 Make sure you disable DHCP on both ends. Once this is done, you should be good to enter `10.0.0.2` as the IP in Omicontrol/SSH
@@ -88,7 +108,8 @@ Once you have an NTP server running on your host machine, run `sudo sntp -S 10.0
 the time. It may also be possible to use ntpd to do this automatically but it hasn't been researched yet.
 
 ### CLion setup
-If you don't have CLion, you'll need to download and install it. It's free for students if you have an *.edu email.
+At Team Omicron, we use the CLion IDE to work with the project. It's free for students if you have an *.edu email.
+Otherwise, it should be compatible with other Linux IDEs like QTCreator or Code::Blocks.
 
 Import the project into CLion on your host computer and follow the 
 [instructions provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to configure a 
@@ -106,12 +127,14 @@ To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion 
 by itself.
 
 ### Known issues and workarounds
-Important ones are in bold.
+Important ones are in bold. Most of these are covered above.
 
 - **WiFi is incredibly bad on the LattePanda.** For this reason, if you are using this SBC, we thoroughly recommend Ethernet.
 - **Builds will become difficult on the SBC due to clock drift.** [This link](https://stackoverflow.com/a/3824532/5007892)
   has an explanation of what is going on. If you are experiencing weird behaviour, please reimport the CMake project and 
   recompile everything from scratch and it may fix it. We are working on a solution to this problem.
+- If Arduino can't upload, **don't panic!** It's just being dumb. You need to run the setup script which disables the modem
+  monitor thingy which runs by default and interferes with UART. Then try about 5 times and it should work eventually.
 - Last we checked, Clang may be the only supported compiler as it appears that gcc's implementation of Google's Sanitizers 
   doesn't work. This was on ARM a while ago though, and it probably works fine on x86.
 - If lldb is broken, try using gdb instead (it doesn't matter that you're compiling with Clang, both will work fine).
@@ -133,5 +156,7 @@ Important ones are in bold.
 ## Special thanks
 - Steven G Johnson, for writing the amazing NLopt library
 - Tom Rowan, author of the Subplex optimisation algorithm
-- Huimin Lu, Xun Li, Hui Zhang, Mei Hu and Zhiqiang Zheng, authors of the paper our localisation algorithm was heavily
-  inspired by
+- Huimin Lu, Xun Li, Hui Zhang, Mei Hu and Zhiqiang Zheng, authors of the paper we based our localiser approach on
+- Riley Bowyer from CSIRO, for helping significantly with stability and performance improvements of the localiser as well
+  as great theory about point registration problems in general. Cheers man.
+- Everyone on Team Omicron, for putting up with me (Matt) obsessing over this project for a very long time. You guys rock.

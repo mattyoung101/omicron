@@ -213,7 +213,7 @@ static void master_task(void *pvParameter){
                     robotState.inGoal = HOME_GOAL.vec;
                 }
                 robotState.inHeading = yaw;
-                robotState.inRobotPos = vect_2d(lastLocaliserData.estimatedX + nanoData.dx, lastLocaliserData.estimatedY + nanoData.dy, false);
+                robotState.inRobotPos = vect_2d(lastLocaliserData.estimatedX + nanoData.mouseDX, lastLocaliserData.estimatedY + nanoData.mouseDY, false);
 
                 // Testing LED thing
                 robotState.debugLEDs[0] = true;
@@ -259,8 +259,8 @@ static void master_task(void *pvParameter){
         sensorData.orientation = yaw;
         sensorData.absDspX = robotState.inRobotPos.x;
         sensorData.absDspY = robotState.inRobotPos.y;
-        sensorData.relDspX = nanoData.dx;
-        sensorData.relDspY = nanoData.dy;
+        sensorData.relDspX = nanoData.mouseDX;
+        sensorData.relDspY = nanoData.mouseDY;
         if (xSemaphoreTake(stateMachine->updateInProgress, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
             char *stateName = fsm_get_current_state_name(stateMachine);
             strcpy(sensorData.fsmState, stateName);

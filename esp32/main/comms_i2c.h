@@ -22,6 +22,8 @@ typedef struct {
     int16_t mouseDY;
 } nano_data_t;
 
+extern nano_data_t nanoData;
+
 /** Initialises BNO I2C port. **/
 void comms_i2c_init_bno(i2c_port_t port);
 /** Initialises atmega I2C port. **/

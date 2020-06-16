@@ -174,3 +174,8 @@ typedef enum {
     /** Replay is being loaded from an already recorded file */
     REPLAY_LOADING
 } replay_status_t;
+
+/** Holds values that are declared in the INI config file */
+typedef struct {
+
+} ini_config_t;

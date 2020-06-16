@@ -130,7 +130,7 @@ static void write_thresholds(FILE *fp){
 }
 
 void utils_write_thresholds_disk(){
-#if BUILD_TARGET == BUILD_TARGET_SBC || VISION_LOAD_TEST_VIDEO
+#if BUILD_TARGET == BUILD_TARGET_SBC
     char *oldFile = "../omicam.ini";
 #else
     char *oldFile = "../omicam_local.ini";
@@ -245,7 +245,7 @@ void utils_sleep_exit(void){
 
 void utils_reload_config(void){
     log_debug("Reloading Omicam INI config from disk...");
-#if BUILD_TARGET == BUILD_TARGET_SBC || VISION_LOAD_TEST_VIDEO
+#if BUILD_TARGET == BUILD_TARGET_SBC
     dictionary *config = iniparser_load("../omicam.ini");
 #else
     dictionary *config = iniparser_load("../omicam_local.ini");

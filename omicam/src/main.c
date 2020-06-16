@@ -100,7 +100,7 @@ int main() {
 #endif
 
     log_debug("Loading and parsing config...");
-#if BUILD_TARGET == BUILD_TARGET_SBC || VISION_LOAD_TEST_VIDEO
+#if BUILD_TARGET == BUILD_TARGET_SBC
     dictionary *config = iniparser_load("../omicam.ini");
 #else
     dictionary *config = iniparser_load("../omicam_local.ini");

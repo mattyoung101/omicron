@@ -8,7 +8,7 @@
 #include "mathc.h"
 #include <stdatomic.h>
 
-// Globals
+// Globals - yes, this sucks
 
 /** min and max thresholds for each field object */
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];

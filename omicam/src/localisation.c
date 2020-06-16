@@ -27,6 +27,15 @@
 // this inaccurate initial guess by solving a non-linear multi-variate optimisation problem in real-time. For more
 // information, see our documentation website.
 
+// TODO list of things to potentially investigate:
+// - could we turn this into a non-linear least squares problem?
+// - can/should we rewrite the objective function to calculate the R^2 value of the fit and maximise it?
+// - look into proper DSP like low pass filter for smoothing instead of moving average
+// - cap localiser to 24 Hz
+// - discredit rays if outside field model (~50cm) and use a phat polynomial instead (SHORT TERM TEST)
+// - dynamically change number of rays we cast depending on desired accuracy and error and stuff? in areas that are close
+// to us, we can cast less rays, and in far away ones, we can cast more
+
 /** points visited by the Subplex optimiser */
 lp_list_t localiserVisitedPoints = {0};
 /** the bread and butter of the whole operation: NLopt!! */
@@ -175,6 +184,8 @@ static inline double objective_func_impl(double x, double y){
             continue;
         }
 
+        // TODO make this the R^2 value, or alternatively, sum of residuals (square output?)
+
         double diff = fabs(expectedRays[i] - observedRays[i]);
         totalError += diff;
         rayScores[i] = diff;
@@ -205,7 +216,7 @@ static void render_test_image(){
             }
         }
     }
-    BMP_WriteFile(bmp, "../testing.bmp");
+    BMP_WriteFile(bmp, "../raycast_debug.bmp");
 
     double *data = calloc(field.length * field.width, sizeof(double));
     uint8_t *outImage = calloc(field.length * field.width, sizeof(uint8_t));
@@ -446,6 +457,7 @@ static void *work_thread(void *arg){
         ReplayFrame replay = ReplayFrame_init_zero;
         replay.robots[0].position.x = localisedPosition.x;
         replay.robots[0].position.y = localisedPosition.y;
+        // TODO set robot orientation and fsm state here once we get it from UART
         replay.robots_count = 1;
 
         replay.isYellowKnown = entry->objectData.goalYellowExists;
