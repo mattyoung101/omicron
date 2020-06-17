@@ -1,0 +1,24 @@
+typedef struct {
+    sb_func_t func;
+    char *name;
+} steering_behaviour_t;
+
+steering_behaviour_t bhMoveTo = {&bh_move_to_impl, "MoveTo"};
+
+/** returns a velocity in m/s (x vel and y vel, or maybe in polar form?) */
+vec2_t sb_func_t(robot_state_t *state);
+
+SKILL TREE:
+- ArriveAt: arrives at a point with zero velocity ideally
+- SeekTo: just aims to touch the point with any velocity, as fast as possible
+- FollowPath: calls SeekTo and follows a path
+
+- LookAtTarget: looks at the point we're moving to
+
+Notes:
+- only one steering behaviour at a time, or combination of them (average?)
+- Should sb_func_t return orientation and velocity?
+- direction (which way we're driving, velocity), orientation (angle we're looking at)
+- should we actually do steering behaviours if we have an FSM? doesn't each state handle its own steering?
+    - yes because we want to re-use them for different states don't we?
+    - in each state we just set which points we move to
