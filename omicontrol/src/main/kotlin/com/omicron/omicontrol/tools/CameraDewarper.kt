@@ -8,7 +8,7 @@ import java.nio.file.Paths
 import javax.imageio.ImageIO
 import kotlin.math.*
 
-/** A location in the image */
+/** A location in the image (used instead of Point2D because we want integer coords) */
 data class Location(val x: Int, val y: Int)
 
 /**
@@ -16,10 +16,12 @@ data class Location(val x: Int, val y: Int)
  * @author Matt Young
  */
 object CameraDewarper {
+    /** mirror radius, same as in omicam.ini */
     private const val MIRROR_RADIUS = 384
     /** size to attempt to constrain dewarp output into a square of */
     private const val OUT_SIZE: Double = MIRROR_RADIUS * 1.0
     private val OUT_DIAGONAL = sqrt(OUT_SIZE.pow(2) + OUT_SIZE.pow(2)) / 2.0
+    private const val FILE_PATH = "test_data/frame6.jpg"
 
     /**
      * Mirror dewarp model, directly from the calculated regression in the Calibration View in Omicontrol.
@@ -28,9 +30,48 @@ object CameraDewarper {
         return 2.5874667517468426 * exp(0.012010445463214335 * x)
     }
 
+    private fun constrain(x: Double, minVal: Double, maxVal: Double): Double {
+        return min(maxVal, max(minVal, x))
+    }
+
+    /**
+     * Returns the RGB of the pixel if it exists in the image, otherwise black
+     */
+    private fun safeGetRGB(image: BufferedImage, x: Int, y: Int): Int {
+        return try {
+            image.getRGB(x, y)
+        } catch (e: Exception){
+            Color.BLACK.rgb
+        }
+    }
+
+    /**
+     * Returns the average colour for a list of colours from image.getRGB()
+     */
+    private fun averageColours(colours: IntArray): Int {
+        var totalR = 0
+        var totalG = 0
+        var totalB = 0
+        for (item in colours){
+            val colour = Color(item)
+            totalR += colour.red
+            totalG += colour.green
+            totalB += colour.blue
+        }
+        return Color(totalR / colours.size, totalG / colours.size, totalB / colours.size).rgb
+    }
+
+    /**
+     * Integer point in circle, used during interpolation.
+     * Source: https://stackoverflow.com/a/481150/5007892
+     */
+    private fun iPointInCircle(x: Int, y: Int, cX: Int, cY: Int, radius: Int): Boolean {
+        return (x - cX).toDouble().pow(2) + (y - cY).toDouble().pow(2) <= radius.toDouble().pow(2)
+    }
+
     @JvmStatic
     fun main(args: Array<String>){
-        val image = ImageIO.read(Paths.get("test_data/frame2.jpg").toFile())
+        val image = ImageIO.read(Paths.get(FILE_PATH).toFile())
         val centre = Point2D(image.width / 2.0, image.height / 2.0)
         val pixels = hashMapOf<Location, Int>()
 
@@ -69,30 +110,18 @@ object CameraDewarper {
 
                 // Convert to polar and scale magnitude
                 val polarAngle = atan2(vec.y, vec.x)
-                // note: uncomment the dewarp() part here to make a cool warp grid, somehow! no idea how that works
+                // note: uncomment the dewarp() part here to make a cool warp grid, somehow. no idea how that works ^^
                 val polarMag = dewarp(vec.magnitude())
                 val scaledMag = ((polarMag - minMag) / (maxMag - minMag)) * OUT_DIAGONAL
 
                 // Convert back to cartesian
                 val dewarped = Point2D(scaledMag * cos(polarAngle), scaledMag * sin(polarAngle))
-                    .add(centre.multiply(0.5))
+                    .add(centre.multiply(1.0))
 
                 // Add dewarped location with current colour to pixels grid
                 pixels[Location(dewarped.x.roundToInt(), dewarped.y.roundToInt())] = image.getRGB(x, y)
             }
         }
-
-//        val out = BufferedImage(ceil(OUT_SIZE).toInt() + 64, ceil(OUT_SIZE).toInt() + 64, image.type)
-//        println("Image size: ${out.width}x${out.height}")
-//        for ((key, value) in pixels.entries){
-//            val x = if (key.x == out.width) key.x - 1 else key.x
-//            val y = if (key.y == out.height) key.y - 1 else key.y
-//            try {
-//                out.setRGB(x, y, value)
-//            } catch (e: Exception){
-//                println("FUCK YOU, COULDN'T SET $x,$y")
-//            }
-//        }
 
         // Find largest x value
         val largestX = pixels.keys.maxBy { it.x }!!.x
@@ -103,6 +132,7 @@ object CameraDewarper {
 
         // Write out the image
         val out = BufferedImage(largestX + 64, largestY + 64, image.type)
+        println("Image size: ${out.width}x${out.height}")
         var minX = 999
         var maxX = -999
         var minY = 999
@@ -115,31 +145,61 @@ object CameraDewarper {
                 out.setRGB(x, y, value)
 
                 // we do this to find the bounding box of the mirror for cropping
-                if (x > maxX){
-                    maxX = x
-                } else if (x < minX){
-                    minX = x
-                } else if (y > maxY){
-                    maxY = y
-                } else if (y < minY){
-                    minY = y
+                when {
+                    x > maxX -> {
+                        maxX = x
+                    }
+                    x < minX -> {
+                        minX = x
+                    }
+                    y > maxY -> {
+                        maxY = y
+                    }
+                    y < minY -> {
+                        minY = y
+                    }
                 }
             } catch (e: Exception){
-                println("FUCK YOU, COULDN'T SET $x,$y")
+                println("FUCK YOU, COULDN'T SET $x,$y ($e)")
             }
         }
-        print("Min/max written X: $minX, $maxX")
+        println("Min/max written X: $minX, $maxX")
 
-        out.setRGB(minX, out.height / 2, Color.RED.rgb)
-        out.setRGB(maxX, out.height / 2, Color.RED.rgb)
-        out.setRGB(out.width / 2, minY, Color.RED.rgb)
-        out.setRGB(out.width / 2, maxY, Color.RED.rgb)
-
-        // TODO nearest neighbour interp missed pixels in image - only crop if inside bounding rectangle
-        val bounds = Rectangle(minX, minY, maxX - minX, maxY - minY)
+//        out.setRGB(minX, out.height / 2, Color.RED.rgb)
+//        out.setRGB(maxX, out.height / 2, Color.RED.rgb)
+//        out.setRGB(out.width / 2, minY, Color.RED.rgb)
+//        out.setRGB(out.width / 2, maxY, Color.RED.rgb)
 
         // crop output (don't know why we have to do this, such is life)
-        val cropped = out.getSubimage(minX, minY, maxX - minX, maxY - minY)
+        val bounds = Rectangle(minX, minY, maxX - minX, maxY - minY)
+        val cropped = out.getSubimage(bounds.x, bounds.y, bounds.width, bounds.height)
+
+        // nearest neighbour interpolation
+        println("Interpolating...")
+        for (y in 0 until cropped.height){
+            for (x in 0 until cropped.width){
+                if (cropped.getRGB(x, y) == Color.BLACK.rgb
+                    /*&& iPointInCircle(x, y, cropped.width / 2, cropped.height / 2, cropped.width / 2)*/){
+                    val north = safeGetRGB(cropped, x, y + 1)
+                    val northEast = safeGetRGB(cropped, x + 1, y + 1)
+                    val east = safeGetRGB(cropped, x + 1, y)
+                    val southEast = safeGetRGB(cropped, x - 1, y - 1)
+                    val south = safeGetRGB(cropped, x, y - 1)
+                    val southWest = safeGetRGB(cropped, x - 1, y - 1)
+                    val west = safeGetRGB(cropped, x - 1, y)
+                    val northWest = safeGetRGB(cropped, x - 1, y + 1)
+
+                    val neighbours = intArrayOf(north, northEast, east, southEast, south, southWest, west, northWest).filter { it != Color.BLACK.rgb }.toIntArray()
+                    if (neighbours.isEmpty()) continue
+                    val avg = averageColours(neighbours)
+
+                    cropped.setRGB(x, y, avg)
+                }
+            }
+        }
+
+        // TODO delete pixels that are not in our circle???
+        // TODO draw circle on output for debug
 
         ImageIO.write(cropped, "png", Paths.get("test_data/out.png").toFile())
     }
