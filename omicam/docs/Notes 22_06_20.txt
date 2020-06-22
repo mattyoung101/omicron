@@ -1,0 +1,5 @@
+Notes from today (22/06/2020):
+- Discrediting rays doesn't work. I tried ignoring rays if their cm distance was outside 55cm (approximate model range) 
+but it makes it a lot worse. Better to leave them in. 
+- Good results using polynomial instead of exponential: 5th order polynomial works really well (0.999 R^2 too). The
+polynomial regression is now the default approach in the calibration view.

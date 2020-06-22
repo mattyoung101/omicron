@@ -21,13 +21,15 @@ object CameraDewarper {
     /** size to attempt to constrain dewarp output into a square of */
     private const val OUT_SIZE: Double = MIRROR_RADIUS * 1.0
     private val OUT_DIAGONAL = sqrt(OUT_SIZE.pow(2) + OUT_SIZE.pow(2)) / 2.0
-    private const val FILE_PATH = "test_data/frame6.jpg"
+    private const val FILE_PATH = "test_data/frame4.jpg"
 
     /**
      * Mirror dewarp model, directly from the calculated regression in the Calibration View in Omicontrol.
      */
     private fun dewarp(x: Double): Double {
-        return 2.5874667517468426 * exp(0.012010445463214335 * x)
+        return -13.095322188640901 + 0.1934477257439889 * x + 0.0004631806201315 * x.pow(2) - 0.0000050016525762 *
+                x.pow(3) + 0.0000000034877769 * x.pow(4) + 0.0000000000585543 * x.pow(5)
+//         return 2.5874667517468426 * exp(0.012010445463214335 * x)
     }
 
     private fun constrain(x: Double, minVal: Double, maxVal: Double): Double {

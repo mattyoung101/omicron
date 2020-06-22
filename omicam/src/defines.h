@@ -38,7 +38,7 @@
  * If true, we should load the test video specified in the VISION_TEST_FILE macro.
  * NOTE - this is DIFFERENT to loading an omirec file, this just plays back a loaded vision file but nothing more.
  */
-#define VISION_LOAD_TEST_VIDEO 1
+#define VISION_LOAD_TEST_VIDEO 0
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1
@@ -124,6 +124,13 @@
 #define DEG_RAD 0.017453292519943295
 /** multiply to convert radians to degrees */
 #define RAD_DEG 57.29577951308232
+
+// cannot load test data in SBC, just in case it's forgotten to be disabled
+#if BUILD_TARGET == BUILD_TARGET_SBC && VISION_LOAD_TEST_VIDEO == 1
+#undef VISION_LOAD_TEST_VIDEO
+#define VISION_LOAD_TEST_VIDEO 0
+#warning "Cannot load test video in BUILD_TARGET_SBC, it has been disabled!"
+#endif
 
 // put all enums and other non-defines here
 

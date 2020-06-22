@@ -12,11 +12,13 @@ Omicontrol is built and maintained by Matt Young.
 most of my time working on Omicam. My apologies in advance!
 
 ## Features list
-- (Relatively) Easy to use UI
+- Relatively easy to use UI, views should be mostly self-explanatory
 - Decode Omicam JPEG/data stream while overlaying threshold information
 - Edit and upload camera thresholds on the fly
 - Many helpful diagnostic displays in the Field View for debugging the localiser
+- Automatic mirror model calculation through non-linear least squares regression (exponential and polynomial models supported)
 - Control the robots through a multitude of useful commands including automatically resetting to starting positions
+- Mirror dewapring (separate tool, CameraDewarper.kt)
 - Lots of useful shortcuts and other quality of life improvements built-in
 - Large buttons designed for tablet usage
 - Dark theme!!!
@@ -65,7 +67,7 @@ however there are various quirks specific to each one. This is especially the ca
 cause all manner of platform specific issues with JavaFX.
 
 ### Linux
-- OS: KDE neon
+- Distro: KDE neon
 - Tested on a normal DPI monitor, scaling is fine
 - Frequent bug where dialogue boxes will show up incredibly small (with no content). Workaround is to press ALT+F4 and
 try again, it will eventually pop up.

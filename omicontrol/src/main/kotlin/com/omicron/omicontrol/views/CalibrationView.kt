@@ -57,7 +57,8 @@ class CalibrationView : View() {
     private var isAutoIncrement = true
     /** counter for centimetres value when using auto increment */
     private var counter = 5.0
-    private var modelApproach: ModelApproach = ExponentialFitApproach()
+    /** The model approach or regression type we use. It's now polynomial by default due to better results with it. */
+    private var modelApproach: ModelApproach = PolynomialFitApproach(POLYNOMIAL_REGRESSION_ORDER)
     private lateinit var resultsField: TextField
     private lateinit var rSquaredLabel: Label
 
@@ -260,7 +261,7 @@ class CalibrationView : View() {
                     lateinit var polySelect: MenuItem
                     lateinit var expSelect: MenuItem
 
-                    polySelect = item("Polynomial"){
+                    polySelect = item("✓ Polynomial"){
                         setOnAction {
                             expSelect.text = "Exponential"
                             text = "✓ Polynomial"
@@ -270,7 +271,7 @@ class CalibrationView : View() {
                             modelApproach = PolynomialFitApproach(POLYNOMIAL_REGRESSION_ORDER)
                         }
                     }
-                    expSelect = item("✓ Exponential"){
+                    expSelect = item("Exponential"){
                         setOnAction {
                             polySelect.text = "Polynomial"
                             text = "✓ Exponential"
