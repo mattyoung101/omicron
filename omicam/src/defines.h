@@ -33,12 +33,12 @@
  */
 #define VISION_RECORDING_FRAMERATE 30
 /** path to test data used in BUILD_TARGET_PC and when using VISION_LOAD_TEST_VIDEO */
-#define VISION_TEST_FILE "../recordings/omicam_recording_1586137601.mp4"
+#define VISION_TEST_FILE "../recordings/omicam_recording_1586137290.mp4"
 /**
  * If true, we should load the test video specified in the VISION_TEST_FILE macro.
  * NOTE - this is DIFFERENT to loading an omirec file, this just plays back a loaded vision file but nothing more.
  */
-#define VISION_LOAD_TEST_VIDEO 0
+#define VISION_LOAD_TEST_VIDEO 1
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1
@@ -67,7 +67,7 @@
 /** Omicam will be running locally on a PC. Uses test imagery and some features are disabled. */
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
-#define BUILD_TARGET (BUILD_TARGET_SBC)
+#define BUILD_TARGET (BUILD_TARGET_PC)
 
 /** stop optimisation when a coordinate with less than this error in centimetres is found */
 #define LOCALISER_ERROR_TOLERANCE 1
@@ -83,33 +83,33 @@
 /**
  * If a goal estimate is available, NLopt bounds are constrained to a square of this size (in cm) around the estimated position.
  * Set this value conservatively, because if it's too small and the goal magnitudes are wonky, you could miss the real position.
- * Finally, please note that this value is extremely sensitive, small changes can ncrease/decrease the average evaluations by
+ * Finally, please note that this value is extremely sensitive, small changes can increase/decrease the average evaluations by
  * almost 10 evaluations.
  */
 #define LOCALISER_ESTIMATE_BOUNDS 45
-/** The number of rays to use when raycasting on line images, generally 64 is fine but 128 in extreme situations will be useful. */
-#define LOCALISER_NUM_RAYS 64
 /**
- * Whether or not to use a moving average to smooth the localiser output. May decrease accuracy when moving fast, but
- * significantly improves jitter and noise.
+ * The number of rays to use when raycasting on line images, generally 64 is fine but 128 in extreme situations will be useful.
+ * NOTE: must be an even number, preferably a power of two.
  */
+#define LOCALISER_NUM_RAYS 64
+/** Whether or not to use a moving average to smooth the localiser output. Recommended due to noise. */
 #define LOCALISER_ENABLE_SMOOTHING 1
 /** The size of the moving average history for smoothing, larger values mean smoother but less precision. */
 #define LOCALISER_SMOOTHING_SIZE 16
 /** If true, smooths using the moving median instead of the moving average */
 #define LOCALISER_SMOOTHING_MEDIAN 0
-/** error which is 200-300 points higher than the highest usual error in the localiser, determine through trial & error */
-#define LOCALISER_LARGE_ERROR 8600
-/**
- * If true, the localiser uses the mouse sensor for initial estimate calculation. If false, it only uses the goals.
- * Generally if you're running on a robot with a working mouse sensor, you'll want to enable this because it's more accurate
- * and requires less calibration than the goals. Otherwise, if debugging or the mouse sensor is missing/broken, set this to false.
- */
+/** If true, the localiser uses the mouse sensor for initial estimate calculation. If false, it only uses the goals. */
 #define LOCALISER_USE_MOUSE_SENSOR 1
+/** When trying to find suspicious rays during obstacle detection, if a ray error is outside of this value times IQR, it is suspicious. */
+#define LOCALISER_SUS_IQR_MUL 1.5
+/** When grouping together suspicious rays during obstacle detection, allow this many non-suspicious rays until the next suspicious one */
+#define LOCALISER_RAY_GROUP_TOLERANCE 3
 /** if true, renders the objective function bitmap, raycast test bitmap and then quits */
 #define LOCALISER_DEBUG 0
 /** if true, prints localisation performance information to the console (just like vision diagnostics) */
 #define LOCALISER_DIAGNOSTICS 1
+/** error which is 200-300 points higher than the highest usual error in the localiser, determine through trial & error */
+#define LOCALISER_LARGE_ERROR 8600
 
 /** if true, UART will be forced to be enabled even in BUILD_TARGET_PC */
 #define UART_OVERRIDE 0
@@ -125,11 +125,14 @@
 /** multiply to convert radians to degrees */
 #define RAD_DEG 57.29577951308232
 
-// cannot load test data in SBC, just in case it's forgotten to be disabled
+// error checking:
 #if BUILD_TARGET == BUILD_TARGET_SBC && VISION_LOAD_TEST_VIDEO == 1
 #undef VISION_LOAD_TEST_VIDEO
 #define VISION_LOAD_TEST_VIDEO 0
 #warning "Cannot load test video in BUILD_TARGET_SBC, it has been disabled!"
+#endif
+#if LOCALISER_NUM_RAYS % 2 != 0
+#warning "LOCALISER_NUM_RAYS must be an even number!"
 #endif
 
 // put all enums and other non-defines here
@@ -178,7 +181,7 @@ typedef enum {
     REPLAY_NONE = 0,
     /** Replay is being recorded */
     REPLAY_RECORDING,
-    /** Replay is being loaded from an already recorded file */
+    /** DEPRECATED: Replay is being loaded from an already recorded file */
     REPLAY_LOADING
 } replay_status_t;
 

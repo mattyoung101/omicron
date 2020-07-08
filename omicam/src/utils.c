@@ -48,7 +48,7 @@ static void remove_spaces(char* s) {
 }
 
 double utils_camera_dewarp(double x) {
-    // FIXME this is not thread safe, we'd need to use a mutex
+    // still not sure if this is thread safe, no issues so far (I assume since we use _Atomic), but who knows
     mirrorModelVariable = x;
     return te_eval(mirrorModelExpr);
 }
@@ -210,6 +210,7 @@ uint8_t *utils_load_bin(char *path, long *size){
     return buf;
 }
 
+// source: https://stackoverflow.com/a/51773839/5007892
 uint8_t crc8(const uint8_t *data, size_t len){
     uint8_t crc = 0xff;
     size_t i, j;

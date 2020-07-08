@@ -65,7 +65,7 @@ void utils_sleep_enter(void);
 void utils_sleep_exit(void);
 /** Reloads Omicam ini config file from disk **/
 void utils_reload_config(void);
-/** Calculates the CRC8 hash of a buffer, source: https://stackoverflow.com/a/51773839/5007892 */
+/** Calculates the CRC8 hash of a buffer */
 uint8_t crc8(const uint8_t *data, size_t len);
 /** Linearly interpolate between fromValue and toValue, by progress (between 0.0 and 1.0) */
 double utils_lerp(double fromValue, double toValue, double progress);

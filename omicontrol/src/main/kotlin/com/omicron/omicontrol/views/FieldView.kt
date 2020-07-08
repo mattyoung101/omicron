@@ -60,6 +60,7 @@ class FieldView : View() {
     private var lastGoodPointList = listOf<RemoteDebug.RDPointF>()
     private var mousePos = Point2D(0.0, 0.0)
     private var isDrawCrosshair = false
+    private var isShowSuspiciousRays = true
 
     init {
         reloadStylesheetsOnFocus()
@@ -190,10 +191,7 @@ class FieldView : View() {
             // draw rays if requested
             // TODO instead of picking robot 0, we need to pick the one we're connected to, to debug
             if (isRaycastDebug && robots[connectedRobotId].isPositionKnown) {
-                // find min and max ray score
-                val rayScores = message.rayScoresList.take(message.rayScoresCount)
-                val minRayScore = rayScores.filter { it > 0 }.min() ?: 0.0
-                val maxRayScore = rayScores.filter { it > 0 }.max() ?: 0.0
+                val susRays = message.raysSuspiciousList.take(message.raysSuspiciousCount)
 
                 display.lineWidth = 2.0
                 display.stroke = Color.WHITE
@@ -212,10 +210,8 @@ class FieldView : View() {
                     val x1 = x0 + (toFieldLength(rayLength) * sin(angle))
                     val y1 = y0 + (toFieldLength(rayLength) * cos(angle))
 
-                    val normalisedScore = (rayScores[i] - minRayScore) / (maxRayScore - minRayScore)
-                    // note that we're going FROM GOOD COLOUR TO BAD COLOUR because 0 means high accuracy and 1 means low accuracy
-                    // TODO note we're ignoring ray scores for now as I think it looks visually bad and doesn't represent error well
-                    display.stroke = Color.WHITE //lerpColour(Color.WHITE, Color.RED, normalisedScore)
+                    // TODO add toggle on whether or not to display suspicious rays
+                    display.stroke = if (susRays[i] && isShowSuspiciousRays) Color.RED else Color.WHITE
                     display.strokeLine(x0, y0, x1, y1)
                     angle += message.rayInterval
                 }
@@ -338,15 +334,21 @@ class FieldView : View() {
                 }
             }
             menu("Settings"){
-                checkmenuitem("Raycast debug"){
+                checkmenuitem("Show rays"){
                     selectedProperty().addListener { _, _, value ->
                         isRaycastDebug = value
                     }
                 }
-                checkmenuitem("Optimiser debug (buggy)"){
+                checkmenuitem("Show optimiser path"){
                     selectedProperty().addListener { _, _, value ->
                         isOptimiserDebug = value
                     }
+                }
+                checkmenuitem("Show suspicious rays"){
+                    selectedProperty().addListener { _, _, value ->
+                        isShowSuspiciousRays = value
+                    }
+                    isSelected = true
                 }
                 checkmenuitem("Ignore sent position"){
                     selectedProperty().addListener { _, _, value ->

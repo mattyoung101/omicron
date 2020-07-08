@@ -28,13 +28,16 @@
 // information, see our documentation website.
 
 // TODO list of things to potentially investigate:
-// - could we turn this into a non-linear least squares problem?
+// - could we turn this into a non-linear least squares problem and solve with gauss-newton or levenberg-marquardt
+// alternatively, we could just give the gradient to a gradient based optimisation algorithm
 // - can/should we rewrite the objective function to calculate the R^2 value of the fit and maximise it?
 // - look into proper DSP like low pass filter for smoothing instead of moving average
 // - cap localiser to 24 Hz
-// - discredit rays if outside field model (~50cm) and use a phat polynomial instead (SHORT TERM TEST)
+// - look into a way to detect robots (documented better on trello)
 // - dynamically change number of rays we cast depending on desired accuracy and error and stuff? in areas that are close
 // to us, we can cast less rays, and in far away ones, we can cast more
+
+DA_TYPEDEF(uint16_t, u16_list_t)
 
 /** points visited by the Subplex optimiser */
 lp_list_t localiserVisitedPoints = {0};
@@ -54,8 +57,10 @@ static BMP *bmp = NULL;
 static double observedRays[LOCALISER_NUM_RAYS] = {0};
 /** rays that we observed from raycasting on the camera image, no dewarping */
 static double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
-/** score for each ray in the last localiser pass */
+/** error value for the last group of rays evaluated by the objective function */
 static double rayScores[LOCALISER_NUM_RAYS] = {0};
+/** true or false if each ray is suspicious, used for debug */
+static bool rdSusRays[LOCALISER_NUM_RAYS] = {0};
 /** NLopt status for remote debug */
 static char localiserStatus[32] = {0};
 static pthread_t perfThread;
@@ -72,6 +77,8 @@ static struct vec2 estimateMinBounds = {0};
 static struct vec2 estimateMaxBounds = {0};
 static struct vec2 initialEstimate = {0};
 static bool goalWasUnavailable = false;
+/** LOCALISER_SUS_IQR_MUL * IQR */
+static float susRayCutoff = 0.0f;
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -90,6 +97,19 @@ static inline double constrainf(double x, double min, double max){
         return max;
     } else {
         return x;
+    }
+}
+
+static int double_cmp(const void *a, const void *b){
+    double x = *(const double *)a;
+    double y = *(const double *)b;
+
+    if (x < y){
+        return -1;
+    } else if (x > y){
+        return 1;
+    } else {
+        return 0;
     }
 }
 
@@ -392,9 +412,7 @@ static void *work_thread(void *arg){
             nlopt_set_lower_bounds(optimiser, min);
             nlopt_set_upper_bounds(optimiser, max);
         }
-
         nlopt_result result = nlopt_optimize(optimiser, optimiserPos, &optimiserError);
-
         if (result < 0){
             log_warn("NLopt error: status %s", nlopt_result_to_string(result));
             log_debug("Diagnostics: Min bounds: %.2f,%.2f, Max bounds: %.2f,%.2f, Estimate pos: %.2f,%.2f\n", estimateMinBounds.x,
@@ -419,15 +437,54 @@ static void *work_thread(void *arg){
         localisedPosition.x = optimiserPos[0];
         localisedPosition.y = optimiserPos[1];
 #endif
+        // obstacle detection
+        // sort rays by value, smallest to largest, for later IQR calculation
+        double rayScoresSort[LOCALISER_NUM_RAYS] = {0};
+        memcpy(rayScoresSort, rayScores, LOCALISER_NUM_RAYS * sizeof(double));
+        qsort(rayScoresSort, LOCALISER_NUM_RAYS, sizeof(double), double_cmp);
 
-#if LOCALISER_DEBUG
-        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", optimiserPos[0], optimiserPos[1],
-               optimiserError, nlopt_result_to_string(result));
-#endif
-        // debug, only for use when robot is at a known (0,0) position!!
-        // double accuracy = sqrt(optimiserPos[0] * optimiserPos[0] + optimiserPos[1] * optimiserPos[1]);
-        // printf("accuracy: %.2f (pos: %.2f,%.2f)\n", accuracy, optimiserPos[0], optimiserPos[1]);
+        // calculate the inter-quartile range for use in detecting outliers (thanks to angus scroggie for help with this)
+        // reference: https://brilliant.org/wiki/data-interquartile-range/
+        // NOTE: to ease calculation, we make the (terrible?) assumption that LOCALISER_NUM_RAYS is even
+        double q1tmp = 0.0;
+        double q1f = modf((LOCALISER_NUM_RAYS + 1.0) / 4.0, &q1tmp);
+        int32_t q1i = (int32_t) q1tmp;
+        double q1 = rayScoresSort[q1i] + q1f * (rayScoresSort[q1i + 1] - rayScoresSort[q1i]);
 
+        double q3tmp = 0.0;
+        double q3f = modf(3.0 * ((LOCALISER_NUM_RAYS + 1.0) / 4.0), &q3tmp);
+        int32_t q3i = (int32_t)  q3tmp;
+        double q3 = rayScoresSort[q3i] + q3f * (rayScoresSort[q3i + 1] - rayScoresSort[q3i]);
+
+        double iqr = q3 - q1;
+        susRayCutoff = LOCALISER_SUS_IQR_MUL * iqr;
+//        for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+//            printf("%f,", rayScoresSort[i]);
+//        }
+//        puts("");
+//        printf("q1: %f, q3: %f, IQR: %f\n", q1, q3, iqr);
+
+        // flag suspicious rays (outliers)
+        u16_list_t suspiciousRays = {0};
+        for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+            if (rayScores[i] >= susRayCutoff){
+                da_add(suspiciousRays, i);
+                rdSusRays[i] = true;
+                // printf("ray %d is suspicious\n", i);
+            } else {
+                rdSusRays[i] = false;
+            }
+        }
+        // printf("have: %zu suspicious rays\n", da_count(suspiciousRays));
+
+        // try and create clusters of suspicious rays taking into account the tolerance
+        // TODO when we do this we have to consider that ray 64 can join with ray 0, etc
+
+        // filter out any that aren't robot shaped
+
+        // record our obstacles
+
+        // serialisation stage
         // dispatch data to the ESP32, using JimBus (Protobufs over UART)
         uint8_t msgBuf[128] = {0};
         pb_ostream_t stream = pb_ostream_from_buffer(msgBuf, 128);
@@ -440,11 +497,18 @@ static void *work_thread(void *arg){
         }
         comms_uart_send(MSG_LOCALISATION_DATA, msgBuf, stream.bytes_written);
 
-        // dispatch information to performance monitor and Omicontrol, then clean up
 #if LOCALISER_DEBUG
+        printf("optimiser done with coordinate: %.2f,%.2f, error: %.2f, result id: %s\n", optimiserPos[0], optimiserPos[1],
+               optimiserError, nlopt_result_to_string(result));
+
+        // debug, only for use when robot is at a known (0,0) position!!
+        // double accuracy = sqrt(optimiserPos[0] * optimiserPos[0] + optimiserPos[1] * optimiserPos[1]);
+        // printf("accuracy: %.2f (pos: %.2f,%.2f)\n", accuracy, optimiserPos[0], optimiserPos[1]);
+
         log_info("Localisation debug enabled, displaying objective function and quitting...");
         render_test_image();
 #endif
+        // dispatch information to performance monitor and Omicontrol, then clean up
         double elapsed = utils_time_millis() - begin;
         movavg_push(timeAvg, elapsed);
         movavg_push(evalAvg, evaluations);
@@ -453,7 +517,6 @@ static void *work_thread(void *arg){
         strncpy(localiserStatus, resultStr, 32);
 
         // dispatch to replay file, if one is recording
-        // TODO clean up this code or dispatch it elsewhere (to another function call?) - maybe use macros?
         ReplayFrame replay = ReplayFrame_init_zero;
         replay.robots[0].position.x = localisedPosition.x;
         replay.robots[0].position.y = localisedPosition.y;
@@ -484,6 +547,7 @@ static void *work_thread(void *arg){
         replay.localiserRate = localiserRate;
         replay_post_frame(replay);
 
+        da_free(suspiciousRays);
         free(entry->frame);
         free(entry);
         localiserDone = true;
@@ -494,9 +558,10 @@ static void *work_thread(void *arg){
 
 void remote_debug_localiser_provide(DebugFrame *msg){
     memcpy(msg->dewarpedRays, observedRays, LOCALISER_NUM_RAYS * sizeof(double));
-    memcpy(msg->rayScores, rayScores, LOCALISER_NUM_RAYS * sizeof(double));
+    memcpy(msg->raysSuspicious, rdSusRays, LOCALISER_NUM_RAYS * sizeof(bool));
     msg->dewarpedRays_count = LOCALISER_NUM_RAYS;
-    msg->rayScores_count = LOCALISER_NUM_RAYS;
+    msg->raysSuspicious_count = LOCALISER_NUM_RAYS;
+    msg->susRayCutoff = susRayCutoff;
 
     memcpy(msg->rays, observedRaysRaw, LOCALISER_NUM_RAYS * sizeof(double));
     msg->rays_count = LOCALISER_NUM_RAYS;

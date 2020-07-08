@@ -3366,16 +3366,6 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * average time for localiser to run
-     * TODO deprecated, never used (localiserRate is used instead); remove later
-     * </pre>
-     *
-     * <code>optional float localiserTime = 17 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated float getLocaliserTime();
-
-    /**
-     * <pre>
      * NLopt returned status, for example, "MAXTIME_REACHED"
      * </pre>
      *
@@ -3463,28 +3453,28 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * score for each ray
+     * true or false for each ray if it was classified as suspicious
      * </pre>
      *
-     * <code>repeated double rayScores = 21;</code>
+     * <code>repeated bool raysSuspicious = 21;</code>
      */
-    java.util.List<java.lang.Double> getRayScoresList();
+    java.util.List<java.lang.Boolean> getRaysSuspiciousList();
     /**
      * <pre>
-     * score for each ray
+     * true or false for each ray if it was classified as suspicious
      * </pre>
      *
-     * <code>repeated double rayScores = 21;</code>
+     * <code>repeated bool raysSuspicious = 21;</code>
      */
-    int getRayScoresCount();
+    int getRaysSuspiciousCount();
     /**
      * <pre>
-     * score for each ray
+     * true or false for each ray if it was classified as suspicious
      * </pre>
      *
-     * <code>repeated double rayScores = 21;</code>
+     * <code>repeated bool raysSuspicious = 21;</code>
      */
-    double getRayScores(int index);
+    boolean getRaysSuspicious(int index);
 
     /**
      * <pre>
@@ -3646,6 +3636,15 @@ public final class RemoteDebug {
      * <code>optional .RDPointF estimateMaxBounds = 30;</code>
      */
     RemoteDebug.RDPointFOrBuilder getEstimateMaxBoundsOrBuilder();
+
+    /**
+     * <pre>
+     * cutoff for which rays are considered suspicious (LOCALISER_SUS_IQR_MUL * IQR)
+     * </pre>
+     *
+     * <code>optional float susRayCutoff = 31;</code>
+     */
+    float getSusRayCutoff();
   }
   /**
    * <pre>
@@ -3677,14 +3676,14 @@ public final class RemoteDebug {
       robots_ = java.util.Collections.emptyList();
       rayInterval_ = 0F;
       localiserEvals_ = 0;
-      localiserTime_ = 0F;
       localiserStatus_ = "";
       localiserVisitedPoints_ = java.util.Collections.emptyList();
-      rayScores_ = java.util.Collections.emptyList();
+      raysSuspicious_ = java.util.Collections.emptyList();
       localiserRate_ = 0;
       isYellowKnown_ = false;
       isBallKnown_ = false;
       isBlueKnown_ = false;
+      susRayCutoff_ = 0F;
     }
 
     @java.lang.Override
@@ -3847,11 +3846,6 @@ public final class RemoteDebug {
               localiserEvals_ = input.readInt32();
               break;
             }
-            case 141: {
-
-              localiserTime_ = input.readFloat();
-              break;
-            }
             case 146: {
               java.lang.String s = input.readStringRequireUtf8();
 
@@ -3872,31 +3866,31 @@ public final class RemoteDebug {
               break;
             }
             case 162: {
-              if (!((mutable_bitField0_ & 0x00040000) == 0x00040000)) {
+              if (!((mutable_bitField0_ & 0x00020000) == 0x00020000)) {
                 localiserVisitedPoints_ = new java.util.ArrayList<RemoteDebug.RDPointF>();
-                mutable_bitField0_ |= 0x00040000;
+                mutable_bitField0_ |= 0x00020000;
               }
               localiserVisitedPoints_.add(
                   input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry));
               break;
             }
-            case 169: {
-              if (!((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
-                rayScores_ = new java.util.ArrayList<java.lang.Double>();
-                mutable_bitField0_ |= 0x00080000;
+            case 168: {
+              if (!((mutable_bitField0_ & 0x00040000) == 0x00040000)) {
+                raysSuspicious_ = new java.util.ArrayList<java.lang.Boolean>();
+                mutable_bitField0_ |= 0x00040000;
               }
-              rayScores_.add(input.readDouble());
+              raysSuspicious_.add(input.readBool());
               break;
             }
             case 170: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00080000) == 0x00080000) && input.getBytesUntilLimit() > 0) {
-                rayScores_ = new java.util.ArrayList<java.lang.Double>();
-                mutable_bitField0_ |= 0x00080000;
+              if (!((mutable_bitField0_ & 0x00040000) == 0x00040000) && input.getBytesUntilLimit() > 0) {
+                raysSuspicious_ = new java.util.ArrayList<java.lang.Boolean>();
+                mutable_bitField0_ |= 0x00040000;
               }
               while (input.getBytesUntilLimit() > 0) {
-                rayScores_.add(input.readDouble());
+                raysSuspicious_.add(input.readBool());
               }
               input.popLimit(limit);
               break;
@@ -3986,6 +3980,11 @@ public final class RemoteDebug {
 
               break;
             }
+            case 253: {
+
+              susRayCutoff_ = input.readFloat();
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -4003,11 +4002,11 @@ public final class RemoteDebug {
         if (((mutable_bitField0_ & 0x00001000) == 0x00001000)) {
           robots_ = java.util.Collections.unmodifiableList(robots_);
         }
-        if (((mutable_bitField0_ & 0x00040000) == 0x00040000)) {
+        if (((mutable_bitField0_ & 0x00020000) == 0x00020000)) {
           localiserVisitedPoints_ = java.util.Collections.unmodifiableList(localiserVisitedPoints_);
         }
-        if (((mutable_bitField0_ & 0x00080000) == 0x00080000)) {
-          rayScores_ = java.util.Collections.unmodifiableList(rayScores_);
+        if (((mutable_bitField0_ & 0x00040000) == 0x00040000)) {
+          raysSuspicious_ = java.util.Collections.unmodifiableList(raysSuspicious_);
         }
         makeExtensionsImmutable();
       }
@@ -4366,20 +4365,6 @@ public final class RemoteDebug {
       return localiserEvals_;
     }
 
-    public static final int LOCALISERTIME_FIELD_NUMBER = 17;
-    private float localiserTime_;
-    /**
-     * <pre>
-     * average time for localiser to run
-     * TODO deprecated, never used (localiserRate is used instead); remove later
-     * </pre>
-     *
-     * <code>optional float localiserTime = 17 [deprecated = true];</code>
-     */
-    @java.lang.Deprecated public float getLocaliserTime() {
-      return localiserTime_;
-    }
-
     public static final int LOCALISERSTATUS_FIELD_NUMBER = 18;
     private volatile java.lang.Object localiserStatus_;
     /**
@@ -4510,40 +4495,40 @@ public final class RemoteDebug {
       return localiserVisitedPoints_.get(index);
     }
 
-    public static final int RAYSCORES_FIELD_NUMBER = 21;
-    private java.util.List<java.lang.Double> rayScores_;
+    public static final int RAYSSUSPICIOUS_FIELD_NUMBER = 21;
+    private java.util.List<java.lang.Boolean> raysSuspicious_;
     /**
      * <pre>
-     * score for each ray
+     * true or false for each ray if it was classified as suspicious
      * </pre>
      *
-     * <code>repeated double rayScores = 21;</code>
+     * <code>repeated bool raysSuspicious = 21;</code>
      */
-    public java.util.List<java.lang.Double>
-        getRayScoresList() {
-      return rayScores_;
+    public java.util.List<java.lang.Boolean>
+        getRaysSuspiciousList() {
+      return raysSuspicious_;
     }
     /**
      * <pre>
-     * score for each ray
+     * true or false for each ray if it was classified as suspicious
      * </pre>
      *
-     * <code>repeated double rayScores = 21;</code>
+     * <code>repeated bool raysSuspicious = 21;</code>
      */
-    public int getRayScoresCount() {
-      return rayScores_.size();
+    public int getRaysSuspiciousCount() {
+      return raysSuspicious_.size();
     }
     /**
      * <pre>
-     * score for each ray
+     * true or false for each ray if it was classified as suspicious
      * </pre>
      *
-     * <code>repeated double rayScores = 21;</code>
+     * <code>repeated bool raysSuspicious = 21;</code>
      */
-    public double getRayScores(int index) {
-      return rayScores_.get(index);
+    public boolean getRaysSuspicious(int index) {
+      return raysSuspicious_.get(index);
     }
-    private int rayScoresMemoizedSerializedSize = -1;
+    private int raysSuspiciousMemoizedSerializedSize = -1;
 
     public static final int LOCALISERRATE_FIELD_NUMBER = 22;
     private int localiserRate_;
@@ -4762,6 +4747,19 @@ public final class RemoteDebug {
       return getEstimateMaxBounds();
     }
 
+    public static final int SUSRAYCUTOFF_FIELD_NUMBER = 31;
+    private float susRayCutoff_;
+    /**
+     * <pre>
+     * cutoff for which rays are considered suspicious (LOCALISER_SUS_IQR_MUL * IQR)
+     * </pre>
+     *
+     * <code>optional float susRayCutoff = 31;</code>
+     */
+    public float getSusRayCutoff() {
+      return susRayCutoff_;
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -4828,9 +4826,6 @@ public final class RemoteDebug {
       if (localiserEvals_ != 0) {
         output.writeInt32(16, localiserEvals_);
       }
-      if (localiserTime_ != 0F) {
-        output.writeFloat(17, localiserTime_);
-      }
       if (!getLocaliserStatusBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 18, localiserStatus_);
       }
@@ -4840,12 +4835,12 @@ public final class RemoteDebug {
       for (int i = 0; i < localiserVisitedPoints_.size(); i++) {
         output.writeMessage(20, localiserVisitedPoints_.get(i));
       }
-      if (getRayScoresList().size() > 0) {
+      if (getRaysSuspiciousList().size() > 0) {
         output.writeUInt32NoTag(170);
-        output.writeUInt32NoTag(rayScoresMemoizedSerializedSize);
+        output.writeUInt32NoTag(raysSuspiciousMemoizedSerializedSize);
       }
-      for (int i = 0; i < rayScores_.size(); i++) {
-        output.writeDoubleNoTag(rayScores_.get(i));
+      for (int i = 0; i < raysSuspicious_.size(); i++) {
+        output.writeBoolNoTag(raysSuspicious_.get(i));
       }
       if (localiserRate_ != 0) {
         output.writeInt32(22, localiserRate_);
@@ -4873,6 +4868,9 @@ public final class RemoteDebug {
       }
       if (estimateMaxBounds_ != null) {
         output.writeMessage(30, getEstimateMaxBounds());
+      }
+      if (susRayCutoff_ != 0F) {
+        output.writeFloat(31, susRayCutoff_);
       }
     }
 
@@ -4955,10 +4953,6 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(16, localiserEvals_);
       }
-      if (localiserTime_ != 0F) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeFloatSize(17, localiserTime_);
-      }
       if (!getLocaliserStatusBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(18, localiserStatus_);
       }
@@ -4972,14 +4966,14 @@ public final class RemoteDebug {
       }
       {
         int dataSize = 0;
-        dataSize = 8 * getRayScoresList().size();
+        dataSize = 1 * getRaysSuspiciousList().size();
         size += dataSize;
-        if (!getRayScoresList().isEmpty()) {
+        if (!getRaysSuspiciousList().isEmpty()) {
           size += 2;
           size += com.google.protobuf.CodedOutputStream
               .computeInt32SizeNoTag(dataSize);
         }
-        rayScoresMemoizedSerializedSize = dataSize;
+        raysSuspiciousMemoizedSerializedSize = dataSize;
       }
       if (localiserRate_ != 0) {
         size += com.google.protobuf.CodedOutputStream
@@ -5016,6 +5010,10 @@ public final class RemoteDebug {
       if (estimateMaxBounds_ != null) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(30, getEstimateMaxBounds());
+      }
+      if (susRayCutoff_ != 0F) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFloatSize(31, susRayCutoff_);
       }
       memoizedSize = size;
       return size;
@@ -5076,10 +5074,6 @@ public final class RemoteDebug {
               other.getRayInterval()));
       result = result && (getLocaliserEvals()
           == other.getLocaliserEvals());
-      result = result && (
-          java.lang.Float.floatToIntBits(getLocaliserTime())
-          == java.lang.Float.floatToIntBits(
-              other.getLocaliserTime()));
       result = result && getLocaliserStatus()
           .equals(other.getLocaliserStatus());
       result = result && (hasBallPos() == other.hasBallPos());
@@ -5089,8 +5083,8 @@ public final class RemoteDebug {
       }
       result = result && getLocaliserVisitedPointsList()
           .equals(other.getLocaliserVisitedPointsList());
-      result = result && getRayScoresList()
-          .equals(other.getRayScoresList());
+      result = result && getRaysSuspiciousList()
+          .equals(other.getRaysSuspiciousList());
       result = result && (getLocaliserRate()
           == other.getLocaliserRate());
       result = result && (hasYellowGoalPos() == other.hasYellowGoalPos());
@@ -5124,6 +5118,10 @@ public final class RemoteDebug {
         result = result && getEstimateMaxBounds()
             .equals(other.getEstimateMaxBounds());
       }
+      result = result && (
+          java.lang.Float.floatToIntBits(getSusRayCutoff())
+          == java.lang.Float.floatToIntBits(
+              other.getSusRayCutoff()));
       return result;
     }
 
@@ -5178,9 +5176,6 @@ public final class RemoteDebug {
           getRayInterval());
       hash = (37 * hash) + LOCALISEREVALS_FIELD_NUMBER;
       hash = (53 * hash) + getLocaliserEvals();
-      hash = (37 * hash) + LOCALISERTIME_FIELD_NUMBER;
-      hash = (53 * hash) + java.lang.Float.floatToIntBits(
-          getLocaliserTime());
       hash = (37 * hash) + LOCALISERSTATUS_FIELD_NUMBER;
       hash = (53 * hash) + getLocaliserStatus().hashCode();
       if (hasBallPos()) {
@@ -5191,9 +5186,9 @@ public final class RemoteDebug {
         hash = (37 * hash) + LOCALISERVISITEDPOINTS_FIELD_NUMBER;
         hash = (53 * hash) + getLocaliserVisitedPointsList().hashCode();
       }
-      if (getRayScoresCount() > 0) {
-        hash = (37 * hash) + RAYSCORES_FIELD_NUMBER;
-        hash = (53 * hash) + getRayScoresList().hashCode();
+      if (getRaysSuspiciousCount() > 0) {
+        hash = (37 * hash) + RAYSSUSPICIOUS_FIELD_NUMBER;
+        hash = (53 * hash) + getRaysSuspiciousList().hashCode();
       }
       hash = (37 * hash) + LOCALISERRATE_FIELD_NUMBER;
       hash = (53 * hash) + getLocaliserRate();
@@ -5226,6 +5221,9 @@ public final class RemoteDebug {
         hash = (37 * hash) + ESTIMATEMAXBOUNDS_FIELD_NUMBER;
         hash = (53 * hash) + getEstimateMaxBounds().hashCode();
       }
+      hash = (37 * hash) + SUSRAYCUTOFF_FIELD_NUMBER;
+      hash = (53 * hash) + java.lang.Float.floatToIntBits(
+          getSusRayCutoff());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5398,8 +5396,6 @@ public final class RemoteDebug {
 
         localiserEvals_ = 0;
 
-        localiserTime_ = 0F;
-
         localiserStatus_ = "";
 
         if (ballPosBuilder_ == null) {
@@ -5410,12 +5406,12 @@ public final class RemoteDebug {
         }
         if (localiserVisitedPointsBuilder_ == null) {
           localiserVisitedPoints_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00040000);
+          bitField0_ = (bitField0_ & ~0x00020000);
         } else {
           localiserVisitedPointsBuilder_.clear();
         }
-        rayScores_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00080000);
+        raysSuspicious_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00040000);
         localiserRate_ = 0;
 
         if (yellowGoalPosBuilder_ == null) {
@@ -5454,6 +5450,8 @@ public final class RemoteDebug {
           estimateMaxBounds_ = null;
           estimateMaxBoundsBuilder_ = null;
         }
+        susRayCutoff_ = 0F;
+
         return this;
       }
 
@@ -5521,7 +5519,6 @@ public final class RemoteDebug {
         }
         result.rayInterval_ = rayInterval_;
         result.localiserEvals_ = localiserEvals_;
-        result.localiserTime_ = localiserTime_;
         result.localiserStatus_ = localiserStatus_;
         if (ballPosBuilder_ == null) {
           result.ballPos_ = ballPos_;
@@ -5529,19 +5526,19 @@ public final class RemoteDebug {
           result.ballPos_ = ballPosBuilder_.build();
         }
         if (localiserVisitedPointsBuilder_ == null) {
-          if (((bitField0_ & 0x00040000) == 0x00040000)) {
+          if (((bitField0_ & 0x00020000) == 0x00020000)) {
             localiserVisitedPoints_ = java.util.Collections.unmodifiableList(localiserVisitedPoints_);
-            bitField0_ = (bitField0_ & ~0x00040000);
+            bitField0_ = (bitField0_ & ~0x00020000);
           }
           result.localiserVisitedPoints_ = localiserVisitedPoints_;
         } else {
           result.localiserVisitedPoints_ = localiserVisitedPointsBuilder_.build();
         }
-        if (((bitField0_ & 0x00080000) == 0x00080000)) {
-          rayScores_ = java.util.Collections.unmodifiableList(rayScores_);
-          bitField0_ = (bitField0_ & ~0x00080000);
+        if (((bitField0_ & 0x00040000) == 0x00040000)) {
+          raysSuspicious_ = java.util.Collections.unmodifiableList(raysSuspicious_);
+          bitField0_ = (bitField0_ & ~0x00040000);
         }
-        result.rayScores_ = rayScores_;
+        result.raysSuspicious_ = raysSuspicious_;
         result.localiserRate_ = localiserRate_;
         if (yellowGoalPosBuilder_ == null) {
           result.yellowGoalPos_ = yellowGoalPos_;
@@ -5571,6 +5568,7 @@ public final class RemoteDebug {
         } else {
           result.estimateMaxBounds_ = estimateMaxBoundsBuilder_.build();
         }
+        result.susRayCutoff_ = susRayCutoff_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5695,9 +5693,6 @@ public final class RemoteDebug {
         if (other.getLocaliserEvals() != 0) {
           setLocaliserEvals(other.getLocaliserEvals());
         }
-        if (other.getLocaliserTime() != 0F) {
-          setLocaliserTime(other.getLocaliserTime());
-        }
         if (!other.getLocaliserStatus().isEmpty()) {
           localiserStatus_ = other.localiserStatus_;
           onChanged();
@@ -5709,7 +5704,7 @@ public final class RemoteDebug {
           if (!other.localiserVisitedPoints_.isEmpty()) {
             if (localiserVisitedPoints_.isEmpty()) {
               localiserVisitedPoints_ = other.localiserVisitedPoints_;
-              bitField0_ = (bitField0_ & ~0x00040000);
+              bitField0_ = (bitField0_ & ~0x00020000);
             } else {
               ensureLocaliserVisitedPointsIsMutable();
               localiserVisitedPoints_.addAll(other.localiserVisitedPoints_);
@@ -5722,7 +5717,7 @@ public final class RemoteDebug {
               localiserVisitedPointsBuilder_.dispose();
               localiserVisitedPointsBuilder_ = null;
               localiserVisitedPoints_ = other.localiserVisitedPoints_;
-              bitField0_ = (bitField0_ & ~0x00040000);
+              bitField0_ = (bitField0_ & ~0x00020000);
               localiserVisitedPointsBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getLocaliserVisitedPointsFieldBuilder() : null;
@@ -5731,13 +5726,13 @@ public final class RemoteDebug {
             }
           }
         }
-        if (!other.rayScores_.isEmpty()) {
-          if (rayScores_.isEmpty()) {
-            rayScores_ = other.rayScores_;
-            bitField0_ = (bitField0_ & ~0x00080000);
+        if (!other.raysSuspicious_.isEmpty()) {
+          if (raysSuspicious_.isEmpty()) {
+            raysSuspicious_ = other.raysSuspicious_;
+            bitField0_ = (bitField0_ & ~0x00040000);
           } else {
-            ensureRayScoresIsMutable();
-            rayScores_.addAll(other.rayScores_);
+            ensureRaysSuspiciousIsMutable();
+            raysSuspicious_.addAll(other.raysSuspicious_);
           }
           onChanged();
         }
@@ -5767,6 +5762,9 @@ public final class RemoteDebug {
         }
         if (other.hasEstimateMaxBounds()) {
           mergeEstimateMaxBounds(other.getEstimateMaxBounds());
+        }
+        if (other.getSusRayCutoff() != 0F) {
+          setSusRayCutoff(other.getSusRayCutoff());
         }
         onChanged();
         return this;
@@ -7102,47 +7100,6 @@ public final class RemoteDebug {
         return this;
       }
 
-      private float localiserTime_ ;
-      /**
-       * <pre>
-       * average time for localiser to run
-       * TODO deprecated, never used (localiserRate is used instead); remove later
-       * </pre>
-       *
-       * <code>optional float localiserTime = 17 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public float getLocaliserTime() {
-        return localiserTime_;
-      }
-      /**
-       * <pre>
-       * average time for localiser to run
-       * TODO deprecated, never used (localiserRate is used instead); remove later
-       * </pre>
-       *
-       * <code>optional float localiserTime = 17 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder setLocaliserTime(float value) {
-        
-        localiserTime_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <pre>
-       * average time for localiser to run
-       * TODO deprecated, never used (localiserRate is used instead); remove later
-       * </pre>
-       *
-       * <code>optional float localiserTime = 17 [deprecated = true];</code>
-       */
-      @java.lang.Deprecated public Builder clearLocaliserTime() {
-        
-        localiserTime_ = 0F;
-        onChanged();
-        return this;
-      }
-
       private java.lang.Object localiserStatus_ = "";
       /**
        * <pre>
@@ -7388,9 +7345,9 @@ public final class RemoteDebug {
       private java.util.List<RemoteDebug.RDPointF> localiserVisitedPoints_ =
         java.util.Collections.emptyList();
       private void ensureLocaliserVisitedPointsIsMutable() {
-        if (!((bitField0_ & 0x00040000) == 0x00040000)) {
+        if (!((bitField0_ & 0x00020000) == 0x00020000)) {
           localiserVisitedPoints_ = new java.util.ArrayList<RemoteDebug.RDPointF>(localiserVisitedPoints_);
-          bitField0_ |= 0x00040000;
+          bitField0_ |= 0x00020000;
          }
       }
 
@@ -7584,7 +7541,7 @@ public final class RemoteDebug {
       public Builder clearLocaliserVisitedPoints() {
         if (localiserVisitedPointsBuilder_ == null) {
           localiserVisitedPoints_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00040000);
+          bitField0_ = (bitField0_ & ~0x00020000);
           onChanged();
         } else {
           localiserVisitedPointsBuilder_.clear();
@@ -7689,7 +7646,7 @@ public final class RemoteDebug {
           localiserVisitedPointsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
                   localiserVisitedPoints_,
-                  ((bitField0_ & 0x00040000) == 0x00040000),
+                  ((bitField0_ & 0x00020000) == 0x00020000),
                   getParentForChildren(),
                   isClean());
           localiserVisitedPoints_ = null;
@@ -7697,96 +7654,96 @@ public final class RemoteDebug {
         return localiserVisitedPointsBuilder_;
       }
 
-      private java.util.List<java.lang.Double> rayScores_ = java.util.Collections.emptyList();
-      private void ensureRayScoresIsMutable() {
-        if (!((bitField0_ & 0x00080000) == 0x00080000)) {
-          rayScores_ = new java.util.ArrayList<java.lang.Double>(rayScores_);
-          bitField0_ |= 0x00080000;
+      private java.util.List<java.lang.Boolean> raysSuspicious_ = java.util.Collections.emptyList();
+      private void ensureRaysSuspiciousIsMutable() {
+        if (!((bitField0_ & 0x00040000) == 0x00040000)) {
+          raysSuspicious_ = new java.util.ArrayList<java.lang.Boolean>(raysSuspicious_);
+          bitField0_ |= 0x00040000;
          }
       }
       /**
        * <pre>
-       * score for each ray
+       * true or false for each ray if it was classified as suspicious
        * </pre>
        *
-       * <code>repeated double rayScores = 21;</code>
+       * <code>repeated bool raysSuspicious = 21;</code>
        */
-      public java.util.List<java.lang.Double>
-          getRayScoresList() {
-        return java.util.Collections.unmodifiableList(rayScores_);
+      public java.util.List<java.lang.Boolean>
+          getRaysSuspiciousList() {
+        return java.util.Collections.unmodifiableList(raysSuspicious_);
       }
       /**
        * <pre>
-       * score for each ray
+       * true or false for each ray if it was classified as suspicious
        * </pre>
        *
-       * <code>repeated double rayScores = 21;</code>
+       * <code>repeated bool raysSuspicious = 21;</code>
        */
-      public int getRayScoresCount() {
-        return rayScores_.size();
+      public int getRaysSuspiciousCount() {
+        return raysSuspicious_.size();
       }
       /**
        * <pre>
-       * score for each ray
+       * true or false for each ray if it was classified as suspicious
        * </pre>
        *
-       * <code>repeated double rayScores = 21;</code>
+       * <code>repeated bool raysSuspicious = 21;</code>
        */
-      public double getRayScores(int index) {
-        return rayScores_.get(index);
+      public boolean getRaysSuspicious(int index) {
+        return raysSuspicious_.get(index);
       }
       /**
        * <pre>
-       * score for each ray
+       * true or false for each ray if it was classified as suspicious
        * </pre>
        *
-       * <code>repeated double rayScores = 21;</code>
+       * <code>repeated bool raysSuspicious = 21;</code>
        */
-      public Builder setRayScores(
-          int index, double value) {
-        ensureRayScoresIsMutable();
-        rayScores_.set(index, value);
+      public Builder setRaysSuspicious(
+          int index, boolean value) {
+        ensureRaysSuspiciousIsMutable();
+        raysSuspicious_.set(index, value);
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * score for each ray
+       * true or false for each ray if it was classified as suspicious
        * </pre>
        *
-       * <code>repeated double rayScores = 21;</code>
+       * <code>repeated bool raysSuspicious = 21;</code>
        */
-      public Builder addRayScores(double value) {
-        ensureRayScoresIsMutable();
-        rayScores_.add(value);
+      public Builder addRaysSuspicious(boolean value) {
+        ensureRaysSuspiciousIsMutable();
+        raysSuspicious_.add(value);
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * score for each ray
+       * true or false for each ray if it was classified as suspicious
        * </pre>
        *
-       * <code>repeated double rayScores = 21;</code>
+       * <code>repeated bool raysSuspicious = 21;</code>
        */
-      public Builder addAllRayScores(
-          java.lang.Iterable<? extends java.lang.Double> values) {
-        ensureRayScoresIsMutable();
+      public Builder addAllRaysSuspicious(
+          java.lang.Iterable<? extends java.lang.Boolean> values) {
+        ensureRaysSuspiciousIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
-            values, rayScores_);
+            values, raysSuspicious_);
         onChanged();
         return this;
       }
       /**
        * <pre>
-       * score for each ray
+       * true or false for each ray if it was classified as suspicious
        * </pre>
        *
-       * <code>repeated double rayScores = 21;</code>
+       * <code>repeated bool raysSuspicious = 21;</code>
        */
-      public Builder clearRayScores() {
-        rayScores_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00080000);
+      public Builder clearRaysSuspicious() {
+        raysSuspicious_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00040000);
         onChanged();
         return this;
       }
@@ -8706,6 +8663,44 @@ public final class RemoteDebug {
           estimateMaxBounds_ = null;
         }
         return estimateMaxBoundsBuilder_;
+      }
+
+      private float susRayCutoff_ ;
+      /**
+       * <pre>
+       * cutoff for which rays are considered suspicious (LOCALISER_SUS_IQR_MUL * IQR)
+       * </pre>
+       *
+       * <code>optional float susRayCutoff = 31;</code>
+       */
+      public float getSusRayCutoff() {
+        return susRayCutoff_;
+      }
+      /**
+       * <pre>
+       * cutoff for which rays are considered suspicious (LOCALISER_SUS_IQR_MUL * IQR)
+       * </pre>
+       *
+       * <code>optional float susRayCutoff = 31;</code>
+       */
+      public Builder setSusRayCutoff(float value) {
+        
+        susRayCutoff_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * cutoff for which rays are considered suspicious (LOCALISER_SUS_IQR_MUL * IQR)
+       * </pre>
+       *
+       * <code>optional float susRayCutoff = 31;</code>
+       */
+      public Builder clearSusRayCutoff() {
+        
+        susRayCutoff_ = 0F;
+        onChanged();
+        return this;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -11519,17 +11514,17 @@ public final class RemoteDebug {
       "\001(\0132\007.RDRect\022\014\n\004rays\030\n \003(\001\022\024\n\014dewarpedRa" +
       "ys\030\013 \003(\001\022\024\n\014mirrorRadius\030\014 \001(\005\022\030\n\006robots" +
       "\030\r \003(\0132\010.RDRobot\022\023\n\013rayInterval\030\017 \001(\002\022\026\n" +
-      "\016localiserEvals\030\020 \001(\005\022\031\n\rlocaliserTime\030\021" +
-      " \001(\002B\002\030\001\022\027\n\017localiserStatus\030\022 \001(\t\022\032\n\007bal" +
-      "lPos\030\023 \001(\0132\t.RDPointF\022)\n\026localiserVisite" +
-      "dPoints\030\024 \003(\0132\t.RDPointF\022\021\n\trayScores\030\025 " +
-      "\003(\001\022\025\n\rlocaliserRate\030\026 \001(\005\022 \n\ryellowGoal",
-      "Pos\030\027 \001(\0132\t.RDPointF\022\036\n\013blueGoalPos\030\030 \001(" +
-      "\0132\t.RDPointF\022\025\n\risYellowKnown\030\031 \001(\010\022\023\n\013i" +
-      "sBallKnown\030\032 \001(\010\022\023\n\013isBlueKnown\030\033 \001(\010\022\037\n" +
-      "\014goalEstimate\030\034 \001(\0132\t.RDPointF\022$\n\021estima" +
-      "teMinBounds\030\035 \001(\0132\t.RDPointF\022$\n\021estimate" +
-      "MaxBounds\030\036 \001(\0132\t.RDPointF\"\341\001\n\014DebugComm" +
+      "\016localiserEvals\030\020 \001(\005\022\027\n\017localiserStatus" +
+      "\030\022 \001(\t\022\032\n\007ballPos\030\023 \001(\0132\t.RDPointF\022)\n\026lo" +
+      "caliserVisitedPoints\030\024 \003(\0132\t.RDPointF\022\026\n" +
+      "\016raysSuspicious\030\025 \003(\010\022\025\n\rlocaliserRate\030\026" +
+      " \001(\005\022 \n\ryellowGoalPos\030\027 \001(\0132\t.RDPointF\022\036",
+      "\n\013blueGoalPos\030\030 \001(\0132\t.RDPointF\022\025\n\risYell" +
+      "owKnown\030\031 \001(\010\022\023\n\013isBallKnown\030\032 \001(\010\022\023\n\013is" +
+      "BlueKnown\030\033 \001(\010\022\037\n\014goalEstimate\030\034 \001(\0132\t." +
+      "RDPointF\022$\n\021estimateMinBounds\030\035 \001(\0132\t.RD" +
+      "PointF\022$\n\021estimateMaxBounds\030\036 \001(\0132\t.RDPo" +
+      "intF\022\024\n\014susRayCutoff\030\037 \001(\002\"\341\001\n\014DebugComm" +
       "and\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010" +
       ".RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n\rallThre" +
       "sholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010objectId\030\005" +
@@ -11586,7 +11581,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "Robots", "RayInterval", "LocaliserEvals", "LocaliserTime", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RayScores", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", "GoalEstimate", "EstimateMinBounds", "EstimateMaxBounds", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "Robots", "RayInterval", "LocaliserEvals", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RaysSuspicious", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", "GoalEstimate", "EstimateMinBounds", "EstimateMaxBounds", "SusRayCutoff", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_DebugCommand_fieldAccessorTable = new

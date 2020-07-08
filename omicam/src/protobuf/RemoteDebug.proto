@@ -66,17 +66,14 @@ message DebugFrame {
     float rayInterval = 15;
     // average number of localiser evaluations
     int32 localiserEvals = 16;
-    // average time for localiser to run
-    // TODO deprecated, never used (localiserRate is used instead); remove later
-    float localiserTime = 17 [deprecated = true];
     // NLopt returned status, for example, "MAXTIME_REACHED"
     string localiserStatus = 18;
     // ball position in field coords
     RDPointF ballPos = 19;
     // visited positions by the Subplex optimiser
     repeated RDPointF localiserVisitedPoints = 20;
-    // score for each ray
-    repeated double rayScores = 21;
+    // true or false for each ray if it was classified as suspicious
+    repeated bool raysSuspicious = 21;
     // localiser rate in Hz
     int32 localiserRate = 22;
     // yellow goal position in field coordinates
@@ -95,6 +92,8 @@ message DebugFrame {
     RDPointF estimateMinBounds = 29;
     // localiser max estimate bounds if goal is present
     RDPointF estimateMaxBounds = 30;
+    // cutoff for which rays are considered suspicious (LOCALISER_SUS_IQR_MUL * IQR)
+    float susRayCutoff = 31;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
