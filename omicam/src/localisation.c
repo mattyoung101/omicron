@@ -364,6 +364,7 @@ static void *work_thread(void *arg){
         struct vec2 frameMax = {entry->width, entry->height};
 
         // cast out our rays, stopping if we exceed the mirror bounds, and add to the raw observed rays list
+        // start at the angle indicated by the IMU to account for robot orientation
         double angle = lastSensorData.orientation * DEG_RAD;
         for (int32_t i = 0; i < LOCALISER_NUM_RAYS; i++) {
             observedRaysRaw[i] = (double) raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), angle, entry->width,
@@ -463,10 +464,20 @@ static void *work_thread(void *arg){
 //        puts("");
 //        printf("q1: %f, q3: %f, IQR: %f\n", q1, q3, iqr);
 
-        // flag suspicious rays (outliers)
+        // calculate the mean length
+        double mean = 0.0;
+        for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+            if (observedRays[i] > 0){
+                mean += observedRays[i];
+            }
+        }
+        mean /= (double) LOCALISER_NUM_RAYS;
+//        printf("mean length: %.2f\n", mean);
+
+        // flag suspicious rays (outliers with high error that have a smaller length than the mean)
         u16_list_t suspiciousRays = {0};
         for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
-            if (rayScores[i] >= susRayCutoff){
+            if (rayScores[i] >= susRayCutoff && observedRays[i] <= mean){
                 da_add(suspiciousRays, i);
                 rdSusRays[i] = true;
                 // printf("ray %d is suspicious\n", i);

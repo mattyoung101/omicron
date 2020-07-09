@@ -252,6 +252,9 @@ static auto cv_thread(void *arg) -> void *{
         }
         // downscale for goal detection (and possibly initial ball pass)
         resize(frame, frameScaled, Size(), VISION_SCALE_FACTOR, VISION_SCALE_FACTOR, INTER_NEAREST);
+        // rotate image (just for fun, disable in prod)
+        // Mat rotMat = getRotationMatrix2D(Point2f(frame.cols / 2.0, frame.rows / 2.0), -lastSensorData.orientation, 1.0);
+        // warpAffine(frame, frame, rotMat, Size(frame.cols, frame.rows), INTER_NEAREST);
 
         // vision processing:
         // pre-calculate thresholds in parallel, make sure you get the range right, we care only about the begin
@@ -322,11 +325,13 @@ static auto cv_thread(void *arg) -> void *{
         struct vec2 blueGoalVec = {blueGoal.centroid.x - cx, blueGoal.centroid.y - cy};
         struct vec2 yellowGoalVec = {yellowGoal.centroid.x - cx, yellowGoal.centroid.y - cy};
 
-        // encode protocol buffer to send to ESP32 over UART
+        // orientation of robot in radians, used to shift field object angles into correct frame of reference
+        float orientationRad = lastSensorData.orientation * DEG_RAD;
+
+        // encode protocol buffer to send to ESP32 over UART, and also to use for localiser
         // we convert each cartesian vector (in pixels) into a polar vector in centimetres
         // then we also convert that back to an absolute field position cartesian vector in centimetres
         ObjectData data = ObjectData_init_zero;
-        float orientationRad = lastSensorData.orientation * DEG_RAD;
         data.ballExists = ball.exists;
         if (ball.exists) {
             data.ballAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(ballVec.y, ballVec.x), 360.0f) ;

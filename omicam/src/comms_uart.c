@@ -62,8 +62,7 @@ static void *receive_thread(void *arg){
         if (!pb_decode(&stream, SensorData_fields, &lastSensorData)){
             log_error("Failed to decode ESP32 Protobuf message: %s", PB_GET_ERROR(&stream));
         } else {
-//            log_trace("Decoded UART message successfully!! Yay, this means UART works everywhere. Nice.");
-//            printf("orientation: %.2f\n", lastSensorData.orientation);
+//            log_trace("Decoded UART message successfully!!")
             lastUARTReceiveTime = utils_time_millis();
         }
 
