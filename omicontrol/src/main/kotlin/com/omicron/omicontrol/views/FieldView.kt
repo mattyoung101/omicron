@@ -149,6 +149,7 @@ class FieldView(private val isOffline: Boolean = false) : View() {
                 display.strokeRect(bottomCorner.x, bottomCorner.y, topCorner.x - bottomCorner.x, topCorner.y - bottomCorner.y)
             }
 
+            // render objects:
             // render ball
             run {
                 display.fill = if (ball.isPositionKnown) Color.ORANGE else Color.GREY
@@ -156,36 +157,36 @@ class FieldView(private val isOffline: Boolean = false) : View() {
                 val half = BALL_CANVAS_DIAMETER / 2.0
                 display.fillOval(pos.x - half, pos.y - half, BALL_CANVAS_DIAMETER, BALL_CANVAS_DIAMETER)
             }
-
             // render goals
             display.lineWidth = 4.0
             val robotCentrePos = robots[connectedRobotId].position.toCanvasPosition()
-
             // yellow goal
             run {
                 display.stroke = if (yellowGoal.isPositionKnown) Color.YELLOW else Color.GREY
                 val pos = yellowGoal.position.toCanvasPosition()
                 display.strokeLine(robotCentrePos.x, robotCentrePos.y, pos.x, pos.y)
             }
-
             // blue goal
             run {
                 display.stroke = if (blueGoal.isPositionKnown) Color.DODGERBLUE else Color.GREY
                 val pos = blueGoal.position.toCanvasPosition()
                 display.strokeLine(robotCentrePos.x, robotCentrePos.y, pos.x, pos.y)
             }
-
             // render target sprite
             if (targetPos != null) {
                 display.drawImage(targetIcon, targetPos!!.x - 16, targetPos!!.y - 16, 36.0, 36.0)
             }
-
             // draw crosshair
             if (isDrawCrosshair) {
-                display.lineWidth = 2.0
+                display.lineWidth = 1.0
                 display.stroke = Color.BLACK
                 display.strokeLine(0.0, mousePos.y, FIELD_CANVAS_WIDTH, mousePos.y)
                 display.strokeLine(mousePos.x, 0.0, mousePos.x, FIELD_CANVAS_HEIGHT)
+
+                val mousePosField = mousePos.toRealPosition()
+                display.fill = Color.MAGENTA
+                display.fillText("(%.2f, %.2f)".format(mousePosField.x, mousePosField.y), mousePos.x, mousePos.y)
+
             }
 
             // draw rays if requested

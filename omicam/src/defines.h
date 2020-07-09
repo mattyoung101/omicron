@@ -1,6 +1,13 @@
 #pragma once
 // Misc constants and settings
 
+/** Omicam will be running on a SBC. All features enabled as normal. */
+#define BUILD_TARGET_SBC 0
+/** Omicam will be running locally on a PC. Uses test imagery and some features are disabled. */
+#define BUILD_TARGET_PC 1
+/** which platform Omicam will be running on */
+#define BUILD_TARGET (BUILD_TARGET_PC)
+
 /**
  * Version history:
  * 0.0a: basic CPU blob detection, remote debugger implemented
@@ -13,9 +20,9 @@
  * 3.4b: Omicam enters beta, localiser work continued
  * 4.4b: UART comms implemented, hybrid localiser implemented, fixed lots of bugs
  * 4.5b: implemented hybrid localiser smoothing and recording vision to disk
- * 4.6b: (WIP) refactor replay system, some improvements to localiser, and ...?
+ * 5.6b: (WIP) refactor replay system, added rotation correction, added obstacle detection
  */
-#define OMICAM_VERSION "4.6b"
+#define OMICAM_VERSION "5.6b"
 /** whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO) */
 #define VERBOSE_LOGGING 1
 /** if true, attempts to kill all other Omicam instances on launch (stops duplicate processes) */
@@ -32,13 +39,10 @@
  * Also should be the same as REPLAY_FRAMERATE if you want vision and replay files to sync up.
  */
 #define VISION_RECORDING_FRAMERATE 30
-/** path to test data used in BUILD_TARGET_PC and when using VISION_LOAD_TEST_VIDEO */
+/** Path to still image or video to load when using BUILD_TARGET_PC instead of real camera output. */
 #define VISION_TEST_FILE "../recordings/omicam_recording_1586137290.mp4"
-/**
- * If true, we should load the test video specified in the VISION_TEST_FILE macro.
- * NOTE - this is DIFFERENT to loading an omirec file, this just plays back a loaded vision file but nothing more.
- */
-#define VISION_LOAD_TEST_VIDEO 0
+/** If true in BUILD_TARGET_PC, load the contents of VISION_TEST_FILE. Otherwise, load a still image. */
+#define VISION_LOAD_TEST_VIDEO 1
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1
@@ -61,13 +65,6 @@
 #define REPLAY_WRITE_INTERVAL 5
 /** Target number of replay frames to write per second. Should be less than the average localiser rate. */
 #define REPLAY_FRAMERATE 30
-
-/** Omicam will be running on a SBC. All features enabled as normal. */
-#define BUILD_TARGET_SBC 0
-/** Omicam will be running locally on a PC. Uses test imagery and some features are disabled. */
-#define BUILD_TARGET_PC 1
-/** which platform Omicam will be running on */
-#define BUILD_TARGET (BUILD_TARGET_SBC)
 
 /** stop optimisation when a coordinate with less than this error in centimetres is found */
 #define LOCALISER_ERROR_TOLERANCE 1
@@ -100,16 +97,17 @@
 #define LOCALISER_SMOOTHING_MEDIAN 0
 /** If true, the localiser uses the mouse sensor for initial estimate calculation. If false, it only uses the goals. */
 #define LOCALISER_USE_MOUSE_SENSOR 1
-/** When trying to find suspicious rays during obstacle detection, if a ray error is outside of this value times IQR, it is suspicious. */
-#define LOCALISER_SUS_IQR_MUL 1.5
-/** When grouping together suspicious rays during obstacle detection, allow this many non-suspicious rays until the next suspicious one */
-#define LOCALISER_RAY_GROUP_TOLERANCE 3
 /** if true, renders the objective function bitmap, raycast test bitmap and then quits */
 #define LOCALISER_DEBUG 0
 /** if true, prints localisation performance information to the console (just like vision diagnostics) */
 #define LOCALISER_DIAGNOSTICS 1
 /** error which is 200-300 points higher than the highest usual error in the localiser, determine through trial & error */
 #define LOCALISER_LARGE_ERROR 8600
+
+/** When trying to find suspicious rays during obstacle detection, if a ray error is outside of this value times IQR, it is suspicious. */
+#define OBSDETECT_SUS_IQR_MUL 1.5
+/** When grouping together suspicious rays during obstacle detection, allow this many non-suspicious rays until the next suspicious one */
+#define OBSDETECT_RAY_GROUP_TOLERANCE 2
 
 /** if true, UART will be forced to be enabled even in BUILD_TARGET_PC */
 #define UART_OVERRIDE 0
@@ -181,8 +179,8 @@ typedef enum {
     REPLAY_NONE = 0,
     /** Replay is being recorded */
     REPLAY_RECORDING,
-    /** DEPRECATED: Replay is being loaded from an already recorded file */
-    REPLAY_LOADING
+    //** DEPRECATED: Replay is being loaded from an already recorded file */
+    //REPLAY_LOADING
 } replay_status_t;
 
 /** Holds values that are declared in the INI config file */

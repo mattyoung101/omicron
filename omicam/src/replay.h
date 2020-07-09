@@ -11,8 +11,6 @@ extern "C" {
 
 /** Begins recording a replay, replay status will be set to REPLAY_RECORDING. */
 void replay_record(void);
-/** Loads a replay from an omirec file on disk. Replay status will be set to REPLAY_LOADING. */
-void replay_load(char *path);
 /** If a replay is being recorded, flushes it to disk. Then, disposes all resources that have been allocated. */
 void replay_close(void);
 /** @returns the current status of the replay system (eg whether recording, playing back, or nothing) */
@@ -26,8 +24,6 @@ time_t replay_get_id(void);
  * written to disk. The longer the replay becomes, the longer it will block for.
  */
 void replay_post_frame(ReplayFrame frame);
-
-// TODO add replay loading stuff
 
 #ifdef __cplusplus
 };

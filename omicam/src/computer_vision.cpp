@@ -217,12 +217,12 @@ static auto cv_thread(void *arg) -> void *{
         ogFrame.copyTo(frame);
 #endif
         if (frame.empty()){
-#if BUILD_TARGET == BUILD_TARGET_PC
+#if VISION_LOAD_TEST_VIDEO
             // loop back to start
             cap.set(CAP_PROP_FRAME_COUNT, 0);
             cap.set(CAP_PROP_POS_FRAMES, 0);
             cap.set(CAP_PROP_POS_AVI_RATIO, 0);
-#else
+#elif BUILD_TARGET == BUILD_TARGET_SBC
             // camera may have disconnected, warn the user
             log_warn("Received empty frame from capture!");
             if (errorCount++ > 32){
@@ -326,7 +326,7 @@ static auto cv_thread(void *arg) -> void *{
         struct vec2 yellowGoalVec = {yellowGoal.centroid.x - cx, yellowGoal.centroid.y - cy};
 
         // orientation of robot in radians, used to shift field object angles into correct frame of reference
-        float orientationRad = lastSensorData.orientation * DEG_RAD;
+        float orientationRad = lastSensorData.orientation * (float) DEG_RAD;
 
         // encode protocol buffer to send to ESP32 over UART, and also to use for localiser
         // we convert each cartesian vector (in pixels) into a polar vector in centimetres
@@ -363,10 +363,14 @@ static auto cv_thread(void *arg) -> void *{
         memcpy(localiserFrame, thresholded[OBJ_LINES].data, frame.rows * frame.cols);
 
         // these are the goals relative to the robot in cartesian coordinates and centimetres
-        struct vec2 goalYellowRel = {data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x) + orientationRad),
-                data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x) + orientationRad)};
-        struct vec2 goalBlueRel = {data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x) + orientationRad),
-                localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x) + orientationRad)};
+        struct vec2 goalYellowRel = {
+                data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x) + orientationRad),
+                data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x) + orientationRad)
+        };
+        struct vec2 goalBlueRel = {
+                data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x) + orientationRad),
+                localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x) + orientationRad)
+        };
 
         localiser_post(localiserFrame, frame.cols, frame.rows, goalYellowRel, goalBlueRel, data);
 

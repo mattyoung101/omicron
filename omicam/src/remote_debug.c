@@ -248,15 +248,24 @@ static void encode_and_send(uint8_t *camImg, unsigned long camImgSize, uint8_t *
 #endif
     msg.cropRect = cropRect;
     msg.mirrorRadius = visionMirrorRadius;
+
     msg.ballPos.x = entry->objectData.ballAbsX;
     msg.ballPos.y = entry->objectData.ballAbsY;
+
     msg.yellowGoalPos.x = entry->objectData.goalYellowAbsX;
     msg.yellowGoalPos.y = entry->objectData.goalYellowAbsY;
+
     msg.blueGoalPos.x = entry->objectData.goalBlueAbsX;
     msg.blueGoalPos.y = entry->objectData.goalBlueAbsY;
+
     msg.isBallKnown = entry->objectData.ballExists;
     msg.isBlueKnown = entry->objectData.goalBlueExists;
     msg.isYellowKnown = entry->objectData.goalYellowExists;
+
+    msg.robots[0].orientation = lastSensorData.orientation;
+    // TODO set last FSM state only if not empty
+    // TODO set other robot position from bluetooth
+
     remote_debug_localiser_provide(&msg);
     pthread_mutex_unlock(&localiserMutex);
 

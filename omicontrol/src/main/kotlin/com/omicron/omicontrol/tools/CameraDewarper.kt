@@ -13,7 +13,7 @@ data class Location(val x: Int, val y: Int)
 
 /**
  * Utility program which dewarps a frame from the camera based on the mirror model
- * @author Matt Young
+ * @author Matt Young (Team Omicron), 2020
  */
 object CameraDewarper {
     /** mirror radius, same as in omicam.ini */
@@ -30,10 +30,6 @@ object CameraDewarper {
         return -13.095322188640901 + 0.1934477257439889 * x + 0.0004631806201315 * x.pow(2) - 0.0000050016525762 *
                 x.pow(3) + 0.0000000034877769 * x.pow(4) + 0.0000000000585543 * x.pow(5)
     //         return 2.5874667517468426 * exp(0.012010445463214335 * x)
-    }
-
-    private fun constrain(x: Double, minVal: Double, maxVal: Double): Double {
-        return min(maxVal, max(minVal, x))
     }
 
     /**
@@ -61,14 +57,6 @@ object CameraDewarper {
             totalB += colour.blue
         }
         return Color(totalR / colours.size, totalG / colours.size, totalB / colours.size).rgb
-    }
-
-    /**
-     * Integer point in circle, used during interpolation.
-     * Source: https://stackoverflow.com/a/481150/5007892
-     */
-    private fun iPointInCircle(x: Int, y: Int, cX: Int, cY: Int, radius: Int): Boolean {
-        return (x - cX).toDouble().pow(2) + (y - cY).toDouble().pow(2) <= radius.toDouble().pow(2)
     }
 
     @JvmStatic
@@ -162,7 +150,8 @@ object CameraDewarper {
                     }
                 }
             } catch (e: Exception){
-                println("FUCK YOU, COULDN'T SET $x,$y ($e)")
+                // this is so stupid i swear to god
+                println("whatever, couldn't set $x,$y ($e)")
             }
         }
         println("Min/max written X: $minX, $maxX")
@@ -180,8 +169,7 @@ object CameraDewarper {
         println("Interpolating...")
         for (y in 0 until cropped.height){
             for (x in 0 until cropped.width){
-                if (cropped.getRGB(x, y) == Color.BLACK.rgb
-                    /*&& iPointInCircle(x, y, cropped.width / 2, cropped.height / 2, cropped.width / 2)*/){
+                if (cropped.getRGB(x, y) == Color.BLACK.rgb){
                     val north = safeGetRGB(cropped, x, y + 1)
                     val northEast = safeGetRGB(cropped, x + 1, y + 1)
                     val east = safeGetRGB(cropped, x + 1, y)

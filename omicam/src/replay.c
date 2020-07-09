@@ -30,7 +30,7 @@ static uint32_t frameIdx = 0;
 /** last system time in milliseconds when we wrote to disk */
 static double lastDiskWrite = 0.0;
 
-/** DECODE for ReplayFile.frames */
+// TODO remove this as we no longer decode
 static bool frames_decode(pb_istream_t *stream, const pb_field_t *field, void **arg){
     // the docs are really unclear, but i gather we want to try and read in the sub message
     // and that this function is called for each ReplayFrame in the repeated Frames element
@@ -159,8 +159,6 @@ void replay_close(void){
         flush_frames();
         fclose(outFile);
         da_free(frameList);
-    } else if (replayStatus == REPLAY_LOADING){
-        // we would basically just free the frames list here
     }
     replayStatus = REPLAY_NONE;
 }

@@ -157,7 +157,7 @@ void comms_uart_send(comms_msg_type_t msgId, uint8_t *data, size_t size){
     }
 
     // JimBus format: [0xB, msgId, msgSize, ...PROTOBUF DATA..., CRC8 checksum]
-    // so a 3 byte header + 2 trailing bytes
+    // so a 3 byte header + 1 trailing byte
     uint32_t arraySize = 3 + size + 1;
     uint8_t outBuf[arraySize];
     uint8_t header[3] = {0xB, msgId, size};
@@ -167,7 +167,7 @@ void comms_uart_send(comms_msg_type_t msgId, uint8_t *data, size_t size){
     memcpy(outBuf, header, 3); // copy the header into the buffer
     memcpy(outBuf + 3, data, size); // copy the rest of the buffer in
     outBuf[arraySize - 1] = checksum; // CRC8 checksum
-//    outBuf[arraySize - 1] = 0xE; // set end byte
+    // nb: end byte is no longer used so not set
 
     ssize_t bytesWritten = write(serialfd, outBuf, arraySize);
     if (bytesWritten == -1){

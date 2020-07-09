@@ -19,7 +19,7 @@ import org.greenrobot.eventbus.EventBus
  * 3.5a: fixed some bugs, added some more tools to for debugging
  * 4.5b: Omicontrol enters beta, added support for hybrid localiser displays, fixed some bugs
  * 4.6b: added built-in mirror model calculation with exponential and polynomial (instead of CSV export)
- * 4.7b: (WIP) added camera dewarp tool, and ...?
+ * 4.7b: (WIP) added camera dewarp tool and frontend for obstacle detection and robot orientation
  */
 const val OMICONTROL_VERSION = "4.7b"
 const val DEFAULT_IP = "192.168.12.1"

@@ -38,21 +38,21 @@ extern bool visionRecordingEnabled, visionPlayback, visionDebugRobotMask;
 extern "C" {
 #endif
 
-/** Parses a string in the format "x,y,z" into three numbers to be stored in the given array  **/
+/** Parses a string in the format "x,y,z" into three numbers to be stored in the given array  */
 void utils_parse_thresh(char *threshStr, int32_t *array);
-/** Similar to utils_parse_thresh, but expects a 4 element rectangle of (x, y, width, height) **/
+/** Similar to utils_parse_thresh, but expects a 4 element rectangle of (x, y, width, height) */
 void utils_parse_rect(char *rectStr, int32_t *array);
-/** Gets the timestamp in milliseconds **/
+/** Gets the timestamp in milliseconds */
 double utils_time_millis(void);
-/** Gets the timestamp in microseconds **/
+/** Gets the timestamp in microseconds */
 double utils_time_micros(void);
-/** Writes all thresholds to the INI file using their current values **/
+/** Writes all thresholds to the INI file using their current values */
 void utils_write_thresholds_disk();
 /** Utility function to encode the vision data into a protobuf packet and sent it over UART, using the comms_uart module. */
 void utils_cv_transmit_data(ObjectData ballData);
 /** Reads a binary file from disk and its size. You must free() the returned buffer. **/
 uint8_t *utils_load_bin(char *path, long *size);
-/** Applies the calculated dewarp model to turn the given pixel distance into a centimetre distance in the camera. **/
+/** Applies the calculated dewarp model to turn the given pixel distance into a centimetre distance in the camera. */
 double utils_camera_dewarp(double x);
 /**
  * Enters sleep mode (low power mode), designed to keep CPU thermals under control if no work needs to be done.
@@ -63,7 +63,7 @@ double utils_camera_dewarp(double x);
 void utils_sleep_enter(void);
 /** Exits sleep mode (low power mode). Does nothing if already awake. */
 void utils_sleep_exit(void);
-/** Reloads Omicam ini config file from disk **/
+/** Reloads Omicam ini config file from disk */
 void utils_reload_config(void);
 /** Calculates the CRC8 hash of a buffer */
 uint8_t crc8(const uint8_t *data, size_t len);

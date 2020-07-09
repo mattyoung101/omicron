@@ -33,7 +33,7 @@
 // - can/should we rewrite the objective function to calculate the R^2 value of the fit and maximise it?
 // - look into proper DSP like low pass filter for smoothing instead of moving average
 // - cap localiser to 24 Hz
-// - look into a way to detect robots (documented better on trello)
+// - (WIP) look into a way to detect robots (documented better on trello)
 // - dynamically change number of rays we cast depending on desired accuracy and error and stuff? in areas that are close
 // to us, we can cast less rays, and in far away ones, we can cast more
 
@@ -59,8 +59,8 @@ static double observedRays[LOCALISER_NUM_RAYS] = {0};
 static double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
 /** error value for the last group of rays evaluated by the objective function */
 static double rayScores[LOCALISER_NUM_RAYS] = {0};
-/** true or false if each ray is suspicious, used for debug */
-static bool rdSusRays[LOCALISER_NUM_RAYS] = {0};
+/** true or false if each ray is suspicious */
+static bool suspiciousRays[LOCALISER_NUM_RAYS] = {0};
 /** NLopt status for remote debug */
 static char localiserStatus[32] = {0};
 static pthread_t perfThread;
@@ -77,7 +77,7 @@ static struct vec2 estimateMinBounds = {0};
 static struct vec2 estimateMaxBounds = {0};
 static struct vec2 initialEstimate = {0};
 static bool goalWasUnavailable = false;
-/** LOCALISER_SUS_IQR_MUL * IQR */
+/** this is equivalent to OBSDETECT_SUS_IQR_MUL * IQR */
 static float susRayCutoff = 0.0f;
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
@@ -100,6 +100,7 @@ static inline double constrainf(double x, double min, double max){
     }
 }
 
+/** comparator used to sort an array of doubles with qsort() in ascending order (I think) */
 static int double_cmp(const void *a, const void *b){
     double x = *(const double *)a;
     double y = *(const double *)b;
@@ -457,7 +458,7 @@ static void *work_thread(void *arg){
         double q3 = rayScoresSort[q3i] + q3f * (rayScoresSort[q3i + 1] - rayScoresSort[q3i]);
 
         double iqr = q3 - q1;
-        susRayCutoff = LOCALISER_SUS_IQR_MUL * iqr;
+        susRayCutoff = OBSDETECT_SUS_IQR_MUL * iqr;
 //        for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
 //            printf("%f,", rayScoresSort[i]);
 //        }
@@ -472,20 +473,20 @@ static void *work_thread(void *arg){
             }
         }
         mean /= (double) LOCALISER_NUM_RAYS;
-//        printf("mean length: %.2f\n", mean);
 
         // flag suspicious rays (outliers with high error that have a smaller length than the mean)
-        u16_list_t suspiciousRays = {0};
+        // TODO we could get rid of this dumb linked list and just use rdSusRays?
+        u16_list_t susRaysList = {0};
         for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
             if (rayScores[i] >= susRayCutoff && observedRays[i] <= mean){
-                da_add(suspiciousRays, i);
-                rdSusRays[i] = true;
+                da_add(susRaysList, i);
+                suspiciousRays[i] = true;
                 // printf("ray %d is suspicious\n", i);
             } else {
-                rdSusRays[i] = false;
+                suspiciousRays[i] = false;
             }
         }
-        // printf("have: %zu suspicious rays\n", da_count(suspiciousRays));
+        // printf("have: %zu suspicious rays\n", da_count(susRaysList));
 
         // try and create clusters of suspicious rays taking into account the tolerance
         // TODO when we do this we have to consider that ray 64 can join with ray 0, etc
@@ -557,7 +558,7 @@ static void *work_thread(void *arg){
         replay.localiserRate = localiserRate;
         replay_post_frame(replay);
 
-        da_free(suspiciousRays);
+        da_free(susRaysList);
         free(entry->frame);
         free(entry);
         localiserDone = true;
@@ -568,7 +569,7 @@ static void *work_thread(void *arg){
 
 void remote_debug_localiser_provide(DebugFrame *msg){
     memcpy(msg->dewarpedRays, observedRays, LOCALISER_NUM_RAYS * sizeof(double));
-    memcpy(msg->raysSuspicious, rdSusRays, LOCALISER_NUM_RAYS * sizeof(bool));
+    memcpy(msg->raysSuspicious, suspiciousRays, LOCALISER_NUM_RAYS * sizeof(bool));
     msg->dewarpedRays_count = LOCALISER_NUM_RAYS;
     msg->raysSuspicious_count = LOCALISER_NUM_RAYS;
     msg->susRayCutoff = susRayCutoff;
@@ -579,8 +580,6 @@ void remote_debug_localiser_provide(DebugFrame *msg){
     msg->robots[0].position.x = (float) localisedPosition.x;
     msg->robots[0].position.y = (float) localisedPosition.y;
     msg->robots_count = 1;
-    // TODO set yaw and FSM state and stuff for robots
-    // TODO here we would actually need to provide the received robot position over Bluetooth too
 
     msg->localiserRate = localiserRate;
     msg->localiserEvals = localiserEvals;
