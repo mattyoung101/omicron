@@ -38,7 +38,7 @@
  * If true, we should load the test video specified in the VISION_TEST_FILE macro.
  * NOTE - this is DIFFERENT to loading an omirec file, this just plays back a loaded vision file but nothing more.
  */
-#define VISION_LOAD_TEST_VIDEO 1
+#define VISION_LOAD_TEST_VIDEO 0
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1
@@ -67,7 +67,7 @@
 /** Omicam will be running locally on a PC. Uses test imagery and some features are disabled. */
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
-#define BUILD_TARGET (BUILD_TARGET_PC)
+#define BUILD_TARGET (BUILD_TARGET_SBC)
 
 /** stop optimisation when a coordinate with less than this error in centimetres is found */
 #define LOCALISER_ERROR_TOLERANCE 1

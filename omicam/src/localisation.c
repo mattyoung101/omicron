@@ -364,7 +364,7 @@ static void *work_thread(void *arg){
         struct vec2 frameMax = {entry->width, entry->height};
 
         // cast out our rays, stopping if we exceed the mirror bounds, and add to the raw observed rays list
-        double angle = 0.0;
+        double angle = lastSensorData.orientation * DEG_RAD;
         for (int32_t i = 0; i < LOCALISER_NUM_RAYS; i++) {
             observedRaysRaw[i] = (double) raycast(entry->frame, ROUND2INT(x0), ROUND2INT(y0), angle, entry->width,
                     visionMirrorRadius, frameMin, frameMax);
@@ -380,7 +380,6 @@ static void *work_thread(void *arg){
                 observedRays[i] = utils_camera_dewarp(observedRaysRaw[i]);
             }
         }
-        // TODO (!!IMPORTANT!!) somehow we also need to rotate this array based on orientation of robot
 
         // coordinate optimisation
         // using NLopt's Subplex optimiser, solve a 2D non-linear optimisation problem to calculate the optimal point

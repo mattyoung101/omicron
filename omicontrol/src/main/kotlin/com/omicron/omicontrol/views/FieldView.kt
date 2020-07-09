@@ -24,11 +24,11 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.system.exitProcess
 
-
 /**
  * This screen displays the localised positions of the robots on a virtual field and allows you to control them
+ * @param isOffline if true, we are loading a replay from disk, otherwise we are connected to the robot
  */
-class FieldView : View() {
+class FieldView(private val isOffline: Boolean = false) : View() {
     private lateinit var display: GraphicsContext
     private lateinit var bandwidthLabel: Label
     private lateinit var selectedRobotLabel: Label
@@ -64,7 +64,7 @@ class FieldView : View() {
 
     init {
         reloadStylesheetsOnFocus()
-        title = "Field View | Omicontrol v${OMICONTROL_VERSION}"
+        title = "Field View (${if (isOffline) "Offline" else "Online"}) | Omicontrol v${OMICONTROL_VERSION}"
     }
 
     @ExperimentalUnsignedTypes
@@ -287,33 +287,37 @@ class FieldView : View() {
                     accelerator = KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN)
                 }
             }
-            menu("Connection") {
-                item("Disconnect"){
-                    setOnAction {
-                        Utils.disconnect(this@FieldView)
+            if (!isOffline) {
+                menu("Connection") {
+                    item("Disconnect") {
+                        setOnAction {
+                            Utils.disconnect(this@FieldView)
+                        }
+                        accelerator = KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)
                     }
-                    accelerator = KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_DOWN)
                 }
             }
             menu("Actions") {
-                item("Enter sleep mode") {
-                    setOnAction {
-                        val msg = RemoteDebug.DebugCommand.newBuilder()
-                            .setMessageId(DebugCommands.CMD_SLEEP_ENTER.ordinal)
-                            .build()
-                        CONNECTION_MANAGER.dispatchCommand(msg, {
-                            Logger.info("Acknowledgement of sleep received, disconnecting")
-                            runLater {
-                                Utils.showGenericAlert(
-                                    Alert.AlertType.INFORMATION,
-                                    "Omicam has entered a low power sleep state.\n\nVision will not be functional until" +
-                                            " you reconnect, which automatically exits sleep mode.", "Sleep mode"
-                                )
-                                Utils.disconnect(this@FieldView)
-                            }
-                        })
+                if (!isOffline) {
+                    item("Enter sleep mode") {
+                        setOnAction {
+                            val msg = RemoteDebug.DebugCommand.newBuilder()
+                                .setMessageId(DebugCommands.CMD_SLEEP_ENTER.ordinal)
+                                .build()
+                            CONNECTION_MANAGER.dispatchCommand(msg, {
+                                Logger.info("Acknowledgement of sleep received, disconnecting")
+                                runLater {
+                                    Utils.showGenericAlert(
+                                        Alert.AlertType.INFORMATION,
+                                        "Omicam has entered a low power sleep state.\n\nVision will not be functional until" +
+                                                " you reconnect, which automatically exits sleep mode.", "Sleep mode"
+                                    )
+                                    Utils.disconnect(this@FieldView)
+                                }
+                            })
+                        }
+                        accelerator = KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN)
                     }
-                    accelerator = KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN)
                 }
                 menu("Select robot") {
                     item("None"){

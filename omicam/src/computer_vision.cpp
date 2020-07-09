@@ -16,6 +16,7 @@
 #include "movavg.h"
 #include "localisation.h"
 #include "replay.h"
+#include "comms_uart.h"
 // yeah this is bad practice, what are you gonna do?
 using namespace cv;
 using namespace std;
@@ -325,26 +326,27 @@ static auto cv_thread(void *arg) -> void *{
         // we convert each cartesian vector (in pixels) into a polar vector in centimetres
         // then we also convert that back to an absolute field position cartesian vector in centimetres
         ObjectData data = ObjectData_init_zero;
+        float orientationRad = lastSensorData.orientation * DEG_RAD;
         data.ballExists = ball.exists;
         if (ball.exists) {
-            data.ballAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(ballVec.y, ballVec.x), 360.0f);
+            data.ballAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(ballVec.y, ballVec.x), 360.0f) ;
             data.ballMag = (float) utils_camera_dewarp(svec2_length(ballVec));
-            data.ballAbsX = (float) localisedPosition.x + data.ballMag * cosf(atan2f(ballVec.y, ballVec.x));
-            data.ballAbsY = (float) localisedPosition.y + data.ballMag * sinf(atan2f(ballVec.y, ballVec.x));
+            data.ballAbsX = (float) localisedPosition.x + data.ballMag * cosf(atan2f(ballVec.y, ballVec.x) + orientationRad);
+            data.ballAbsY = (float) localisedPosition.y + data.ballMag * sinf(atan2f(ballVec.y, ballVec.x) + orientationRad);
         }
         data.goalBlueExists = blueGoal.exists;
         if (blueGoal.exists) {
             data.goalBlueAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(blueGoalVec.y, blueGoalVec.x), 360.0f);
             data.goalBlueMag = (float) utils_camera_dewarp(svec2_length(blueGoalVec));
-            data.goalBlueAbsX = (float) localisedPosition.x + data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x));
-            data.goalBlueAbsY = (float) localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x));
+            data.goalBlueAbsX = (float) localisedPosition.x + data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x) + orientationRad);
+            data.goalBlueAbsY = (float) localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x) + orientationRad);
         }
         data.goalYellowExists = yellowGoal.exists;
         if (yellowGoal.exists) {
             data.goalYellowAngle = fmodf(450.0f - (float) RAD_DEG * atan2f(yellowGoalVec.y, yellowGoalVec.x), 360.0f);
             data.goalYellowMag = (float) utils_camera_dewarp(svec2_length(yellowGoalVec));
-            data.goalYellowAbsX = (float) localisedPosition.x + data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
-            data.goalYellowAbsY = (float) localisedPosition.y + data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x));
+            data.goalYellowAbsX = (float) localisedPosition.x + data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x) + orientationRad);
+            data.goalYellowAbsY = (float) localisedPosition.y + data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x) + orientationRad);
         }
         // TODO consider sending relative field goal and ball coordinates in cartesian (like we send to localiser) over UART?
         // TODO remove utils_cv_transmit() and put it here instead
@@ -356,10 +358,10 @@ static auto cv_thread(void *arg) -> void *{
         memcpy(localiserFrame, thresholded[OBJ_LINES].data, frame.rows * frame.cols);
 
         // these are the goals relative to the robot in cartesian coordinates and centimetres
-        struct vec2 goalYellowRel = {data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x)),
-                data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x))};
-        struct vec2 goalBlueRel = {data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x)),
-                localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x))};
+        struct vec2 goalYellowRel = {data.goalYellowMag * cosf(atan2f(yellowGoalVec.y, yellowGoalVec.x) + orientationRad),
+                data.goalYellowMag * sinf(atan2f(yellowGoalVec.y, yellowGoalVec.x) + orientationRad)};
+        struct vec2 goalBlueRel = {data.goalBlueMag * cosf(atan2f(blueGoalVec.y, blueGoalVec.x) + orientationRad),
+                localisedPosition.y + data.goalBlueMag * sinf(atan2f(blueGoalVec.y, blueGoalVec.x) + orientationRad)};
 
         localiser_post(localiserFrame, frame.cols, frame.rows, goalYellowRel, goalBlueRel, data);
 

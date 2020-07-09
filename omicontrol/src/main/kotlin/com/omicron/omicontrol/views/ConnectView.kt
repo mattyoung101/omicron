@@ -3,6 +3,7 @@ package com.omicron.omicontrol.views
 import com.omicron.omicontrol.*
 import javafx.collections.FXCollections
 import javafx.geometry.Pos
+import javafx.scene.Cursor
 import javafx.scene.control.Alert
 import javafx.scene.control.ComboBox
 import javafx.scene.control.ProgressIndicator
@@ -10,8 +11,10 @@ import javafx.scene.control.TextField
 import javafx.scene.image.Image
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
+import javafx.stage.FileChooser
 import org.tinylog.kotlin.Logger
 import tornadofx.*
+import java.nio.file.Paths
 import java.util.prefs.Preferences
 import kotlin.system.exitProcess
 
@@ -87,6 +90,29 @@ class ConnectView : View() {
                     alignment = Pos.CENTER
                 }
 
+                hbox {
+                    label("Click here to load a replay..."){
+                        textFill = Color.WHITE
+
+                        setOnMouseEntered {
+                            cursor = Cursor.HAND
+                        }
+
+                        setOnMouseClicked {
+                            val chooser = FileChooser().apply {
+                                initialDirectory = Paths.get(".").toFile()
+                                extensionFilters.add(FileChooser.ExtensionFilter("Omicam replay files", "*.omirec"))
+                            }
+                            val replayFile = chooser.showOpenDialog(currentWindow)
+
+                            if (replayFile != null){
+                                // TODO load file
+                            }
+                        }
+                    }
+                    alignment = Pos.CENTER
+                }
+
                 @Suppress("ConstantConditionIf")
                 if (DEBUG_CAMERA_VIEW) {
                     button("Force camera view") {
@@ -101,10 +127,19 @@ class ConnectView : View() {
                 hbox {
                     button("Connect") {
                         setOnAction {
+//                            // no need to connect for replay view
+//                            if (viewBox.value == "Replay view"){
+//                                Logger.trace("Loading replay view, not attempting connection")
+//                                Utils.transitionMetro(this@ConnectView, ReplayView())
+//                                return@setOnAction
+//                            }
+
                             this@button.text = "Connecting..."
                             this.isDisable = true
 
                             // this is terrible practice for tornadofx but i don't really care
+                            // i mean that's a lie i do, but at this rate, is this thing even ever going to be deployed?
+                            // thanks corona
                             runAsync {
                                 var success = false
                                 try {
@@ -142,6 +177,15 @@ class ConnectView : View() {
                     addClass(Styles.paddedBox)
                     alignment = Pos.CENTER
                 }
+
+//                hbox {
+//                    button("Load replay") {
+//                        setOnAction {
+//                        }
+//                    }
+//                    addClass(Styles.paddedBox)
+//                    alignment = Pos.CENTER
+//                }
 
                 hbox {
                     button("Quit") {

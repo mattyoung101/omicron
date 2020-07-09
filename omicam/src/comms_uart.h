@@ -6,6 +6,11 @@
 #include "protobuf/UART.pb.h"
 #include "defines.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern SensorData lastSensorData;
 extern double lastUARTReceiveTime;
 
@@ -21,3 +26,7 @@ void comms_uart_init();
 void comms_uart_send(comms_msg_type_t msgId, uint8_t *data, size_t size);
 /** Closes the UART TTY */
 void comms_uart_dispose();
+
+#ifdef __cplusplus
+};
+#endif
