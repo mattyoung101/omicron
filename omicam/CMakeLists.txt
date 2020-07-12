@@ -33,7 +33,6 @@ include_directories(lib)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 # add source files
-# probably not pragmatic CMake but screw you, this is a build script, it just builds my shit alright
 add_executable(omicam src/main.c
         lib/log/log.c
         lib/log/log.h
@@ -47,8 +46,8 @@ add_executable(omicam src/main.c
         src/protobuf/RemoteDebug.pb.c src/protobuf/RemoteDebug.pb.h lib/map.c lib/map.h
         src/protobuf/FieldFile.pb.c src/protobuf/FieldFile.pb.h lib/stb_image_write.h lib/tinyexpr.c lib/tinyexpr.h
         src/protobuf/UART.pb.c src/protobuf/UART.pb.h src/movavg.c src/movavg.h lib/mathc.c lib/mathc.h
-        lib/stb_image.h src/computer_vision.cpp src/computer_vision.hpp src/comms_uart.c src/comms_uart.h src/replay.c src/replay.h
-        src/protobuf/Replay.pb.c)
+        lib/stb_image.h src/computer_vision.cpp src/computer_vision.hpp src/comms_uart.c src/comms_uart.h src/replay.c
+        src/replay.h src/protobuf/Replay.pb.c)
 
 set_target_properties(omicam PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(omicam PROPERTIES CUDA_SEPARABLE_COMPILATION ON)

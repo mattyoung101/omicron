@@ -1,9 +1,9 @@
 #pragma once
 // Misc constants and settings
 
-/** Omicam will be running on a SBC. All features enabled as normal. */
+/** Omicam will be running on an SBC in production. All features will be enabled as normal. */
 #define BUILD_TARGET_SBC 0
-/** Omicam will be running locally on a PC. Uses test imagery and some features are disabled. */
+/** Omicam will be running locally on a PC for debugging. Uses test imagery and some features are disabled. */
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
 #define BUILD_TARGET (BUILD_TARGET_PC)
@@ -15,7 +15,7 @@
  * 1.1a: Integration with Omicontrol completed
  * 1.2a: works on Jetson with optimisation and thresholding for objects
  * 1.3a: cropping (ROI) optimisations, support for goal thresholding at lower resolutions
- * 1.4a: performance optimisations for new SBC, new FPS timing code, fixes
+ * 1.4a: performance optimisations for new SBC (LattePanda), new FPS timing code, fixes
  * 2.4a: localisation prototype implemented, sleep mode added
  * 3.4b: Omicam enters beta, localiser work continued
  * 4.4b: UART comms implemented, hybrid localiser implemented, fixed lots of bugs
@@ -40,9 +40,9 @@
  */
 #define VISION_RECORDING_FRAMERATE 30
 /** Path to still image or video to load when using BUILD_TARGET_PC instead of real camera output. */
-#define VISION_TEST_FILE "../recordings/omicam_recording_1586137290.mp4"
+#define VISION_TEST_FILE "../recordings/frame9.jpg"
 /** If true in BUILD_TARGET_PC, load the contents of VISION_TEST_FILE. Otherwise, load a still image. */
-#define VISION_LOAD_TEST_VIDEO 1
+#define VISION_LOAD_TEST_VIDEO 0
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1
@@ -73,21 +73,17 @@
 /** max evaluation time for the optimiser in milliseconds */
 #define LOCALISER_MAX_EVAL_TIME 100
 /**
- * Step size in cm to use if an initial estimate is available (original is about 60 with no estimate).
- * If this value is too low/high, accuracy and performance will suffer. Evaluate with trial & error.
+ * Step size in cm to use if an initial estimate is available to converge faster (original is about 60 with no estimate).
+ * Use trial and error to find optimal value, as this can be important for performance and accuracy.
  */
 #define LOCALISER_SMALL_STEP 10.0
 /**
  * If a goal estimate is available, NLopt bounds are constrained to a square of this size (in cm) around the estimated position.
- * Set this value conservatively, because if it's too small and the goal magnitudes are wonky, you could miss the real position.
- * Finally, please note that this value is extremely sensitive, small changes can increase/decrease the average evaluations by
- * almost 10 evaluations.
+ * Set this value conservatively, since goal estimate is often very wonky and you don't want to miss the real position.
+ * This value may have a significant impact on performance in addition to LOCALISER_SMALL_STEPs
  */
 #define LOCALISER_ESTIMATE_BOUNDS 45
-/**
- * The number of rays to use when raycasting on line images, generally 64 is fine but 128 in extreme situations will be useful.
- * NOTE: must be an even number, preferably a power of two.
- */
+/** The number of rays to use when raycasting on line images. NOTE: must be an even number, preferably a power of two. */
 #define LOCALISER_NUM_RAYS 64
 /** Whether or not to use a moving average to smooth the localiser output. Recommended due to noise. */
 #define LOCALISER_ENABLE_SMOOTHING 1
@@ -108,6 +104,8 @@
 #define OBSDETECT_SUS_IQR_MUL 1.5
 /** When grouping together suspicious rays during obstacle detection, allow this many non-suspicious rays until the next suspicious one */
 #define OBSDETECT_RAY_GROUP_TOLERANCE 2
+/** Minimum number of rays in a cluster. If clusters have less than this, they will be pruned */
+#define OBSDETECT_MIN_CLUSTER_SIZE 2
 
 /** if true, UART will be forced to be enabled even in BUILD_TARGET_PC */
 #define UART_OVERRIDE 0

@@ -5,7 +5,7 @@ For the full technical writeup on our vision pipeline, please see [the relevant 
 
 **Credits:**
 - Matt Young: main C/C++ programmer, Markdown docs, project maintainer
-- Ethan Lo: field file generator, localisation research, maths assistance
+- Ethan Lo: field file generator, initial localisation research, maths assistance
 
 ## Features list
 - High performance field object detection (ball, lines, goals) using OpenCV 4
@@ -153,10 +153,12 @@ Important ones are in bold. Most of these are covered above.
 - [mathc](https://github.com/felselva/mathc): Zlib license
 - [qdbmp](https://github.com/cbraudo/qdbmp): MIT license
 
-## Special thanks
-- Steven G Johnson, for writing the amazing NLopt library
-- Tom Rowan, author of the Subplex optimisation algorithm
-- Huimin Lu, Xun Li, Hui Zhang, Mei Hu and Zhiqiang Zheng, authors of the paper we based our localiser approach on
-- Riley Bowyer from CSIRO, for helping significantly with stability and performance improvements of the localiser as well
-  as great theory about point registration problems in general. Cheers man.
-- Everyone on Team Omicron, for putting up with me (Matt) obsessing over this project for a very long time. You guys rock.
+## Special thanks to...
+- Riley Bowyer at CSIRO, for his great advice and theory in regards to the localiser, specifically with stability and
+performance. Cheers.
+- Angus Scroggie for lots of help with the maths related to robot detection. The 3am Desmos run paid off!
+- The contributors to the NLopt library, especially Steven G Johnson the initial author, and Tom Rowan for his PhD
+thesis describing the Subplex algorithm.
+- Huimin Lu, Xun Li, Hui Zhang, Mei Hu and Zhiqiang Zheng, authors of the paper we initially read for ideas on how to localise
+properly.
+- Everyone on Team Omicron! You guys are all the best teammates, and wouldn't be remotely possible without you all <3

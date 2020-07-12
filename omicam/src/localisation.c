@@ -22,12 +22,11 @@
 #include "protobuf/Replay.pb.h"
 #include "replay.h"
 
-// This file implements our novel sensor-fusion localisation approach. It works by using generating an initial guess
-// through traditional methods like vector maths on the goals and mouse sensor integration, but uniquely refines
-// this inaccurate initial guess by solving a non-linear multi-variate optimisation problem in real-time. For more
-// information, see our documentation website.
+// This file implements our novel localisation algorithm that uses a hybrid sensor-fusion/non-linear optimisation approach,
+// our statistical robot detection strategy, and finally comms with the remote debug UI (Omicontrol).
+// For more information, see the page on our documentation website: https://teamomicron.github.io/omicam/
 
-// TODO list of things to potentially investigate:
+// ~~~~~ List of things to potentially investigate: ~~~~~
 // - could we turn this into a non-linear least squares problem and solve with gauss-newton or levenberg-marquardt
 // alternatively, we could just give the gradient to a gradient based optimisation algorithm
 // - can/should we rewrite the objective function to calculate the R^2 value of the fit and maximise it?
@@ -37,6 +36,13 @@
 // - dynamically change number of rays we cast depending on desired accuracy and error and stuff? in areas that are close
 // to us, we can cast less rays, and in far away ones, we can cast more
 
+typedef struct {
+    // begin and end indexes in ray list
+    uint16_t begin;
+    uint16_t end;
+} ray_cluster_t;
+
+DA_TYPEDEF(ray_cluster_t, ray_cluster_list_t)
 DA_TYPEDEF(uint16_t, u16_list_t)
 
 /** points visited by the Subplex optimiser */
@@ -137,15 +143,21 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
 #endif
 
     while (true){
-        int32_t rx = ROUND2INT(x0 + (dist * sin(theta)));
-        int32_t ry = ROUND2INT(y0 + (dist * cos(theta)));
+        // EXTREMELY IMPORTANT NOTE: you will observe here the adding and subtracting of PI/2. initially, I accidentally
+        // had this in the wrong direction (using sin then cos instead of cos then sin), but despite being a stupid mistake
+        // it was somehow helpful, this is because the robot's default rotation frame of reference is facing the positive
+        // X axis, or horizontal. anyways, this is mad confusing, but the important takeaways here are that
+        // A) the robot faces horizontally on the X axis; and that B) I'm bad at maths
+        int32_t rx = ROUND2INT(x0 + (dist * cosf(theta - PI / 2.0)));
+        int32_t ry = ROUND2INT(y0 + (dist * sinf(theta + PI / 2.0)));
+        // note on the above as well:
+        // this trig here is one of the slowest parts of the objective function, we could speed it up by using an integer
+        // approximate for sin and cos (the 32 bit float functions suffice here instead), or used Bresenham's algorithm
 
         // return if going to be out of bounds, and mark as ignored if so
         if (rx <= minCorner.x || ry <= minCorner.y || rx >= maxCorner.x || ry >= maxCorner.y){
-            // the ray didn't land inside bounds so mark it as ignored
             return -1;
         }
-
         // check if we exited mirror bounds, and mark as ignored if so
         if (earlyStop != -1 && dist > earlyStop){
             return -1;
@@ -438,13 +450,14 @@ static void *work_thread(void *arg){
         localisedPosition.x = optimiserPos[0];
         localisedPosition.y = optimiserPos[1];
 #endif
+        // FIXME maybe move all the obstacle detection crap to another file?? obsdetect.c
         // obstacle detection
         // sort rays by value, smallest to largest, for later IQR calculation
         double rayScoresSort[LOCALISER_NUM_RAYS] = {0};
         memcpy(rayScoresSort, rayScores, LOCALISER_NUM_RAYS * sizeof(double));
         qsort(rayScoresSort, LOCALISER_NUM_RAYS, sizeof(double), double_cmp);
 
-        // calculate the inter-quartile range for use in detecting outliers (thanks to angus scroggie for help with this)
+        // calculate the inter-quartile range for use in detecting outliers (thanks to angus scroggie for the idea)
         // reference: https://brilliant.org/wiki/data-interquartile-range/
         // NOTE: to ease calculation, we make the (terrible?) assumption that LOCALISER_NUM_RAYS is even
         double q1tmp = 0.0;
@@ -476,24 +489,95 @@ static void *work_thread(void *arg){
 
         // flag suspicious rays (outliers with high error that have a smaller length than the mean)
         // TODO we could get rid of this dumb linked list and just use rdSusRays?
-        u16_list_t susRaysList = {0};
         for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
-            if (rayScores[i] >= susRayCutoff && observedRays[i] <= mean){
-                da_add(susRaysList, i);
-                suspiciousRays[i] = true;
-                // printf("ray %d is suspicious\n", i);
-            } else {
-                suspiciousRays[i] = false;
-            }
+            suspiciousRays[i] = rayScores[i] >= susRayCutoff && observedRays[i] <= mean && rayScores[i] > 0;
+//            if (suspiciousRays[i]){
+//                printf("ray %d is suspicious\n", i);
+//            }
         }
-        // printf("have: %zu suspicious rays\n", da_count(susRaysList));
 
         // try and create clusters of suspicious rays taking into account the tolerance
-        // TODO when we do this we have to consider that ray 64 can join with ray 0, etc
+        ray_cluster_list_t rayClusters = {0};
+        bool isClustering = false;
+        ray_cluster_t currentCluster = {0};
+        for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+            if (suspiciousRays[i] && !isClustering){
+                // if we have a suspicious ray, and are not currently clustering, start a new cluster
+                // printf("starting new cluster at ray %d\n", i);
+                memset(&currentCluster, 0, sizeof(ray_cluster_t));
+                currentCluster.begin = i;
+                isClustering = true;
+            } else if (!suspiciousRays[i]) {
+                // the current ray is non suspicious: check if the rays are all non suspicious after the current one
+                // TODO maybe should do for loop and if they're ALL non suspicious after RAY_GROUP_TOLERANCE terminate otherwise not
+                uint16_t nextIndex = constrain(i + OBSDETECT_RAY_GROUP_TOLERANCE, 0, LOCALISER_NUM_RAYS - 1);
 
-        // filter out any that aren't robot shaped
+                if (!suspiciousRays[nextIndex] && isClustering){
+                    // likely no more rays, terminate cluster and add to list
+                    // printf("end of current cluster on ray %d\n", i);
+                    currentCluster.end = i;
+                    isClustering = false;
+                    da_add(rayClusters, currentCluster);
+                } else {
+                    // cluster keeps on going, or was not started in the first place, either way do nothing
+                }
+            }
+        }
 
-        // record our obstacles
+        // prune clusters which are too small, and join up ones at the end and beginning
+        // separate list of removal indices to prevent concurrent modification problems
+        u16_list_t removeIndexes = {0};
+        for (size_t i = 0; i < da_count(rayClusters); i++){
+            ray_cluster_t cluster = da_get(rayClusters, i);
+            if (abs(cluster.end - cluster.begin) < OBSDETECT_MIN_CLUSTER_SIZE){
+                // printf("cluster %zu from %d-%d is too small, purging\n", i, cluster.begin, cluster.end);
+                da_add(removeIndexes, i);
+            }
+        }
+        uint16_t removedCount = 0;
+        for (size_t i = 0; i < da_count(removeIndexes); i++){
+            uint16_t index = da_get(removeIndexes, i) - removedCount;
+            da_delete(rayClusters, index);
+            removedCount++;
+        }
+        // TODO join up clusters at the end to the beginning
+
+        // for each scalene triangle defined by begin and end ray angles and the distance to the closest field line,
+        // calculate whether or not a robot could possibly fit in it
+        // thanks again to angus scroggie for coming up with the idea and maths for this and the next step
+        struct vec2 minCoord = {0, 0};
+        struct vec2 maxCoord = {field.length, field.width};
+        for (size_t i = 0; i < da_count(rayClusters); i++){
+            ray_cluster_t cluster = da_get(rayClusters, i);
+
+            // cast from the midpoint of the rays to the field line to form the end of the triangle
+            // we also have to convert back from centre coordinates to top left cooridnates
+            uint16_t midpoint = (cluster.begin + cluster.end) / 2;
+            double midpointAngle = midpoint * (PI2 / LOCALISER_NUM_RAYS);
+            double rx = X_TO_FF(localisedPosition.x + field.length / 2.0);
+            double ry = Y_TO_FF(localisedPosition.y + field.width / 2.0);
+            // note: in this raycast, it will terminate on the goalie box on the ints field which may cause problems
+            // if robots are in there. however, I'm going to make the assumption here that there will be no illegal robots
+            int32_t midpointLength = raycast(field.data.bytes, rx, ry, midpointAngle, field.length,-1, minCoord, maxCoord);
+
+            // now find the area of the triangle, to find the length of the base we find the two coords that define the
+            // base line and euclidean distance between them, so we raycast out from the robot to the midpoint length
+            // IMPORTANT NOTE: we intentionally use trig the wrong way around here, see raycast() for details
+            double firstX = midpointLength * sin(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
+            double firstY = midpointLength * cos(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
+            double lastX = midpointLength * sin(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
+            double lastY = midpointLength * cos(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
+            double base = sqrt(pow(firstX - lastX, 2) + pow(firstY - lastY, 2));
+            double triArea = base * midpointLength / 2.0;
+            printf("triangle area: %.2f\n", triArea);
+
+            double sideA = sqrt(pow(rx - firstX, 2) + pow(ry - firstY, 2));
+            double sideB = sqrt(pow(rx - lastX, 2) + pow(ry - lastY, 2));
+            double triPerimeter = sideA + sideB + base;
+            // this is the maximum radius of a circle that can be inscribed in our triangle
+            double maxRadius = (triArea / triPerimeter) * 2.0;
+            printf("perimeter: %.2f, max radius: %.2f\n", triPerimeter, maxRadius);
+        }
 
         // serialisation stage
         // dispatch data to the ESP32, using JimBus (Protobufs over UART)
@@ -558,7 +642,8 @@ static void *work_thread(void *arg){
         replay.localiserRate = localiserRate;
         replay_post_frame(replay);
 
-        da_free(susRaysList);
+        da_free(rayClusters);
+        da_free(removeIndexes);
         free(entry->frame);
         free(entry);
         localiserDone = true;

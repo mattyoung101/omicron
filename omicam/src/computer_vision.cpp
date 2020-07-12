@@ -21,10 +21,11 @@
 using namespace cv;
 using namespace std;
 
-// This file handles all the OpenCV tasks in C++ code, which is then called by the C code in the rest of the project,
-// as OpenCV dropped support for the legacy C API.
+// This file implements our vision pipeline using OpenCV.
+// It's written in C++ since OpenCV requires this, and is then called by the C code in the rest of the project.
 // I also sincerely apologise in advance for the somewhat hideous mix of C-style code and modern C++-style code, I didn't have
-// the time or energy to learn proper modern C++ for just this file in a majority C project.
+// the time or energy to learn proper modern C++ for just this file in a majority C project (although I do now!)
+// It's not the prettiest code with all the macros, and gets especially ugly towards the end. Sorry bout that.
 
 /** A detected field object and its associated information */
 typedef struct {
