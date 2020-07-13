@@ -106,6 +106,8 @@
 #define OBSDETECT_RAY_GROUP_TOLERANCE 2
 /** Minimum number of rays in a cluster. If clusters have less than this, they will be pruned */
 #define OBSDETECT_MIN_CLUSTER_SIZE 2
+/** Determines the maximum DIAMETER of a robot in the league */
+#define OBSDETECT_MAX_ROBOT_DIAMETER 22
 
 /** if true, UART will be forced to be enabled even in BUILD_TARGET_PC */
 #define UART_OVERRIDE 0

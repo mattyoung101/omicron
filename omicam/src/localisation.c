@@ -577,6 +577,27 @@ static void *work_thread(void *arg){
             // this is the maximum radius of a circle that can be inscribed in our triangle
             double maxRadius = (triArea / triPerimeter) * 2.0;
             printf("perimeter: %.2f, max radius: %.2f\n", triPerimeter, maxRadius);
+
+            // finally, check if the max robot size permits a robot to be in this cluster
+            if (OBSDETECT_MAX_ROBOT_DIAMETER <= maxRadius * 2){
+                // if it does, calculate where the robot might be. we can't actually know where the robot is exactly,
+                // or it would be too complicated, so we assume that the detected robot is as close as possible to our
+                // robot without going outside the cluster bounds
+                // this is implemented as defined by angus' desmos link: https://www.desmos.com/calculator/0oaombib4e
+                double a = tan(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
+                double b = tan(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
+                double t = tan((atan(a) + atan(b)) / 2.0);
+                double R = OBSDETECT_MAX_ROBOT_DIAMETER / 2.0;
+                double invA = pow(a, -1);
+                double c = (R * (t + invA) * (a + invA)) / (sqrt(pow(t * invA - 1, 2) + pow(a - t, 2)));
+
+                // final coords of robot: (C, D) - this will probably be relative to us
+                double C = (c) / (t + invA);
+                double D = t * c;
+                double finalX = localisedPosition.x + C;
+                double finalY = localisedPosition.y + D;
+                printf("final robot coords: %.2f,%.2f\n", finalX, finalY);
+            }
         }
 
         // serialisation stage
