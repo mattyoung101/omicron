@@ -3645,6 +3645,81 @@ public final class RemoteDebug {
      * <code>optional float susRayCutoff = 31;</code>
      */
     float getSusRayCutoff();
+
+    /**
+     * <pre>
+     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriBegin = 32;</code>
+     */
+    boolean hasSusTriBegin();
+    /**
+     * <pre>
+     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriBegin = 32;</code>
+     */
+    RemoteDebug.RDPointF getSusTriBegin();
+    /**
+     * <pre>
+     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriBegin = 32;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getSusTriBeginOrBuilder();
+
+    /**
+     * <pre>
+     * suspicious triangle end (temp for debug)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriEnd = 33;</code>
+     */
+    boolean hasSusTriEnd();
+    /**
+     * <pre>
+     * suspicious triangle end (temp for debug)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriEnd = 33;</code>
+     */
+    RemoteDebug.RDPointF getSusTriEnd();
+    /**
+     * <pre>
+     * suspicious triangle end (temp for debug)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriEnd = 33;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getSusTriEndOrBuilder();
+
+    /**
+     * <pre>
+     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+     * </pre>
+     *
+     * <code>optional .RDPointF detectedRobot = 34;</code>
+     */
+    boolean hasDetectedRobot();
+    /**
+     * <pre>
+     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+     * </pre>
+     *
+     * <code>optional .RDPointF detectedRobot = 34;</code>
+     */
+    RemoteDebug.RDPointF getDetectedRobot();
+    /**
+     * <pre>
+     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+     * </pre>
+     *
+     * <code>optional .RDPointF detectedRobot = 34;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getDetectedRobotOrBuilder();
   }
   /**
    * <pre>
@@ -3983,6 +4058,45 @@ public final class RemoteDebug {
             case 253: {
 
               susRayCutoff_ = input.readFloat();
+              break;
+            }
+            case 258: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (susTriBegin_ != null) {
+                subBuilder = susTriBegin_.toBuilder();
+              }
+              susTriBegin_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(susTriBegin_);
+                susTriBegin_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 266: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (susTriEnd_ != null) {
+                subBuilder = susTriEnd_.toBuilder();
+              }
+              susTriEnd_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(susTriEnd_);
+                susTriEnd_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 274: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (detectedRobot_ != null) {
+                subBuilder = detectedRobot_.toBuilder();
+              }
+              detectedRobot_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(detectedRobot_);
+                detectedRobot_ = subBuilder.buildPartial();
+              }
+
               break;
             }
           }
@@ -4760,6 +4874,105 @@ public final class RemoteDebug {
       return susRayCutoff_;
     }
 
+    public static final int SUSTRIBEGIN_FIELD_NUMBER = 32;
+    private RemoteDebug.RDPointF susTriBegin_;
+    /**
+     * <pre>
+     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriBegin = 32;</code>
+     */
+    public boolean hasSusTriBegin() {
+      return susTriBegin_ != null;
+    }
+    /**
+     * <pre>
+     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriBegin = 32;</code>
+     */
+    public RemoteDebug.RDPointF getSusTriBegin() {
+      return susTriBegin_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriBegin_;
+    }
+    /**
+     * <pre>
+     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriBegin = 32;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getSusTriBeginOrBuilder() {
+      return getSusTriBegin();
+    }
+
+    public static final int SUSTRIEND_FIELD_NUMBER = 33;
+    private RemoteDebug.RDPointF susTriEnd_;
+    /**
+     * <pre>
+     * suspicious triangle end (temp for debug)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriEnd = 33;</code>
+     */
+    public boolean hasSusTriEnd() {
+      return susTriEnd_ != null;
+    }
+    /**
+     * <pre>
+     * suspicious triangle end (temp for debug)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriEnd = 33;</code>
+     */
+    public RemoteDebug.RDPointF getSusTriEnd() {
+      return susTriEnd_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriEnd_;
+    }
+    /**
+     * <pre>
+     * suspicious triangle end (temp for debug)
+     * </pre>
+     *
+     * <code>optional .RDPointF susTriEnd = 33;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getSusTriEndOrBuilder() {
+      return getSusTriEnd();
+    }
+
+    public static final int DETECTEDROBOT_FIELD_NUMBER = 34;
+    private RemoteDebug.RDPointF detectedRobot_;
+    /**
+     * <pre>
+     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+     * </pre>
+     *
+     * <code>optional .RDPointF detectedRobot = 34;</code>
+     */
+    public boolean hasDetectedRobot() {
+      return detectedRobot_ != null;
+    }
+    /**
+     * <pre>
+     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+     * </pre>
+     *
+     * <code>optional .RDPointF detectedRobot = 34;</code>
+     */
+    public RemoteDebug.RDPointF getDetectedRobot() {
+      return detectedRobot_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : detectedRobot_;
+    }
+    /**
+     * <pre>
+     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+     * </pre>
+     *
+     * <code>optional .RDPointF detectedRobot = 34;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getDetectedRobotOrBuilder() {
+      return getDetectedRobot();
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -4871,6 +5084,15 @@ public final class RemoteDebug {
       }
       if (susRayCutoff_ != 0F) {
         output.writeFloat(31, susRayCutoff_);
+      }
+      if (susTriBegin_ != null) {
+        output.writeMessage(32, getSusTriBegin());
+      }
+      if (susTriEnd_ != null) {
+        output.writeMessage(33, getSusTriEnd());
+      }
+      if (detectedRobot_ != null) {
+        output.writeMessage(34, getDetectedRobot());
       }
     }
 
@@ -5015,6 +5237,18 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeFloatSize(31, susRayCutoff_);
       }
+      if (susTriBegin_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(32, getSusTriBegin());
+      }
+      if (susTriEnd_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(33, getSusTriEnd());
+      }
+      if (detectedRobot_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(34, getDetectedRobot());
+      }
       memoizedSize = size;
       return size;
     }
@@ -5122,6 +5356,21 @@ public final class RemoteDebug {
           java.lang.Float.floatToIntBits(getSusRayCutoff())
           == java.lang.Float.floatToIntBits(
               other.getSusRayCutoff()));
+      result = result && (hasSusTriBegin() == other.hasSusTriBegin());
+      if (hasSusTriBegin()) {
+        result = result && getSusTriBegin()
+            .equals(other.getSusTriBegin());
+      }
+      result = result && (hasSusTriEnd() == other.hasSusTriEnd());
+      if (hasSusTriEnd()) {
+        result = result && getSusTriEnd()
+            .equals(other.getSusTriEnd());
+      }
+      result = result && (hasDetectedRobot() == other.hasDetectedRobot());
+      if (hasDetectedRobot()) {
+        result = result && getDetectedRobot()
+            .equals(other.getDetectedRobot());
+      }
       return result;
     }
 
@@ -5224,6 +5473,18 @@ public final class RemoteDebug {
       hash = (37 * hash) + SUSRAYCUTOFF_FIELD_NUMBER;
       hash = (53 * hash) + java.lang.Float.floatToIntBits(
           getSusRayCutoff());
+      if (hasSusTriBegin()) {
+        hash = (37 * hash) + SUSTRIBEGIN_FIELD_NUMBER;
+        hash = (53 * hash) + getSusTriBegin().hashCode();
+      }
+      if (hasSusTriEnd()) {
+        hash = (37 * hash) + SUSTRIEND_FIELD_NUMBER;
+        hash = (53 * hash) + getSusTriEnd().hashCode();
+      }
+      if (hasDetectedRobot()) {
+        hash = (37 * hash) + DETECTEDROBOT_FIELD_NUMBER;
+        hash = (53 * hash) + getDetectedRobot().hashCode();
+      }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -5452,6 +5713,24 @@ public final class RemoteDebug {
         }
         susRayCutoff_ = 0F;
 
+        if (susTriBeginBuilder_ == null) {
+          susTriBegin_ = null;
+        } else {
+          susTriBegin_ = null;
+          susTriBeginBuilder_ = null;
+        }
+        if (susTriEndBuilder_ == null) {
+          susTriEnd_ = null;
+        } else {
+          susTriEnd_ = null;
+          susTriEndBuilder_ = null;
+        }
+        if (detectedRobotBuilder_ == null) {
+          detectedRobot_ = null;
+        } else {
+          detectedRobot_ = null;
+          detectedRobotBuilder_ = null;
+        }
         return this;
       }
 
@@ -5569,6 +5848,21 @@ public final class RemoteDebug {
           result.estimateMaxBounds_ = estimateMaxBoundsBuilder_.build();
         }
         result.susRayCutoff_ = susRayCutoff_;
+        if (susTriBeginBuilder_ == null) {
+          result.susTriBegin_ = susTriBegin_;
+        } else {
+          result.susTriBegin_ = susTriBeginBuilder_.build();
+        }
+        if (susTriEndBuilder_ == null) {
+          result.susTriEnd_ = susTriEnd_;
+        } else {
+          result.susTriEnd_ = susTriEndBuilder_.build();
+        }
+        if (detectedRobotBuilder_ == null) {
+          result.detectedRobot_ = detectedRobot_;
+        } else {
+          result.detectedRobot_ = detectedRobotBuilder_.build();
+        }
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -5765,6 +6059,15 @@ public final class RemoteDebug {
         }
         if (other.getSusRayCutoff() != 0F) {
           setSusRayCutoff(other.getSusRayCutoff());
+        }
+        if (other.hasSusTriBegin()) {
+          mergeSusTriBegin(other.getSusTriBegin());
+        }
+        if (other.hasSusTriEnd()) {
+          mergeSusTriEnd(other.getSusTriEnd());
+        }
+        if (other.hasDetectedRobot()) {
+          mergeDetectedRobot(other.getDetectedRobot());
         }
         onChanged();
         return this;
@@ -8702,6 +9005,465 @@ public final class RemoteDebug {
         onChanged();
         return this;
       }
+
+      private RemoteDebug.RDPointF susTriBegin_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> susTriBeginBuilder_;
+      /**
+       * <pre>
+       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriBegin = 32;</code>
+       */
+      public boolean hasSusTriBegin() {
+        return susTriBeginBuilder_ != null || susTriBegin_ != null;
+      }
+      /**
+       * <pre>
+       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriBegin = 32;</code>
+       */
+      public RemoteDebug.RDPointF getSusTriBegin() {
+        if (susTriBeginBuilder_ == null) {
+          return susTriBegin_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriBegin_;
+        } else {
+          return susTriBeginBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriBegin = 32;</code>
+       */
+      public Builder setSusTriBegin(RemoteDebug.RDPointF value) {
+        if (susTriBeginBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          susTriBegin_ = value;
+          onChanged();
+        } else {
+          susTriBeginBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriBegin = 32;</code>
+       */
+      public Builder setSusTriBegin(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (susTriBeginBuilder_ == null) {
+          susTriBegin_ = builderForValue.build();
+          onChanged();
+        } else {
+          susTriBeginBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriBegin = 32;</code>
+       */
+      public Builder mergeSusTriBegin(RemoteDebug.RDPointF value) {
+        if (susTriBeginBuilder_ == null) {
+          if (susTriBegin_ != null) {
+            susTriBegin_ =
+              RemoteDebug.RDPointF.newBuilder(susTriBegin_).mergeFrom(value).buildPartial();
+          } else {
+            susTriBegin_ = value;
+          }
+          onChanged();
+        } else {
+          susTriBeginBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriBegin = 32;</code>
+       */
+      public Builder clearSusTriBegin() {
+        if (susTriBeginBuilder_ == null) {
+          susTriBegin_ = null;
+          onChanged();
+        } else {
+          susTriBegin_ = null;
+          susTriBeginBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriBegin = 32;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getSusTriBeginBuilder() {
+        
+        onChanged();
+        return getSusTriBeginFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriBegin = 32;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getSusTriBeginOrBuilder() {
+        if (susTriBeginBuilder_ != null) {
+          return susTriBeginBuilder_.getMessageOrBuilder();
+        } else {
+          return susTriBegin_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : susTriBegin_;
+        }
+      }
+      /**
+       * <pre>
+       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriBegin = 32;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getSusTriBeginFieldBuilder() {
+        if (susTriBeginBuilder_ == null) {
+          susTriBeginBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getSusTriBegin(),
+                  getParentForChildren(),
+                  isClean());
+          susTriBegin_ = null;
+        }
+        return susTriBeginBuilder_;
+      }
+
+      private RemoteDebug.RDPointF susTriEnd_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> susTriEndBuilder_;
+      /**
+       * <pre>
+       * suspicious triangle end (temp for debug)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriEnd = 33;</code>
+       */
+      public boolean hasSusTriEnd() {
+        return susTriEndBuilder_ != null || susTriEnd_ != null;
+      }
+      /**
+       * <pre>
+       * suspicious triangle end (temp for debug)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriEnd = 33;</code>
+       */
+      public RemoteDebug.RDPointF getSusTriEnd() {
+        if (susTriEndBuilder_ == null) {
+          return susTriEnd_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriEnd_;
+        } else {
+          return susTriEndBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * suspicious triangle end (temp for debug)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriEnd = 33;</code>
+       */
+      public Builder setSusTriEnd(RemoteDebug.RDPointF value) {
+        if (susTriEndBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          susTriEnd_ = value;
+          onChanged();
+        } else {
+          susTriEndBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * suspicious triangle end (temp for debug)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriEnd = 33;</code>
+       */
+      public Builder setSusTriEnd(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (susTriEndBuilder_ == null) {
+          susTriEnd_ = builderForValue.build();
+          onChanged();
+        } else {
+          susTriEndBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * suspicious triangle end (temp for debug)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriEnd = 33;</code>
+       */
+      public Builder mergeSusTriEnd(RemoteDebug.RDPointF value) {
+        if (susTriEndBuilder_ == null) {
+          if (susTriEnd_ != null) {
+            susTriEnd_ =
+              RemoteDebug.RDPointF.newBuilder(susTriEnd_).mergeFrom(value).buildPartial();
+          } else {
+            susTriEnd_ = value;
+          }
+          onChanged();
+        } else {
+          susTriEndBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * suspicious triangle end (temp for debug)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriEnd = 33;</code>
+       */
+      public Builder clearSusTriEnd() {
+        if (susTriEndBuilder_ == null) {
+          susTriEnd_ = null;
+          onChanged();
+        } else {
+          susTriEnd_ = null;
+          susTriEndBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * suspicious triangle end (temp for debug)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriEnd = 33;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getSusTriEndBuilder() {
+        
+        onChanged();
+        return getSusTriEndFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * suspicious triangle end (temp for debug)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriEnd = 33;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getSusTriEndOrBuilder() {
+        if (susTriEndBuilder_ != null) {
+          return susTriEndBuilder_.getMessageOrBuilder();
+        } else {
+          return susTriEnd_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : susTriEnd_;
+        }
+      }
+      /**
+       * <pre>
+       * suspicious triangle end (temp for debug)
+       * </pre>
+       *
+       * <code>optional .RDPointF susTriEnd = 33;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getSusTriEndFieldBuilder() {
+        if (susTriEndBuilder_ == null) {
+          susTriEndBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getSusTriEnd(),
+                  getParentForChildren(),
+                  isClean());
+          susTriEnd_ = null;
+        }
+        return susTriEndBuilder_;
+      }
+
+      private RemoteDebug.RDPointF detectedRobot_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> detectedRobotBuilder_;
+      /**
+       * <pre>
+       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * </pre>
+       *
+       * <code>optional .RDPointF detectedRobot = 34;</code>
+       */
+      public boolean hasDetectedRobot() {
+        return detectedRobotBuilder_ != null || detectedRobot_ != null;
+      }
+      /**
+       * <pre>
+       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * </pre>
+       *
+       * <code>optional .RDPointF detectedRobot = 34;</code>
+       */
+      public RemoteDebug.RDPointF getDetectedRobot() {
+        if (detectedRobotBuilder_ == null) {
+          return detectedRobot_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : detectedRobot_;
+        } else {
+          return detectedRobotBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * </pre>
+       *
+       * <code>optional .RDPointF detectedRobot = 34;</code>
+       */
+      public Builder setDetectedRobot(RemoteDebug.RDPointF value) {
+        if (detectedRobotBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          detectedRobot_ = value;
+          onChanged();
+        } else {
+          detectedRobotBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * </pre>
+       *
+       * <code>optional .RDPointF detectedRobot = 34;</code>
+       */
+      public Builder setDetectedRobot(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (detectedRobotBuilder_ == null) {
+          detectedRobot_ = builderForValue.build();
+          onChanged();
+        } else {
+          detectedRobotBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * </pre>
+       *
+       * <code>optional .RDPointF detectedRobot = 34;</code>
+       */
+      public Builder mergeDetectedRobot(RemoteDebug.RDPointF value) {
+        if (detectedRobotBuilder_ == null) {
+          if (detectedRobot_ != null) {
+            detectedRobot_ =
+              RemoteDebug.RDPointF.newBuilder(detectedRobot_).mergeFrom(value).buildPartial();
+          } else {
+            detectedRobot_ = value;
+          }
+          onChanged();
+        } else {
+          detectedRobotBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * </pre>
+       *
+       * <code>optional .RDPointF detectedRobot = 34;</code>
+       */
+      public Builder clearDetectedRobot() {
+        if (detectedRobotBuilder_ == null) {
+          detectedRobot_ = null;
+          onChanged();
+        } else {
+          detectedRobot_ = null;
+          detectedRobotBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <pre>
+       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * </pre>
+       *
+       * <code>optional .RDPointF detectedRobot = 34;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getDetectedRobotBuilder() {
+        
+        onChanged();
+        return getDetectedRobotFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * </pre>
+       *
+       * <code>optional .RDPointF detectedRobot = 34;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getDetectedRobotOrBuilder() {
+        if (detectedRobotBuilder_ != null) {
+          return detectedRobotBuilder_.getMessageOrBuilder();
+        } else {
+          return detectedRobot_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : detectedRobot_;
+        }
+      }
+      /**
+       * <pre>
+       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * </pre>
+       *
+       * <code>optional .RDPointF detectedRobot = 34;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getDetectedRobotFieldBuilder() {
+        if (detectedRobotBuilder_ == null) {
+          detectedRobotBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getDetectedRobot(),
+                  getParentForChildren(),
+                  isClean());
+          detectedRobot_ = null;
+        }
+        return detectedRobotBuilder_;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
@@ -11505,7 +12267,7 @@ public final class RemoteDebug {
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
       "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"M\n\007RDRobo" +
       "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
-      "ation\030\002 \001(\002\022\020\n\010fsmState\030\003 \001(\t\"\362\005\n\nDebugF" +
+      "ation\030\002 \001(\002\022\020\n\010fsmState\030\003 \001(\t\"\322\006\n\nDebugF" +
       "rame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017ballThresh" +
       "Image\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022\031\n\010ball" +
       "Rect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentroid\030\005 \001(",
@@ -11524,15 +12286,18 @@ public final class RemoteDebug {
       "BlueKnown\030\033 \001(\010\022\037\n\014goalEstimate\030\034 \001(\0132\t." +
       "RDPointF\022$\n\021estimateMinBounds\030\035 \001(\0132\t.RD" +
       "PointF\022$\n\021estimateMaxBounds\030\036 \001(\0132\t.RDPo" +
-      "intF\022\024\n\014susRayCutoff\030\037 \001(\002\"\341\001\n\014DebugComm" +
-      "and\022\021\n\tmessageId\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010" +
-      ".RDPoint\022\023\n\013orientation\030\003 \001(\002\022#\n\rallThre" +
-      "sholds\030\004 \003(\0132\014.RDThreshold\022\020\n\010objectId\030\005" +
-      " \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\rcolourChannel\030\007 ",
-      "\001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\ti" +
-      "sEnabled\030\n \001(\010\"^\n\nRDMsgFrame\022\032\n\005frame\030\001 " +
-      "\001(\0132\013.DebugFrame\022\036\n\007command\030\002 \001(\0132\r.Debu" +
-      "gCommand\022\024\n\014whichMessage\030\003 \001(\005b\006proto3"
+      "intF\022\024\n\014susRayCutoff\030\037 \001(\002\022\036\n\013susTriBegi" +
+      "n\030  \001(\0132\t.RDPointF\022\034\n\tsusTriEnd\030! \001(\0132\t." +
+      "RDPointF\022 \n\rdetectedRobot\030\" \001(\0132\t.RDPoin" +
+      "tF\"\341\001\n\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030" +
+      "\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030",
+      "\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDThresho" +
+      "ld\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\r" +
+      "colourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007ro" +
+      "botId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgF" +
+      "rame\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007comm" +
+      "and\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage" +
+      "\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -11581,7 +12346,7 @@ public final class RemoteDebug {
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "Robots", "RayInterval", "LocaliserEvals", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RaysSuspicious", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", "GoalEstimate", "EstimateMinBounds", "EstimateMaxBounds", "SusRayCutoff", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "Robots", "RayInterval", "LocaliserEvals", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RaysSuspicious", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", "GoalEstimate", "EstimateMinBounds", "EstimateMaxBounds", "SusRayCutoff", "SusTriBegin", "SusTriEnd", "DetectedRobot", });
     internal_static_DebugCommand_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_DebugCommand_fieldAccessorTable = new

@@ -110,7 +110,7 @@ fun Point2D.toRealPosition(): Point2D {
 }
 
 /**
- * Convert x, a pixel distance, to a field distance in cm (only considering width dimension since they're similar)
+ * Convert x, a centimetre distance, to a canvas pixel distance (only considering width dimension since they're similar)
  */
 fun toFieldLength(x: Double): Double {
     return x / FIELD_LENGTH_CM * FIELD_CANVAS_WIDTH

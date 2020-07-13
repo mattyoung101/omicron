@@ -85,6 +85,10 @@ static struct vec2 initialEstimate = {0};
 static bool goalWasUnavailable = false;
 /** this is equivalent to OBSDETECT_SUS_IQR_MUL * IQR */
 static float susRayCutoff = 0.0f;
+// NOTE: THESE ARE ALL SHIT JUST FOR DEBUG
+static struct vec2 susTriBegin = {0};
+static struct vec2 susTriEnd = {0};
+static struct vec2 detectedRobot = {0};
 
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
@@ -216,9 +220,7 @@ static inline double objective_func_impl(double x, double y){
             rayScores[i] = -1;
             continue;
         }
-
         // TODO make this the R^2 value, or alternatively, sum of residuals (square output?)
-
         double diff = fabs(expectedRays[i] - observedRays[i]);
         totalError += diff;
         rayScores[i] = diff;
@@ -258,10 +260,10 @@ static void render_test_image(){
     printf("rendering objective function...\n");
     for (int32_t y = 0; y < field.width; y++){
         for (int32_t x = 0; x < field.length; x++){
-            if (isGoalEstimateAvailable && (y <= estimateMinBounds.y || y >= estimateMaxBounds.y || x <= estimateMinBounds.x|| x >= estimateMaxBounds.x)){
+            /*if (isGoalEstimateAvailable && (y <= estimateMinBounds.y || y >= estimateMaxBounds.y || x <= estimateMinBounds.x|| x >= estimateMaxBounds.x)){
                 data[x + field.length * y] = LOCALISER_LARGE_ERROR; // kinda hacky, we do this to force the pixel to be black
                 continue;
-            }
+            }*/
             data[x + field.length * y] = objective_func_impl((double) x, (double) y);
         }
     }
@@ -554,49 +556,65 @@ static void *work_thread(void *arg){
             // we also have to convert back from centre coordinates to top left cooridnates
             uint16_t midpoint = (cluster.begin + cluster.end) / 2;
             double midpointAngle = midpoint * (PI2 / LOCALISER_NUM_RAYS);
+            // robot position in field file coords
             double rx = X_TO_FF(localisedPosition.x + field.length / 2.0);
             double ry = Y_TO_FF(localisedPosition.y + field.width / 2.0);
             // note: in this raycast, it will terminate on the goalie box on the ints field which may cause problems
             // if robots are in there. however, I'm going to make the assumption here that there will be no illegal robots
-            int32_t midpointLength = raycast(field.data.bytes, rx, ry, midpointAngle, field.length,-1, minCoord, maxCoord);
+            int32_t midpointLength = raycast(field.data.bytes, rx, ry, midpointAngle, field.length, -1, minCoord, maxCoord);
 
             // now find the area of the triangle, to find the length of the base we find the two coords that define the
             // base line and euclidean distance between them, so we raycast out from the robot to the midpoint length
             // IMPORTANT NOTE: we intentionally use trig the wrong way around here, see raycast() for details
-            double firstX = midpointLength * sin(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
-            double firstY = midpointLength * cos(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
-            double lastX = midpointLength * sin(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
-            double lastY = midpointLength * cos(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
+            double firstX = localisedPosition.x + midpointLength * sin(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
+            double firstY = localisedPosition.y + midpointLength * cos(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
+            double lastX = localisedPosition.x + midpointLength * sin(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
+            double lastY = localisedPosition.y + midpointLength * cos(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
             double base = sqrt(pow(firstX - lastX, 2) + pow(firstY - lastY, 2));
             double triArea = base * midpointLength / 2.0;
-            printf("triangle area: %.2f\n", triArea);
+            // printf("triangle area: %.2f\n", triArea);
+
+            // DEBUG, REMOVE LATER
+            susTriBegin.x = firstX ;//- hx + localisedPosition.x;
+            susTriBegin.y = firstY ;//- hy + localisedPosition.y;
+            susTriEnd.x = lastX ;//- hx + localisedPosition.y;
+            susTriEnd.y = lastY ;//- hy + localisedPosition.y;
 
             double sideA = sqrt(pow(rx - firstX, 2) + pow(ry - firstY, 2));
             double sideB = sqrt(pow(rx - lastX, 2) + pow(ry - lastY, 2));
             double triPerimeter = sideA + sideB + base;
             // this is the maximum radius of a circle that can be inscribed in our triangle
             double maxRadius = (triArea / triPerimeter) * 2.0;
-            printf("perimeter: %.2f, max radius: %.2f\n", triPerimeter, maxRadius);
+            // printf("perimeter: %.2f, max radius: %.2f\n", triPerimeter, maxRadius);
 
             // finally, check if the max robot size permits a robot to be in this cluster
             if (OBSDETECT_MAX_ROBOT_DIAMETER <= maxRadius * 2){
                 // if it does, calculate where the robot might be. we can't actually know where the robot is exactly,
-                // or it would be too complicated, so we assume that the detected robot is as close as possible to our
-                // robot without going outside the cluster bounds
+                // (at least I think not), so we assume that the detected robot is as close as possible to our
+                // robot without going outside the cluster bounds.
                 // this is implemented as defined by angus' desmos link: https://www.desmos.com/calculator/0oaombib4e
-                double a = tan(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
-                double b = tan(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
+                double a = tan(cluster.begin * (PI2 / LOCALISER_NUM_RAYS) - PI / 2);
+                double b = tan(cluster.end * (PI2 / LOCALISER_NUM_RAYS) - PI / 2);
+                if (a <= 0){
+                    // we have to swap, so the hack doesn't break
+                    double oldA = a;
+                    a = b;
+                    b = oldA;
+                }
                 double t = tan((atan(a) + atan(b)) / 2.0);
                 double R = OBSDETECT_MAX_ROBOT_DIAMETER / 2.0;
                 double invA = pow(a, -1);
                 double c = (R * (t + invA) * (a + invA)) / (sqrt(pow(t * invA - 1, 2) + pow(a - t, 2)));
 
-                // final coords of robot: (C, D) - this will probably be relative to us
+                // final coords of robot: (C, D), relative to our current position
                 double C = (c) / (t + invA);
-                double D = t * c;
+                double D = t * C;
                 double finalX = localisedPosition.x + C;
                 double finalY = localisedPosition.y + D;
-                printf("final robot coords: %.2f,%.2f\n", finalX, finalY);
+
+                detectedRobot.x = finalX;
+                detectedRobot.y = finalY;
+                // printf("final robot coords: %.2f,%.2f\n", finalX, finalY);
             }
         }
 
@@ -686,6 +704,11 @@ void remote_debug_localiser_provide(DebugFrame *msg){
     msg->robots[0].position.x = (float) localisedPosition.x;
     msg->robots[0].position.y = (float) localisedPosition.y;
     msg->robots_count = 1;
+
+    msg->susTriBegin.x = susTriBegin.x;
+    msg->susTriBegin.y = susTriBegin.y;
+    msg->susTriEnd.x = susTriEnd.x;
+    msg->susTriEnd.y = susTriEnd.y;
 
     msg->localiserRate = localiserRate;
     msg->localiserEvals = localiserEvals;

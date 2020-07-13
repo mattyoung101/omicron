@@ -94,6 +94,12 @@ message DebugFrame {
     RDPointF estimateMaxBounds = 30;
     // cutoff for which rays are considered suspicious (LOCALISER_SUS_IQR_MUL * IQR)
     float susRayCutoff = 31;
+    // suspicious triangle begin (temp for debug, need to make this and below list in future)
+    RDPointF susTriBegin = 32;
+    // suspicious triangle end (temp for debug)
+    RDPointF susTriEnd = 33;
+    // TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+    RDPointF detectedRobot = 34;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol

@@ -61,6 +61,7 @@ class FieldView(private val isOffline: Boolean = false) : View() {
     private var mousePos = Point2D(0.0, 0.0)
     private var isDrawCrosshair = false
     private var isShowSuspiciousRays = true
+    private var isObsDetectDebug = true
 
     init {
         reloadStylesheetsOnFocus()
@@ -201,7 +202,6 @@ class FieldView(private val isOffline: Boolean = false) : View() {
                 val x0 = original.x
                 val y0 = original.y
                 var angle = 0.0
-
                 for ((i, rayLength) in message.dewarpedRaysList.take(message.dewarpedRaysCount).withIndex()) {
                     if (rayLength <= 0){
                         // the ray missed, so skip it
@@ -210,6 +210,14 @@ class FieldView(private val isOffline: Boolean = false) : View() {
                     }
                     val x1 = x0 + (toFieldLength(rayLength) * sin(angle))
                     val y1 = y0 + (toFieldLength(rayLength) * cos(angle))
+
+                    // FIXME hack
+                    if (i == 17){
+                        display.stroke = Color.MAGENTA
+                        val a = x0 + (toFieldLength(128.0) * sin(angle))
+                        val b = y0 + (toFieldLength(128.0) * cos(angle))
+                        display.strokeLine(x0, y0, a, b)
+                    }
 
                     // TODO add toggle on whether or not to display suspicious rays
                     display.stroke = if (susRays[i] && isShowSuspiciousRays) Color.RED else Color.WHITE
@@ -241,6 +249,31 @@ class FieldView(private val isOffline: Boolean = false) : View() {
                     }
                     lastPoint = fieldPoint
                 }
+            }
+
+            // render robot detection debug
+            if (isObsDetectDebug){
+                display.stroke = Color.MAGENTA
+//                val robotPos = Point2D(robots[connectedRobotId].position.x, robots[connectedRobotId].position.y)
+//                val ifCUkibngHateYou = robotPos.toCanvasPosition()
+//
+//                val fuckYou = robotPos.x + 128 * sin(1.668) // FICKING ANGLE of the fuckign ray ind egrees
+//                val eatShit = robotPos.y + 128 * cos(1.668)
+//                val eatShitAndDie = Point2D(fuckYou, eatShit).toCanvasPosition()
+//                display.strokeLine(ifCUkibngHateYou.x, ifCUkibngHateYou.y, eatShitAndDie.x, eatShitAndDie.y)
+
+                val robotPos = Point2D(robots[connectedRobotId].position.x, robots[connectedRobotId].position.y).toCanvasPosition()
+                val susTriBegin = Point2D(message.susTriBegin.x.toDouble(), message.susTriBegin.y.toDouble()).toCanvasPosition()
+                val susTriEnd = Point2D(message.susTriEnd.x.toDouble(), message.susTriEnd.y.toDouble()).toCanvasPosition()
+
+                display.strokeLine(robotPos.x, robotPos.y, susTriBegin.x, susTriBegin.y)
+                display.strokeLine(robotPos.x, robotPos.y, susTriEnd.x, susTriEnd.y)
+                display.strokeLine(susTriBegin.x, susTriBegin.y, susTriEnd.x, susTriEnd.y)
+
+                display.stroke = Color.RED
+                display.lineWidth = 3.0
+                val robotField = Point2D(message.detectedRobot.x.toDouble(), message.detectedRobot.y.toDouble()).toCanvasPosition()
+                display.strokeOval(robotField.x, robotField.y, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
             }
 
             // update labels
@@ -354,6 +387,11 @@ class FieldView(private val isOffline: Boolean = false) : View() {
                         isShowSuspiciousRays = value
                     }
                     isSelected = true
+                }
+                checkmenuitem("Obstacle detection debug"){
+                    selectedProperty().addListener { _, _, value ->
+                        isObsDetectDebug = value
+                    }
                 }
                 checkmenuitem("Ignore sent position"){
                     selectedProperty().addListener { _, _, value ->
