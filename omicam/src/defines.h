@@ -40,9 +40,9 @@
  */
 #define VISION_RECORDING_FRAMERATE 30
 /** Path to still image or video to load when using BUILD_TARGET_PC instead of real camera output. */
-#define VISION_TEST_FILE "../recordings/frame9.jpg"
+#define VISION_TEST_FILE "../recordings/omicam_recording_1586137538.mp4"
 /** If true in BUILD_TARGET_PC, load the contents of VISION_TEST_FILE. Otherwise, load a still image. */
-#define VISION_LOAD_TEST_VIDEO 0
+#define VISION_LOAD_TEST_VIDEO 1
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1

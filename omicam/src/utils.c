@@ -433,3 +433,37 @@ uint32_t utils_go_sicko_mode(void){
     log_debug("Successfully enumerated %zu processes, killed %zu, skipped %zu", totalCount, killed, skipped);
     return killed;
 }
+
+inline int32_t constrain(int32_t x, int32_t min, int32_t max){
+    if (x < min){
+        return min;
+    } else if (x > max){
+        return max;
+    } else {
+        return x;
+    }
+}
+
+inline double constrainf(double x, double min, double max){
+    if (x < min){
+        return min;
+    } else if (x > max){
+        return max;
+    } else {
+        return x;
+    }
+}
+
+/** comparator used to sort an array of doubles with qsort() in ascending order (I think) */
+int double_cmp(const void *a, const void *b){
+    double x = *(const double *)a;
+    double y = *(const double *)b;
+
+    if (x < y){
+        return -1;
+    } else if (x > y){
+        return 1;
+    } else {
+        return 0;
+    }
+}

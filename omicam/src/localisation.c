@@ -34,6 +34,7 @@
 // - cap localiser to 24 Hz
 // - dynamically change number of rays we cast depending on desired accuracy and error and stuff? in areas that are close
 // to us, we can cast less rays, and in far away ones, we can cast more
+// - cache or precalculate field file rays. got to think of a fast way (faster than hashmap even) to look em up
 
 typedef struct {
     // begin and end indexes in ray list
@@ -66,22 +67,34 @@ static double observedRaysRaw[LOCALISER_NUM_RAYS] = {0};
 static double rayScores[LOCALISER_NUM_RAYS] = {0};
 /** true or false if each ray is suspicious */
 static bool suspiciousRays[LOCALISER_NUM_RAYS] = {0};
+/** cache of previously computed rays for field file (expected rays), this is a 3D array of dimensions field length x field width x num rays */
+static double *rayCache = NULL;
+/** true if the given field cell has a cache entry associated with it, this is a 2D array of field length vs field width */
+static bool *rayCacheWritten = NULL;
+
 /** NLopt status for remote debug */
 static char localiserStatus[32] = {0};
 static pthread_t perfThread;
-static movavg_t *timeAvg = NULL;
-static movavg_t *evalAvg = NULL;
-static movavg_t *xAvg = NULL;
-static movavg_t *yAvg = NULL;
+/** performance monitor moving averages */
+static movavg_t *timeAvg = NULL, *evalAvg = NULL;
+/** x and y position moving averages */
+static movavg_t *xAvg = NULL, *yAvg = NULL;
+
+/** last number of objective function evaluations */
 static int32_t evaluations = 0;
 pthread_mutex_t localiserMutex = PTHREAD_MUTEX_INITIALIZER;
 static int32_t localiserRate = 0;
+/** average number of localiser evaluations */
 static int32_t localiserEvals = 0;
+static int32_t cacheHits = 0, cacheMisses = 0;
+static movavg_t *cacheMissesAverage = NULL;
 static bool isGoalEstimateAvailable = false;
+
 static struct vec2 estimateMinBounds = {0};
 static struct vec2 estimateMaxBounds = {0};
 static struct vec2 initialEstimate = {0};
 static bool goalWasUnavailable = false;
+
 /** this is equivalent to OBSDETECT_SUS_IQR_MUL * IQR */
 static float susRayCutoff = 0.0f;
 // NOTE: THESE ARE ALL SHIT JUST FOR DEBUG
@@ -89,75 +102,17 @@ static struct vec2 susTriBegin = {0};
 static struct vec2 susTriEnd = {0};
 static struct vec2 detectedRobot = {0};
 
-// TODO move these functions (especially constrain) to utils to prevent clutter?
-
-static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
-    if (x < min){
-        return min;
-    } else if (x > max){
-        return max;
-    } else {
-        return x;
-    }
-}
-
-static inline double constrainf(double x, double min, double max){
-    if (x < min){
-        return min;
-    } else if (x > max){
-        return max;
-    } else {
-        return x;
-    }
-}
-
-/** comparator used to sort an array of doubles with qsort() in ascending order (I think) */
-static int double_cmp(const void *a, const void *b){
-    double x = *(const double *)a;
-    double y = *(const double *)b;
-
-    if (x < y){
-        return -1;
-    } else if (x > y){
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
-static inline int8_t sign(double x){
-    if (x > 0){
-        return 1;
-    } else if (x == 0) {
-        return 0;
-    } else {
-        return -1;
-    }
-}
-
 /**
- * Implements Bhaskara I's sine approximation formula, as developed by him in the 7th century A.D.
- * See: https://en.wikipedia.org/wiki/Bhaskara_I%27s_sine_approximation_formula
- * Units are all radians.
+ * Returns the index for the given entry in the ray cache array.
+ * Source: https://stackoverflow.com/a/2306188/5007892
  */
-static inline double sin_approx(double x){
-    // TODO transform angle from 0-360 to 0-180
-
-    if (x > PI){
-        x -= PI2;
-    }
-    int8_t thing = sign(x);
-    return thing * (16.0 * thing * x * (PI - thing * x)) / (5 * PISQ - 4 * thing * x * (PI - thing * x));
+static inline uint32_t rayCacheIndex(int32_t x, int32_t y, int32_t z){
+    // x size is field.length, y size is field.width, z size is LOCALISER_NUM_RAYS
+    return (z * field.length * field.width) + (y * field.length) + x;
 }
 
-/**
- * Implements a variant of Bhaskara I's sine approximation formula to approximate the cosine.
- * See: https://en.wikipedia.org/wiki/Bhaskara_I%27s_sine_approximation_formula
- * Units are all radians.
- */
-static inline double cos_approx(double x){
-    double xsq = x * x;
-    return (PISQ - 4 * xsq) / (PISQ + xsq);
+static inline uint32_t rayCacheWrittenIndex(int32_t x, int32_t y){
+    return x + field.length * y;
 }
 
 /**
@@ -193,6 +148,7 @@ static int32_t raycast(const uint8_t *image, int32_t x0, int32_t y0, double thet
         // note on the above as well:
         // this trig here is one of the slowest parts of the objective function, we could speed it up by using an integer
         // approximate for sin and cos (the 32 bit float functions suffice here instead), or used Bresenham's algorithm
+        // we could also cache these values maybe?
 
         // return if going to be out of bounds, and mark as ignored if so
         if (rx <= minCorner.x || ry <= minCorner.y || rx >= maxCorner.x || ry >= maxCorner.y){
@@ -236,16 +192,31 @@ static inline double objective_func_impl(double x, double y){
     double interval = PI2 / LOCALISER_NUM_RAYS;
     double x0 = x;
     double y0 = y;
+    int32_t ix0 = ROUND2INT(x0);
+    int32_t iy0 = ROUND2INT(y0);
     // note that these are in field file coordinates, not localiser coordinates (the ones with 0,0 as the field centre)
     struct vec2 minCoord = {0, 0};
     struct vec2 maxCoord = {field.length, field.width};
     double expectedRays[LOCALISER_NUM_RAYS] = {0};
 
     // raycast on our virtual field file to generate expected rays
-    double angle = 0.0;
-    for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
-        expectedRays[i] = (double) raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), angle, field.length, -1, minCoord, maxCoord);
-        angle += interval;
+    if (rayCacheWritten[rayCacheWrittenIndex(ix0, iy0)]){
+        // use cached data
+        for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
+            expectedRays[i] = rayCache[rayCacheIndex(ix0, iy0, i)];
+        }
+        cacheHits++;
+    } else {
+        // no value exists for this cell in the cache yet, so write it
+        double angle = 0.0;
+        for (int i = 0; i < LOCALISER_NUM_RAYS; i++) {
+            double value = (double) raycast(field.data.bytes, X_TO_FF(x0), Y_TO_FF(y0), angle, field.length, -1, minCoord, maxCoord);
+            expectedRays[i] = value;
+            rayCache[rayCacheIndex(ix0, iy0, i)] = value;
+            angle += interval;
+        }
+        cacheMisses++;
+        rayCacheWritten[rayCacheWrittenIndex(ix0, iy0)] = true;
     }
 
     // compare ray lengths
@@ -256,7 +227,8 @@ static inline double objective_func_impl(double x, double y){
             rayScores[i] = -1;
             continue;
         }
-        // TODO make this the R^2 value, or alternatively, sum of residuals (square output?)
+
+        // TODO make this the R^2 value, or alternatively or L2 loss function (quadratic error)
         double diff = fabs(expectedRays[i] - observedRays[i]);
         totalError += diff;
         rayScores[i] = diff;
@@ -631,7 +603,7 @@ static void *work_thread(void *arg){
                 // this is implemented as defined by angus' desmos link: https://www.desmos.com/calculator/0oaombib4e
                 // FIXME try doing b on a since we are the other way around???
                 double a = tan(cluster.begin * (PI2 / LOCALISER_NUM_RAYS) - PI / 2);
-                double b = tan(cluster.end * (PI2 / LOCALISER_NUM_RAYS) - PI / 2);
+                double b = tan(cluster.end * (PI2 / LOCALISER_NUM_RAYS) + PI / 2);
                 if (a <= 0){
                     // we have to swap, so the hack doesn't break
                     double oldA = a;
@@ -683,6 +655,11 @@ static void *work_thread(void *arg){
         double elapsed = utils_time_millis() - begin;
         movavg_push(timeAvg, elapsed);
         movavg_push(evalAvg, evaluations);
+        double cacheMissesPercentage = (double) cacheMisses / (cacheHits + cacheMisses);
+        movavg_push(cacheMissesAverage, cacheMissesPercentage);
+        cacheHits = 0;
+        cacheMisses = 0;
+
         const char *resultStr = nlopt_result_to_string(result);
         memset(localiserStatus, 0, 32);
         strncpy(localiserStatus, resultStr, 32);
@@ -787,11 +764,12 @@ static void *perf_thread(void *arg){
         double rate = (1000.0 / avgTime);
         localiserRate = ROUND2INT(rate);
         localiserEvals = ROUND2INT(avgEval);
+        double avgCacheMisses = movavg_calc(cacheMissesAverage) * 100.0;
 
 #if LOCALISER_DIAGNOSTICS
         if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){
-            //printf("Average localiser time: %.2f ms (rate: %.2f Hz), average evaluations: %d\n", avgTime, rate, ROUND2INT(avgEval));
-            printf("Localiser average evals: %d, time: %.2f ms, rate: %.2f Hz\n", ROUND2INT(avgEval), avgTime, rate);
+            printf("Localiser average evals: %d, time: %.2f ms, cache misses: %.2f%%, rate: %.2f Hz\n", ROUND2INT(avgEval),
+                    avgTime, avgCacheMisses, rate);
             fflush(stdout);
         }
 #endif
@@ -816,6 +794,10 @@ void localiser_init(char *fieldFile){
             field.unitDistance, field.cellCount, field.length, field.width);
     log_info("Using %d rays (ray interval is %.2f radians or %.2f degrees)", LOCALISER_NUM_RAYS, PI2 / LOCALISER_NUM_RAYS,
             360.0 / LOCALISER_NUM_RAYS);
+
+    // allocate ray cache and ray written cache
+    rayCache = calloc(field.length * field.width * LOCALISER_NUM_RAYS, sizeof(double));
+    rayCacheWritten = calloc(field.length * field.width, sizeof(bool));
 
     // create a two dimensional minimising Subplex optimiser
     optimiser = nlopt_create(NLOPT_LN_SBPLX, 2);
@@ -843,6 +825,7 @@ void localiser_init(char *fieldFile){
     // create performance monitor thread
     timeAvg = movavg_create(256);
     evalAvg = movavg_create(256);
+    cacheMissesAverage = movavg_create(256);
     xAvg = movavg_create(LOCALISER_SMOOTHING_SIZE);
     yAvg = movavg_create(LOCALISER_SMOOTHING_SIZE);
     err = pthread_create(&perfThread, NULL, perf_thread, NULL);
@@ -888,5 +871,8 @@ void localiser_dispose(void){
     movavg_free(evalAvg);
     movavg_free(xAvg);
     movavg_free(yAvg);
+    movavg_free(cacheMissesAverage);
+    free(rayCache);
+    free(rayCacheWritten);
     da_free(localiserVisitedPoints);
 }

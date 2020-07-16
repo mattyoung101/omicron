@@ -74,6 +74,14 @@ const char *nlopt_result_to_string(nlopt_result result);
 bool utils_only_numbers(char *s);
 /** Hunts down and eliminates all other running instances of Omicam, used if THERE_CAN_BE_ONLY_ONE=1 */
 uint32_t utils_go_sicko_mode(void);
+double constrainf(double x, double min, double max);
+int32_t constrain(int32_t x, int32_t min, int32_t max);
+/** comparator used to sort an array of doubles with qsort() in ascending order (I think) */
+int double_cmp(const void *a, const void *b);
+/** Implements a fast, drop in approximation for the sin() function */
+double sin_approx(double x);
+/** Implements a fast, drop in approximation for the cos() function */
+double cos_approx(double x);
 
 #ifdef __cplusplus
 }
