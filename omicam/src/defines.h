@@ -117,7 +117,10 @@
 // maths defines are the same ones used in the ESP32 project
 
 #define PI  3.141592653589793
+/** 2pi **/
 #define PI2 6.283185307179586
+/** pi squared */
+#define PISQ 9.869604401089358
 /** multiply to convert degrees to radians */
 #define DEG_RAD 0.017453292519943295
 /** multiply to convert radians to degrees */

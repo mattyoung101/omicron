@@ -32,7 +32,6 @@
 // - can/should we rewrite the objective function to calculate the R^2 value of the fit and maximise it?
 // - look into proper DSP like low pass filter for smoothing instead of moving average
 // - cap localiser to 24 Hz
-// - (WIP) look into a way to detect robots (documented better on trello)
 // - dynamically change number of rays we cast depending on desired accuracy and error and stuff? in areas that are close
 // to us, we can cast less rays, and in far away ones, we can cast more
 
@@ -90,6 +89,8 @@ static struct vec2 susTriBegin = {0};
 static struct vec2 susTriEnd = {0};
 static struct vec2 detectedRobot = {0};
 
+// TODO move these functions (especially constrain) to utils to prevent clutter?
+
 static inline int32_t constrain(int32_t x, int32_t min, int32_t max){
     if (x < min){
         return min;
@@ -122,6 +123,41 @@ static int double_cmp(const void *a, const void *b){
     } else {
         return 0;
     }
+}
+
+static inline int8_t sign(double x){
+    if (x > 0){
+        return 1;
+    } else if (x == 0) {
+        return 0;
+    } else {
+        return -1;
+    }
+}
+
+/**
+ * Implements Bhaskara I's sine approximation formula, as developed by him in the 7th century A.D.
+ * See: https://en.wikipedia.org/wiki/Bhaskara_I%27s_sine_approximation_formula
+ * Units are all radians.
+ */
+static inline double sin_approx(double x){
+    // TODO transform angle from 0-360 to 0-180
+
+    if (x > PI){
+        x -= PI2;
+    }
+    int8_t thing = sign(x);
+    return thing * (16.0 * thing * x * (PI - thing * x)) / (5 * PISQ - 4 * thing * x * (PI - thing * x));
+}
+
+/**
+ * Implements a variant of Bhaskara I's sine approximation formula to approximate the cosine.
+ * See: https://en.wikipedia.org/wiki/Bhaskara_I%27s_sine_approximation_formula
+ * Units are all radians.
+ */
+static inline double cos_approx(double x){
+    double xsq = x * x;
+    return (PISQ - 4 * xsq) / (PISQ + xsq);
 }
 
 /**
@@ -593,6 +629,7 @@ static void *work_thread(void *arg){
                 // (at least I think not), so we assume that the detected robot is as close as possible to our
                 // robot without going outside the cluster bounds.
                 // this is implemented as defined by angus' desmos link: https://www.desmos.com/calculator/0oaombib4e
+                // FIXME try doing b on a since we are the other way around???
                 double a = tan(cluster.begin * (PI2 / LOCALISER_NUM_RAYS) - PI / 2);
                 double b = tan(cluster.end * (PI2 / LOCALISER_NUM_RAYS) - PI / 2);
                 if (a <= 0){
