@@ -3110,6 +3110,954 @@ public final class RemoteDebug {
 
   }
 
+  public interface RDObstacleOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:RDObstacle)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>optional .RDPointF susTriBegin = 1;</code>
+     */
+    boolean hasSusTriBegin();
+    /**
+     * <code>optional .RDPointF susTriBegin = 1;</code>
+     */
+    RemoteDebug.RDPointF getSusTriBegin();
+    /**
+     * <code>optional .RDPointF susTriBegin = 1;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getSusTriBeginOrBuilder();
+
+    /**
+     * <code>optional .RDPointF susTriEnd = 2;</code>
+     */
+    boolean hasSusTriEnd();
+    /**
+     * <code>optional .RDPointF susTriEnd = 2;</code>
+     */
+    RemoteDebug.RDPointF getSusTriEnd();
+    /**
+     * <code>optional .RDPointF susTriEnd = 2;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getSusTriEndOrBuilder();
+
+    /**
+     * <code>optional .RDPointF centroid = 3;</code>
+     */
+    boolean hasCentroid();
+    /**
+     * <code>optional .RDPointF centroid = 3;</code>
+     */
+    RemoteDebug.RDPointF getCentroid();
+    /**
+     * <code>optional .RDPointF centroid = 3;</code>
+     */
+    RemoteDebug.RDPointFOrBuilder getCentroidOrBuilder();
+  }
+  /**
+   * Protobuf type {@code RDObstacle}
+   */
+  public  static final class RDObstacle extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:RDObstacle)
+      RDObstacleOrBuilder {
+    // Use RDObstacle.newBuilder() to construct.
+    private RDObstacle(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private RDObstacle() {
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+    }
+    private RDObstacle(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!input.skipField(tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 10: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (susTriBegin_ != null) {
+                subBuilder = susTriBegin_.toBuilder();
+              }
+              susTriBegin_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(susTriBegin_);
+                susTriBegin_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 18: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (susTriEnd_ != null) {
+                subBuilder = susTriEnd_.toBuilder();
+              }
+              susTriEnd_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(susTriEnd_);
+                susTriEnd_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+            case 26: {
+              RemoteDebug.RDPointF.Builder subBuilder = null;
+              if (centroid_ != null) {
+                subBuilder = centroid_.toBuilder();
+              }
+              centroid_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(centroid_);
+                centroid_ = subBuilder.buildPartial();
+              }
+
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return RemoteDebug.internal_static_RDObstacle_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return RemoteDebug.internal_static_RDObstacle_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              RemoteDebug.RDObstacle.class, RemoteDebug.RDObstacle.Builder.class);
+    }
+
+    public static final int SUSTRIBEGIN_FIELD_NUMBER = 1;
+    private RemoteDebug.RDPointF susTriBegin_;
+    /**
+     * <code>optional .RDPointF susTriBegin = 1;</code>
+     */
+    public boolean hasSusTriBegin() {
+      return susTriBegin_ != null;
+    }
+    /**
+     * <code>optional .RDPointF susTriBegin = 1;</code>
+     */
+    public RemoteDebug.RDPointF getSusTriBegin() {
+      return susTriBegin_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriBegin_;
+    }
+    /**
+     * <code>optional .RDPointF susTriBegin = 1;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getSusTriBeginOrBuilder() {
+      return getSusTriBegin();
+    }
+
+    public static final int SUSTRIEND_FIELD_NUMBER = 2;
+    private RemoteDebug.RDPointF susTriEnd_;
+    /**
+     * <code>optional .RDPointF susTriEnd = 2;</code>
+     */
+    public boolean hasSusTriEnd() {
+      return susTriEnd_ != null;
+    }
+    /**
+     * <code>optional .RDPointF susTriEnd = 2;</code>
+     */
+    public RemoteDebug.RDPointF getSusTriEnd() {
+      return susTriEnd_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriEnd_;
+    }
+    /**
+     * <code>optional .RDPointF susTriEnd = 2;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getSusTriEndOrBuilder() {
+      return getSusTriEnd();
+    }
+
+    public static final int CENTROID_FIELD_NUMBER = 3;
+    private RemoteDebug.RDPointF centroid_;
+    /**
+     * <code>optional .RDPointF centroid = 3;</code>
+     */
+    public boolean hasCentroid() {
+      return centroid_ != null;
+    }
+    /**
+     * <code>optional .RDPointF centroid = 3;</code>
+     */
+    public RemoteDebug.RDPointF getCentroid() {
+      return centroid_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : centroid_;
+    }
+    /**
+     * <code>optional .RDPointF centroid = 3;</code>
+     */
+    public RemoteDebug.RDPointFOrBuilder getCentroidOrBuilder() {
+      return getCentroid();
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      if (susTriBegin_ != null) {
+        output.writeMessage(1, getSusTriBegin());
+      }
+      if (susTriEnd_ != null) {
+        output.writeMessage(2, getSusTriEnd());
+      }
+      if (centroid_ != null) {
+        output.writeMessage(3, getCentroid());
+      }
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (susTriBegin_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(1, getSusTriBegin());
+      }
+      if (susTriEnd_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(2, getSusTriEnd());
+      }
+      if (centroid_ != null) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(3, getCentroid());
+      }
+      memoizedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof RemoteDebug.RDObstacle)) {
+        return super.equals(obj);
+      }
+      RemoteDebug.RDObstacle other = (RemoteDebug.RDObstacle) obj;
+
+      boolean result = true;
+      result = result && (hasSusTriBegin() == other.hasSusTriBegin());
+      if (hasSusTriBegin()) {
+        result = result && getSusTriBegin()
+            .equals(other.getSusTriBegin());
+      }
+      result = result && (hasSusTriEnd() == other.hasSusTriEnd());
+      if (hasSusTriEnd()) {
+        result = result && getSusTriEnd()
+            .equals(other.getSusTriEnd());
+      }
+      result = result && (hasCentroid() == other.hasCentroid());
+      if (hasCentroid()) {
+        result = result && getCentroid()
+            .equals(other.getCentroid());
+      }
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptorForType().hashCode();
+      if (hasSusTriBegin()) {
+        hash = (37 * hash) + SUSTRIBEGIN_FIELD_NUMBER;
+        hash = (53 * hash) + getSusTriBegin().hashCode();
+      }
+      if (hasSusTriEnd()) {
+        hash = (37 * hash) + SUSTRIEND_FIELD_NUMBER;
+        hash = (53 * hash) + getSusTriEnd().hashCode();
+      }
+      if (hasCentroid()) {
+        hash = (37 * hash) + CENTROID_FIELD_NUMBER;
+        hash = (53 * hash) + getCentroid().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static RemoteDebug.RDObstacle parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDObstacle parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDObstacle parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RemoteDebug.RDObstacle parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static RemoteDebug.RDObstacle parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDObstacle parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDObstacle parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDObstacle parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static RemoteDebug.RDObstacle parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static RemoteDebug.RDObstacle parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(RemoteDebug.RDObstacle prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code RDObstacle}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:RDObstacle)
+        RemoteDebug.RDObstacleOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return RemoteDebug.internal_static_RDObstacle_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return RemoteDebug.internal_static_RDObstacle_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                RemoteDebug.RDObstacle.class, RemoteDebug.RDObstacle.Builder.class);
+      }
+
+      // Construct using RemoteDebug.RDObstacle.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        if (susTriBeginBuilder_ == null) {
+          susTriBegin_ = null;
+        } else {
+          susTriBegin_ = null;
+          susTriBeginBuilder_ = null;
+        }
+        if (susTriEndBuilder_ == null) {
+          susTriEnd_ = null;
+        } else {
+          susTriEnd_ = null;
+          susTriEndBuilder_ = null;
+        }
+        if (centroidBuilder_ == null) {
+          centroid_ = null;
+        } else {
+          centroid_ = null;
+          centroidBuilder_ = null;
+        }
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return RemoteDebug.internal_static_RDObstacle_descriptor;
+      }
+
+      public RemoteDebug.RDObstacle getDefaultInstanceForType() {
+        return RemoteDebug.RDObstacle.getDefaultInstance();
+      }
+
+      public RemoteDebug.RDObstacle build() {
+        RemoteDebug.RDObstacle result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public RemoteDebug.RDObstacle buildPartial() {
+        RemoteDebug.RDObstacle result = new RemoteDebug.RDObstacle(this);
+        if (susTriBeginBuilder_ == null) {
+          result.susTriBegin_ = susTriBegin_;
+        } else {
+          result.susTriBegin_ = susTriBeginBuilder_.build();
+        }
+        if (susTriEndBuilder_ == null) {
+          result.susTriEnd_ = susTriEnd_;
+        } else {
+          result.susTriEnd_ = susTriEndBuilder_.build();
+        }
+        if (centroidBuilder_ == null) {
+          result.centroid_ = centroid_;
+        } else {
+          result.centroid_ = centroidBuilder_.build();
+        }
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof RemoteDebug.RDObstacle) {
+          return mergeFrom((RemoteDebug.RDObstacle)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(RemoteDebug.RDObstacle other) {
+        if (other == RemoteDebug.RDObstacle.getDefaultInstance()) return this;
+        if (other.hasSusTriBegin()) {
+          mergeSusTriBegin(other.getSusTriBegin());
+        }
+        if (other.hasSusTriEnd()) {
+          mergeSusTriEnd(other.getSusTriEnd());
+        }
+        if (other.hasCentroid()) {
+          mergeCentroid(other.getCentroid());
+        }
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        RemoteDebug.RDObstacle parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (RemoteDebug.RDObstacle) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+
+      private RemoteDebug.RDPointF susTriBegin_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> susTriBeginBuilder_;
+      /**
+       * <code>optional .RDPointF susTriBegin = 1;</code>
+       */
+      public boolean hasSusTriBegin() {
+        return susTriBeginBuilder_ != null || susTriBegin_ != null;
+      }
+      /**
+       * <code>optional .RDPointF susTriBegin = 1;</code>
+       */
+      public RemoteDebug.RDPointF getSusTriBegin() {
+        if (susTriBeginBuilder_ == null) {
+          return susTriBegin_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriBegin_;
+        } else {
+          return susTriBeginBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .RDPointF susTriBegin = 1;</code>
+       */
+      public Builder setSusTriBegin(RemoteDebug.RDPointF value) {
+        if (susTriBeginBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          susTriBegin_ = value;
+          onChanged();
+        } else {
+          susTriBeginBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF susTriBegin = 1;</code>
+       */
+      public Builder setSusTriBegin(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (susTriBeginBuilder_ == null) {
+          susTriBegin_ = builderForValue.build();
+          onChanged();
+        } else {
+          susTriBeginBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF susTriBegin = 1;</code>
+       */
+      public Builder mergeSusTriBegin(RemoteDebug.RDPointF value) {
+        if (susTriBeginBuilder_ == null) {
+          if (susTriBegin_ != null) {
+            susTriBegin_ =
+              RemoteDebug.RDPointF.newBuilder(susTriBegin_).mergeFrom(value).buildPartial();
+          } else {
+            susTriBegin_ = value;
+          }
+          onChanged();
+        } else {
+          susTriBeginBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF susTriBegin = 1;</code>
+       */
+      public Builder clearSusTriBegin() {
+        if (susTriBeginBuilder_ == null) {
+          susTriBegin_ = null;
+          onChanged();
+        } else {
+          susTriBegin_ = null;
+          susTriBeginBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF susTriBegin = 1;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getSusTriBeginBuilder() {
+        
+        onChanged();
+        return getSusTriBeginFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .RDPointF susTriBegin = 1;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getSusTriBeginOrBuilder() {
+        if (susTriBeginBuilder_ != null) {
+          return susTriBeginBuilder_.getMessageOrBuilder();
+        } else {
+          return susTriBegin_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : susTriBegin_;
+        }
+      }
+      /**
+       * <code>optional .RDPointF susTriBegin = 1;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getSusTriBeginFieldBuilder() {
+        if (susTriBeginBuilder_ == null) {
+          susTriBeginBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getSusTriBegin(),
+                  getParentForChildren(),
+                  isClean());
+          susTriBegin_ = null;
+        }
+        return susTriBeginBuilder_;
+      }
+
+      private RemoteDebug.RDPointF susTriEnd_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> susTriEndBuilder_;
+      /**
+       * <code>optional .RDPointF susTriEnd = 2;</code>
+       */
+      public boolean hasSusTriEnd() {
+        return susTriEndBuilder_ != null || susTriEnd_ != null;
+      }
+      /**
+       * <code>optional .RDPointF susTriEnd = 2;</code>
+       */
+      public RemoteDebug.RDPointF getSusTriEnd() {
+        if (susTriEndBuilder_ == null) {
+          return susTriEnd_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriEnd_;
+        } else {
+          return susTriEndBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .RDPointF susTriEnd = 2;</code>
+       */
+      public Builder setSusTriEnd(RemoteDebug.RDPointF value) {
+        if (susTriEndBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          susTriEnd_ = value;
+          onChanged();
+        } else {
+          susTriEndBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF susTriEnd = 2;</code>
+       */
+      public Builder setSusTriEnd(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (susTriEndBuilder_ == null) {
+          susTriEnd_ = builderForValue.build();
+          onChanged();
+        } else {
+          susTriEndBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF susTriEnd = 2;</code>
+       */
+      public Builder mergeSusTriEnd(RemoteDebug.RDPointF value) {
+        if (susTriEndBuilder_ == null) {
+          if (susTriEnd_ != null) {
+            susTriEnd_ =
+              RemoteDebug.RDPointF.newBuilder(susTriEnd_).mergeFrom(value).buildPartial();
+          } else {
+            susTriEnd_ = value;
+          }
+          onChanged();
+        } else {
+          susTriEndBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF susTriEnd = 2;</code>
+       */
+      public Builder clearSusTriEnd() {
+        if (susTriEndBuilder_ == null) {
+          susTriEnd_ = null;
+          onChanged();
+        } else {
+          susTriEnd_ = null;
+          susTriEndBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF susTriEnd = 2;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getSusTriEndBuilder() {
+        
+        onChanged();
+        return getSusTriEndFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .RDPointF susTriEnd = 2;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getSusTriEndOrBuilder() {
+        if (susTriEndBuilder_ != null) {
+          return susTriEndBuilder_.getMessageOrBuilder();
+        } else {
+          return susTriEnd_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : susTriEnd_;
+        }
+      }
+      /**
+       * <code>optional .RDPointF susTriEnd = 2;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getSusTriEndFieldBuilder() {
+        if (susTriEndBuilder_ == null) {
+          susTriEndBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getSusTriEnd(),
+                  getParentForChildren(),
+                  isClean());
+          susTriEnd_ = null;
+        }
+        return susTriEndBuilder_;
+      }
+
+      private RemoteDebug.RDPointF centroid_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> centroidBuilder_;
+      /**
+       * <code>optional .RDPointF centroid = 3;</code>
+       */
+      public boolean hasCentroid() {
+        return centroidBuilder_ != null || centroid_ != null;
+      }
+      /**
+       * <code>optional .RDPointF centroid = 3;</code>
+       */
+      public RemoteDebug.RDPointF getCentroid() {
+        if (centroidBuilder_ == null) {
+          return centroid_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : centroid_;
+        } else {
+          return centroidBuilder_.getMessage();
+        }
+      }
+      /**
+       * <code>optional .RDPointF centroid = 3;</code>
+       */
+      public Builder setCentroid(RemoteDebug.RDPointF value) {
+        if (centroidBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          centroid_ = value;
+          onChanged();
+        } else {
+          centroidBuilder_.setMessage(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF centroid = 3;</code>
+       */
+      public Builder setCentroid(
+          RemoteDebug.RDPointF.Builder builderForValue) {
+        if (centroidBuilder_ == null) {
+          centroid_ = builderForValue.build();
+          onChanged();
+        } else {
+          centroidBuilder_.setMessage(builderForValue.build());
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF centroid = 3;</code>
+       */
+      public Builder mergeCentroid(RemoteDebug.RDPointF value) {
+        if (centroidBuilder_ == null) {
+          if (centroid_ != null) {
+            centroid_ =
+              RemoteDebug.RDPointF.newBuilder(centroid_).mergeFrom(value).buildPartial();
+          } else {
+            centroid_ = value;
+          }
+          onChanged();
+        } else {
+          centroidBuilder_.mergeFrom(value);
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF centroid = 3;</code>
+       */
+      public Builder clearCentroid() {
+        if (centroidBuilder_ == null) {
+          centroid_ = null;
+          onChanged();
+        } else {
+          centroid_ = null;
+          centroidBuilder_ = null;
+        }
+
+        return this;
+      }
+      /**
+       * <code>optional .RDPointF centroid = 3;</code>
+       */
+      public RemoteDebug.RDPointF.Builder getCentroidBuilder() {
+        
+        onChanged();
+        return getCentroidFieldBuilder().getBuilder();
+      }
+      /**
+       * <code>optional .RDPointF centroid = 3;</code>
+       */
+      public RemoteDebug.RDPointFOrBuilder getCentroidOrBuilder() {
+        if (centroidBuilder_ != null) {
+          return centroidBuilder_.getMessageOrBuilder();
+        } else {
+          return centroid_ == null ?
+              RemoteDebug.RDPointF.getDefaultInstance() : centroid_;
+        }
+      }
+      /**
+       * <code>optional .RDPointF centroid = 3;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
+          getCentroidFieldBuilder() {
+        if (centroidBuilder_ == null) {
+          centroidBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
+                  getCentroid(),
+                  getParentForChildren(),
+                  isClean());
+          centroid_ = null;
+        }
+        return centroidBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return this;
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:RDObstacle)
+    }
+
+    // @@protoc_insertion_point(class_scope:RDObstacle)
+    private static final RemoteDebug.RDObstacle DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new RemoteDebug.RDObstacle();
+    }
+
+    public static RemoteDebug.RDObstacle getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<RDObstacle>
+        PARSER = new com.google.protobuf.AbstractParser<RDObstacle>() {
+      public RDObstacle parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new RDObstacle(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<RDObstacle> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<RDObstacle> getParserForType() {
+      return PARSER;
+    }
+
+    public RemoteDebug.RDObstacle getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   public interface DebugFrameOrBuilder extends
       // @@protoc_insertion_point(interface_extends:DebugFrame)
       com.google.protobuf.MessageOrBuilder {
@@ -3648,78 +4596,47 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriBegin = 32;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    boolean hasSusTriBegin();
+    java.util.List<RemoteDebug.RDObstacle> 
+        getDetectedObstaclesList();
     /**
      * <pre>
-     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriBegin = 32;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    RemoteDebug.RDPointF getSusTriBegin();
+    RemoteDebug.RDObstacle getDetectedObstacles(int index);
     /**
      * <pre>
-     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriBegin = 32;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    RemoteDebug.RDPointFOrBuilder getSusTriBeginOrBuilder();
-
+    int getDetectedObstaclesCount();
     /**
      * <pre>
-     * suspicious triangle end (temp for debug)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriEnd = 33;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    boolean hasSusTriEnd();
+    java.util.List<? extends RemoteDebug.RDObstacleOrBuilder> 
+        getDetectedObstaclesOrBuilderList();
     /**
      * <pre>
-     * suspicious triangle end (temp for debug)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriEnd = 33;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    RemoteDebug.RDPointF getSusTriEnd();
-    /**
-     * <pre>
-     * suspicious triangle end (temp for debug)
-     * </pre>
-     *
-     * <code>optional .RDPointF susTriEnd = 33;</code>
-     */
-    RemoteDebug.RDPointFOrBuilder getSusTriEndOrBuilder();
-
-    /**
-     * <pre>
-     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-     * </pre>
-     *
-     * <code>optional .RDPointF detectedRobot = 34;</code>
-     */
-    boolean hasDetectedRobot();
-    /**
-     * <pre>
-     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-     * </pre>
-     *
-     * <code>optional .RDPointF detectedRobot = 34;</code>
-     */
-    RemoteDebug.RDPointF getDetectedRobot();
-    /**
-     * <pre>
-     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-     * </pre>
-     *
-     * <code>optional .RDPointF detectedRobot = 34;</code>
-     */
-    RemoteDebug.RDPointFOrBuilder getDetectedRobotOrBuilder();
+    RemoteDebug.RDObstacleOrBuilder getDetectedObstaclesOrBuilder(
+        int index);
   }
   /**
    * <pre>
@@ -3759,6 +4676,7 @@ public final class RemoteDebug {
       isBallKnown_ = false;
       isBlueKnown_ = false;
       susRayCutoff_ = 0F;
+      detectedObstacles_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -4061,42 +4979,12 @@ public final class RemoteDebug {
               break;
             }
             case 258: {
-              RemoteDebug.RDPointF.Builder subBuilder = null;
-              if (susTriBegin_ != null) {
-                subBuilder = susTriBegin_.toBuilder();
+              if (!((mutable_bitField0_ & 0x20000000) == 0x20000000)) {
+                detectedObstacles_ = new java.util.ArrayList<RemoteDebug.RDObstacle>();
+                mutable_bitField0_ |= 0x20000000;
               }
-              susTriBegin_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(susTriBegin_);
-                susTriBegin_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-            case 266: {
-              RemoteDebug.RDPointF.Builder subBuilder = null;
-              if (susTriEnd_ != null) {
-                subBuilder = susTriEnd_.toBuilder();
-              }
-              susTriEnd_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(susTriEnd_);
-                susTriEnd_ = subBuilder.buildPartial();
-              }
-
-              break;
-            }
-            case 274: {
-              RemoteDebug.RDPointF.Builder subBuilder = null;
-              if (detectedRobot_ != null) {
-                subBuilder = detectedRobot_.toBuilder();
-              }
-              detectedRobot_ = input.readMessage(RemoteDebug.RDPointF.parser(), extensionRegistry);
-              if (subBuilder != null) {
-                subBuilder.mergeFrom(detectedRobot_);
-                detectedRobot_ = subBuilder.buildPartial();
-              }
-
+              detectedObstacles_.add(
+                  input.readMessage(RemoteDebug.RDObstacle.parser(), extensionRegistry));
               break;
             }
           }
@@ -4121,6 +5009,9 @@ public final class RemoteDebug {
         }
         if (((mutable_bitField0_ & 0x00040000) == 0x00040000)) {
           raysSuspicious_ = java.util.Collections.unmodifiableList(raysSuspicious_);
+        }
+        if (((mutable_bitField0_ & 0x20000000) == 0x20000000)) {
+          detectedObstacles_ = java.util.Collections.unmodifiableList(detectedObstacles_);
         }
         makeExtensionsImmutable();
       }
@@ -4874,103 +5765,59 @@ public final class RemoteDebug {
       return susRayCutoff_;
     }
 
-    public static final int SUSTRIBEGIN_FIELD_NUMBER = 32;
-    private RemoteDebug.RDPointF susTriBegin_;
+    public static final int DETECTEDOBSTACLES_FIELD_NUMBER = 32;
+    private java.util.List<RemoteDebug.RDObstacle> detectedObstacles_;
     /**
      * <pre>
-     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriBegin = 32;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    public boolean hasSusTriBegin() {
-      return susTriBegin_ != null;
+    public java.util.List<RemoteDebug.RDObstacle> getDetectedObstaclesList() {
+      return detectedObstacles_;
     }
     /**
      * <pre>
-     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriBegin = 32;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    public RemoteDebug.RDPointF getSusTriBegin() {
-      return susTriBegin_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriBegin_;
+    public java.util.List<? extends RemoteDebug.RDObstacleOrBuilder> 
+        getDetectedObstaclesOrBuilderList() {
+      return detectedObstacles_;
     }
     /**
      * <pre>
-     * suspicious triangle begin (temp for debug, need to make this and below list in future)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriBegin = 32;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    public RemoteDebug.RDPointFOrBuilder getSusTriBeginOrBuilder() {
-      return getSusTriBegin();
-    }
-
-    public static final int SUSTRIEND_FIELD_NUMBER = 33;
-    private RemoteDebug.RDPointF susTriEnd_;
-    /**
-     * <pre>
-     * suspicious triangle end (temp for debug)
-     * </pre>
-     *
-     * <code>optional .RDPointF susTriEnd = 33;</code>
-     */
-    public boolean hasSusTriEnd() {
-      return susTriEnd_ != null;
+    public int getDetectedObstaclesCount() {
+      return detectedObstacles_.size();
     }
     /**
      * <pre>
-     * suspicious triangle end (temp for debug)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriEnd = 33;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    public RemoteDebug.RDPointF getSusTriEnd() {
-      return susTriEnd_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriEnd_;
+    public RemoteDebug.RDObstacle getDetectedObstacles(int index) {
+      return detectedObstacles_.get(index);
     }
     /**
      * <pre>
-     * suspicious triangle end (temp for debug)
+     * detected obstacle
      * </pre>
      *
-     * <code>optional .RDPointF susTriEnd = 33;</code>
+     * <code>repeated .RDObstacle detectedObstacles = 32;</code>
      */
-    public RemoteDebug.RDPointFOrBuilder getSusTriEndOrBuilder() {
-      return getSusTriEnd();
-    }
-
-    public static final int DETECTEDROBOT_FIELD_NUMBER = 34;
-    private RemoteDebug.RDPointF detectedRobot_;
-    /**
-     * <pre>
-     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-     * </pre>
-     *
-     * <code>optional .RDPointF detectedRobot = 34;</code>
-     */
-    public boolean hasDetectedRobot() {
-      return detectedRobot_ != null;
-    }
-    /**
-     * <pre>
-     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-     * </pre>
-     *
-     * <code>optional .RDPointF detectedRobot = 34;</code>
-     */
-    public RemoteDebug.RDPointF getDetectedRobot() {
-      return detectedRobot_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : detectedRobot_;
-    }
-    /**
-     * <pre>
-     * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-     * </pre>
-     *
-     * <code>optional .RDPointF detectedRobot = 34;</code>
-     */
-    public RemoteDebug.RDPointFOrBuilder getDetectedRobotOrBuilder() {
-      return getDetectedRobot();
+    public RemoteDebug.RDObstacleOrBuilder getDetectedObstaclesOrBuilder(
+        int index) {
+      return detectedObstacles_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
@@ -5085,14 +5932,8 @@ public final class RemoteDebug {
       if (susRayCutoff_ != 0F) {
         output.writeFloat(31, susRayCutoff_);
       }
-      if (susTriBegin_ != null) {
-        output.writeMessage(32, getSusTriBegin());
-      }
-      if (susTriEnd_ != null) {
-        output.writeMessage(33, getSusTriEnd());
-      }
-      if (detectedRobot_ != null) {
-        output.writeMessage(34, getDetectedRobot());
+      for (int i = 0; i < detectedObstacles_.size(); i++) {
+        output.writeMessage(32, detectedObstacles_.get(i));
       }
     }
 
@@ -5237,17 +6078,9 @@ public final class RemoteDebug {
         size += com.google.protobuf.CodedOutputStream
           .computeFloatSize(31, susRayCutoff_);
       }
-      if (susTriBegin_ != null) {
+      for (int i = 0; i < detectedObstacles_.size(); i++) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(32, getSusTriBegin());
-      }
-      if (susTriEnd_ != null) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(33, getSusTriEnd());
-      }
-      if (detectedRobot_ != null) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(34, getDetectedRobot());
+          .computeMessageSize(32, detectedObstacles_.get(i));
       }
       memoizedSize = size;
       return size;
@@ -5356,21 +6189,8 @@ public final class RemoteDebug {
           java.lang.Float.floatToIntBits(getSusRayCutoff())
           == java.lang.Float.floatToIntBits(
               other.getSusRayCutoff()));
-      result = result && (hasSusTriBegin() == other.hasSusTriBegin());
-      if (hasSusTriBegin()) {
-        result = result && getSusTriBegin()
-            .equals(other.getSusTriBegin());
-      }
-      result = result && (hasSusTriEnd() == other.hasSusTriEnd());
-      if (hasSusTriEnd()) {
-        result = result && getSusTriEnd()
-            .equals(other.getSusTriEnd());
-      }
-      result = result && (hasDetectedRobot() == other.hasDetectedRobot());
-      if (hasDetectedRobot()) {
-        result = result && getDetectedRobot()
-            .equals(other.getDetectedRobot());
-      }
+      result = result && getDetectedObstaclesList()
+          .equals(other.getDetectedObstaclesList());
       return result;
     }
 
@@ -5473,17 +6293,9 @@ public final class RemoteDebug {
       hash = (37 * hash) + SUSRAYCUTOFF_FIELD_NUMBER;
       hash = (53 * hash) + java.lang.Float.floatToIntBits(
           getSusRayCutoff());
-      if (hasSusTriBegin()) {
-        hash = (37 * hash) + SUSTRIBEGIN_FIELD_NUMBER;
-        hash = (53 * hash) + getSusTriBegin().hashCode();
-      }
-      if (hasSusTriEnd()) {
-        hash = (37 * hash) + SUSTRIEND_FIELD_NUMBER;
-        hash = (53 * hash) + getSusTriEnd().hashCode();
-      }
-      if (hasDetectedRobot()) {
-        hash = (37 * hash) + DETECTEDROBOT_FIELD_NUMBER;
-        hash = (53 * hash) + getDetectedRobot().hashCode();
+      if (getDetectedObstaclesCount() > 0) {
+        hash = (37 * hash) + DETECTEDOBSTACLES_FIELD_NUMBER;
+        hash = (53 * hash) + getDetectedObstaclesList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -5607,6 +6419,7 @@ public final class RemoteDebug {
                 .alwaysUseFieldBuilders) {
           getRobotsFieldBuilder();
           getLocaliserVisitedPointsFieldBuilder();
+          getDetectedObstaclesFieldBuilder();
         }
       }
       public Builder clear() {
@@ -5713,23 +6526,11 @@ public final class RemoteDebug {
         }
         susRayCutoff_ = 0F;
 
-        if (susTriBeginBuilder_ == null) {
-          susTriBegin_ = null;
+        if (detectedObstaclesBuilder_ == null) {
+          detectedObstacles_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x20000000);
         } else {
-          susTriBegin_ = null;
-          susTriBeginBuilder_ = null;
-        }
-        if (susTriEndBuilder_ == null) {
-          susTriEnd_ = null;
-        } else {
-          susTriEnd_ = null;
-          susTriEndBuilder_ = null;
-        }
-        if (detectedRobotBuilder_ == null) {
-          detectedRobot_ = null;
-        } else {
-          detectedRobot_ = null;
-          detectedRobotBuilder_ = null;
+          detectedObstaclesBuilder_.clear();
         }
         return this;
       }
@@ -5848,20 +6649,14 @@ public final class RemoteDebug {
           result.estimateMaxBounds_ = estimateMaxBoundsBuilder_.build();
         }
         result.susRayCutoff_ = susRayCutoff_;
-        if (susTriBeginBuilder_ == null) {
-          result.susTriBegin_ = susTriBegin_;
+        if (detectedObstaclesBuilder_ == null) {
+          if (((bitField0_ & 0x20000000) == 0x20000000)) {
+            detectedObstacles_ = java.util.Collections.unmodifiableList(detectedObstacles_);
+            bitField0_ = (bitField0_ & ~0x20000000);
+          }
+          result.detectedObstacles_ = detectedObstacles_;
         } else {
-          result.susTriBegin_ = susTriBeginBuilder_.build();
-        }
-        if (susTriEndBuilder_ == null) {
-          result.susTriEnd_ = susTriEnd_;
-        } else {
-          result.susTriEnd_ = susTriEndBuilder_.build();
-        }
-        if (detectedRobotBuilder_ == null) {
-          result.detectedRobot_ = detectedRobot_;
-        } else {
-          result.detectedRobot_ = detectedRobotBuilder_.build();
+          result.detectedObstacles_ = detectedObstaclesBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -6060,14 +6855,31 @@ public final class RemoteDebug {
         if (other.getSusRayCutoff() != 0F) {
           setSusRayCutoff(other.getSusRayCutoff());
         }
-        if (other.hasSusTriBegin()) {
-          mergeSusTriBegin(other.getSusTriBegin());
-        }
-        if (other.hasSusTriEnd()) {
-          mergeSusTriEnd(other.getSusTriEnd());
-        }
-        if (other.hasDetectedRobot()) {
-          mergeDetectedRobot(other.getDetectedRobot());
+        if (detectedObstaclesBuilder_ == null) {
+          if (!other.detectedObstacles_.isEmpty()) {
+            if (detectedObstacles_.isEmpty()) {
+              detectedObstacles_ = other.detectedObstacles_;
+              bitField0_ = (bitField0_ & ~0x20000000);
+            } else {
+              ensureDetectedObstaclesIsMutable();
+              detectedObstacles_.addAll(other.detectedObstacles_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.detectedObstacles_.isEmpty()) {
+            if (detectedObstaclesBuilder_.isEmpty()) {
+              detectedObstaclesBuilder_.dispose();
+              detectedObstaclesBuilder_ = null;
+              detectedObstacles_ = other.detectedObstacles_;
+              bitField0_ = (bitField0_ & ~0x20000000);
+              detectedObstaclesBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getDetectedObstaclesFieldBuilder() : null;
+            } else {
+              detectedObstaclesBuilder_.addAllMessages(other.detectedObstacles_);
+            }
+          }
         }
         onChanged();
         return this;
@@ -9006,463 +9818,316 @@ public final class RemoteDebug {
         return this;
       }
 
-      private RemoteDebug.RDPointF susTriBegin_ = null;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> susTriBeginBuilder_;
-      /**
-       * <pre>
-       * suspicious triangle begin (temp for debug, need to make this and below list in future)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriBegin = 32;</code>
-       */
-      public boolean hasSusTriBegin() {
-        return susTriBeginBuilder_ != null || susTriBegin_ != null;
+      private java.util.List<RemoteDebug.RDObstacle> detectedObstacles_ =
+        java.util.Collections.emptyList();
+      private void ensureDetectedObstaclesIsMutable() {
+        if (!((bitField0_ & 0x20000000) == 0x20000000)) {
+          detectedObstacles_ = new java.util.ArrayList<RemoteDebug.RDObstacle>(detectedObstacles_);
+          bitField0_ |= 0x20000000;
+         }
       }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDObstacle, RemoteDebug.RDObstacle.Builder, RemoteDebug.RDObstacleOrBuilder> detectedObstaclesBuilder_;
+
       /**
        * <pre>
-       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF susTriBegin = 32;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public RemoteDebug.RDPointF getSusTriBegin() {
-        if (susTriBeginBuilder_ == null) {
-          return susTriBegin_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriBegin_;
+      public java.util.List<RemoteDebug.RDObstacle> getDetectedObstaclesList() {
+        if (detectedObstaclesBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(detectedObstacles_);
         } else {
-          return susTriBeginBuilder_.getMessage();
+          return detectedObstaclesBuilder_.getMessageList();
         }
       }
       /**
        * <pre>
-       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF susTriBegin = 32;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public Builder setSusTriBegin(RemoteDebug.RDPointF value) {
-        if (susTriBeginBuilder_ == null) {
+      public int getDetectedObstaclesCount() {
+        if (detectedObstaclesBuilder_ == null) {
+          return detectedObstacles_.size();
+        } else {
+          return detectedObstaclesBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * detected obstacle
+       * </pre>
+       *
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
+       */
+      public RemoteDebug.RDObstacle getDetectedObstacles(int index) {
+        if (detectedObstaclesBuilder_ == null) {
+          return detectedObstacles_.get(index);
+        } else {
+          return detectedObstaclesBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * detected obstacle
+       * </pre>
+       *
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
+       */
+      public Builder setDetectedObstacles(
+          int index, RemoteDebug.RDObstacle value) {
+        if (detectedObstaclesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          susTriBegin_ = value;
+          ensureDetectedObstaclesIsMutable();
+          detectedObstacles_.set(index, value);
           onChanged();
         } else {
-          susTriBeginBuilder_.setMessage(value);
+          detectedObstaclesBuilder_.setMessage(index, value);
         }
-
         return this;
       }
       /**
        * <pre>
-       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF susTriBegin = 32;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public Builder setSusTriBegin(
-          RemoteDebug.RDPointF.Builder builderForValue) {
-        if (susTriBeginBuilder_ == null) {
-          susTriBegin_ = builderForValue.build();
+      public Builder setDetectedObstacles(
+          int index, RemoteDebug.RDObstacle.Builder builderForValue) {
+        if (detectedObstaclesBuilder_ == null) {
+          ensureDetectedObstaclesIsMutable();
+          detectedObstacles_.set(index, builderForValue.build());
           onChanged();
         } else {
-          susTriBeginBuilder_.setMessage(builderForValue.build());
+          detectedObstaclesBuilder_.setMessage(index, builderForValue.build());
         }
-
         return this;
       }
       /**
        * <pre>
-       * suspicious triangle begin (temp for debug, need to make this and below list in future)
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF susTriBegin = 32;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public Builder mergeSusTriBegin(RemoteDebug.RDPointF value) {
-        if (susTriBeginBuilder_ == null) {
-          if (susTriBegin_ != null) {
-            susTriBegin_ =
-              RemoteDebug.RDPointF.newBuilder(susTriBegin_).mergeFrom(value).buildPartial();
-          } else {
-            susTriBegin_ = value;
-          }
-          onChanged();
-        } else {
-          susTriBeginBuilder_.mergeFrom(value);
-        }
-
-        return this;
-      }
-      /**
-       * <pre>
-       * suspicious triangle begin (temp for debug, need to make this and below list in future)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriBegin = 32;</code>
-       */
-      public Builder clearSusTriBegin() {
-        if (susTriBeginBuilder_ == null) {
-          susTriBegin_ = null;
-          onChanged();
-        } else {
-          susTriBegin_ = null;
-          susTriBeginBuilder_ = null;
-        }
-
-        return this;
-      }
-      /**
-       * <pre>
-       * suspicious triangle begin (temp for debug, need to make this and below list in future)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriBegin = 32;</code>
-       */
-      public RemoteDebug.RDPointF.Builder getSusTriBeginBuilder() {
-        
-        onChanged();
-        return getSusTriBeginFieldBuilder().getBuilder();
-      }
-      /**
-       * <pre>
-       * suspicious triangle begin (temp for debug, need to make this and below list in future)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriBegin = 32;</code>
-       */
-      public RemoteDebug.RDPointFOrBuilder getSusTriBeginOrBuilder() {
-        if (susTriBeginBuilder_ != null) {
-          return susTriBeginBuilder_.getMessageOrBuilder();
-        } else {
-          return susTriBegin_ == null ?
-              RemoteDebug.RDPointF.getDefaultInstance() : susTriBegin_;
-        }
-      }
-      /**
-       * <pre>
-       * suspicious triangle begin (temp for debug, need to make this and below list in future)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriBegin = 32;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
-          getSusTriBeginFieldBuilder() {
-        if (susTriBeginBuilder_ == null) {
-          susTriBeginBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
-                  getSusTriBegin(),
-                  getParentForChildren(),
-                  isClean());
-          susTriBegin_ = null;
-        }
-        return susTriBeginBuilder_;
-      }
-
-      private RemoteDebug.RDPointF susTriEnd_ = null;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> susTriEndBuilder_;
-      /**
-       * <pre>
-       * suspicious triangle end (temp for debug)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriEnd = 33;</code>
-       */
-      public boolean hasSusTriEnd() {
-        return susTriEndBuilder_ != null || susTriEnd_ != null;
-      }
-      /**
-       * <pre>
-       * suspicious triangle end (temp for debug)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriEnd = 33;</code>
-       */
-      public RemoteDebug.RDPointF getSusTriEnd() {
-        if (susTriEndBuilder_ == null) {
-          return susTriEnd_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : susTriEnd_;
-        } else {
-          return susTriEndBuilder_.getMessage();
-        }
-      }
-      /**
-       * <pre>
-       * suspicious triangle end (temp for debug)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriEnd = 33;</code>
-       */
-      public Builder setSusTriEnd(RemoteDebug.RDPointF value) {
-        if (susTriEndBuilder_ == null) {
+      public Builder addDetectedObstacles(RemoteDebug.RDObstacle value) {
+        if (detectedObstaclesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          susTriEnd_ = value;
+          ensureDetectedObstaclesIsMutable();
+          detectedObstacles_.add(value);
           onChanged();
         } else {
-          susTriEndBuilder_.setMessage(value);
+          detectedObstaclesBuilder_.addMessage(value);
         }
-
         return this;
       }
       /**
        * <pre>
-       * suspicious triangle end (temp for debug)
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF susTriEnd = 33;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public Builder setSusTriEnd(
-          RemoteDebug.RDPointF.Builder builderForValue) {
-        if (susTriEndBuilder_ == null) {
-          susTriEnd_ = builderForValue.build();
-          onChanged();
-        } else {
-          susTriEndBuilder_.setMessage(builderForValue.build());
-        }
-
-        return this;
-      }
-      /**
-       * <pre>
-       * suspicious triangle end (temp for debug)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriEnd = 33;</code>
-       */
-      public Builder mergeSusTriEnd(RemoteDebug.RDPointF value) {
-        if (susTriEndBuilder_ == null) {
-          if (susTriEnd_ != null) {
-            susTriEnd_ =
-              RemoteDebug.RDPointF.newBuilder(susTriEnd_).mergeFrom(value).buildPartial();
-          } else {
-            susTriEnd_ = value;
-          }
-          onChanged();
-        } else {
-          susTriEndBuilder_.mergeFrom(value);
-        }
-
-        return this;
-      }
-      /**
-       * <pre>
-       * suspicious triangle end (temp for debug)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriEnd = 33;</code>
-       */
-      public Builder clearSusTriEnd() {
-        if (susTriEndBuilder_ == null) {
-          susTriEnd_ = null;
-          onChanged();
-        } else {
-          susTriEnd_ = null;
-          susTriEndBuilder_ = null;
-        }
-
-        return this;
-      }
-      /**
-       * <pre>
-       * suspicious triangle end (temp for debug)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriEnd = 33;</code>
-       */
-      public RemoteDebug.RDPointF.Builder getSusTriEndBuilder() {
-        
-        onChanged();
-        return getSusTriEndFieldBuilder().getBuilder();
-      }
-      /**
-       * <pre>
-       * suspicious triangle end (temp for debug)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriEnd = 33;</code>
-       */
-      public RemoteDebug.RDPointFOrBuilder getSusTriEndOrBuilder() {
-        if (susTriEndBuilder_ != null) {
-          return susTriEndBuilder_.getMessageOrBuilder();
-        } else {
-          return susTriEnd_ == null ?
-              RemoteDebug.RDPointF.getDefaultInstance() : susTriEnd_;
-        }
-      }
-      /**
-       * <pre>
-       * suspicious triangle end (temp for debug)
-       * </pre>
-       *
-       * <code>optional .RDPointF susTriEnd = 33;</code>
-       */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
-          getSusTriEndFieldBuilder() {
-        if (susTriEndBuilder_ == null) {
-          susTriEndBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
-                  getSusTriEnd(),
-                  getParentForChildren(),
-                  isClean());
-          susTriEnd_ = null;
-        }
-        return susTriEndBuilder_;
-      }
-
-      private RemoteDebug.RDPointF detectedRobot_ = null;
-      private com.google.protobuf.SingleFieldBuilderV3<
-          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> detectedRobotBuilder_;
-      /**
-       * <pre>
-       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-       * </pre>
-       *
-       * <code>optional .RDPointF detectedRobot = 34;</code>
-       */
-      public boolean hasDetectedRobot() {
-        return detectedRobotBuilder_ != null || detectedRobot_ != null;
-      }
-      /**
-       * <pre>
-       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-       * </pre>
-       *
-       * <code>optional .RDPointF detectedRobot = 34;</code>
-       */
-      public RemoteDebug.RDPointF getDetectedRobot() {
-        if (detectedRobotBuilder_ == null) {
-          return detectedRobot_ == null ? RemoteDebug.RDPointF.getDefaultInstance() : detectedRobot_;
-        } else {
-          return detectedRobotBuilder_.getMessage();
-        }
-      }
-      /**
-       * <pre>
-       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-       * </pre>
-       *
-       * <code>optional .RDPointF detectedRobot = 34;</code>
-       */
-      public Builder setDetectedRobot(RemoteDebug.RDPointF value) {
-        if (detectedRobotBuilder_ == null) {
+      public Builder addDetectedObstacles(
+          int index, RemoteDebug.RDObstacle value) {
+        if (detectedObstaclesBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          detectedRobot_ = value;
+          ensureDetectedObstaclesIsMutable();
+          detectedObstacles_.add(index, value);
           onChanged();
         } else {
-          detectedRobotBuilder_.setMessage(value);
+          detectedObstaclesBuilder_.addMessage(index, value);
         }
-
         return this;
       }
       /**
        * <pre>
-       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF detectedRobot = 34;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public Builder setDetectedRobot(
-          RemoteDebug.RDPointF.Builder builderForValue) {
-        if (detectedRobotBuilder_ == null) {
-          detectedRobot_ = builderForValue.build();
+      public Builder addDetectedObstacles(
+          RemoteDebug.RDObstacle.Builder builderForValue) {
+        if (detectedObstaclesBuilder_ == null) {
+          ensureDetectedObstaclesIsMutable();
+          detectedObstacles_.add(builderForValue.build());
           onChanged();
         } else {
-          detectedRobotBuilder_.setMessage(builderForValue.build());
+          detectedObstaclesBuilder_.addMessage(builderForValue.build());
         }
-
         return this;
       }
       /**
        * <pre>
-       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF detectedRobot = 34;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public Builder mergeDetectedRobot(RemoteDebug.RDPointF value) {
-        if (detectedRobotBuilder_ == null) {
-          if (detectedRobot_ != null) {
-            detectedRobot_ =
-              RemoteDebug.RDPointF.newBuilder(detectedRobot_).mergeFrom(value).buildPartial();
-          } else {
-            detectedRobot_ = value;
-          }
+      public Builder addDetectedObstacles(
+          int index, RemoteDebug.RDObstacle.Builder builderForValue) {
+        if (detectedObstaclesBuilder_ == null) {
+          ensureDetectedObstaclesIsMutable();
+          detectedObstacles_.add(index, builderForValue.build());
           onChanged();
         } else {
-          detectedRobotBuilder_.mergeFrom(value);
+          detectedObstaclesBuilder_.addMessage(index, builderForValue.build());
         }
-
         return this;
       }
       /**
        * <pre>
-       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF detectedRobot = 34;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public Builder clearDetectedRobot() {
-        if (detectedRobotBuilder_ == null) {
-          detectedRobot_ = null;
+      public Builder addAllDetectedObstacles(
+          java.lang.Iterable<? extends RemoteDebug.RDObstacle> values) {
+        if (detectedObstaclesBuilder_ == null) {
+          ensureDetectedObstaclesIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, detectedObstacles_);
           onChanged();
         } else {
-          detectedRobot_ = null;
-          detectedRobotBuilder_ = null;
+          detectedObstaclesBuilder_.addAllMessages(values);
         }
-
         return this;
       }
       /**
        * <pre>
-       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF detectedRobot = 34;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public RemoteDebug.RDPointF.Builder getDetectedRobotBuilder() {
-        
-        onChanged();
-        return getDetectedRobotFieldBuilder().getBuilder();
+      public Builder clearDetectedObstacles() {
+        if (detectedObstaclesBuilder_ == null) {
+          detectedObstacles_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x20000000);
+          onChanged();
+        } else {
+          detectedObstaclesBuilder_.clear();
+        }
+        return this;
       }
       /**
        * <pre>
-       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF detectedRobot = 34;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      public RemoteDebug.RDPointFOrBuilder getDetectedRobotOrBuilder() {
-        if (detectedRobotBuilder_ != null) {
-          return detectedRobotBuilder_.getMessageOrBuilder();
+      public Builder removeDetectedObstacles(int index) {
+        if (detectedObstaclesBuilder_ == null) {
+          ensureDetectedObstaclesIsMutable();
+          detectedObstacles_.remove(index);
+          onChanged();
         } else {
-          return detectedRobot_ == null ?
-              RemoteDebug.RDPointF.getDefaultInstance() : detectedRobot_;
+          detectedObstaclesBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * detected obstacle
+       * </pre>
+       *
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
+       */
+      public RemoteDebug.RDObstacle.Builder getDetectedObstaclesBuilder(
+          int index) {
+        return getDetectedObstaclesFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * detected obstacle
+       * </pre>
+       *
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
+       */
+      public RemoteDebug.RDObstacleOrBuilder getDetectedObstaclesOrBuilder(
+          int index) {
+        if (detectedObstaclesBuilder_ == null) {
+          return detectedObstacles_.get(index);  } else {
+          return detectedObstaclesBuilder_.getMessageOrBuilder(index);
         }
       }
       /**
        * <pre>
-       * TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
+       * detected obstacle
        * </pre>
        *
-       * <code>optional .RDPointF detectedRobot = 34;</code>
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
        */
-      private com.google.protobuf.SingleFieldBuilderV3<
-          RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder> 
-          getDetectedRobotFieldBuilder() {
-        if (detectedRobotBuilder_ == null) {
-          detectedRobotBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              RemoteDebug.RDPointF, RemoteDebug.RDPointF.Builder, RemoteDebug.RDPointFOrBuilder>(
-                  getDetectedRobot(),
+      public java.util.List<? extends RemoteDebug.RDObstacleOrBuilder> 
+           getDetectedObstaclesOrBuilderList() {
+        if (detectedObstaclesBuilder_ != null) {
+          return detectedObstaclesBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(detectedObstacles_);
+        }
+      }
+      /**
+       * <pre>
+       * detected obstacle
+       * </pre>
+       *
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
+       */
+      public RemoteDebug.RDObstacle.Builder addDetectedObstaclesBuilder() {
+        return getDetectedObstaclesFieldBuilder().addBuilder(
+            RemoteDebug.RDObstacle.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * detected obstacle
+       * </pre>
+       *
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
+       */
+      public RemoteDebug.RDObstacle.Builder addDetectedObstaclesBuilder(
+          int index) {
+        return getDetectedObstaclesFieldBuilder().addBuilder(
+            index, RemoteDebug.RDObstacle.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * detected obstacle
+       * </pre>
+       *
+       * <code>repeated .RDObstacle detectedObstacles = 32;</code>
+       */
+      public java.util.List<RemoteDebug.RDObstacle.Builder> 
+           getDetectedObstaclesBuilderList() {
+        return getDetectedObstaclesFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          RemoteDebug.RDObstacle, RemoteDebug.RDObstacle.Builder, RemoteDebug.RDObstacleOrBuilder> 
+          getDetectedObstaclesFieldBuilder() {
+        if (detectedObstaclesBuilder_ == null) {
+          detectedObstaclesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              RemoteDebug.RDObstacle, RemoteDebug.RDObstacle.Builder, RemoteDebug.RDObstacleOrBuilder>(
+                  detectedObstacles_,
+                  ((bitField0_ & 0x20000000) == 0x20000000),
                   getParentForChildren(),
                   isClean());
-          detectedRobot_ = null;
+          detectedObstacles_ = null;
         }
-        return detectedRobotBuilder_;
+        return detectedObstaclesBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -11399,7 +12064,7 @@ public final class RemoteDebug {
 
     /**
      * <pre>
-     * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+     * hack hack hack: so apparently "oneof" doesn't work at all hence this is required
      * </pre>
      *
      * <code>optional int32 whichMessage = 3;</code>
@@ -11550,7 +12215,7 @@ public final class RemoteDebug {
     private int whichMessage_;
     /**
      * <pre>
-     * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+     * hack hack hack: so apparently "oneof" doesn't work at all hence this is required
      * </pre>
      *
      * <code>optional int32 whichMessage = 3;</code>
@@ -12129,7 +12794,7 @@ public final class RemoteDebug {
       private int whichMessage_ ;
       /**
        * <pre>
-       * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+       * hack hack hack: so apparently "oneof" doesn't work at all hence this is required
        * </pre>
        *
        * <code>optional int32 whichMessage = 3;</code>
@@ -12139,7 +12804,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+       * hack hack hack: so apparently "oneof" doesn't work at all hence this is required
        * </pre>
        *
        * <code>optional int32 whichMessage = 3;</code>
@@ -12152,7 +12817,7 @@ public final class RemoteDebug {
       }
       /**
        * <pre>
-       * hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+       * hack hack hack: so apparently "oneof" doesn't work at all hence this is required
        * </pre>
        *
        * <code>optional int32 whichMessage = 3;</code>
@@ -12238,6 +12903,11 @@ public final class RemoteDebug {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_RDRobot_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_RDObstacle_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_RDObstacle_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_DebugFrame_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
@@ -12267,37 +12937,38 @@ public final class RemoteDebug {
       "DPointF\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001(\002\"\'\n\013RDThres" +
       "hold\022\013\n\003min\030\002 \003(\005\022\013\n\003max\030\003 \003(\005\"M\n\007RDRobo" +
       "t\022\033\n\010position\030\001 \001(\0132\t.RDPointF\022\023\n\013orient" +
-      "ation\030\002 \001(\002\022\020\n\010fsmState\030\003 \001(\t\"\322\006\n\nDebugF" +
-      "rame\022\024\n\014defaultImage\030\001 \001(\014\022\027\n\017ballThresh" +
-      "Image\030\002 \001(\014\022\023\n\013temperature\030\003 \001(\002\022\031\n\010ball" +
-      "Rect\030\004 \001(\0132\007.RDRect\022\036\n\014ballCentroid\030\005 \001(",
-      "\0132\010.RDPoint\022\013\n\003fps\030\006 \001(\005\022\022\n\nframeWidth\030\007" +
-      " \001(\005\022\023\n\013frameHeight\030\010 \001(\005\022\031\n\010cropRect\030\t " +
-      "\001(\0132\007.RDRect\022\014\n\004rays\030\n \003(\001\022\024\n\014dewarpedRa" +
-      "ys\030\013 \003(\001\022\024\n\014mirrorRadius\030\014 \001(\005\022\030\n\006robots" +
-      "\030\r \003(\0132\010.RDRobot\022\023\n\013rayInterval\030\017 \001(\002\022\026\n" +
-      "\016localiserEvals\030\020 \001(\005\022\027\n\017localiserStatus" +
-      "\030\022 \001(\t\022\032\n\007ballPos\030\023 \001(\0132\t.RDPointF\022)\n\026lo" +
-      "caliserVisitedPoints\030\024 \003(\0132\t.RDPointF\022\026\n" +
-      "\016raysSuspicious\030\025 \003(\010\022\025\n\rlocaliserRate\030\026" +
-      " \001(\005\022 \n\ryellowGoalPos\030\027 \001(\0132\t.RDPointF\022\036",
-      "\n\013blueGoalPos\030\030 \001(\0132\t.RDPointF\022\025\n\risYell" +
-      "owKnown\030\031 \001(\010\022\023\n\013isBallKnown\030\032 \001(\010\022\023\n\013is" +
-      "BlueKnown\030\033 \001(\010\022\037\n\014goalEstimate\030\034 \001(\0132\t." +
-      "RDPointF\022$\n\021estimateMinBounds\030\035 \001(\0132\t.RD" +
-      "PointF\022$\n\021estimateMaxBounds\030\036 \001(\0132\t.RDPo" +
-      "intF\022\024\n\014susRayCutoff\030\037 \001(\002\022\036\n\013susTriBegi" +
-      "n\030  \001(\0132\t.RDPointF\022\034\n\tsusTriEnd\030! \001(\0132\t." +
-      "RDPointF\022 \n\rdetectedRobot\030\" \001(\0132\t.RDPoin" +
-      "tF\"\341\001\n\014DebugCommand\022\021\n\tmessageId\030\001 \001(\005\022\030" +
-      "\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013orientation\030",
-      "\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014.RDThresho" +
-      "ld\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030\006 \001(\010\022\025\n\r" +
-      "colourChannel\030\007 \001(\005\022\r\n\005value\030\010 \001(\005\022\017\n\007ro" +
-      "botId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"^\n\nRDMsgF" +
-      "rame\022\032\n\005frame\030\001 \001(\0132\013.DebugFrame\022\036\n\007comm" +
-      "and\030\002 \001(\0132\r.DebugCommand\022\024\n\014whichMessage" +
-      "\030\003 \001(\005b\006proto3"
+      "ation\030\002 \001(\002\022\020\n\010fsmState\030\003 \001(\t\"g\n\nRDObsta" +
+      "cle\022\036\n\013susTriBegin\030\001 \001(\0132\t.RDPointF\022\034\n\ts" +
+      "usTriEnd\030\002 \001(\0132\t.RDPointF\022\033\n\010centroid\030\003 " +
+      "\001(\0132\t.RDPointF\"\232\006\n\nDebugFrame\022\024\n\014default",
+      "Image\030\001 \001(\014\022\027\n\017ballThreshImage\030\002 \001(\014\022\023\n\013" +
+      "temperature\030\003 \001(\002\022\031\n\010ballRect\030\004 \001(\0132\007.RD" +
+      "Rect\022\036\n\014ballCentroid\030\005 \001(\0132\010.RDPoint\022\013\n\003" +
+      "fps\030\006 \001(\005\022\022\n\nframeWidth\030\007 \001(\005\022\023\n\013frameHe" +
+      "ight\030\010 \001(\005\022\031\n\010cropRect\030\t \001(\0132\007.RDRect\022\014\n" +
+      "\004rays\030\n \003(\001\022\024\n\014dewarpedRays\030\013 \003(\001\022\024\n\014mir" +
+      "rorRadius\030\014 \001(\005\022\030\n\006robots\030\r \003(\0132\010.RDRobo" +
+      "t\022\023\n\013rayInterval\030\017 \001(\002\022\026\n\016localiserEvals" +
+      "\030\020 \001(\005\022\027\n\017localiserStatus\030\022 \001(\t\022\032\n\007ballP" +
+      "os\030\023 \001(\0132\t.RDPointF\022)\n\026localiserVisitedP",
+      "oints\030\024 \003(\0132\t.RDPointF\022\026\n\016raysSuspicious" +
+      "\030\025 \003(\010\022\025\n\rlocaliserRate\030\026 \001(\005\022 \n\ryellowG" +
+      "oalPos\030\027 \001(\0132\t.RDPointF\022\036\n\013blueGoalPos\030\030" +
+      " \001(\0132\t.RDPointF\022\025\n\risYellowKnown\030\031 \001(\010\022\023" +
+      "\n\013isBallKnown\030\032 \001(\010\022\023\n\013isBlueKnown\030\033 \001(\010" +
+      "\022\037\n\014goalEstimate\030\034 \001(\0132\t.RDPointF\022$\n\021est" +
+      "imateMinBounds\030\035 \001(\0132\t.RDPointF\022$\n\021estim" +
+      "ateMaxBounds\030\036 \001(\0132\t.RDPointF\022\024\n\014susRayC" +
+      "utoff\030\037 \001(\002\022&\n\021detectedObstacles\030  \003(\0132\013" +
+      ".RDObstacle\"\341\001\n\014DebugCommand\022\021\n\tmessageI",
+      "d\030\001 \001(\005\022\030\n\006coords\030\002 \001(\0132\010.RDPoint\022\023\n\013ori" +
+      "entation\030\003 \001(\002\022#\n\rallThresholds\030\004 \003(\0132\014." +
+      "RDThreshold\022\020\n\010objectId\030\005 \001(\005\022\016\n\006minMax\030" +
+      "\006 \001(\010\022\025\n\rcolourChannel\030\007 \001(\005\022\r\n\005value\030\010 " +
+      "\001(\005\022\017\n\007robotId\030\t \001(\005\022\021\n\tisEnabled\030\n \001(\010\"" +
+      "^\n\nRDMsgFrame\022\032\n\005frame\030\001 \001(\0132\013.DebugFram" +
+      "e\022\036\n\007command\030\002 \001(\0132\r.DebugCommand\022\024\n\014whi" +
+      "chMessage\030\003 \001(\005b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -12341,20 +13012,26 @@ public final class RemoteDebug {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RDRobot_descriptor,
         new java.lang.String[] { "Position", "Orientation", "FsmState", });
-    internal_static_DebugFrame_descriptor =
+    internal_static_RDObstacle_descriptor =
       getDescriptor().getMessageTypes().get(5);
+    internal_static_RDObstacle_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_RDObstacle_descriptor,
+        new java.lang.String[] { "SusTriBegin", "SusTriEnd", "Centroid", });
+    internal_static_DebugFrame_descriptor =
+      getDescriptor().getMessageTypes().get(6);
     internal_static_DebugFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugFrame_descriptor,
-        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "Robots", "RayInterval", "LocaliserEvals", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RaysSuspicious", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", "GoalEstimate", "EstimateMinBounds", "EstimateMaxBounds", "SusRayCutoff", "SusTriBegin", "SusTriEnd", "DetectedRobot", });
+        new java.lang.String[] { "DefaultImage", "BallThreshImage", "Temperature", "BallRect", "BallCentroid", "Fps", "FrameWidth", "FrameHeight", "CropRect", "Rays", "DewarpedRays", "MirrorRadius", "Robots", "RayInterval", "LocaliserEvals", "LocaliserStatus", "BallPos", "LocaliserVisitedPoints", "RaysSuspicious", "LocaliserRate", "YellowGoalPos", "BlueGoalPos", "IsYellowKnown", "IsBallKnown", "IsBlueKnown", "GoalEstimate", "EstimateMinBounds", "EstimateMaxBounds", "SusRayCutoff", "DetectedObstacles", });
     internal_static_DebugCommand_descriptor =
-      getDescriptor().getMessageTypes().get(6);
+      getDescriptor().getMessageTypes().get(7);
     internal_static_DebugCommand_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DebugCommand_descriptor,
         new java.lang.String[] { "MessageId", "Coords", "Orientation", "AllThresholds", "ObjectId", "MinMax", "ColourChannel", "Value", "RobotId", "IsEnabled", });
     internal_static_RDMsgFrame_descriptor =
-      getDescriptor().getMessageTypes().get(7);
+      getDescriptor().getMessageTypes().get(8);
     internal_static_RDMsgFrame_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_RDMsgFrame_descriptor,

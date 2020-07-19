@@ -32,6 +32,12 @@ message RDRobot {
     string fsmState = 3;
 }
 
+message RDObstacle {
+    RDPointF susTriBegin = 1;
+    RDPointF susTriEnd = 2;
+    RDPointF centroid = 3;
+}
+
 // Whenever a debug frame is encoded, this is sent to the remote client to be rendered over a TCP socket.
 // It may also include geometries that the remote client is instructed to draw such as rectangles or circles
 // (this is because it's much easier to get the remote JavaFX app to draw geometries than to do it manually on a JPEG buffer)
@@ -94,12 +100,8 @@ message DebugFrame {
     RDPointF estimateMaxBounds = 30;
     // cutoff for which rays are considered suspicious (LOCALISER_SUS_IQR_MUL * IQR)
     float susRayCutoff = 31;
-    // suspicious triangle begin (temp for debug, need to make this and below list in future)
-    RDPointF susTriBegin = 32;
-    // suspicious triangle end (temp for debug)
-    RDPointF susTriEnd = 33;
-    // TEMP FOR DEBUG FUCKING HACKS this is also just shit to check it works quickly as well
-    RDPointF detectedRobot = 34;
+    // detected obstacle
+    repeated RDObstacle detectedObstacles = 32;
 }
 
 // This can either be a command sent by Omicontrol to Omicam, or a response from Omicam to Omicontrol
@@ -140,6 +142,6 @@ message RDMsgFrame {
     DebugFrame frame = 1;
     DebugCommand command = 2;
 
-    // hack hack hack: so fuckin apparently "oneof" doesn't work at all hence this is required
+    // hack hack hack: so apparently "oneof" doesn't work at all hence this is required
     int32 whichMessage = 3;
 }

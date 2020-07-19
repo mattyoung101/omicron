@@ -61,7 +61,7 @@ class FieldView(private val isOffline: Boolean = false) : View() {
     private var mousePos = Point2D(0.0, 0.0)
     private var isDrawCrosshair = false
     private var isShowSuspiciousRays = true
-    private var isObsDetectDebug = true
+    private var isObsDetectDebug = false
 
     init {
         reloadStylesheetsOnFocus()
@@ -211,15 +211,6 @@ class FieldView(private val isOffline: Boolean = false) : View() {
                     val x1 = x0 + (toFieldLength(rayLength) * sin(angle))
                     val y1 = y0 + (toFieldLength(rayLength) * cos(angle))
 
-                    // FIXME hack
-                    if (i == 17){
-                        display.stroke = Color.MAGENTA
-                        val a = x0 + (toFieldLength(128.0) * sin(angle))
-                        val b = y0 + (toFieldLength(128.0) * cos(angle))
-                        display.strokeLine(x0, y0, a, b)
-                    }
-
-                    // TODO add toggle on whether or not to display suspicious rays
                     display.stroke = if (susRays[i] && isShowSuspiciousRays) Color.RED else Color.WHITE
                     display.strokeLine(x0, y0, x1, y1)
                     angle += message.rayInterval
@@ -253,27 +244,22 @@ class FieldView(private val isOffline: Boolean = false) : View() {
 
             // render robot detection debug
             if (isObsDetectDebug){
-                display.stroke = Color.MAGENTA
-//                val robotPos = Point2D(robots[connectedRobotId].position.x, robots[connectedRobotId].position.y)
-//                val ifCUkibngHateYou = robotPos.toCanvasPosition()
-//
-//                val fuckYou = robotPos.x + 128 * sin(1.668) // FICKING ANGLE of the fuckign ray ind egrees
-//                val eatShit = robotPos.y + 128 * cos(1.668)
-//                val eatShitAndDie = Point2D(fuckYou, eatShit).toCanvasPosition()
-//                display.strokeLine(ifCUkibngHateYou.x, ifCUkibngHateYou.y, eatShitAndDie.x, eatShitAndDie.y)
+                for (obstacle in message.detectedObstaclesList.take(message.detectedObstaclesCount)){
+                    val robotPos = Point2D(robots[connectedRobotId].position.x, robots[connectedRobotId].position.y).toCanvasPosition()
+                    val susTriBegin = Point2D(obstacle.susTriBegin.x.toDouble(), obstacle.susTriBegin.y.toDouble()).toCanvasPosition()
+                    val susTriEnd = Point2D(obstacle.susTriEnd.x.toDouble(), obstacle.susTriEnd.y.toDouble()).toCanvasPosition()
 
-                val robotPos = Point2D(robots[connectedRobotId].position.x, robots[connectedRobotId].position.y).toCanvasPosition()
-                val susTriBegin = Point2D(message.susTriBegin.x.toDouble(), message.susTriBegin.y.toDouble()).toCanvasPosition()
-                val susTriEnd = Point2D(message.susTriEnd.x.toDouble(), message.susTriEnd.y.toDouble()).toCanvasPosition()
+                    display.stroke = Color.MAGENTA
+                    display.lineWidth = 4.0
+                    display.strokeLine(robotPos.x, robotPos.y, susTriBegin.x, susTriBegin.y)
+                    display.strokeLine(robotPos.x, robotPos.y, susTriEnd.x, susTriEnd.y)
+                    display.strokeLine(susTriBegin.x, susTriBegin.y, susTriEnd.x, susTriEnd.y)
 
-                display.strokeLine(robotPos.x, robotPos.y, susTriBegin.x, susTriBegin.y)
-                display.strokeLine(robotPos.x, robotPos.y, susTriEnd.x, susTriEnd.y)
-                display.strokeLine(susTriBegin.x, susTriBegin.y, susTriEnd.x, susTriEnd.y)
-
-                display.stroke = Color.RED
-                display.lineWidth = 3.0
-                val robotField = Point2D(message.detectedRobot.x.toDouble(), message.detectedRobot.y.toDouble()).toCanvasPosition()
-                display.strokeOval(robotField.x, robotField.y, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
+                    val robotField = Point2D(obstacle.centroid.x.toDouble(), obstacle.centroid.y.toDouble()).toCanvasPosition()
+                    val radius = ROBOT_CANVAS_DIAMETER / 2.0
+                    display.stroke = Color.BLACK
+                    display.strokeOval(robotField.x - radius, robotField.y - radius, radius * 2, radius * 2)
+                }
             }
 
             // update labels

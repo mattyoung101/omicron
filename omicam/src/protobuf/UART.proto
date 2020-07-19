@@ -28,6 +28,8 @@ message ObjectData {
 message LocalisationData {
     float estimatedX = 1;
     float estimatedY = 2;
+
+    // TODO transmit detected robots
 }
 
 // Message that the ESP32 sends to LattePanda containing mouse sensor data

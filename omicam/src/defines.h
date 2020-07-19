@@ -20,9 +20,9 @@
  * 3.4b: Omicam enters beta, localiser work continued
  * 4.4b: UART comms implemented, hybrid localiser implemented, fixed lots of bugs
  * 4.5b: implemented hybrid localiser smoothing and recording vision to disk
- * 5.6b: (WIP) refactor replay system, added rotation correction, added obstacle detection
+ * 5.5b: (WIP) refactor replay system, added rotation correction, added obstacle detection
  */
-#define OMICAM_VERSION "5.6b"
+#define OMICAM_VERSION "5.5b"
 /** whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO) */
 #define VERBOSE_LOGGING 1
 /** if true, attempts to kill all other Omicam instances on launch (stops duplicate processes) */
@@ -40,9 +40,9 @@
  */
 #define VISION_RECORDING_FRAMERATE 30
 /** Path to still image or video to load when using BUILD_TARGET_PC instead of real camera output. */
-#define VISION_TEST_FILE "../recordings/omicam_recording_1586137538.mp4"
+#define VISION_TEST_FILE "../recordings/frame9.jpg"
 /** If true in BUILD_TARGET_PC, load the contents of VISION_TEST_FILE. Otherwise, load a still image. */
-#define VISION_LOAD_TEST_VIDEO 1
+#define VISION_LOAD_TEST_VIDEO 0
 
 /** send a debug frame every N real frames */
 #define REMOTE_FRAME_INTERVAL 1

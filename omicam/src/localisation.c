@@ -44,6 +44,7 @@ typedef struct {
 
 DA_TYPEDEF(ray_cluster_t, ray_cluster_list_t)
 DA_TYPEDEF(uint16_t, u16_list_t)
+DA_TYPEDEF(struct vec2, vec2_list_t)
 
 /** points visited by the Subplex optimiser */
 lp_list_t localiserVisitedPoints = {0};
@@ -97,10 +98,8 @@ static bool goalWasUnavailable = false;
 
 /** this is equivalent to OBSDETECT_SUS_IQR_MUL * IQR */
 static float susRayCutoff = 0.0f;
-// NOTE: THESE ARE ALL SHIT JUST FOR DEBUG
-static struct vec2 susTriBegin = {0};
-static struct vec2 susTriEnd = {0};
-static struct vec2 detectedRobot = {0};
+static RDObstacle detectedObstacles[4] = {0};
+static int32_t detectedObstaclesCount = 0;
 
 /**
  * Returns the index for the given entry in the ray cache array.
@@ -498,7 +497,6 @@ static void *work_thread(void *arg){
         mean /= (double) LOCALISER_NUM_RAYS;
 
         // flag suspicious rays (outliers with high error that have a smaller length than the mean)
-        // TODO we could get rid of this dumb linked list and just use rdSusRays?
         for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
             suspiciousRays[i] = rayScores[i] >= susRayCutoff && observedRays[i] <= mean && rayScores[i] > 0;
 //            if (suspiciousRays[i]){
@@ -513,7 +511,6 @@ static void *work_thread(void *arg){
         for (int i = 0; i < LOCALISER_NUM_RAYS; i++){
             if (suspiciousRays[i] && !isClustering){
                 // if we have a suspicious ray, and are not currently clustering, start a new cluster
-                // printf("starting new cluster at ray %d\n", i);
                 memset(&currentCluster, 0, sizeof(ray_cluster_t));
                 currentCluster.begin = i;
                 isClustering = true;
@@ -524,7 +521,6 @@ static void *work_thread(void *arg){
 
                 if (!suspiciousRays[nextIndex] && isClustering){
                     // likely no more rays, terminate cluster and add to list
-                    // printf("end of current cluster on ray %d\n", i);
                     currentCluster.end = i;
                     isClustering = false;
                     da_add(rayClusters, currentCluster);
@@ -550,20 +546,25 @@ static void *work_thread(void *arg){
             da_delete(rayClusters, index);
             removedCount++;
         }
-        // TODO join up clusters at the end to the beginning
+
+        // TODO join up clusters at the end of the robot (at like n = 64) to the beginning
 
         // for each scalene triangle defined by begin and end ray angles and the distance to the closest field line,
         // calculate whether or not a robot could possibly fit in it
         // thanks again to angus scroggie for coming up with the idea and maths for this and the next step
         struct vec2 minCoord = {0, 0};
         struct vec2 maxCoord = {field.length, field.width};
+        vec2_list_t detectedRobots = {0};
+        memset(detectedObstacles, 0, 4 * sizeof(RDObstacle));
+        detectedObstaclesCount = 0;
+
         for (size_t i = 0; i < da_count(rayClusters); i++){
             ray_cluster_t cluster = da_get(rayClusters, i);
 
             // cast from the midpoint of the rays to the field line to form the end of the triangle
             // we also have to convert back from centre coordinates to top left cooridnates
             uint16_t midpoint = (cluster.begin + cluster.end) / 2;
-            double midpointAngle = midpoint * (PI2 / LOCALISER_NUM_RAYS);
+            double midpointAngle = midpoint * interval;
             // robot position in field file coords
             double rx = X_TO_FF(localisedPosition.x + field.length / 2.0);
             double ry = Y_TO_FF(localisedPosition.y + field.width / 2.0);
@@ -574,19 +575,13 @@ static void *work_thread(void *arg){
             // now find the area of the triangle, to find the length of the base we find the two coords that define the
             // base line and euclidean distance between them, so we raycast out from the robot to the midpoint length
             // IMPORTANT NOTE: we intentionally use trig the wrong way around here, see raycast() for details
-            double firstX = localisedPosition.x + midpointLength * sin(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
-            double firstY = localisedPosition.y + midpointLength * cos(cluster.begin * (PI2 / LOCALISER_NUM_RAYS));
-            double lastX = localisedPosition.x + midpointLength * sin(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
-            double lastY = localisedPosition.y + midpointLength * cos(cluster.end * (PI2 / LOCALISER_NUM_RAYS));
+            double firstX = localisedPosition.x + midpointLength * sin(cluster.begin * interval);
+            double firstY = localisedPosition.y + midpointLength * cos(cluster.begin * interval);
+            double lastX = localisedPosition.x + midpointLength * sin(cluster.end * interval);
+            double lastY = localisedPosition.y + midpointLength * cos(cluster.end * interval);
             double base = sqrt(pow(firstX - lastX, 2) + pow(firstY - lastY, 2));
             double triArea = base * midpointLength / 2.0;
             // printf("triangle area: %.2f\n", triArea);
-
-            // DEBUG, REMOVE LATER
-            susTriBegin.x = firstX ;//- hx + localisedPosition.x;
-            susTriBegin.y = firstY ;//- hy + localisedPosition.y;
-            susTriEnd.x = lastX ;//- hx + localisedPosition.y;
-            susTriEnd.y = lastY ;//- hy + localisedPosition.y;
 
             double sideA = sqrt(pow(rx - firstX, 2) + pow(ry - firstY, 2));
             double sideB = sqrt(pow(rx - lastX, 2) + pow(ry - lastY, 2));
@@ -601,9 +596,8 @@ static void *work_thread(void *arg){
                 // (at least I think not), so we assume that the detected robot is as close as possible to our
                 // robot without going outside the cluster bounds.
                 // this is implemented as defined by angus' desmos link: https://www.desmos.com/calculator/0oaombib4e
-                // FIXME try doing b on a since we are the other way around???
-                double a = tan(cluster.begin * (PI2 / LOCALISER_NUM_RAYS) - PI / 2);
-                double b = tan(cluster.end * (PI2 / LOCALISER_NUM_RAYS) + PI / 2);
+                double a = tan(cluster.begin * interval - PI / 2);
+                double b = tan(cluster.end * interval - PI / 2);
                 if (a <= 0){
                     // we have to swap, so the hack doesn't break
                     double oldA = a;
@@ -619,13 +613,26 @@ static void *work_thread(void *arg){
                 double C = (c) / (t + invA);
                 double D = t * C;
                 double finalX = localisedPosition.x + C;
-                double finalY = localisedPosition.y + D;
+                // due to yet more inane fucking coordinate system bullshit (likely the dumbass thing being fucking Y-down
+                // for some reason), we have to fucking SUBTRACT this idiot to make it line up properly]
+                // someone beat the shit out of me to fix all these coordinate systems, seriously, why did I make it Y-down?????
+                double finalY = localisedPosition.y - D;
 
-                detectedRobot.x = finalX;
-                detectedRobot.y = finalY;
+                // record debug information (very messy code... yikes!)
+                detectedObstacles[detectedObstaclesCount].susTriBegin.x = (float) firstX;
+                detectedObstacles[detectedObstaclesCount].susTriBegin.y = (float) firstY;
+                detectedObstacles[detectedObstaclesCount].susTriEnd.x = (float) lastX;
+                detectedObstacles[detectedObstaclesCount].susTriEnd.y = (float) lastY;
+                detectedObstacles[detectedObstaclesCount].centroid.x = (float) finalX;
+                detectedObstacles[detectedObstaclesCount].centroid.y = (float) finalY;
+                detectedObstaclesCount++;
+
+                struct vec2 detectedRobot = {finalX, finalY};
+                da_add(detectedRobots, detectedRobot);
                 // printf("final robot coords: %.2f,%.2f\n", finalX, finalY);
             }
         }
+        // TODO do something with detected robots here (we need to add them to the UART message)
 
         // serialisation stage
         // dispatch data to the ESP32, using JimBus (Protobufs over UART)
@@ -697,6 +704,7 @@ static void *work_thread(void *arg){
 
         da_free(rayClusters);
         da_free(removeIndexes);
+        da_free(detectedRobots);
         free(entry->frame);
         free(entry);
         localiserDone = true;
@@ -719,10 +727,8 @@ void remote_debug_localiser_provide(DebugFrame *msg){
     msg->robots[0].position.y = (float) localisedPosition.y;
     msg->robots_count = 1;
 
-    msg->susTriBegin.x = susTriBegin.x;
-    msg->susTriBegin.y = susTriBegin.y;
-    msg->susTriEnd.x = susTriEnd.x;
-    msg->susTriEnd.y = susTriEnd.y;
+    memcpy(msg->detectedObstacles, detectedObstacles, detectedObstaclesCount * sizeof(RDObstacle));
+    msg->detectedObstacles_count = detectedObstaclesCount;
 
     msg->localiserRate = localiserRate;
     msg->localiserEvals = localiserEvals;

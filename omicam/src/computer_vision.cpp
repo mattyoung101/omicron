@@ -167,9 +167,6 @@ static auto cv_thread(void *arg) -> void *{
     log_debug("Video capture initialised, API: %s, framerate: %d", cap.getBackendName().c_str(), fps);
 #endif
 
-    if (replay_get_status() == REPLAY_NONE && visionRecordingEnabled){
-        log_error("WE FUCKED UP: vision recording is enabled but no replay has been started. Things are likely to go wrong now.");
-    }
     // create OpenCV VideoWriter and generate disk filename, runs even if it's disabled for simplicity's sake
     char filebuf[256] = {};
     time_t recordingId = replay_get_id();
