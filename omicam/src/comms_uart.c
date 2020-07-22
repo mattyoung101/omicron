@@ -14,6 +14,7 @@
 static int serialfd;
 static bool uartInitOk = false;
 static pthread_t receiveThread;
+static pthread_mutex_t uartMutex = PTHREAD_MUTEX_INITIALIZER;
 #endif
 SensorData lastSensorData = {0};
 double lastUARTReceiveTime = 0;
@@ -52,8 +53,6 @@ static void *receive_thread(void *arg){
             // log_warn("Data integrity check failed, expected 0x%.2X, got 0x%.2X", actualChecksum, receivedChecksum);
             tcflush(serialfd, TCIFLUSH);
             continue;
-        } else {
-//             log_trace("Data integrity check passed!");
         }
 
         pb_istream_t stream = pb_istream_from_buffer(data, msgSize);
@@ -62,7 +61,6 @@ static void *receive_thread(void *arg){
         if (!pb_decode(&stream, SensorData_fields, &lastSensorData)){
             log_error("Failed to decode ESP32 Protobuf message: %s", PB_GET_ERROR(&stream));
         } else {
-//            log_trace("Decoded UART message successfully!!")
             lastUARTReceiveTime = utils_time_millis();
         }
 
@@ -86,6 +84,9 @@ void comms_uart_init(){
         goto die;
     }
 
+    // TODO not sure if required?
+    pthread_mutex_init(&uartMutex, NULL);
+
     // get current config
     struct termios toptions;
     tcgetattr(serialfd, &toptions);
@@ -95,8 +96,8 @@ void comms_uart_init(){
 
     // &= followed by ~ means toggle off, |= means toggle on
     // 8 bits, no parity bit, 1 stop bit
+    // TODO document more what these do
     toptions.c_cflag &= ~PARENB;
-    // TODO CSTOPB will either need to be set here with |=, commented out or unset like it is now, depending on what works
     toptions.c_cflag &= ~CSTOPB;
     toptions.c_cflag &= ~CSIZE;
     toptions.c_cflag |= CS8;
@@ -169,10 +170,12 @@ void comms_uart_send(comms_msg_type_t msgId, uint8_t *data, size_t size){
     outBuf[arraySize - 1] = checksum; // CRC8 checksum
     // nb: end byte is no longer used so not set
 
+    pthread_mutex_lock(&uartMutex);
     ssize_t bytesWritten = write(serialfd, outBuf, arraySize);
     if (bytesWritten == -1){
          log_error("Failed to write to UART bus: %s", strerror(errno));
     }
+    pthread_mutex_unlock(&uartMutex);
 
     // uncomment for debug
 //    printf("Protobuf message (id %d, size %zu, checksum: 0x%.2X, bytes written: %zd), data:\n", msgId, size, checksum, bytesWritten);
