@@ -6,15 +6,18 @@ import com.omicron.omicontrol.field.FieldObject
 import com.omicron.omicontrol.field.Robot
 import javafx.geometry.Point2D
 import javafx.geometry.Pos
+import javafx.scene.SnapshotParameters
 import javafx.scene.canvas.GraphicsContext
 import javafx.scene.control.Alert
 import javafx.scene.control.Label
 import javafx.scene.image.Image
+import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyCodeCombination
 import javafx.scene.input.KeyCombination
 import javafx.scene.layout.Priority
 import javafx.scene.paint.Color
+import javafx.scene.transform.Rotate
 import org.apache.commons.io.FileUtils
 import org.greenrobot.eventbus.Subscribe
 import org.tinylog.kotlin.Logger
@@ -23,6 +26,7 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.system.exitProcess
+
 
 /**
  * This screen displays the localised positions of the robots on a virtual field and allows you to control them
@@ -35,9 +39,9 @@ class FieldView(private val isOffline: Boolean = false) : View() {
     private lateinit var ballLabel: Label
     private val fieldImage = Image("field_cropped_scaled.png")
     private val targetIcon = Image("target.png")
-    private val robotDefaultSprite = Image("robot.png")
-    private val robotUnknownSprite = Image("robot_unknown2.png")
-    private val robotSelectedSprite = Image("robot_selected.png")
+    private val robotDefaultSprite = ImageView(Image("robot.png", ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER, false, true))
+    private val robotUnknownSprite = ImageView(Image("robot_unknown2.png", ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER, false, true))
+    private val robotSelectedSprite = ImageView(Image("robot_selected.png", ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER, false, true))
     private lateinit var localiserPerfLabel: Label
     private val robots = listOf(
         Robot(0),
@@ -126,9 +130,15 @@ class FieldView(private val isOffline: Boolean = false) : View() {
                 val half = ROBOT_CANVAS_DIAMETER / 2.0
                 val pos = robot.position.toCanvasPosition()
                 val sprite = if (selectedRobot == robot) robotSelectedSprite else if (robot.isPositionKnown) robotDefaultSprite else robotUnknownSprite
+                sprite.rotate = robot.orientation.toDouble()
+
+                // this is dumb, source: https://stackoverflow.com/a/33618088/5007892
+                val params = SnapshotParameters()
+                params.fill = Color.TRANSPARENT
+                val rotatedImage = sprite.snapshot(params, null)
 
                 display.globalAlpha = if (isReduceTransparency) 0.3 else 1.0
-                display.drawImage(sprite, pos.x - half, pos.y - half, ROBOT_CANVAS_DIAMETER, ROBOT_CANVAS_DIAMETER)
+                display.drawImage(rotatedImage, pos.x - half, pos.y - half)
                 display.globalAlpha = 1.0
 
                 display.fill = Color.MAGENTA

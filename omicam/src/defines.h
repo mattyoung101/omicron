@@ -6,7 +6,7 @@
 /** Omicam will be running locally on a PC for debugging. Uses test imagery and some features are disabled. */
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
-#define BUILD_TARGET (BUILD_TARGET_PC)
+#define BUILD_TARGET (BUILD_TARGET_SBC)
 
 /**
  * Version history:
@@ -45,11 +45,11 @@
 #define VISION_LOAD_TEST_VIDEO 0
 
 /** send a debug frame every N real frames */
-#define REMOTE_FRAME_INTERVAL 1
+#define REMOTE_FRAME_INTERVAL 2
 /** quality of remote debugger JPEG, 0 being the worst and 100 being the best */
-#define REMOTE_JPEG_QUALITY 75
+#define REMOTE_JPEG_QUALITY 60
 /** zlib compression level for threshold masks, 0 being cheapest and 10 being most expensive */
-#define REMOTE_COMPRESS_LEVEL 6
+#define REMOTE_COMPRESS_LEVEL 7
 /** which port the remote debug TCP server runs on */
 #define REMOTE_PORT 42708
 /** whether or not remote debug is enabled */
@@ -88,7 +88,7 @@
 /** Whether or not to use a moving average to smooth the localiser output. Recommended due to noise. */
 #define LOCALISER_ENABLE_SMOOTHING 1
 /** The size of the moving average history for smoothing, larger values mean smoother but less precision. */
-#define LOCALISER_SMOOTHING_SIZE 16
+#define LOCALISER_SMOOTHING_SIZE 64
 /** If true, smooths using the moving median instead of the moving average */
 #define LOCALISER_SMOOTHING_MEDIAN 0
 /** If true, the localiser uses the mouse sensor for initial estimate calculation. If false, it only uses the goals. */
