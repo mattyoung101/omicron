@@ -11,13 +11,14 @@ Deus Vult). Our team members are:
 | James Talkington   | Mechanical design                                               | J-TEC         | TBA     |
 | Matt Young         | Vision systems developer, docs                                  | Omicron       | TBA     |
 
-**(TODO: will need to be fixed for stupid robocup rules)**
-
 Our members are experienced, having competed in 2-3 previous internationals competitions. Our team collectively
 also has many victories and podium placements in Australian Nationals, States and Regionals competitions.
 
 We have been preparing for this competition for about **(TODO: how many?)** months and we estimate to have a combined
 **(TODO: put hours here)** hours developing and improving our current iteration of robots.
+
+## COVID-19
+**TODO cover COVID problems**
 
 ## Our current robots
 This year, our team brings many new and exciting innovations to the table, as well as building on reliable technologies

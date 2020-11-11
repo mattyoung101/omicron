@@ -200,6 +200,8 @@ This dewarping equation is also used by the vision pipeline to determine the dis
 ![Dewarped](images/dewarped.png)    
 _Figure 3: example of applying the dewarp function to an entire image, on the low resolution OpenMV H7._
 
+**TODO update to new images on the above**
+
 The second phase of the camera normalisation is to rotate the rays relative to the robot's heading, using a rotation matrix.
 The robot's heading value, which is relative to when it was powered on, is transmitted by the ESP32 (again using Protocol Buffers).
 For information about how this value is calculated using the IMU, see the ESP32 and movement code page.

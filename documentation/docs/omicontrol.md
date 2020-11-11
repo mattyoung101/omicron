@@ -135,4 +135,5 @@ for a response asynchronously, notifying the calling thread once one is received
 ## Design considerations
 The Omicontrol UI was designed to look professional, be simple to use, friendly to use as a tablet and work cross-platform.
 
-**Cover how we achieved these design goals. It's just like digisol (yay.....)**
+Since Omicontrol is written in Kotlin using JavaFX (via TornadoFX), the app runs on Windows, Mac and Linux with minimal
+porting required (mainly for changing display types).

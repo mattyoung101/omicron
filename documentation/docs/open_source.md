@@ -18,8 +18,8 @@ Team Omicron's would like to acknowledge the use of the following open source li
 - [TornadoFX](https://github.com/edvin/tornadofx): Apache 2 licence
 - [Apache Commons Math, Lang, IO](https://commons.apache.org/): Apache 2 licence
 - [GreenRobot EventBus](https://github.com/greenrobot/EventBus): Apache 2 licence
-- [Guava](https://github.com/google/guava): Apache 2 licence
 - [exp4j](https://www.objecthunter.net/exp4j/): Apache 2 licence
+- [colormath](https://github.com/ajalt/colormath): Apache 2 licence
 
 ## ESP32 firmware
 - [ESP-IDF](https://github.com/espressif/esp-idf/): Apache 2 licence
@@ -30,4 +30,4 @@ Team Omicron's would like to acknowledge the use of the following open source li
 - [esp32-button](https://github.com/craftmetrics/esp32-button): MIT licence
 
 ## ATMega/Teensy firmware
-licenceS HERE
+**LICENCES HERE**

@@ -1,3 +1,14 @@
+/*
+ * This file is part of the Teensy 4 firmware project.
+ * Copyright (c) 2019-2020 Team Omicron. All rights reserved.
+ *
+ * Team Omicron members: Lachlan Ellis, Tynan Jones, Ethan Lo,
+ * James Talkington, Matt Young.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 #include "LightSensorController.h"
 #include "Pinlist.h"
 
@@ -159,7 +170,6 @@ void LightSensorController::read(){
 	// if(isOnLine[26] == true && isOnLine[29] == true) {
 	// 	isOnLine[27] = true;
 	// 	isOnLine[28] = true;
-	// 	// Serial.println("hello im a fucking retard");
 	// } else {
 	// 	isOnLine[27] = false;
 	// 	isOnLine[28] = false;
@@ -180,13 +190,13 @@ void LightSensorController::calculateClusters() {
         starts[i] = -1;
         ends[i] = -1;
     }
-	int counterShit = 0;
+	int counterS = 0;
 	for(int b = 0; b < LS_RING_NUM; b++) {
 		if(isOnLine[b]) {
-			counterShit += 1;
+			counterS += 1;
 		}
 	}
-	if(counterShit == 32) {
+	if(counterS == 32) {
         // All the light sensors are returning high
 		for(int b = 0; b < LS_RING_NUM; b++) {
 			isOnLine[b] = false;

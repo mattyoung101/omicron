@@ -20,9 +20,9 @@ Omicron (previously Deus Vult). Our team members are:
 | Tynan Jones        | Electrical design                                               | J-TEC         | TBA     | 
 | Ethan Lo           | Mechanical & electrical design, movement code, docs             | Omicron       | ethanlo2010@gmail.com |
 | James Talkington   | Mechanical design                                               | J-TEC         | TBA     |
-| Matt Young         | Vision systems developer, docs                                  | Omicron       | TBA     |
+| Matt Young         | Vision systems developer, docs                                  | Omicron       | matt.young.1@outlook.com |
 
-**Important: Team roles are a lot more nuanced than written here.** Please see individual projects in the repo for
+Important: Team roles are a lot more nuanced than written here. Please see individual projects in the repo for
 a more thorough description of the project itself, as well as who developed it and how to contact them. Thanks!
 
 ## List of projects
@@ -42,9 +42,9 @@ Our team members work on seven main projects:
 These code and design files are currently property of Team Omicron.
 No redistribution or use outside of our team is permitted. 
 
-## Other Links
+**TODO update to MPL 2.0**
+
+## Other links
 For more information on our robot, please checkout our [website](https://teamomicron.github.io/). Game footage, testing 
 videos and other miscellaneous things will be posted on [Youtube](https://www.youtube.com/channel/UCAu5r4Zpu0z3kGZSfxlnySw?) 
 and probably Twitter (no link yet). 
-
-_In the near future, we will change this license to the MPL 2.0._

@@ -1,3 +1,15 @@
+/*
+ * This file is part of the Omicontrol project.
+ * Copyright (c) 2019-2020 Team Omicron. All rights reserved.
+ *
+ * Team Omicron members: Lachlan Ellis, Tynan Jones, Ethan Lo,
+ * James Talkington, Matt Young.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 package com.omicron.omicontrol.views
 
 import RemoteDebug
@@ -73,7 +85,7 @@ class CalibrationView : View() {
         display.stroke = Color.RED
         display.fillRect(0.0, 0.0, CANVAS_WIDTH, CANVAS_HEIGHT)
         if (latestImage != null && cropRect != null) {
-            // since Kotlin's automatic null cast checking is useless as fuck, we have to null assert these all manually
+            // since Kotlin's automatic null cast checking is useless, we have to null assert these all manually
             display.drawImage(latestImage, cropRect!!.x.toDouble(), cropRect!!.y.toDouble(), latestImage!!.width, latestImage!!.height)
         }
 

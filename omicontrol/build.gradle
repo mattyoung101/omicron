@@ -4,11 +4,7 @@ plugins {
     id 'org.openjfx.javafxplugin' version '0.0.8'
 }
 
-// VERY IMPORTANT since this dogshit (slightly, ily jetbrains) IDE did this a-fucking-GAIN today:
-// used to be a long rant here but the gist is, these lines are very important because every few months at random
-// either the dumbasses at IntelliJ or the dumbasses at Gradle will nuke all your library sources Gradle's downloaded
-// forcing you to redownload them, and if this is not here, that won't happen. can't find fucking anything about it
-// online, but if anyone's reading this: tell me what i'm doing wrong, OR FIX IT
+// fix to stop gradle from nuking my source code due to an obscure bug. note: removed long rant...
 apply plugin: 'idea'
 idea {
     module {
@@ -33,7 +29,7 @@ dependencies {
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
     compile group: 'net.objecthunter', name: 'exp4j', version: '0.4.8'
-    compile 'com.google.guava:guava:28.1-jre'
+    //compile 'com.google.guava:guava:28.1-jre'
     implementation 'no.tornado:tornadofx:1.7.17'
     implementation 'org.tinylog:tinylog-api-kotlin:2.0.0'
     implementation 'org.tinylog:tinylog-impl:2.0.0'

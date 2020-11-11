@@ -46,8 +46,7 @@ to install OpenJFX for your specific platform.
 IntelliJ IDEA is the only officially supported IDE for developing and running Omicontrol in. 
 
 Firstly, import the "omicontrol" directory as a Gradle project. Then, add the new OpenJDK 11 installation as a Project SDK in the 
-Project Structure dialogue and make it the selected one. After this, the Gradle build should work automatically (enable auto-import
-if it asks you somewhere in this process).
+Project Structure dialogue and make it the selected one. After this, the Gradle build should work automatically.
 
 With the project imported and built, go to Main.kt and click on the play icon next to the `main()` method. On your first run
 it will look weird and complain about missing resources, to fix this, edit the run configuration to have its working directory
@@ -57,7 +56,7 @@ in the src/main/resources directory.
 or the output of `echo %userprofile%`. In IntelliJ, you can also add this to the environment variables section in the run
 configuration. In the future there'll be a workaround for this but it's not been added yet.
 
-To run a release build on Windows, use the following command:
+To run a release build, use the following command:
 
 `java -XX:+UseStringDeduplication --illegal-access=deny -Dglass.win.uiScale=100% -jar omicontrol-<VERSION>.jar`
 
@@ -87,10 +86,13 @@ workaround is not required, and actually makes things worse (blurry).
 - This workaround may be added to Windows if it looks better than completely disabling DPI scaling.
 - Mac OS X is partially supported because only one team member uses a Mac, but should still mostly work.
 
+## Licence
+Omicontrol is licenced under the Mozilla Public License 2.0, the same as the rest of Team Omicron's code.
+
 ## Open source libraries used
 - [Protocol Buffers](https://github.com/protocolbuffers/protobuf): BSD 3-clause licence
 - [TornadoFX](https://github.com/edvin/tornadofx): Apache 2 licence
 - [Apache Commons Math, Lang, IO](https://commons.apache.org/): Apache 2 licence
 - [GreenRobot EventBus](https://github.com/greenrobot/EventBus): Apache 2 licence
-- [Guava](https://github.com/google/guava): Apache 2 licence
 - [exp4j](https://www.objecthunter.net/exp4j/): Apache 2 licence
+- [colormath](https://github.com/ajalt/colormath): Apache 2 licence

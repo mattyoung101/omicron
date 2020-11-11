@@ -9,7 +9,8 @@ mouse sensor data.
 - Ethan Lo: communication and motor code, project maintenance
 
 ## Features list
-- PMW3360 lol
+- PMW3360 mouse sensor
+- Data transmission over I2C
 
 ## Building and running
 Install the PlatformIO extension in VSCode, then import this folder. Alternatively install the platformio CLI (command 

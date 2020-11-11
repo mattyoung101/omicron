@@ -44,8 +44,7 @@ any package manager or distro.
 - CMake: To work around various issues (see below), a newer version of CMake than the one provided by the Ubuntu repos is provided.
   The easiest way to install the latest CMake, in my opinion, is to [add the PPA](https://apt.kitware.com/) and then just 
   `sudo apt install cmake`.
-- Ninja: `sudo apt install ninja-build`
-- Clang & LLVM: `sudo apt install clang lldb llvm libasan5 libasan5-dbg`
+- Clang & LLVM: `sudo apt install clang lldb llvm libasan5 libasan5-dbg` **TODO consider removing, use gcc instead**
 - NLopt: `sudo apt install libnlopt-dev libnlopt0`
 - libjpeg-turbo: `sudo apt install libturbojpeg libturbojpeg0-dev`
 - gstreamer: [see here](https://gstreamer.freedesktop.org/documentation/installing/on-linux.html) and also 
@@ -62,7 +61,7 @@ any package manager or distro.
 ### LattePanda specific instructions
 Because the UART port is owned by the ATMega32U4, you need to download and install Arduino to upload the `PandaUARTHack`
 sketch which forwards UART I/O. Follow the Linux Arduino install instructions [here](https://www.arduino.cc/en/guide/linux)
-and make sure you definitely run the Linux setup shell script or it will not be possible to upload to the device.
+and **make sure you definitely run the Linux setup shell script** or it will not be possible to upload to the device.
 
 ### Network setup
 We have tested Ethernet and WiFi to connect to the SBC. Due to the latency requirements of Omicam and Omicontrol, we 
@@ -108,36 +107,44 @@ Once you have an NTP server running on your host machine, run `sudo sntp -S 10.0
 the time. It may also be possible to use ntpd to do this automatically but it hasn't been researched yet.
 
 ### CLion setup
-At Team Omicron, we use the CLion IDE to work with the project. It's free for students if you have an *.edu email.
-Otherwise, it should be compatible with other Linux IDEs like QTCreator or Code::Blocks.
+At Team Omicron, we use the CLion IDE to work with the project, in part due to its remote project support. However,
+it should work with any other IDE that supports CMake projects.
 
 Import the project into CLion on your host computer and follow the 
 [instructions provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to configure a 
 remote toolchain, deployment and run configuration. The IP should be the IP of your SBC, check your router or use nmap
 if you're unsure what this is. You'll probably also want to enable auto upload to remote.
 
-Under Build, Execution & Deployment in CMake, for your Debug and Release configurations add "-G Ninja" to
-the CMake options section, to use Ninja as your build runner. If Ninja breaks, simply remove this and delete the caches
-to go back to using Unix Makefiles.
+If you want, you can use the Ninja build tool, just install it on the SBC and add `-G Ninja`, though we didn't find any
+performance benefits doing this.
 
 Also in Build, Exectuion & Deployment, select the remote toolchain and make the C compiler `/usr/bin/clang` and the C++
-compiler `/usr/bin/clang++` if you would like to use Clang (this is probably a good idea, it's what we do).
+compiler `/usr/bin/clang++` if you would like to use Clang.
 
-To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion will (mostly) handle syncing to the remote
+To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion will handle syncing to the remote
 by itself.
+
+### Build modes
+TODO compare release and debug.
+
+### Running in production
+Once development is finished, you should install Python 3 and add `run.py` to your system's auto-start scripts.
+On Xfce, this can be done in the GUI. This will ensure that in a competition, Omicam is automatically started on
+boot without you having to use ssh or CLion.
 
 ### Known issues and workarounds
 Important ones are in bold. Most of these are covered above.
 
-- **WiFi is incredibly bad on the LattePanda.** For this reason, if you are using this SBC, we thoroughly recommend Ethernet.
-- **Builds will become difficult on the SBC due to clock drift.** [This link](https://stackoverflow.com/a/3824532/5007892)
-  has an explanation of what is going on. If you are experiencing weird behaviour, please reimport the CMake project and 
-  recompile everything from scratch and it may fix it. We are working on a solution to this problem.
-- If Arduino can't upload, **don't panic!** It's just being dumb. You need to run the setup script which disables the modem
-  monitor thingy which runs by default and interferes with UART. Then try about 5 times and it should work eventually.
-- Last we checked, Clang may be the only supported compiler as it appears that gcc's implementation of Google's Sanitizers 
-  doesn't work. This was on ARM a while ago though, and it probably works fine on x86.
-- If lldb is broken, try using gdb instead (it doesn't matter that you're compiling with Clang, both will work fine).
+- **Robot detection is bugged.** This feature was mainly added as an experiment and has not yet been finished.
+- **Some comms packets remain unimplemented.** I have not yet added or tested most robot movement packets such as `CMD_MOVE_TO_XY` 
+or `CMD_ORIENT`, this will most likely not work yet.
+- **Replays may not work.** They or may not work, I haven't tested this yet because the Omicontrol replay UI isn't
+finished.
+- **INI config reloading is sketchy.** Some features like mirror crop will work, others won't. This is mainly obscure implementation
+details, that we haven't fixed since we don't use INI reloading too much.
+- **If Arduino can't upload, don't panic!** It's just being dumb. You need to run the setup script which disables the modem
+monitor thingy which runs by default and interferes with UART. Then try about 5 times and it should work eventually.
+- If gcc's sanitizers don't work, try using clang intsead. This was an old problem using ARM boards, so it should be fine on x86.
 - You will need to disable the visual Address Sanitizer output in CLion as that is also broken.
 - CLion's remote upload occasionally (a few times per full day of work) fails temporarily, just ignore it and try again.
 
@@ -156,7 +163,7 @@ Important ones are in bold. Most of these are covered above.
 ## Special thanks to...
 - Riley Bowyer at CSIRO, for his great advice and theory in regards to the localiser, specifically with stability and
 performance. Cheers.
-- Angus Scroggie for lots of help with the maths related to robot detection. The 3am Desmos run paid off!
+- Angus Scroggie for lots of help with the maths related to robot detection.
 - The contributors to the NLopt library, especially Steven G Johnson the initial author, and Tom Rowan for his PhD
 thesis describing the Subplex algorithm.
 - Huimin Lu, Xun Li, Hui Zhang, Mei Hu and Zhiqiang Zheng, authors of the paper we initially read for ideas on how to localise

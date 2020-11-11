@@ -1,3 +1,14 @@
+/*
+ * This file is part of the Teensy 4 firmware project.
+ * Copyright (c) 2019-2020 Team Omicron. All rights reserved.
+ *
+ * Team Omicron members: Lachlan Ellis, Tynan Jones, Ethan Lo,
+ * James Talkington, Matt Young.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 #include <Arduino.h>
 #include "Utils.h"
 #include "Config.h"
@@ -40,14 +51,14 @@ static uint8_t crc8(uint8_t *data, size_t len){
     return crc;
 }
 
-/** Decode protobuf over UART from ESP */
+/** Decode protobuf over UART from ESP. Ported from ESP32 firmware to Arduino. */
 static void decodeProtobuf(void){
     // check if we have a syncword available
     uint8_t byte = ESPSERIAL.read();
     if (byte != 0xB){
         if (byte == 0xFF){
-            // fuck this bug, clear the buffer, fuck you
-            // Serial.printf("bullshit detected byte is 0xFF\n");
+            // the buffer is bugged
+            // Serial.printf("bugged bytes detected\n");
             // while (ESPSERIAL.available()) { ESPSERIAL.read(); }
         }
         digitalWrite(LED_BUILTIN, LOW);

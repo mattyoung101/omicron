@@ -3,7 +3,7 @@
 This is the documentation for Team Omicron 2020. We use MkDocs to convert markdown files into a full website to document 
 our development of the robot.
 
-# Instructions for team members who are the only people who are going to read this hopefully
+# Instructions to deploy documentation
 
 To start, please clone the teamomicron git repo in the root directory of this git project with the following command:
 

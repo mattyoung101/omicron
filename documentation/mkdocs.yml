@@ -1,6 +1,6 @@
 site_name: Team Omicron
 theme: material
-site_description: "Documentation website for Team Omicron from BBC Robotics, competing in the RoboCup Jr 2020 Internationals."
+site_description: "Documentation website for Team Omicron, a RoboCup Jr Open Soccer team from Brisbane Boys' College."
 copyright: "Copyright (c) 2020 Team Omicron."
 
 nav:
