@@ -1,5 +1,5 @@
-// ATTENTION: PRE-PROCESSOR VOODOO MAGIC BULLSHIT TO MAKE SINGLE HEADER LIBRARIES WORK
-// DO NOT fucking touch this shit or the entire build process will break, it must stay EXACTLY AS IS!!!
+// ATTENTION: PRE-PROCESSOR VOODOO MAGIC TO MAKE SINGLE HEADER LIBRARIES WORK
+// DO NOT touch this or the entire build process will break
 #define HANDMADE_MATH_IMPLEMENTATION
 #define HANDMADE_MATH_NO_SSE
 #define DG_DYNARR_IMPLEMENTATION
@@ -7,7 +7,7 @@
 #include "DG_dynarr.h"
 #undef HANDMADE_MATH_IMPLEMENTATION
 #undef DG_DYNARR_IMPLEMENTATION
-// END BULLSHIT (you can change from here onwards)
+// END HACK (you can change from here onwards)
 #define _GNU_SOURCE
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"

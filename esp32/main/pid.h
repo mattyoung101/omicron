@@ -4,7 +4,7 @@
 // Ported from PID.cpp 
 
 #ifndef constrain
-    // stupid hack to fix include shit
+    // stupid hack to fix include stuff
     #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #endif
 

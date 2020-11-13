@@ -32,7 +32,8 @@ import org.greenrobot.eventbus.EventBus
  * 4.5b: Omicontrol enters beta, added support for hybrid localiser displays, fixed some bugs
  * 4.6b: added built-in mirror model calculation with exponential and polynomial (instead of CSV export)
  * 4.7b: added camera dewarp tool and frontend for obstacle detection and robot orientation
- * 4.8b: (WIP) ???
+ *
+ * NOTE: v4.7b is the final official Team Omicron release.
  */
 const val OMICONTROL_VERSION = "4.7b"
 const val DEFAULT_IP = "192.168.12.1"

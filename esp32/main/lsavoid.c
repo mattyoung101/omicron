@@ -1,7 +1,7 @@
 #include <lsavoid.h>
 
 // so im not gonna lie i dont know where this is gonna gonna
-// TODO: work out where the fuck this goes because it'll be the only LS calculation code on the ESP
+// TODO: work out where this goes because it'll be the only LS calculation code on the ESP
 void movement_avoid_line(vect_2d_t avoidVect) {
     vect_2d_t newMovement = vect_2d(0.0f, 0.0f, false);
 

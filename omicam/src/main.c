@@ -1,3 +1,14 @@
+/*
+ * This file is part of the Omicam project.
+ * Copyright (c) 2019-2020 Team Omicron. All rights reserved.
+ *
+ * Team Omicron members: Lachlan Ellis, Tynan Jones, Ethan Lo,
+ * James Talkington, Matt Young.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 #define DG_DYNARR_IMPLEMENTATION
 #include "DG_dynarr.h"
 #undef DG_DYNARR_IMPLEMENTATION
@@ -45,7 +56,7 @@ static void disposeResources(){
 static void signal_handler(int sig){
     log_info("Received signal %s, terminating capture", strsignal(sig));
     disposeResources();
-    // FIXME due to threading fuckery this is still required
+    // FIXME due to threading this is still required
     // is the above actually true??? haven't tested removing it in months
     exit(EXIT_SUCCESS);
 }

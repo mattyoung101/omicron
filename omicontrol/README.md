@@ -4,12 +4,10 @@ on our single board computer. It enables team members to control the robot's mov
 as tune and view camera output.
 
 The app is written in Kotlin using JavaFX (via TornadoFX) for the UI. It receives data from Omicam in the format of
-Protocol Buffers over a TCP socket.
+Protocol Buffers over a TCP socket. The code quality in this project is kind of bad, because I'm not experienced with 
+UI development, and spend most of my time working on Omicam. My apologies in advance!
 
 Omicontrol is built and maintained by Matt Young.
-
-**Note:** The code quality in this project is kind of bad, because I'm not experienced with UI development, and spend
-most of my time working on Omicam. My apologies in advance!
 
 ## Features list
 - Relatively easy to use UI, views should be mostly self-explanatory
@@ -18,10 +16,18 @@ most of my time working on Omicam. My apologies in advance!
 - Many helpful diagnostic displays in the Field View for debugging the localiser
 - Automatic mirror model calculation through non-linear least squares regression (exponential and polynomial models supported)
 - Control the robots through a multitude of useful commands including automatically resetting to starting positions
-- Mirror dewapring (separate tool, CameraDewarper.kt)
+- Mirror dewapring. Turns 360 mirror view into an orthogonal perspective (separate tool, CameraDewarper.kt)
 - Lots of useful shortcuts and other quality of life improvements built-in
 - Large buttons designed for tablet usage
 - Dark theme!!!
+
+### Stalled/incomplete features
+Due to the COVID-19 pandemic, development on Omicontrol stalled around July 2020. As of the end of 2020 open source release,
+the following features remain incomplete:
+
+- Robot control in field view. Transmission of robot move commands in Protobuf works correctly, but currently the ESP32
+doesn't respond to them, and doesn't forward them over Bluetooth to the other robot.
+- Replay view that can and play *.omirec files. Halted due to lack of interest.
 
 ## Building and running
 Firstly, you'll need to install OpenJDK 11 and JavaFX.
@@ -66,12 +72,11 @@ however there are various quirks specific to each one. This is especially the ca
 cause all manner of platform specific issues with JavaFX.
 
 ### Linux
-- Distro: KDE neon
+- Distro: KDE neon and Linux Mint
 - Tested on a normal DPI monitor, scaling is fine
 - Frequent bug where dialogue boxes will show up incredibly small (with no content). Workaround is to press ALT+F4 and
 try again, it will eventually pop up.
-- Linux is fully supported because it's my development machine. I only use KDE, but GTK-based desktop environments 
-should be supported too.
+- Linux is fully supported because it's my development machine. Both KDE and GTK environments appear to work correctly.
 
 ### Windows 10
 - Tested on a high DPI display, scaling is bugged if you use Windows' fantastically named "make everything bigger" setting.
@@ -81,7 +86,7 @@ Workaround is to add either `Dprism.allowhidpi=false` or `-Dglass.win.uiScale=10
 
 ### Mac OS X
 - Tested on a high DPI (Retina?) display, not only is scaling bugged but the Windows workaround doesn't work. Instead, I
-added a manual workaround which scales down the preview window to 90% it's normal size if Mac OS is detected. The Windows
+added a manual workaround which scales down the preview window to 90% its normal size if Mac OS is detected. The Windows
 workaround is not required, and actually makes things worse (blurry).
 - This workaround may be added to Windows if it looks better than completely disabling DPI scaling.
 - Mac OS X is partially supported because only one team member uses a Mac, but should still mostly work.

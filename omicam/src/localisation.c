@@ -1,3 +1,14 @@
+/*
+ * This file is part of the Omicam project.
+ * Copyright (c) 2019-2020 Team Omicron. All rights reserved.
+ *
+ * Team Omicron members: Lachlan Ellis, Tynan Jones, Ethan Lo,
+ * James Talkington, Matt Young.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 #include "localisation.h"
 #include <log/log.h>
 #include <nlopt.h>
@@ -613,9 +624,9 @@ static void *work_thread(void *arg){
                 double C = (c) / (t + invA);
                 double D = t * C;
                 double finalX = localisedPosition.x + C;
-                // due to yet more inane fucking coordinate system bullshit (likely the dumbass thing being fucking Y-down
-                // for some reason), we have to fucking SUBTRACT this idiot to make it line up properly]
-                // someone beat the shit out of me to fix all these coordinate systems, seriously, why did I make it Y-down?????
+                // due to yet more inane coordinate system craziness (likely the stupid thing being Y-down
+                // for some reason), we have to SUBTRACT this idiot to make it line up properly
+                // someone please make me fix all these coordinate systems, seriously, why did I make it Y-down?????
                 double finalY = localisedPosition.y - D;
 
                 // record debug information (very messy code... yikes!)

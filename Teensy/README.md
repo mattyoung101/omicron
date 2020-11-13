@@ -16,6 +16,9 @@ Credits:
 ## Building and running
 Install the PlatformIO extension in VSCode, then import this folder. Can also use CLion if you wish.
 
+## Licence
+The Teensy firmware is licenced under the Mozilla Public License 2.0, the same as the rest of Team Omicron's code.
+
 ## Libraries and licenses
 - [Nanopb](https://github.com/nanopb/nanopb/): zlib license
 - [FG&B Timer](https://github.com/TomFraser/FG-B-2018/tree/master/Software/lib/Timer): GPLv3 license

@@ -11,7 +11,7 @@
 #include "states.h"
 #include "bno055.h"
 
-// literally the world's stupidest fucking hack to make it compile
+// literally the world's stupidest hack to make it compile
 #ifdef HANDMADE_MATH_IMPLEMENTATION
     #undef HANDMADE_MATH_IMPLEMENTATION
 #endif

@@ -1,3 +1,14 @@
+/*
+ * This file is part of the Omicam project.
+ * Copyright (c) 2019-2020 Team Omicron. All rights reserved.
+ *
+ * Team Omicron members: Lachlan Ellis, Tynan Jones, Ethan Lo,
+ * James Talkington, Matt Young.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 #include "computer_vision.hpp"
 #include <opencv2/core/utility.hpp>
 #include "log/log.h"
@@ -17,7 +28,7 @@
 #include "localisation.h"
 #include "replay.h"
 #include "comms_uart.h"
-// yeah this is bad practice, what are you gonna do?
+// note that this is bad practice :)
 using namespace cv;
 using namespace std;
 
@@ -445,7 +456,7 @@ static auto cv_thread(void *arg) -> void *{
             memcpy(frameData, debugFrame.data, frame.rows * frame.cols * 3);
             
             // wait for localisation to finish before dispatching info
-            // if performance issue occur, make this mutexes and shit instead of a busy loop - just couldn't be bothered now
+            // if performance issue occur, make this mutexes and stuff instead of a busy loop - just couldn't be bothered now
             // FIXME make this not a busy loop and use proper threading stuff
             while (!localiserDone){
                 // log_info("Had to wait for localiser before posting to remote debug");
@@ -514,10 +525,12 @@ void vision_init(void){
     cropRect = Rect(visionCropRect[0], visionCropRect[1], visionCropRect[2], visionCropRect[3]);
     fpsAvg = movavg_create(256);
 
-    // IMPORTANT: due to some weird shit with Intel's Turbo Boost on the Celeron, it may be faster to uncomment the below
+    // IMPORTANT: due to some weird stuff with Intel's Turbo Boost on the Celeron, it may be faster to uncomment the below
     // line and disable multi-threading. With multi-threading enabled, all cores max out at 1.4 GHz, whereas with it
     // disabled they will happily run at 2 GHz. However, YMMV so just try it if Omicam is running slow.
     setNumThreads(3); // leave one core free for localiser
+    // TODO (matt's note) it may be worth making the above all 4 cores since the localiser is so fast now due to caching
+    // I just realised this at the time of open source release, so give it a try.
 
     int numCpus = getNumberOfCPUs();
     string features = getCPUFeaturesLine();

@@ -82,7 +82,7 @@ void comms_bt_receive_task(void *pvParameter){
         // it seems that this bug resolves itself the next time a BT packet is received, so just log it and skip this
         // loop to make sure the conflict resolution algorithm doesn't get confused
         if (!isAttack && !isDefence && !isShoot){
-            ESP_LOGE(TAG, "WHAT THE FUCK: Not in defence, attack or shoot?! State: %s", recvMsg.fsmState);
+            ESP_LOGE(TAG, "WHAT THE HELL: Not in defence, attack or shoot?! State: %s", recvMsg.fsmState);
             continue;
         }
 

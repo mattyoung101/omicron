@@ -32,6 +32,14 @@ For the full technical writeup on our vision pipeline, please see [the relevant 
 - Written mostly in C11 (just a little C++ for interfacing with OpenCV)
 - Well-documented code (see our website for a full writeup on the process as well)
 
+### Stalled/incomplete features
+**TODO**
+
+- robot detection
+- moving robot commands
+- replay file
+- INI reloading, partially works
+
 ## Building, running and configuration
 ### Initial setup
 Omicam will probably only run under Linux. At Team Omicron, we use a LattePanda Delta 432 SBC running Xubuntu 18.04, so
@@ -115,9 +123,6 @@ Import the project into CLion on your host computer and follow the
 remote toolchain, deployment and run configuration. The IP should be the IP of your SBC, check your router or use nmap
 if you're unsure what this is. You'll probably also want to enable auto upload to remote.
 
-If you want, you can use the Ninja build tool, just install it on the SBC and add `-G Ninja`, though we didn't find any
-performance benefits doing this.
-
 Also in Build, Exectuion & Deployment, select the remote toolchain and make the C compiler `/usr/bin/clang` and the C++
 compiler `/usr/bin/clang++` if you would like to use Clang.
 
@@ -125,12 +130,18 @@ To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion 
 by itself.
 
 ### Build modes
-TODO compare release and debug.
+Debug mode enables all safety features from Google's Sanitizer suite to help fix segfaults, memory leaks, etc. It also
+disables optimisation for easier debugging.
+
+Release mode enables all optimisations with `-O3` and uses `-march=native` and `-mtune=native` to compile a binary that
+runs as fast as possible on the platform it was compiled on, usually the SBC.
 
 ### Running in production
 Once development is finished, you should install Python 3 and add `run.py` to your system's auto-start scripts.
 On Xfce, this can be done in the GUI. This will ensure that in a competition, Omicam is automatically started on
 boot without you having to use ssh or CLion.
+
+Make sure your Release build is up to date before deploying!
 
 ### Known issues and workarounds
 Important ones are in bold. Most of these are covered above.
@@ -147,6 +158,9 @@ monitor thingy which runs by default and interferes with UART. Then try about 5 
 - If gcc's sanitizers don't work, try using clang intsead. This was an old problem using ARM boards, so it should be fine on x86.
 - You will need to disable the visual Address Sanitizer output in CLion as that is also broken.
 - CLion's remote upload occasionally (a few times per full day of work) fails temporarily, just ignore it and try again.
+
+## Licence
+Omicam is licenced under the Mozilla Public License 2.0, the same as the rest of Team Omicron's code.
 
 ## Open source libraries used
 - [log.c](https://github.com/rxi/log.c): MIT license

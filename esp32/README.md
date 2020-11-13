@@ -60,6 +60,9 @@ Please make sure you're referring to v3.3 docs on Espressif's website when devel
 It _is_ possible to port to IDF v4, and we plan to do so soon; it just requires a little bit of refactoring, for example
 to code using `ets_delay_us` (as that's been moved to a different header).
 
+## Licence
+The ESP32 firmware is licenced under the Mozilla Public License 2.0, the same as the rest of Team Omicron's code.
+
 ## Open source libraries used
 - [ESP-IDF](https://github.com/espressif/esp-idf/): Apache 2 license
 - [DG_dynarr](https://github.com/DanielGibson/Snippets/blob/master/DG_dynarr.h): Public domain

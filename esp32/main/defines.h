@@ -144,7 +144,7 @@ typedef enum {
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
-// Note: doesn't fucking work
+// Note: doesn't work
 #define COORD_KP 5
 #define COORD_KI 0
 #define COORD_KD 0.2

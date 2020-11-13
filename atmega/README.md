@@ -18,6 +18,9 @@ line interface) with pip (ensure you are using Python 3.x as Python 2 is depreca
 usage: https://docs.platformio.org/en/latest/core/index.html. If you use CLion, you can install platformio for CLion. 
 See: https://docs.platformio.org/en/latest/integration/ide/clion.html.
 
+## Licence
+The ATMega firmware is licenced under the Mozilla Public License 2.0, the same as the rest of Team Omicron's code.
+
 ## Libraries and licenses
 - [Timer](https://github.com/TomFraser/FG-B-2018/tree/master/Software/lib/Timer): GPLv3 license
 - [Arduino](https://github.com/arduino/Arduino): GPLv2 license

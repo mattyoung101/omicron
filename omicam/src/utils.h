@@ -1,3 +1,14 @@
+/*
+ * This file is part of the Omicam project.
+ * Copyright (c) 2019-2020 Team Omicron. All rights reserved.
+ *
+ * Team Omicron members: Lachlan Ellis, Tynan Jones, Ethan Lo,
+ * James Talkington, Matt Young.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 #pragma once
 #include <bits/types/FILE.h>
 #include "defines.h"
@@ -107,7 +118,7 @@ double cos_approx(double x);
 /** x squared */
 #define sq(x) (x * x)
 
-// note: put all your shit above this line because CLion fucks the indent of anything below this macro
+// note: put everything above this line because CLion screws with the indent of anything below this macro
 /** sends a response indicating OK to Omicontrol */
 #define RD_SEND_OK_RESPONSE do { \
     DebugCommand response = DebugCommand_init_zero; \
