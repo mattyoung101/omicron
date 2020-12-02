@@ -1,11 +1,22 @@
 # SBC
-**TODO: this section should be refactored a lot with intro sections and everything**
+
+## Introduction
+This year, we investigated using a single board computer (SBC) for our robot's vision system. In the past, we had
+looked into using a SBC for entire robot control, but we decided that this would be too complicated. Using an
+embedded system (microcontroller) and RTOS was a better, more reliable solution.
+
+Instead, we focused effort on finding an SBC that would power our vision pipeline. It would need to achieve
+excellent performance, while not being too expensive.
 
 ## Hardware
-Omicam supports any single board computer (SBC) that can run Linux. In our case, we use a LattePanda Delta 432 with a 
+Our custom camera software (Omicam) supports any computer that runs x86 Linux (however, it has only been tested on
+Ubuntu).
+
+Currently, Team Omicron uses a [LattePanda Delta 432](https://www.lattepanda.com/products/lattepanda-delta-432.html) with a 
 2.4 GHz quad-core Intel Celeron N4100, 4GB RAM, 32GB of storage, WiFi, Bluetooth, gigabit Ethernet and a UART bus.
 
-The current camera we use is an e-con Systems Hyperyon, based on the Sony Starvis IMX290 ultra low-light sensor capable
+The current camera we use is an [e-con Systems Hyperyon](https://www.e-consystems.com/usb-cameras/imx290-low-light-usb-camera.asp),
+using the Sony Starvis IMX290 ultra low-light sensor capable
 of seeing in almost pitch black at high framerates. This is a USB 2.0 camera module, since the LattePanda has no 
 MIPI port.
 

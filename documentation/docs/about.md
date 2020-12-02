@@ -18,7 +18,16 @@ We have been preparing for this competition for about **(TODO: how many?)** mont
 **(TODO: put hours here)** hours developing and improving our current iteration of robots.
 
 ## COVID-19
-**TODO cover COVID problems**
+Our competition was scheduled for the 2020 RoboCup Internationals in Bordeaux, France. Unfortunately, due to the 
+COVID-19 world pandemic, our competition has been cancelled. Since we were in the last year of our RoboCup time
+(as most of us are turning 18), there is a small chance we would be able to compete again.
+
+Thus, we have decided to release absolutely everything we have produced: code, designs,
+PCBs, documentation, as open source. See **TODO link** here for more information.
+
+After we were made aware of COVID, and consequently the 2020 Internationals were "postponed", development on
+the robot was significantly slowed down. This means that some announced features may not be fully complete
+or bug-free. However, we believe our product is still of value to the larger RoboCup community.
 
 ## Our current robots
 This year, our team brings many new and exciting innovations to the table, as well as building on reliable technologies

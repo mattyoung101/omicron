@@ -29,7 +29,7 @@ movavg_t *movavg_create(size_t size);
 /** Frees all resources from a movavg object. After this, the pointer is no longer valid. */
 void movavg_free(movavg_t *movavg);
 /** Pushes the value to the moving average ringbuffer. */
-void movavg_push(movavg_t *movavg, double value);
+void movavg_push(movavg_t *movavg, double value);2
 /** Calculates the moving average of the buffer. */
 double movavg_calc(movavg_t *movavg);
 /** Resets the moving average buffer to the beginning. Does not free any memory. */

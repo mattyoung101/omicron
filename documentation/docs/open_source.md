@@ -1,5 +1,6 @@
 # Open source acknowledgements
-Team Omicron's would like to acknowledge the use of the following open source libraries in our projects:
+Team Omicron is happy to acknowledge our use of many open-source projects in developing our robots software,
+which we acknowledge here:
 
 ## Omicam
 - [log.c](https://github.com/rxi/log.c): MIT licence

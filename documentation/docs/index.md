@@ -4,9 +4,11 @@ Welcome to the official documentation website for Team Omicron, a robotics team 
 Australia, competing in RoboCup Junior Open Soccer at the Bordeaux 2020 Internationals.
 
 This website contains all the information about our robot's hardware, electrical and software design. Please feel
-free to browse at your own pleasure, and don't hesitate to contact us by visiting the About page. We're more than happy
+free to browse around, and don't hesitate to contact us by visiting the About page. We're more than happy
 to answer any questions you may have about any aspect of our robots!
 
-Some time in the next year or so (from competition date), our entire codebase including mechanical designs, electrical designs and 
-all software will become open source for everyone to learn from and study. The exact timeframe is still yet to be determined,
-and depends on a variety of factors, so we don't have a particular date in mind right now but we can assure you it will happen. 
+Due to the COVID-19 global pandemic, our team sadly never got a chance to compete in competition. Instead, we have released
+all of our source code for every project, hardware designs (mechanical and electrical), documentation and notes under permissive
+open source licences! Check it out here: **TODO github link**
+
+**TODO add open source release info page**

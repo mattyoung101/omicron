@@ -754,7 +754,7 @@ void remote_debug_localiser_provide(DebugFrame *msg){
     msg->estimateMaxBounds.x = (float) estimateMaxBounds.x - hx;
     msg->estimateMaxBounds.y = (float) estimateMaxBounds.y - hy;
 
-    // these are already in field coordinates
+    // these are already in fieldcd .. coordinates
     msg->goalEstimate.x = (float) initialEstimate.x;
     msg->goalEstimate.y = (float) initialEstimate.y;
 
