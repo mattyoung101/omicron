@@ -1,4 +1,7 @@
 ![Omicam logo](images/omicam_logo_dark.png)    
+
+_Author(s): Matt Young, vision systems & low-level developer_
+
 One of the biggest innovation Team Omicron brings this year is our high-performance, custom vision and
 localisation application (i.e. camera) called _Omicam_. Omicam handles the complex process of detecting the ball and goals, determining the robot's position on the field as well as encoding/transmitting this information, all in one highly
 optimised codebase.
@@ -25,8 +28,6 @@ a low-fidelity approach based on detecting the goals in the image. With the intr
 team members needed more accurate position data, which requires more complex localisation.
 
 ## Performance and results
-**TODO provide some more empiric data (tables and stuff) here. Maybe also provide a Pitfalls section at the end.**
-
 Omicam is capable of detecting the ball, goals and lines at 60-70fps at 720p (1280x720) resolution. 
 Compared to the previous OpenMV H7, this is 23x higher resolution at 3x the framerate.<sup>1</sup>
 
@@ -37,9 +38,9 @@ than any previous methods used at BBC Robotics, and has been shown to be much mo
 Using the e-con Systems Hyperyon camera based around the ultra low-light performance IMX290 sensor, Omicam
 is robust against lighting conditions ranging from near pitch darkness to direct LED light.
 
-_<sup>1 previous results based on mediocre lighting conditions running well optimised OpenMV H7 code at QVGA resolution.</sup>_ 
+_<sup>1: previous results based on mediocre lighting conditions running well optimised OpenMV H7 code at QVGA resolution.</sup>_ 
 
-_<sup>2 depending on whether LRF based/goal based localisation was used.</sup>_
+_<sup>2: depending on whether LRF based/goal based localisation was used.</sup>_
 
 ## Field object detection
 One of the responsibilities of Omicam is to detect the bounding box and centroid of field objects: the ball, goals and also lines. 
@@ -282,13 +283,12 @@ the temperature of the SBC. The TCP listen thread receives messages from the Omi
 the specified action ID (for example, save data to disk) if one is specified. The TCP send thread receives data from
 the vision and localisation pipelines, and encodes them an sends them over network.
 
-We use the SIMD optimised libjpeg-turbo to efficiently encode JPEG frames, so as to not waste performance on the remote 
+One important feature of the Omicam and Omicontrol connection is its ability to operate at high framerates, while not
+using too much bandwidth. To achieve this,
+we use the SIMD optimised libjpeg-turbo to efficiently encode JPEG frames, so as to not waste performance on the remote 
 debugger (which is disabled during competition). Instead of compressing threshold frames with JPEG, because they are 1-bit 
 images, it was determined that zlib could compress them more efficiently (around about 460,800x reduction in size compared 
 to uncompressed data). 
-
-With all these optimisations, even at high framerates (60+ packets per second), the remote debug system uses no more than
-1 MB/s of outgoing bandwidth, which is small enough to work reliably over both Ethernet and WiFi.
 
 ### Configuration
 Usually, we embed configuration in a "defines.h" file. Config includes information like the bounding box of the crop
@@ -300,51 +300,34 @@ which is not ideal. For Omicam, we used an INI file stored on the SBC's disk tha
 In addition, the config file can also be dynamically reloaded by an Omicontrol action, making even relaunching Omicam un-necessary. 
 Because of this, we have much more flexibility and faster prototyping abilities when tuning to different venues.
 
-### Video recording and match replay
-Omicam can record its vision output to disk as an mp4 file. When this is enabled in the configuration, a thread is started
+### Video recording
+Omicam can record its vision output to disk as an MP4 file. When this is enabled in the configuration, a thread is started
 that writes video frames to an OpenCV `VideoWriter` at the correct framerate to produce a stable 60 fps video. These
 generated videos can be loaded as Omicam input (instead of using a live camera), thus enabling a capture and replay system.
 
 In this way, games can be recorded for later analysis of Omicam's performance and accuracy, or for entertainment value.
 
+### Replay system
 **TODO describe in more depth the new replay system**
 
-### Code optimisation methods
-Here are a sample of some of th techniques we used, both in code and with the Clang compiler, to optimise Omicam's
-performance:
-
-- Use `-O3` optimisation setting in release builds
-- (NOT DONE YET) Use link time optimisation (LTO) with Clang
-- (NOT DONE YET) Use profile guided optimisation (PGO) with Clang
-- Extensive use of multi-threading, especially with OpenCV, to process multiple objects at once. The localisation and
-vision pipelines are also independent of each other as much as is possible.
-- Enable OpenCV's CPU-specific optimisations for x86 architecture, such as SSE and AVX instructions
-- Downscale the goal threshold image before processing as less accuracy is required
-- In the localiser, we use the last extrapolated position from the mouse sensor as a seed for the initial
-position of the next search. This means instead of starting from a random position, the localiser will complete much quickly
-as it's already relatively close to the true position.
-
-**Also cover Linux CPU optimisation and associated thermal issues if relevant**
+**TODO Add section talking about how we achieved high framerates?**
 
 ### Debugging and diagnostics
 **TODO we may use gcc not clang so talk about that too**
 
 Low-level compiled languages such as C and C++ can be difficult to debug when memory corruption or undefined behaviour
-issues manifest. In addition, many latent bugs can go undetected in code written in these languages.
+issues occur. In addition, many latent bugs can go undetected in code written in these languages.
 In order to improve the stability of Omicam
-and fix bugs, we used Google's Address Sanitizer (ASan) and Undefined Behaviour Sanitizer (UBSan) to easily find and trace a variety of bugs such as buffer overflows, memory leaks and more. 
-In addition, we used the LLVM toolchain's debugger lldb (or just gdb) to analyse the application frequently.
+and fix bugs, we used Google's Address Sanitizer (ASan) and Undefined Behaviour Sanitizer (UBSan) to easily find and trace a variety of bugs such as buffer overflows, memory leaks and more. This (usually) works in parallel with gdb.
 
 To assist in performance evaluation, we used the Linux tool OProfile to determine the slowest method calls in the application.
-Although the Clang compiler may have marginally worse performance than GCC, we chose Clang because it's more modern and has
-better debugging support (namely, GCC's Adress Sanitizer implementation is broken for us).
 
 ## Conclusion
 This year, Team Omicron presents a high-performance, custom vision and localisation application called Omicam. It is 
 written mainly in C, and runs on a LattePanda Delta 432. It is capable of processing vision at orders of magnitude faster
 than our previous solution, the OpenMV H7. We also present a novel approach to robot localisation, based on sensor-fusion
 and 2D non-linear optimisation. This approach is significantly more accurate and robust than previous methods. Finally,
-we introduce support for communication to our visualisation and managemetn application, Omicontrol (covered separately)
+we introduce support for communication to our visualisation and management application, Omicontrol (covered separately)
 using Protocol Buffers.
 
 ## References

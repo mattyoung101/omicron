@@ -1,7 +1,7 @@
 site_name: Team Omicron
 theme: material
-site_description: "Documentation website for Team Omicron, a RoboCup Jr Open Soccer team from Brisbane Boys' College."
-copyright: "Copyright (c) 2020 Team Omicron."
+site_description: "Documentation website for Team Omicron, an open-source RoboCup Jr Open Soccer team from Brisbane Boys' College."
+copyright: Copyright (c) 2020 Team Omicron. Documentation is under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
 nav:
     - Home: index.md
@@ -9,8 +9,9 @@ nav:
     - Hardware:
         - Structural design: structural_design.md
         - Electrical design: electrical_design.md
-        - SBC: sbc.md
+        - SBC & Camera: sbc.md
     - Software:
+        - Our open-source release!: open_source_release.md
         - Omicam: omicam.md
         - Omicontrol: omicontrol.md
         - Game strategies: strategy.md
@@ -18,8 +19,7 @@ nav:
         - Finite State Machine: fsm.md
         - Low-level code: lowlevel.md
         - Open source:
-            - Open source info: open_source.md
-            # TODO open source release page
+            - Third party libraries: open_source.md
 
 plugins:
     - search

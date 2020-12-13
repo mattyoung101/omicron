@@ -14,22 +14,39 @@ Deus Vult). Our team members are:
 Our members are experienced, having competed in 2-3 previous internationals competitions. Our team collectively
 also has many victories and podium placements in Australian Nationals, States and Regionals competitions.
 
-We have been preparing for this competition for about **(TODO: how many?)** months and we estimate to have a combined
-**(TODO: put hours here)** hours developing and improving our current iteration of robots.
+### Team history
 
 ## COVID-19
 Our competition was scheduled for the 2020 RoboCup Internationals in Bordeaux, France. Unfortunately, due to the 
-COVID-19 world pandemic, our competition has been cancelled. Since we were in the last year of our RoboCup time
-(as most of us are turning 18), there is a small chance we would be able to compete again.
+COVID-19 world pandemic, our competition has been cancelled. In addition, our current knowledge indicates that the 
+2021 competition (the time that the 2020 one was postponed to) will either be cancelled, or we would not be able to
+attend for other reasons.
 
-Thus, we have decided to release absolutely everything we have produced: code, designs,
-PCBs, documentation, as open source. See **TODO link** here for more information.
+Thus, we have decided to release absolutely everything we have produced: code, designs, PCBs, documentation, as open
+source to give back to the community. See [this section](open_source_release.md) here for more information.
 
 After we were made aware of COVID, and consequently the 2020 Internationals were "postponed", development on
 the robot was significantly slowed down. This means that some announced features may not be fully complete
 or bug-free. However, we believe our product is still of value to the larger RoboCup community.
 
-## Our current robots
+## Robot components
+This section contains the overview of the components on our robots.
+
+Microcontrollers:
+    - Main: ESP32 DEVKIT-C
+    - Secondary: Teensy 3.5, ATMega328P
+
+SBC:
+    - LattePanda Delta 432
+
+Camera module:
+    - e-con Systems Hyperyon
+
+Motors:
+    - 4x Maxon DCX19
+    
+
+## New features & refinements
 This year, our team brings many new and exciting innovations to the table, as well as building on reliable technologies
 we have previously developed.
 

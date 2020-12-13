@@ -1,5 +1,7 @@
 # Electrical Design
 
+_Author(s): Ethan Lo, mechanical & electrical design_
+
 PCBs were used for our electronics to mitigate wiring, as well us enable us to use components that would otherwise be unusable. We use 4 custom-made PCBs, which we label as the “Main”, “Base”, “Kicker” and “Debug” boards.
 
 **TODO: WE NEED IMAGES**

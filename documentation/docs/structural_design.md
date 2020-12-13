@@ -1,5 +1,7 @@
 # Hardware Design
 
+_Author(s): Ethan Lo, mechanical & electrical design_
+
 This year we focused on designing a simple and robust robot which was quick to assemble and disassemble when needed. 
 We also aimed on improving hardware from previous years including the custom omni-directional wheels introduced last 
 year.

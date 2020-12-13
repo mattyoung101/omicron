@@ -46,11 +46,12 @@ Our team members work on seven main projects:
 All code written by Team Omicron is released under the **Mozilla Public License 2.0** (see LICENSE.txt in each directory).
 You will be able to tell which code is ours due to the presence of Omicron copyright notices at the top of the file.
 
-For information on this licence, please [read this FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/), and 
-[this question](https://opensource.stackexchange.com/a/8832). Simply put, if you are building
-a robot based on Team Omicron's code, the MPL requires that you disclose that your robot uses open-source software from Team
-Omicron, and where anyone can obtain it (this repo). If you modify any files with the MPL licence header, the licence requires
-that you release your improvements under the MPL 2.0 as well. New files that you create can be under any licence.
+For information on this licence, please [read this FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/), and [this
+question](https://opensource.stackexchange.com/a/8832). Simply put, if you are building a robot based on Team Omicron's
+code, the MPL requires that you disclose that your robot uses open-source software from Team Omicron, and where anyone
+can obtain it (this repo). _A great place to do so would be in your poster and presentation._ If you modify any files with
+the MPL licence header, the licence requires that you release your improvements under the MPL 2.0 as well. New files
+that you create can be under any licence.
 
 We have decided to use the MPL because we believe it balances freedom of usage, while making sure that any improvements are
 released back to the RoboCup community for future teams to benefit from.

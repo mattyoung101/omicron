@@ -1,17 +1,19 @@
-# SBC
+# SBC & Camera
 
 ## Introduction
-This year, we investigated using a single board computer (SBC) for our robot's vision system. In the past, we had
-looked into using a SBC for entire robot control, but we decided that this would be too complicated. Using an
-embedded system (microcontroller) and RTOS was a better, more reliable solution.
+Single board computeres (SBCs) are becoming increasingly more popular in the RoboCup Jr Open league as a solution to the 
+vision problem. While most teams use devices powered by microcontrollers such as the OpenMV or Pixy, due to their limited 
+resources these cameras can be very slow and usually run at extremely low resolutions.
+
+This year, Team Omicron investigated using an SBC for our robot's vision system. This replaces our old vision system,
+the OpenMV H7. For more info, please see the Omicam page. Although in the past we had considered replacing all
+microcontrollers with an SBC, we decided that this would be too complicated. Instead, using an SBC in addition to a
+microcontroller (the ESP32) running an RTOS (FreeRTOS) worked the best for us.
 
 Instead, we focused effort on finding an SBC that would power our vision pipeline. It would need to achieve
 excellent performance, while not being too expensive.
 
-## Hardware
-Our custom camera software (Omicam) supports any computer that runs x86 Linux (however, it has only been tested on
-Ubuntu).
-
+## Our setup
 Currently, Team Omicron uses a [LattePanda Delta 432](https://www.lattepanda.com/products/lattepanda-delta-432.html) with a 
 2.4 GHz quad-core Intel Celeron N4100, 4GB RAM, 32GB of storage, WiFi, Bluetooth, gigabit Ethernet and a UART bus.
 
