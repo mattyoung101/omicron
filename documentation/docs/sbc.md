@@ -1,7 +1,7 @@
 # SBC & Camera
 
 ## Introduction
-Single board computeres (SBCs) are becoming increasingly more popular in the RoboCup Jr Open league as a solution to the 
+Single board computers (SBCs) are becoming increasingly more popular in the RoboCup Jr Open league as a solution to the 
 vision problem. While most teams use devices powered by microcontrollers such as the OpenMV or Pixy, due to their limited 
 resources these cameras can be very slow and usually run at extremely low resolutions.
 

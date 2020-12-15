@@ -14,12 +14,13 @@ nav:
         - Our open-source release!: open_source_release.md
         - Omicam: omicam.md
         - Omicontrol: omicontrol.md
+        - Finite State Machine: fsm.md
         - Game strategies: strategy.md
         - Protocol Buffers: protobuf.md
-        - Finite State Machine: fsm.md
+        - Communication: communication.md
         - Low-level code: lowlevel.md
-        - Open source:
-            - Third party libraries: open_source.md
+        - Third party library notices: open_source.md
+    - Future ideas: future_work.md
 
 plugins:
     - search

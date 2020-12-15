@@ -39,6 +39,8 @@ all the way through, and branch out to individual projects from there.
 
 ### License
 #### Code
+**TODO mention poster credit**
+
 All code written by Team Omicron is released under the **Mozilla Public License 2.0** (see LICENSE.txt in each
 directory). You will be able to tell which code is ours due to the presence of Omicron copyright notices at the top of
 the file.

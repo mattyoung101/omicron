@@ -9,36 +9,37 @@ For the full technical writeup on our vision pipeline, please see [the relevant 
 
 ## Features list
 - High performance field object detection (ball, lines, goals) using OpenCV 4
-    - Colour thresholding followed by connected component labelling (CCL)
     - Uses parallel programming to make most use of multi-core CPUs
     - Works with localiser to accurately determine absolute positions of field objects
 - Novel localisation algorithm using a sensor-fusion/non-linear optimisation method, accurate to ~1.5cm
-    - Constructs an initial estimate using fast but inaccurate methods, then refines it by solving a 2D non-linear minimisation problem.
-    - Initial estimate is used to constrain and seed optimisation stage for faster and more stable results
     - Support for arbitrary number of field geometries by defining field file (Australian fields, SuperTeam, etc)
     - Dynamic moving average smoothing based on robot velocity with configurable parameters
+    - Efficient use of caching and memoisation means localisation completes in less than 2ms
+- Novel robot detection algorithm (not completely finished)
+    - Detects robots by looking for outliers in our line detector
+    - Can calculate approximate (x,y) positions of robots on the field
 - Feature rich remote debugging and visualisation module. Viewable in custom Kotlin/JavaFX desktop app (Omicontrol).
     - Works locally using WiFi or Ethernet, and even remotely over the Internet
     - Camera frame streaming over TCP/IP using SIMD accelerated libjpeg-turbo
     - Custom network protocol uses Protocol Buffers with zlib compression
-    - Transmits detailed information about robot position, debug info, field object bounding boxes, etc.
-    - Receives and executes commands from remote (e.g. switch objects, save config, etc)
 - Efficient replay file format using Protocol Buffers
     - Encodes robot data (localised position, orientation, FSM state, etc) at 30 Hz into a Protobuf file
     - Fault tolerant: file is periodically re-written every 5 seconds
     - Should be able to encode around ~45 minutes of data in around ~16 MB
 - UART communication to ESP32 also using Protocol Buffers format
-- INI config files can be reloaded from disk
+- Config stored in INI files that can be reloaded remotely
 - Written mostly in C11 (just a little C++ for interfacing with OpenCV)
 - Well-documented code (see our website for a full writeup on the process as well)
 
 ### Stalled/incomplete features
-**TODO**
-
-- robot detection
-- moving robot commands
-- replay file
-- INI reloading, partially works
+- Robot detection: kind of works, pretty buggy in most cases. Not very well tested.
+- Omicontrol move commands: we planned to add a feature that would enable you to move
+the robot with the click of a button in Omicontrol. Although Omicontrol does dispatch
+the correct commands and Omicam forwards them to the ESP32, the ESP32 currently does
+nothing due to a lack of a working robot to test on. Similarly, we also added
+- Replay file: this is written to disk correctly, but no code exists in Omicontrol
+to play it back.
+- INI reloading: partially works for a select set of features, not well tested.
 
 ## Building, running and configuration
 ### Initial setup
@@ -52,7 +53,6 @@ any package manager or distro.
 - CMake: To work around various issues (see below), a newer version of CMake than the one provided by the Ubuntu repos is provided.
   The easiest way to install the latest CMake, in my opinion, is to [add the PPA](https://apt.kitware.com/) and then just 
   `sudo apt install cmake`.
-- Clang & LLVM: `sudo apt install clang lldb llvm libasan5 libasan5-dbg` **TODO consider removing, use gcc instead**
 - NLopt: `sudo apt install libnlopt-dev libnlopt0`
 - libjpeg-turbo: `sudo apt install libturbojpeg libturbojpeg0-dev`
 - gstreamer: [see here](https://gstreamer.freedesktop.org/documentation/installing/on-linux.html) and also 
@@ -115,16 +115,15 @@ Once you have an NTP server running on your host machine, run `sudo sntp -S 10.0
 the time. It may also be possible to use ntpd to do this automatically but it hasn't been researched yet.
 
 ### CLion setup
-At Team Omicron, we use the CLion IDE to work with the project, in part due to its remote project support. However,
-it should work with any other IDE that supports CMake projects.
+At Team Omicron, we use the CLion IDE to work with the project. However, it should work with any other IDE that 
+supports CMake projects.
 
 Import the project into CLion on your host computer and follow the 
 [instructions provided by JetBrains](https://www.jetbrains.com/help/clion/remote-projects-support.html) to configure a 
 remote toolchain, deployment and run configuration. The IP should be the IP of your SBC, check your router or use nmap
 if you're unsure what this is. You'll probably also want to enable auto upload to remote.
 
-Also in Build, Exectuion & Deployment, select the remote toolchain and make the C compiler `/usr/bin/clang` and the C++
-compiler `/usr/bin/clang++` if you would like to use Clang.
+Make sure the remote compiler toolchan is setup correctly to use gcc.
 
 To run, just use SHIFT+F10 or SHIFT+F9 to debug, like you would normally. CLion will handle syncing to the remote
 by itself.
@@ -144,13 +143,8 @@ boot without you having to use ssh or CLion.
 Make sure your Release build is up to date before deploying!
 
 ### Known issues and workarounds
-Important ones are in bold. Most of these are covered above.
 
 - **Robot detection is bugged.** This feature was mainly added as an experiment and has not yet been finished.
-- **Some comms packets remain unimplemented.** I have not yet added or tested most robot movement packets such as `CMD_MOVE_TO_XY` 
-or `CMD_ORIENT`, this will most likely not work yet.
-- **Replays may not work.** They or may not work, I haven't tested this yet because the Omicontrol replay UI isn't
-finished.
 - **INI config reloading is sketchy.** Some features like mirror crop will work, others won't. This is mainly obscure implementation
 details, that we haven't fixed since we don't use INI reloading too much.
 - **If Arduino can't upload, don't panic!** It's just being dumb. You need to run the setup script which disables the modem
@@ -161,6 +155,9 @@ monitor thingy which runs by default and interferes with UART. Then try about 5 
 
 ## Licence
 Omicam is licenced under the Mozilla Public License 2.0, the same as the rest of Team Omicron's code.
+
+If you use elements of Omicam in your own robots, we would really appreciate credit on your team's poster
+or website. Please send us an email if you use it, we'd love to hear from you.
 
 ## Open source libraries used
 - [log.c](https://github.com/rxi/log.c): MIT license

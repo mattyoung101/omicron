@@ -1,14 +1,15 @@
 ![Omicam logo](images/omicontrol_logo_dark.png)    
 
-_Author(s): Matt Young, vision systems & low-level developer_
+_Page author: Matt Young, vision systems & low-level developer_
 
 Omicontrol is Team Omicron's wireless robot/camera debugging and management application. With the creation of Omicam,
 we needed a way of visualising camera output, managing the SBC and editing thresholds. In the past, we used the OpenMV IDE,
 but given that Omicam is entirely custom developed, this meant we also had to custom-develop our own camera application.
 
-In addition, with our new advanced strategies and localisation, as well as the potential auto referee future rule addition,
-we felt like this year was a good time to add a remote robot management feature with the ability to reposition, reorient
-and automatically reset robots on the field wirelessly, as well as visualise their positions. 
+In addition, with our new advanced strategies and localisation, as well as the potential auto referee future rule
+addition, we felt like this year was a good time to add a remote robot management feature in our future app with the
+ability to reposition, reorient and automatically reset robots on the field wirelessly, as well as visualise their
+positions. 
 
 We added both of these features into Omicontrol, to make it essentially our all-in-one robot management application.
 Because the application will be used frequently in debugging as well as in the high-pressure mid-game interval, Omicontrol's
@@ -20,18 +21,41 @@ and uses JavaFX for the GUI, via the TornadoFX framework.
 ![Omicontrol](images/omicontrol.png)    
 _Figure 1: Omicontrol main window running on KDE neon_
 
-**TODO: maybe make the above a video demonstration fo Omicontrol**
+**TODO: VIDEO**
 
 ## Views
 Omicontrol functions through the concepts of "views", which provide different information about different aspects of our
 robot(s).
 
 ### Camera view
-The Camera View can to view camera output and tune threshold parameters.
+The Camera View can to view camera output and tune threshold parameters. This view receives a JPEG-compressed 720p
+video stream from Omicam and can be configured to display both the bounding box and individual pixels selected by
+the thresholds. The camera view supports the editing and live preview of thresholds for different objects (balls,
+yellow goal, blue goal, lines). This has greatly sped up development because thresholds can be previewed in realtime instead
+of having to wait for the app to restart (as was the case in OpenMV).
+
+The camera view supports thresholds specified in RGB, HSV, YUV and LAB colour spaces (although only RGB is sent to
+the robot). When changing colour spaces, the current threshold values are automatically converted. At the time of writing,
+this was a little bugged so we mostly just used RGB for thresholding.
 
 ### Field view
 Similar to teams in the major league, we implement a Field View to display the robots' localised positions and enable
-control of them.
+control of them. The field view allows us to get a full picture of the robot's world model (how it sees the world
+currently), and has been immensely useful in evaluating the performance of the localiser (as well as just being a cool
+thing to show off!). This view displays a top-down model of the field with the following features:
+
+- sprites for each of our robots' localised position (drawn to the correct orientation from the IMU as well)
+- sprite for the ball's estimated position
+- displays for detected robots and their estimated position
+- many debug features for looking at he localisation algorithm and goal detection
+- bandwidth display, localisation optimiser performance
+- display of each robot's FSM state
+
+The sidebar also contains a panel for controlling the behaviour of the robots. Due to COVID-19 we didn't have a
+working robot as explained in other sections, so this feature wasn't fully implemented. Although the commands are
+forwarded from Omicontrol, to Omicam, to the ESP32, the ESP32 currently ignores the command. In a future release, 
+users would be able to click to move robots to a specific position, pause robots, orient them and even have them
+return to their starting position automatically. This would have proved very useful for testing robot behaviour.
 
 ### Calibration view
 This view is used to calibrate the mirror dewarp model, which translates pixel distances from the centre of the mirror
@@ -50,9 +74,7 @@ The general flow of generating a mirror model is this process:
 This approach streamlines mirror model calculation from being a painstaking 30 minute task, into one which can be
 done in a few button presses in under 5 minutes.
 
-**TODO talk about auto fill in data thing when you click**
-
-### Model calculation process
+#### Model calculation process
 Once the user has selected a set of points, and the pixel and corresponding centimetre distances have been determined,
 we now have an interesting problem to solve. Essentially, we have to interpolate this dataset so that for any pixel
 distance we have, we can generate a corresponding centimetre distance. Ideally, this interpolation method would be accurate
@@ -68,10 +90,11 @@ Because a regression generates coefficients for a mathematical model, in theory,
 the dataset, whereas polynomial interpolation just interpolates inside the dataset. Because of this, we decided to use
 a regression to generate our mirror model.
 
-The two models we chose to use for our regression were an N-th order polynomial and an exponential in the form
-`f(x) = ae^(bx)`. As both of these models are non-linear, we need to do a non-linear least squares regression to 
-calculate the coefficients. In the polynomial this is N unknowns, and in the exponential it's just `a` and `b`. Traditionally, we used to export the data to Excel and have it calculated in there, but we decided instead
-to implement the regression ourselves to increase the speed of the mirror calculation process.
+The two models we chose to use for our regression were an N-th order polynomial and an exponential in the form `f(x) =
+ae^(bx)`. As both of these models are non-linear, we need to do a non-linear least squares regression to calculate the
+coefficients. In the polynomial this is N unknowns, and in the exponential it's just `a` and `b`. Traditionally, we used
+to export the data to Excel and have it calculated in there, but we decided instead to implement the regression
+ourselves to increase the speed of the mirror calculation process.
 
 To perform our least squares regression, we use the Apache Commons Math library and its `AbstractCurveFitter`.
 This internally uses the
@@ -86,6 +109,12 @@ Finally, we also calculate the coefficient of determination (R<sup>2</sup> value
 Commons Math has no built-in way of finding the R<sup>2</sup> value from the result of an `AbstractCurveFitter`
 implementation, so instead we implemented it ourselves by calculating the residual sum of squares and total sum of squares
 [as explained here](https://en.wikipedia.org/wiki/Coefficient_of_determination#Definitions).
+
+### Replay view
+Unfortunately, the replay view wasn't completed in time for release. In a future release, the replay view will be very
+similar to the field view, except it would allow playing back of recorded Omicam Protobuf replay files (*.omirec).
+The UI would essentially be the same, just minus the online features like movement control and the addition of a 
+video-player-like scrub bar and play/pause/time warp controls.
 
 ## Wireless connection
 Being able to connect to any robot wirelessly and manage it can be a great quality of life improvement when debugging
@@ -102,13 +131,13 @@ an Internet-connected router hosts the LattePanda device on its network via Ethe
 port 42708 which is used for Omicam to Omicontrol communications. Then, the client computer in an entirely different location,
 even a different country, connects to the Omicam router's public IP address and can interact with the camera and robots
 as normal. While this is interesting, nonetheless it's not used in practice due to lack of security, lack of need and
-Omicam's high bandwidth requirements (as it's designed for local connections).
+Omicam's bandwidth and latency being too high (as its designed for high-speed local connections).
 
 ## Wired connection
-Although wireless connection is very flexible, on the LattePanda it comes at the cost of a very poor connection in some
-situations and on some SBCs, unfortunately such as the LattePanda. Thus, we decided to use gigabit Ethernet as an alternative 
-connection type. This also acts as a backup in case the venue bans WiFi hotspots (as has happened before), or there's too much signal 
-noise to connect properly.
+Although wireless connection is very flexible, on the LattePanda it unfortunately comes at the cost of a very poor
+connection quality. Thus, we decided to use gigabit Ethernet as an alternative connection type. This also acts as a
+backup in case the venue bans WiFi hotspots (as has happened before), or there's too much signal noise to connect
+properly.
 
 This works by using a special Ethernet crossover cable and creating a simple network through assigning static IPs. The user
 can simply connect to the static IP they assigned the SBC. Just like the WiFi setup, this creates an offline connection 
@@ -132,8 +161,6 @@ in a separate thread to the JavaFX UI thread so that the UI isn't locked up ever
 
 When a button in Omicontrol is clicked, this thread encodes and transmits a Protocol Buffer message to Omicam and waits
 for a response asynchronously, notifying the calling thread once one is received.
-
-**Should put more info here, stuff like how we basically have budget RPC with protobuf**
 
 ## Design considerations
 The Omicontrol UI was designed to look professional, be simple to use, friendly to use as a tablet and work cross-platform.

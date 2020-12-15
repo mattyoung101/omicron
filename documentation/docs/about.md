@@ -1,5 +1,8 @@
 # About us
 ## About Team Omicron
+Team Omicron is a robotics team from Brisbane Boys' College, competing in RoboCup Jr Open Soccer. We are from Brisbane,
+Queensland, Australia.
+
 Team Omicron was formed in 2019 as a merger between two BBC teams, J-TEC (previously Team APEX) and Team Omicron (previously
 Deus Vult). Our team members are:
 
@@ -7,14 +10,12 @@ Deus Vult). Our team members are:
 |--------------------|-----------------------------------------------------------------|---------------|---------|
 | Lachlan Ellis      | Strategy code                                                   | J-TEC         | TBA     |
 | Tynan Jones        | Electrical design                                               | J-TEC         | TBA     | 
-| Ethan Lo           | Mechanical & electrical deign, strategy code, docs              | Omicron       | TBA     |
+| Ethan Lo           | Mechanical & electrical deign, strategy code, docs              | Omicron       | ethanlo2010@gmail.com    |
 | James Talkington   | Mechanical design                                               | J-TEC         | TBA     |
-| Matt Young         | Vision systems developer, docs                                  | Omicron       | TBA     |
+| Matt Young         | Vision systems developer, docs                                  | Omicron       | matt.young.1@outlook.com |
 
 Our members are experienced, having competed in 2-3 previous internationals competitions. Our team collectively
 also has many victories and podium placements in Australian Nationals, States and Regionals competitions.
-
-### Team history
 
 ## COVID-19
 Our competition was scheduled for the 2020 RoboCup Internationals in Bordeaux, France. Unfortunately, due to the 
