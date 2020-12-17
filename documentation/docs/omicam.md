@@ -58,6 +58,9 @@ This is accomplished by using the open-source computer vision library OpenCV.
 We use a Gstreamer pipeline to decode our camera's MJPEG stream at our target resolution of 1280x720 pixels, which is
 read in through an OpenCV `VideoCapture` object.
 
+![Raycasting](images/camera_original.jpg)   
+_Figure 1: image captured directly from Omicam, showing how it views the field (note: downscaled for docs)_
+
 ### Pre-processing
 With the camera frame in OpenCV memory, we then apply the following pre-processing steps to the image:
 
@@ -170,7 +173,7 @@ we also use the blue and yellow goals to triangulate our position since there's 
 sensor to use. Once we have an initial localisation though, we can go back to using the mouse sensor data.
 
 ![Method for calculating position using goals](images/goal_maths.png)    
-_Figure 1: method for triangulating position using goals coordinates and vectors_
+_Figure 2: method for triangulating position using goals coordinates and vectors_
 
 Once the initial estimate is calculated, which is usually accurate to about 6-10cm, we constrain the optimiser's bounds
 to a certain sized rectangle around the centre of the estimated position. We also change the optimiser's initial
@@ -188,7 +191,7 @@ The localiser's input is a 1-bit mask of pixels that are determined to be on fie
 for the colour white, which is handled by the vision pipeline described earlier.
 
 With the input provided, a certain number of rays (usually 64) are emitted from the centre of the line image. A ray
-terminates when it touches a line, reaches the edge of the image or reaches the edge of the mirror (as it would be a
+terminates when it touches a line, leaves the image frame or reaches the edge of the mirror (as it would be a
 waste of time to check outside the mirror). Currently we use simple trigonometry to project this ray, although we could
 use the Bresenham line algorithm for more performance.
 
@@ -197,7 +200,7 @@ Rays are stored as only a length in a regular C array, as we can infer the angle
 This step can be summarised as essentially "sampling" the line around us on the field.
 
 ![Raycasting](images/raycasting.png)   
-_Figure 2: example of ray casting on field, with a position near to the centre_
+_Figure 3: example of ray casting on field, with a position near to the centre_
 
 ### Camera normalisation
 These rays are then dewarped to counter the distortion of the 360 degree mirror. The equation to do so is determined by
@@ -209,9 +212,7 @@ with each ray essentially in field coordinates (or field lengths) rather than ca
 This dewarping equation is also used by the vision pipeline to determine the distance to the ball and goals in centimetres.
 
 ![Dewarped](images/dewarped.png)    
-_Figure 3: example of applying the dewarp function to an entire image, on the low resolution OpenMV H7._
-
-**TODO update to new images on the above**
+_Figure 4: results of applying the dewarp function to the entire image in Figure 1._
 
 The second phase of the camera normalisation is to rotate the rays relative to the robot's heading, using a rotation matrix.
 The robot's heading value, which is relative to when it was powered on, is transmitted by the ESP32 (again using Protocol Buffers).
@@ -234,12 +235,12 @@ The most important part of this process is the _objective function_, which is a 
 vector (in our case, an estimated 2D position) and calculates a "score" of how accurate the value is.
 
 ![Objective function](images/objective_function.png)   
-_Figure 4: map of objective function for a robot placed at the centre of the field. White pixels indicate high accuracy areas_
+_Figure 5: map of objective function for a robot placed at the centre of the field. White pixels indicate high accuracy areas_
 _and black pixels indicate less accurate areas. This takes up to 30 seconds to calculate for all 44,226 positions (this shows_
 _why a brute force search would not work in competition)._
 
 ![Objective function 3D visualisation](images/field_heightmap3.png)    
-_Figure 5: another visualisation of the objective function, instead shown by treating it as a heightmap in Blender._
+_Figure 6: another visualisation of the objective function, instead shown by treating it as a heightmap in Blender._
 
 The known line layout/geometry of the RoboCup field is encoded into a "field file". This is a binary Protocol Buffer
 file written to disk, and is essentially a bitmap where 1 pixel = 1cm, white if line and black if no line. The reason
@@ -258,9 +259,9 @@ we have extremely low cache miss rates most of the time. In theory, it would als
 cache completely offline for more performance, although we currently do not.
 
 ![Field file](images/field_file.png)    
-_Figure 6: visualisation of the field data component of the field file. In the original 243x182 image, 1 pixel = 1cm_
+_Figure 7: visualisation of the field data component of the field file. In the original 243x182 image, 1 pixel = 1cm_
 
-In theory, our optimisation problem could actually be represented as a non-linear least squares probblem (rather than
+In theory, our optimisation problem could actually be represented as a non-linear least squares problem (rather than
 a non-linear derivative free problem), and could thus be solved using standard algorithms like the Gauss-Newton or
 Levenberg-Marquardt algorithms. However, due to a lack of mathematical knowledge I decided to just use the simpler
 derivative-free algorithm instead.
@@ -277,7 +278,7 @@ We also experimented with a novel robot detection algorithm, although it was not
 Initially testing shows it could be pretty accurate, especially with LiDAR instead of video.
 
 The algorithm works under the assumption that since most robots are white, they will in turn be picked up by our line
-detector. We can analyse all the lines we detect and detect outliers, or "suspicious" rays, which will bselong to robots.
+detector. We can analyse all the lines we detect and detect outliers, or "suspicious" rays, which will belong to robots.
 We do this using the standard method of checking if a ray lies 1.5x outside the interquartile range (IQR). Once that is
 done, we cluster groups of suspicious rays one after the other into unbroken blobs that are robots. With this, we
 essentially have a triangle of where the robot could be in (the back face of the triangle is set to be along the nearest
@@ -337,7 +338,7 @@ Usually, we embed configuration in a "defines.h" file. Config includes informati
 rectangle, the radius of the mirror and the dewarp function.
 
 Because this is embedded in a header, the project would have to be recompiled and relaunched every time a setting is
-updated which is not ideal. For Omicam, we used an INI file stored on the SBC's disk that is parsed and loaded on every
+updated which is not ideal. For Omicam, we used an INI file stored on the SBCs disk that is parsed and loaded on every
 startup. In addition, the config file can also be dynamically reloaded by an Omicontrol command, making even relaunching
 Omicam un-necessary. Because of this, we have much more flexibility and faster prototyping abilities when tuning to
 different venues.

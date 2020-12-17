@@ -35,7 +35,7 @@ This section contains the overview of the components on our robots.
 
 Microcontrollers:
     - Main: ESP32 DEVKIT-C
-    - Secondary: Teensy 3.5, ATMega328P
+    - Secondary: Teensy 4, ATMega328P
 
 SBC:
     - LattePanda Delta 432

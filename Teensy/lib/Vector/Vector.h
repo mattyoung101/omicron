@@ -1,3 +1,5 @@
+// Credit to Robert McArthur, Team Apex 2019
+// who originally wrote this.
 #ifndef VECTOR_H_
 #define VECTOR_H_
 

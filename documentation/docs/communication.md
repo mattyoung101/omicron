@@ -71,7 +71,7 @@ A standard JimBus message sent over UART has the following structure:
 - CRC8 checksum of protobuf data
 
 Essentially, our messages have a 3 byte header and a 1 byte checksum. JimBus, our custom UART comms protocol, runs on
-the ESP32, the Teensy 3.5 and even the LattePanda using POSIX termios, so it's highly cross-platform and easy to decode.
+the ESP32, the Teensy 4 and even the LattePanda using POSIX termios, so it's highly cross-platform and easy to decode.
 We introduced a CRC8 checksum this year to ensure that, when a message is corrupted due to electrical noise, the
 Protobuf decoding doesn't spectacuarly fail. Instead, if the received CRC8 checksum doesn't match the received checksum
 (calculated before sending by the other device), we reject the message, log an error and attempt to resync the UART

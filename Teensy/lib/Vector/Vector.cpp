@@ -1,3 +1,5 @@
+// Credit to Robert McArthur, Team Apex 2019
+// who originally wrote this.
 #include "Vector.h"
 
 Vector::Vector() {

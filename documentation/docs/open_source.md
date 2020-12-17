@@ -1,6 +1,6 @@
 # Open source acknowledgements
-Team Omicron is happy to acknowledge our use of many open-source projects in developing our robots software,
-which we acknowledge here:
+Team Omicron would like to thank and acknowledge the authors of the following open-source software we used while
+developing our robot software:
 
 ## Omicam
 - [log.c](https://github.com/rxi/log.c): MIT licence
@@ -30,5 +30,7 @@ which we acknowledge here:
 - [BNO055_driver](https://github.com/BoschSensortec/BNO055_driver): BSD 3-Clause licence
 - [esp32-button](https://github.com/craftmetrics/esp32-button): MIT licence
 
-## ATMega/Teensy firmware
-**LICENCES HERE**
+## ATMega and Teensy firmware
+- [Timer](https://github.com/TomFraser/FG-B-2018/tree/master/Software/lib/Timer): GPLv3 license
+- [Arduino](https://github.com/arduino/Arduino): GPLv2 license
+- [Nanopb](https://github.com/nanopb/nanopb/): zlib license

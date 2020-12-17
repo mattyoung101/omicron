@@ -13,8 +13,9 @@ a few minor bug fixes). Hence, a lot of this documentation is borrowed from the 
 by our previous team (Deus Vult).
 
 ## ESP32-IDF
-In our previous team, Deus Vult, we migrated from using a Teensy 3.5 as the main device to using an ESP32 last year.
-This was due to **REASONS**. This year we again use the ESP32 as our main device, working with last year's codebase.
+In our previous team, Deus Vult, we migrated from using a Teensy as the main device to using an ESP32 last year
+(although we continue to use a Teensy this year as a slave device). This was due to **TODO REASONS**. This year we again
+use the ESP32 as our main device, working with and improving on last year's codebase.
 
 Espressif (ESP32 manufacturers) provides two options for software development: the Arduino core, which provides a
 familiar C++ environment with ported Arduino functions, and secondly the IoT Development Framework (IDF), which is a
