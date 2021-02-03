@@ -21,7 +21,7 @@
 
 extern field_objects_t selectedFieldObject;
 
-extern _Atomic double cpuTemperature;
+extern _Atomic(double) cpuTemperature;
 
 /** Used as an easier way to pass two pointers to the thread queue (since it only takes a void*) */
 typedef struct {

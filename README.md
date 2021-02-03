@@ -41,7 +41,7 @@ Our team members work on seven main projects:
 | Omicam     | /omicam             | Our advanced vision and localisation system running on a LattePanda Delta.    |
 | Omicontrol | /omicontrol         | Our custom wireless visualisation and debugging application.                  |
 
-## License
+## Licence
 ### Code
 All code written by Team Omicron is released under the **Mozilla Public License 2.0** (see LICENSE.txt in each directory).
 You will be able to tell which code is ours due to the presence of Omicron copyright notices at the top of the file.
@@ -49,7 +49,7 @@ You will be able to tell which code is ours due to the presence of Omicron copyr
 For information on this licence, please [read this FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/), and [this
 question](https://opensource.stackexchange.com/a/8832). Simply put, if you are building a robot based on Team Omicron's
 code, the MPL requires that you disclose that your robot uses open-source software from Team Omicron, and where anyone
-can obtain it (this repo). _A great place to do so would be in your poster and presentation._ If you modify any files with
+can obtain it (this repo). _A great place to do so would be in your poster and presentation!_ If you modify any files with
 the MPL licence header, the licence requires that you release your improvements under the MPL 2.0 as well. New files
 that you create can be under any licence.
 
@@ -57,7 +57,15 @@ We have decided to use the MPL because we believe it balances freedom of usage, 
 released back to the RoboCup community for future teams to benefit from.
 
 ### Designs
-TODO figure out designs licence. CC-BY-SA most likely.
+All hardware designs and PCBs produced by us, in the /designs folder, are licenced under
+the **[Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/)**.
+
+This licence basically means you can use and change the designs, as long as you give us appropriate credit and also distribute
+your modifications under the same licence. See the linked document for more info (it's not too complicated). A great place
+to attribute us, if you use our designs, is in your presentation and poster.
+
+We chose this licence since it is designed for works like hardware (as opposed to code), and allows the whole RoboCup 
+community to benefit from future modifications.
 
 ## Other links
 For more information on our robot, please checkout our [website](https://teamomicron.github.io/). Game footage, testing 

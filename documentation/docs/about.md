@@ -34,17 +34,25 @@ or bug-free. However, we believe our product is still of value to the larger Rob
 This section contains the overview of the components on our robots.
 
 Microcontrollers:
-    - Main: ESP32 DEVKIT-C
-    - Secondary: Teensy 4, ATMega328P
 
-SBC:
-    - LattePanda Delta 432
+- Main: ESP32-WROOM-32
+- Secondary: Teensy 4, ATMega328P
 
-Camera module:
-    - e-con Systems Hyperyon
+Sensors:
+
+- IMU: BNO-055
+
+Camera setup:
+
+- Software: Custom developed by us, see [Omicam](omicam.md) for the camera and [Omicontrol](omicontrol.md) for its UI
+- Processor: [LattePanda Delta 432](https://www.lattepanda.com/products/lattepanda-delta-432.html) SBC (2.4 GHz Intel
+  Celeron N4100, 4GB RAM)
+- Camera module: [e-Con Systems Hyperyon](https://www.e-consystems.com/usb-cameras/imx290-low-light-usb-camera.asp) IMX290
+  low-light camera module
 
 Motors:
-    - 4x Maxon DCX19
+
+- 4x Maxon DCX19
     
 
 ## New features & refinements

@@ -17,7 +17,7 @@
 /** Omicam will be running locally on a PC for debugging. Uses test imagery and some features are disabled. */
 #define BUILD_TARGET_PC 1
 /** which platform Omicam will be running on */
-#define BUILD_TARGET (BUILD_TARGET_SBC)
+#define BUILD_TARGET (BUILD_TARGET_PC)
 
 /**
  * Version history:
@@ -31,9 +31,9 @@
  * 3.4b: Omicam enters beta, localiser work continued
  * 4.4b: UART comms implemented, hybrid localiser implemented, fixed lots of bugs
  * 4.5b: implemented hybrid localiser smoothing and recording vision to disk
- * 5.5b: (WIP) refactor replay system, added rotation correction, added obstacle detection
+ * 5.5r: (open source release) refactor replay system, added rotation correction, added obstacle detection
  */
-#define OMICAM_VERSION "5.5b"
+#define OMICAM_VERSION "5.5r"
 /** whether or not verbose logging is enabled (LOG_TRACE if true, otherwise LOG_INFO) */
 #define VERBOSE_LOGGING 1
 /** if true, attempts to kill all other Omicam instances on launch (stops duplicate processes) */
@@ -91,7 +91,7 @@
 /**
  * If a goal estimate is available, NLopt bounds are constrained to a square of this size (in cm) around the estimated position.
  * Set this value conservatively, since goal estimate is often very wonky and you don't want to miss the real position.
- * This value may have a significant impact on performance in addition to LOCALISER_SMALL_STEPs
+ * This value may have a significant impact on performance in addition to LOCALISER_SMALL_STEP.
  */
 #define LOCALISER_ESTIMATE_BOUNDS 45
 /** The number of rays to use when raycasting on line images. NOTE: must be an even number, preferably a power of two. */

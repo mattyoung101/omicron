@@ -90,16 +90,15 @@ Because a regression generates coefficients for a mathematical model, in theory,
 the dataset, whereas polynomial interpolation just interpolates inside the dataset. Because of this, we decided to use
 a regression to generate our mirror model.
 
-The two models we chose to use for our regression were an N-th order polynomial and an exponential in the form `f(x) =
-ae^(bx)`. As both of these models are non-linear, we need to do a non-linear least squares regression to calculate the
-coefficients. In the polynomial this is N unknowns, and in the exponential it's just `a` and `b`. Traditionally, we used
-to export the data to Excel and have it calculated in there, but we decided instead to implement the regression
-ourselves to increase the speed of the mirror calculation process.
+The two models we chose to use for our regression were an N-th order polynomial and an exponential in the form f(x) = a
+* e<sup>(bx)</sup>, where e is Euler's number. As both of these models are non-linear, we decided to do a non-linear
+least squares regression to calculate the coefficients. In the polynomial this is N unknowns, and in the exponential
+it's just _a_ and _b_. Traditionally, we used to export the data to Excel and have it calculated in there, but we
+decided instead to implement the regression ourselves to increase the speed of the mirror calculation process.
 
-To perform our least squares regression, we use the Apache Commons Math library and its `AbstractCurveFitter`.
-This internally uses the
-Levenberg-Marquardt algorithm, an improvement over the Gauss-Newton algorithm, to converge on the most optimal values
-for the unknown coefficients.
+To perform our least squares regression, we use the Apache Commons Math library and its `AbstractCurveFitter`. This
+internally uses the Levenberg-Marquardt algorithm, an improvement over the Gauss-Newton algorithm, to converge on the
+most optimal values for the unknown coefficients.
 
 Although Commons Math has a built in `PolynomialCurveFitter` which can fit a `PolynomialFunction`, there is no 
 exponential curve fitter or exponential function provided, so we built our own `ExponentialCurveFitter` and `ExpFunction`

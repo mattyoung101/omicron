@@ -16,7 +16,7 @@ thus development and testing of the robot slowed down quite a lot.
 
 Although we never got a chance to make our difference in the official competitions, we at Team Omicron still want to
 give back to the community somehow, or do _something_ with the hundreds of hours we've individually spent designing,
-programming, testing and writing. As such, we've decided to **open source our entire project!** This means that every
+programming, testing and writing. As such, we've decided to open source our entire project! This means that every
 single last bit of code, hardware (both structural & electrical), all formal documentation and even internal testing
 documents/notes will be released under permissive open source licences. We provide documentation below and on GitHub
 for how to get started.
@@ -39,8 +39,6 @@ all the way through, and branch out to individual projects from there.
 
 ### License
 #### Code
-**TODO mention poster credit**
-
 All code written by Team Omicron is released under the **Mozilla Public License 2.0** (see LICENSE.txt in each
 directory). You will be able to tell which code is ours due to the presence of Omicron copyright notices at the top of
 the file.
@@ -56,7 +54,12 @@ We have decided to use the MPL because we believe it balances freedom of usage, 
 are released back to the RoboCup community for future teams to benefit from.
 
 #### Designs
-TODO figure out designs licence. CC-BY-SA most likely.
+All hardware designs and PCBs produced by us are licenced under
+the **[Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/)**.
+
+This licence basically means you can use and change the designs, as long as you give us appropriate credit and also distribute
+your modifications under the same licence. See the linked document for more info (it's not too complicated). A great place
+to attribute us, if you use our designs, is in your presentation and poster.
 
 ## Some final thoughts
 While it's certainly possible to use, say, our camera project on your robot by simply downloading and compiling it,

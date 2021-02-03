@@ -10,7 +10,7 @@ set(CMAKE_CPP_STANDARD 17)
 add_definitions(-D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -DMATHC_USE_DOUBLE_FLOATING_POINT)
 
 # enable ASan and stack protection
-set (SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -static-libsan")
+set (SAFETY_FLAGS "-fstack-protector-strong -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -static-libasan")
 # these flags tune Omicam builds specifically for the platform it was compiled on, and enable SSE3 instructions
 # note: using -flto to enable link time optimisations breaks using "-Og" and "-Ofast", but should be used in future
 set (PERFORMANCE_FLAGS "-march=native -mtune=native -msse -msse3")

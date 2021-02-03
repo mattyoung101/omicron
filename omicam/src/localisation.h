@@ -45,7 +45,7 @@ typedef struct {
 DA_TYPEDEF(localiser_point_t, lp_list_t)
 
 /** true if the localisation for the last frame has completed */
-extern _Atomic bool localiserDone;
+extern _Atomic(bool) localiserDone;
 /** was used to try and fix a bug, not very helpful anymore */
 extern pthread_mutex_t localiserMutex;
 

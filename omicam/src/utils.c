@@ -402,7 +402,7 @@ uint32_t utils_go_sicko_mode(void){
         if (utils_only_numbers(entry->d_name)) {
             // /proc/[PID]/exe contains a symlink to the real executable path, so read the link
             char symlink[256];
-            sprintf(symlink, "/proc/%s/exe", entry->d_name);
+            snprintf(symlink, 256, "/proc/%s/exe", entry->d_name);
 
             char exepath[256];
             ssize_t pathLen = readlink(symlink, exepath, 256);

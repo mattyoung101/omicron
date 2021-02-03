@@ -12,13 +12,19 @@ performance and knowledge to be gained.
 a few minor bug fixes). Hence, a lot of this documentation is borrowed from the RoboCup 2019 Sydney submission
 by our previous team (Deus Vult).
 
-## ESP32-IDF
-In our previous team, Deus Vult, we migrated from using a Teensy as the main device to using an ESP32 last year
-(although we continue to use a Teensy this year as a slave device). This was due to **TODO REASONS**. This year we again
-use the ESP32 as our main device, working with and improving on last year's codebase.
+he Teensy 3.5 microcontroller. This year we have decided to use the ESP32-WROOM module from Espressif Systems. 
 
-Espressif (ESP32 manufacturers) provides two options for software development: the Arduino core, which provides a
-familiar C++ environment with ported Arduino functions, and secondly the IoT Development Framework (IDF), which is a
+## ESP32-IDF
+Last year, under our previous team Deus Vult, we migrated from using a Teensy 3.5 as the main device to using an ESP32.
+This year we continue to use the ESP32 as our main device, working with and improving on last year's codebase. 
+
+Compared to the Teensy 3.5, the ESP32-WROOM-32 has twice the clock rate (at 240 MHz), 700% more flash storage (4MB) and
+50% more RAM (384 KB). In addition, it has many more advanced features we utilise, including two physical CPU cores (for
+multi-tasking), built-in Wi-Fi and Bluetooth among other features. For all these extra benefits, the ESP32 is 54%
+cheaper than the Teensy, making it a clear winner.
+
+Espressif Systems (ESP32 manufacturers) provides two options for software development: the Arduino core, which provides
+a familiar C++ environment with ported Arduino functions, and secondly the IoT Development Framework (IDF), which is a
 completely ESP32 specific platform created by Espressif. The IDF is the recommended option to program advanced devices
 in, and we consider our robot to be an advanced device. Espressif recommends programming projects in the IDF using C
 (rather than C++). Ethan and I (Matt) already knew C from last year's competition, and all of the ESP32 code was already

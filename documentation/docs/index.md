@@ -9,4 +9,6 @@ to answer any questions you may have about any aspect of our robots!
 
 Due to the COVID-19 global pandemic, our team sadly never got a chance to compete in competition. Instead, we have released
 all of our source code for every project, hardware designs (mechanical and electrical), documentation and notes under permissive
-open source licences! Check it out here: [Open source release](open_source_release.md)
+open source licences! Check it out here: [Open source release](open_source_release.md).
+
+To visit our GitHub repo with code, designs and more docs: [click here](TODO add link). 

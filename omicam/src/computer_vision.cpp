@@ -48,7 +48,7 @@ typedef struct {
 
 static pthread_t cvThread = {};
 static pthread_t fpsCounterThread = {};
-static _Atomic int32_t lastFpsMeasurement = 0;
+static _Atomic(int32_t) lastFpsMeasurement;
 static Rect cropRect;
 static movavg_t *fpsAvg;
 static int32_t errorCount = 0;
@@ -514,7 +514,11 @@ static auto fps_counter_thread(void *arg) -> void *{
 
 #if VISION_DIAGNOSTICS
         if (REMOTE_ALWAYS_SEND || !remote_debug_is_connected()){
-            printf("Average frame time: %.2f ms, CPU temp: %.2f, FPS: %d\n", avgTime, cpuTemperature, lastFpsMeasurement);
+            // note: I dunno wtf happened, but GCC is now complaining about atomics everywhere, this is a workaround
+            // so it compiles. Seriously this compiled a few months ago, idk what's wrong with it
+            double localTemp = cpuTemperature;
+            int32_t localFps = lastFpsMeasurement;
+            printf("Average frame time: %.2f ms, CPU temp: %.2f, FPS: %d\n", avgTime, localTemp, localFps);
             fflush(stdout);
         }
 #endif
@@ -525,12 +529,10 @@ void vision_init(void){
     cropRect = Rect(visionCropRect[0], visionCropRect[1], visionCropRect[2], visionCropRect[3]);
     fpsAvg = movavg_create(256);
 
-    // IMPORTANT: due to some weird stuff with Intel's Turbo Boost on the Celeron, it may be faster to uncomment the below
-    // line and disable multi-threading. With multi-threading enabled, all cores max out at 1.4 GHz, whereas with it
-    // disabled they will happily run at 2 GHz. However, YMMV so just try it if Omicam is running slow.
-    setNumThreads(3); // leave one core free for localiser
-    // TODO (matt's note) it may be worth making the above all 4 cores since the localiser is so fast now due to caching
-    // I just realised this at the time of open source release, so give it a try.
+    // You can uncomment this to set the number of threads the camera will use, for example, to leave one core
+    // "free" for the localiser (although Linux will likely schedule threads on that core anyway). By leaving it commented
+    // out, OpenCV chooses the number of threads to use for us.
+    //setNumThreads(3);
 
     int numCpus = getNumberOfCPUs();
     string features = getCPUFeaturesLine();

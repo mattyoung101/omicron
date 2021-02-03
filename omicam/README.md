@@ -143,21 +143,22 @@ boot without you having to use ssh or CLion.
 Make sure your Release build is up to date before deploying!
 
 ### Known issues and workarounds
-
 - **Robot detection is bugged.** This feature was mainly added as an experiment and has not yet been finished.
 - **INI config reloading is sketchy.** Some features like mirror crop will work, others won't. This is mainly obscure implementation
 details, that we haven't fixed since we don't use INI reloading too much.
 - **If Arduino can't upload, don't panic!** It's just being dumb. You need to run the setup script which disables the modem
 monitor thingy which runs by default and interferes with UART. Then try about 5 times and it should work eventually.
-- If gcc's sanitizers don't work, try using clang intsead. This was an old problem using ARM boards, so it should be fine on x86.
-- You will need to disable the visual Address Sanitizer output in CLion as that is also broken.
+- You will need to disable the visual Address Sanitizer output in CLion as that appears to be broken.
+- In CLion, if the project is generating a lot of warnings on every function call, this is a bug. See 
+  [here](https://youtrack.jetbrains.com/issue/CPP-21351#focus=Comments-27-4270685.0-0) for how to fix it. I'm not sure
+  if this affects of everyone or just me, but hopefully it'll be patched in the future.
 - CLion's remote upload occasionally (a few times per full day of work) fails temporarily, just ignore it and try again.
 
 ## Licence
 Omicam is licenced under the Mozilla Public License 2.0, the same as the rest of Team Omicron's code.
 
 If you use elements of Omicam in your own robots, we would really appreciate credit on your team's poster
-or website. Please send us an email if you use it, we'd love to hear from you.
+or website. Please don't hesitate to send us an email if you use it, we'd love to hear from you.
 
 ## Open source libraries used
 - [log.c](https://github.com/rxi/log.c): MIT license

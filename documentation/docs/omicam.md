@@ -3,9 +3,10 @@
 _Page author: Matt Young, vision systems & low-level developer_
 
 One of the biggest innovation Team Omicron brings this year is our high-performance, custom vision and localisation
-application (i.e. camera software) called _Omicam_. Omicam handles the complex process of detecting the ball and goals,
-determining the robot's position on the field as well as encoding/transmitting this information, all in one highly
-optimised codebase. It uses a novel method involving non-linear optimisation to calculate the robot's position.
+application (i.e. camera software) called _Omicam_. This replaces our old setup, which used to use the OpenMV H7. Omicam
+handles the complex process of detecting the ball and goals, determining the robot's position on the field as well as
+encoding/transmitting this information, all in one highly optimised codebase. It uses a novel method involving
+2D non-linear optimisation to calculate the robot's position.
 
 The application is developed mostly in C, with some C++ code to interface with OpenCV. 
 It runs on the LattePanda Delta 432 single board computer and uses Linux (Xubuntu 18.04) as its OS.
@@ -105,20 +106,21 @@ to the ESP32.
 ## Localisation
 ### Previous methods and background
 Localisation is the problem of detecting where the robot is on the field. This information is essential to know in order
-to develop advanced strategies and precise movement control, instead of just driving directly towards the ball.
+to develop advanced strategies and precise movement control, instead of just driving directly towards the ball. In this
+section, we give a brief overview of the known methods teams currently use to localise and their benefits/drawbacks.
 
-Currently, teams use three main methods of localisation. Firstly, the most common approach uses the detected goal blobs
-in the camera to triangulate the robot's position. This approach can be very inaccurate because of the low resolution of
-most cameras (such as the OpenMV), the fact that there are only two goals to work with as well as the fact that sometimes
-the goals are not visible (especially in SuperTeam). Using this approach on an OpenMV, we found accuracy of about 15 cm,
-but running on Omicam at 720p we found accuracy of around 4-6 cm.
+The most common approach uses the detected goal blobs in the camera to triangulate the robot's position. This approach
+can be very inaccurate because of the low resolution of most cameras (such as the OpenMV), the fact that there are only
+two goals to work with as well as the fact that sometimes the goals are not visible (especially in SuperTeam). Using
+this approach on an OpenMV, we found accuracy of about 15 cm, but running on Omicam at 720p we found accuracy of around
+4-6 cm. However, if the goals are missing, localisation is impossible.
 
 The second approach in use is based on distance sensors such laser range finders (LRFs) or ultrasonic sensors. By using
 a few of these sensors on a robot, the position of the robot can be inferred with trigonometry by measuring the distance
 to the walls. The drawback of this approach is that it's impossible to reliably distinguish between interfering objects,
-such as a hand or another robot, compared to a wall. This means that although this approach can be accurate on an empty
-field, it is very difficult to use reliably in actual games. On an empty field, teams have found accuracies of 5-10 cm,
-but data is often invalid and can't be used reliably in real games.
+such as a hand or another robot, and the walls actually being looked for. This means that although this approach can be
+accurate on an empty field, it is very difficult to use reliably in actual games. On an empty field, teams have found
+accuracies of 5-10 cm, but data is often invalid and can't be used reliably in real games.
 
 The third approach in use by some teams is one based on 360 degree LiDARS. This approach, being similar to the second
 approach, has similar accuracy and drawbacks. One additional drawback is the expensive cost and heavy weight of LiDARS.
@@ -137,27 +139,26 @@ knowing the robot's position is not necessary. However, with our advanced strate
 This year, Team Omicron presents a novel approach to robot localisation based on a hybrid sensor-fusion/non-linear
 optimisation algorithm. Our approach builds an initial estimate of the robot's position using faster, more inaccurate
 methods like goal triangulation and mouse sensor displacement. It then refines this estimate to a much higher accuracy
-by solving a 2D non-linear optimisation problem in realtime. The addition of the optimisation stage to the algorithm
-increases accuracy by about 4.6x, to be as little as 1.5cm error.
+by solving a 2D non-linear optimisation problem in realtime using the Subplex algorithm (an improvement of the well
+known Nelder-Mead simplex algorithm). The addition of the optimisation stage to the algorithm increases accuracy by
+about 4.6x, to be as little as 1.5cm error.
 
 Our optimisation algorithm works by comparing observed field line geometry from the camera (sampled via raycasting), 
 to a known model of the field. By trying to optimise the robot's unknown (x,y) position such that it minimises 
 the error between the observed lines and expected lines at each position, we can infer the robot's coordinates to a 
 very high level of accuracy.
 
-The optimisation stage of our sensor fusion algorithm is based on a paper by Lauer, Lange and Redmiller (2006) [^2],
-as covered in the paper by Lu, Li, Hu and Zheng (2013) [^3].
+The optimisation stage of our sensor fusion algorithm is based on a paper by Lauer, Lange and Redmiller (2006) [^2], as
+covered in the paper by Lu, Li, Hu and Zheng (2013) [^3]. However, our approaches are different in certain areas, with
+us making some concessions and improvements to better suit the RoboCup Junior league (as the paper was written for
+middle-size league). Lauer et al's approach casts rays and marks points where these rays intersect the lines, whereas we
+work with these rays and their lengths directly. Their approach also calculates the orientation of the robot, while we
+trust the value of the IMU for orientation to simplify our algorithm. Their optimisation stage uses the RPROP algorithm
+to minimise error, while we use Subplex (based on the Nelder-Mead simplex algorithm). Finally, Lauer et al's approach
+has more complex global localisation and smoothing that can handle unstable localisations with multiple local minima,
+while our approach assumes only one minimum is present in the objective function.
 
-However, our approaches are different in certain areas, with us making some concessions and improvements to better suit
-the RoboCup Junior league (as the paper was written for middle-size league). Lauer et al's approach casts rays and
-marks points where these rays intersect the lines, whereas we work with these rays and their lengths directly. Their
-approach also calculates the orientation of the robot, while we trust the value of the IMU for orientation to simplify
-our algorithm. Their optimisation stage uses the RPROP algorithm to minimise error, while we use Subplex (based on
-the Nelder-Mead simplex algorithm). Finally, Lauer et al's approach has more complex global localisation and smoothing
-that can handle unstable localisations with multiple local minima, while our approach assumes only one minimum is
-present in the objective function.
-
-Our approach has the following 5 main steps:
+We further explain our method by dividing it into the following 6 main processes:
 
 1. Estimate calculation
 3. Image analysis
@@ -170,21 +171,21 @@ The localiser first constructs an initial estimate of the robot's position using
 The preferred method is to sum the displacement data from our PWM3360 mouse sensor to determine our current position 
 since last localisation. However, in certain cases such as the initial localisation after the robot is powered on,
 we also use the blue and yellow goals to triangulate our position since there's no initial position for the mouse 
-sensor to use. Once we have an initial localisation though, we can go back to using the mouse sensor data.
+sensor to use. Once we have an initial localisation, we can go back to using the mouse sensor data.
 
 ![Method for calculating position using goals](images/goal_maths.png)    
 _Figure 2: method for triangulating position using goals coordinates and vectors_
 
 Once the initial estimate is calculated, which is usually accurate to about 6-10cm, we constrain the optimiser's bounds
 to a certain sized rectangle around the centre of the estimated position. We also change the optimiser's initial
-estimate position to the estimated position, and scale down its step size significantly. We assume that the estimate
-is close to the actual position, so a smaller step size means that it won't overshoot the minimum and will hopefully
-converge faster. The combination of the estimate bounds with changing localiser settings means that we can often
-stably converge on the real position of the robot with around 40 objective function evaluations.
+starting position to the calculated initial estimate, and scale down its step size significantly. We assume that the
+estimate is close to the actual position, so a smaller step size means that it won't overshoot the minimum and will
+hopefully converge faster.
 
 If the localiser isn't constrained to the initial estimate bounds, especially on the internationals field we found it
 could be very unstable and would often get stuck in nonsensical positions like the corners of the field or inside
-the goals. Constraining the optimiser to the estimate bounds is very helpful to reduce these problems.
+the goals. Constraining the optimiser to the estimate bounds is very helpful to reduce these problems, and it also
+provides performance benefits as well (since the optimisation algorithm searches less ground).
 
 ### Image analysis
 The localiser's input is a 1-bit mask of pixels that are determined to be on field lines. This is determined by thresholding
@@ -200,23 +201,30 @@ Rays are stored as only a length in a regular C array, as we can infer the angle
 This step can be summarised as essentially "sampling" the line around us on the field.
 
 ![Raycasting](images/raycasting.png)   
-_Figure 3: example of ray casting on field, with a position near to the centre_
+_Figure 3: example of ray casting on field file, with a position near to the centre. Each unique ray has a random colour._
 
 ### Camera normalisation
 These rays are then dewarped to counter the distortion of the 360 degree mirror. The equation to do so is determined by
-measuring the pixels between points along evenly spaced tape placed on the real field, via Omicontrol. Using regression 
-software such as Excel or Desmos, an equation can then be calculated to map pixel distances to real distances. 
-In our case, we simply apply the dewarp function to each ray length instead, leaving us
-with each ray essentially in field coordinates (or field lengths) rather than camera coordinates.
+measuring the pixels between points along evenly spaced tape placed on the real field, via Omicontrol. For more
+information, see [this page](omicontrol.md). In our case, we simply apply the dewarp function to each ray distances
+instead, leaving us with each ray in centimetre field coordinates rather than camera pixel coordinates.
 
 This dewarping equation is also used by the vision pipeline to determine the distance to the ball and goals in centimetres.
 
-![Dewarped](images/dewarped.png)    
-_Figure 4: results of applying the dewarp function to the entire image in Figure 1._
+Unfortunately, this normalisation process is the greatest source of inaccuracy in Omicontrol. It is extremely sensitive
+to image resolution, camera quality, 360 mirror quality and perspective. At the furthest edges of the mirror, due to
+the mirror's curvature, there is simply less data. This means that it's still difficult for us to accurately calculate
+the position of the ball when it's very far away, although we can at least see it now. The best solution to this problem
+would be a new mirror design and a higher resolution camera (something like 1920x1080).
 
-The second phase of the camera normalisation is to rotate the rays relative to the robot's heading, using a rotation matrix.
-The robot's heading value, which is relative to when it was powered on, is transmitted by the ESP32 (again using Protocol Buffers).
-For information about how this value is calculated using the IMU, see the ESP32 and movement code page.
+![Dewarped](images/dewarped.png)    
+_Figure 4: results of applying the dewarp function to the entire image in Figure 1. This would take too long to calculate_
+_on the SBC, so we only dewarp ray distances instead._
+
+The second phase of the camera normalisation is to account for the robot's orientation by rotating the casted rays
+relative to the robot's current angle, as reported by the BNO-055 plugged into the ESP32. While we could actually have
+the optimiser solve for the robot's orientation as well as it's coordinates, we have found the BNO-055 good enough
+to trust its instead of solving for them ourselves.
 
 ### Coordinate optimisation and interpolation
 The coordinate optimisation stage is achieved by using the Subplex local derivative-free non-linear optimisation
@@ -227,7 +235,7 @@ trivial for it. Due to the fact that our system is overdetermined, it is not eas
 generate an approximate solution using an optimisation algorithm like Subplex (although, as mentioned later, it
 should be possible to generate a least squares solution).
 
-Our problem description is as follows: (**TODO not correct**)
+Our problem description is as follows:
 
 ![Mathematical description of optimisation problem](images/problem.png)
 
@@ -261,11 +269,6 @@ cache completely offline for more performance, although we currently do not.
 ![Field file](images/field_file.png)    
 _Figure 7: visualisation of the field data component of the field file. In the original 243x182 image, 1 pixel = 1cm_
 
-In theory, our optimisation problem could actually be represented as a non-linear least squares problem (rather than
-a non-linear derivative free problem), and could thus be solved using standard algorithms like the Gauss-Newton or
-Levenberg-Marquardt algorithms. However, due to a lack of mathematical knowledge I decided to just use the simpler
-derivative-free algorithm instead.
-
 With the robot's position now determined to the highest accuracy possible, the final step in the localisation process
 is to smooth and interpolate this coordinate. The optimisation algorithm can produce unstable results, especially in
 environments where the line is not very visible or mistaken for other objects on the field. Smoothing is currently 
@@ -273,21 +276,33 @@ accomplished by using a simple moving average. A moving median was also tried bu
 In future, we would like to investigate more complex digital signal processing such as a low-pass filter or Kalman filter
 to improve our accuracy.
 
+**A short tangent on the least-squares method**
+
+In theory, our optimisation problem could actually be represented as a non-linear least squares problem (rather than a
+non-linear derivative free problem), and could thus be solved using standard algorithms like the Gauss-Newton or
+Levenberg-Marquardt algorithms. This would be significantly faster than Subplex, because least-squares optimisers have
+information about the gradients of the problem so they can converge in less iterations. In fact, this method has been
+shown to be possible in many point-set registration papers before (which our problem is similar to). In fact, since we
+don't solve for rotation, I believe the problem should be solvable entirely using total least squares, which is linear
+and very fast (although I'm not totally sure on this). Although this would be a lot faster, I didn't have the
+mathematical knowledge to implement any least-squares regressions by myself, so I decided to use the derivative-free
+optimisers from NLopt instead.
+
 ### Robot detection
 We also experimented with a novel robot detection algorithm, although it was not completed in time for release.
 Initially testing shows it could be pretty accurate, especially with LiDAR instead of video.
 
 The algorithm works under the assumption that since most robots are white, they will in turn be picked up by our line
 detector. We can analyse all the lines we detect and detect outliers, or "suspicious" rays, which will belong to robots.
-We do this using the standard method of checking if a ray lies 1.5x outside the interquartile range (IQR). Once that is
-done, we cluster groups of suspicious rays one after the other into unbroken blobs that are robots. With this, we
-essentially have a triangle of where the robot could be in (the back face of the triangle is set to be along the nearest
-line). To check if a robot does in fact lie in this triangle, we check to see if a circle the size of the largest legal
-robot diameter could fit into the triangle. If the circle fits anywhere, we have a detection - otherwise, it's a false
-positive. Although it's impossible to know exactly where the robot is located in this triangle, we assume that it will
-be located the closest possible distance to the robot without clipping outside the bounds (we essentially "inscribe"
-the circle within the triangle this way). With that done, we have successfully detected the (x,y) position of a potential
-opposition robot!
+We do this using the standard method of checking if a value lies 1.5x outside the interquartile range (IQR). Once that
+is done, we cluster groups of suspicious rays one after the other into unbroken blobs that could be robots. With this,
+we essentially have a triangle of where the robot could be in (the back face of the triangle is set to be along the
+nearest line). To check if a robot does in fact lie in this triangle, we check to see if a circle the size of the
+largest legal robot diameter could fit into the triangle. If the circle fits anywhere, we have a detection - otherwise,
+it's a false positive. Although it's impossible to know exactly where the robot is located in this triangle, we assume
+that it will be located the closest possible distance to the robot without clipping outside the bounds (we essentially
+"inscribe" the circle within the triangle this way). With that done, we have successfully detected the (x,y) position of
+a potential opposition robot!
 
 **TODO image**
 

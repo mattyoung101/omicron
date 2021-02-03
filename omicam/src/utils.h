@@ -17,9 +17,21 @@
 #include <nlopt.h>
 #include <tinyexpr.h>
 #include "mathc.h"
-#include <stdatomic.h>
+// note: I have NO idea why we need to add this, this wasn't a problem for the entire year while we were testing Omicam
+// but for some insane reason while doing my final checks for the open source release it decided to stop compiling with
+// errors about atomics. Let's hope this works. Source: https://stackoverflow.com/a/45343624/5007892
+#ifndef __cplusplus
+# include <stdatomic.h>
+#else
+# include <atomic>
+# define _Atomic(X) std::atomic< X >
+#endif
 
 // Globals - yes, this sucks
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** min and max thresholds for each field object */
 extern int32_t minBallData[3], maxBallData[3], minLineData[3], maxLineData[3], minBlueData[3], maxBlueData[3], minYellowData[3], maxYellowData[3];
@@ -33,7 +45,7 @@ extern int32_t visionRobotMaskRadius, visionMirrorRadius;
 /** (x,y,width,height) describing the frame cropping rectangle, loaded from INI file */
 extern int32_t visionCropRect[4];
 /** used by te_compile() when compiling the mirror model expression - TODO I still think this might be race condition prone */
-extern _Atomic double mirrorModelVariable;
+extern _Atomic(double) mirrorModelVariable;
 extern te_expr *mirrorModelExpr;
 /** true if Omicam is currently in sleep mode (low power mode) */
 extern bool sleeping;
@@ -44,10 +56,6 @@ extern bool sendDebugFrames;
 /** The culmination of several months of difficult R&D: the robot's x,y position in field coordinates!!! */
 extern struct vec2 localisedPosition;
 extern bool visionRecordingEnabled, visionPlayback, visionDebugRobotMask;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /** Parses a string in the format "x,y,z" into three numbers to be stored in the given array  */
 void utils_parse_thresh(char *threshStr, int32_t *array);
@@ -61,7 +69,7 @@ double utils_time_micros(void);
 void utils_write_thresholds_disk();
 /** Utility function to encode the vision data into a protobuf packet and sent it over UART, using the comms_uart module. */
 void utils_cv_transmit_data(ObjectData ballData);
-/** Reads a binary file from disk and its size. You must free() the returned buffer. **/
+/** Reads a binary file from disk and its size. You must free() the returned buffer. */
 uint8_t *utils_load_bin(char *path, long *size);
 /** Applies the calculated dewarp model to turn the given pixel distance into a centimetre distance in the camera. */
 double utils_camera_dewarp(double x);
